@@ -1,0 +1,112 @@
+const assert = require('assert/strict');
+const {
+  auditDeckPlan,
+  industryKnowledgeAudit,
+  industryProofCandidates,
+  normalizeDeckPlan,
+  normalizeSlide,
+  semanticFrame,
+  semanticMeaning,
+  visualAestheticModel
+} = require('./design-system');
+
+const manufacturingPlan = { industry:'manufacturing-operations', title:'设备运维升级方案' };
+const rootCauseSlide = {
+  title:'停机根因与节拍损失排序',
+  subtitle:'由于备件等待和重复故障导致 MTTR 拉长，前两类问题贡献 71% 的 OEE 损失。',
+  cards:[
+    { title:'备件等待', body:'跨班组领用链路长。' },
+    { title:'重复故障', body:'处置记录未回流。' },
+    { title:'节拍损失', body:'瓶颈工位缺少复盘。' }
+  ]
+};
+
+const meaning = semanticMeaning(manufacturingPlan, rootCauseSlide);
+assert.equal(meaning.relations.cause, true, 'semantic meaning should detect cause/root-cause language');
+assert.ok((meaning.entities.asset || []).includes('备件'), 'semantic meaning should extract industry entities');
+assert.ok(
+  industryProofCandidates(manufacturingPlan, rootCauseSlide).some(p => p.id === 'downtime-pareto'),
+  'industry proof candidates should infer manufacturing downtime Pareto from real wording'
+);
+assert.equal(semanticFrame(manufacturingPlan, rootCauseSlide).primaryIntent, 'industryChart');
+assert.equal(normalizeSlide(manufacturingPlan, rootCauseSlide, 2, 9).layoutVariant, 'downtime-pareto');
+const metadataDeck = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  slides:[
+    { type:'auto', title:'设备运维方案' },
+    rootCauseSlide,
+    { type:'closing', title:'下一步行动', actions:[{ title:'试点' }] }
+  ]
+});
+assert.ok(
+  metadataDeck.slides[1].semanticRelations.includes('cause') &&
+    metadataDeck.slides[1].candidateProofObjects.some(p => p.id === 'downtime-pareto'),
+  'normalized slides should expose semantic relations and candidate proof objects'
+);
+
+const fatigueDeck = normalizeDeckPlan({
+  industry:'brand-retail',
+  slides:[
+    { type:'auto', title:'会员增长汇报' },
+    ...Array.from({ length:7 }, (_, i) => ({
+      type:'content',
+      title:`执行事项 ${i + 1}`,
+      cards:Array.from({ length:6 }, (_, j) => ({ title:`模块 ${j + 1}`, body:'说明动作与责任。' }))
+    })),
+    { type:'closing', title:'下一步行动', actions:[{ title:'确认节奏' }] }
+  ]
+});
+assert.ok(
+  visualAestheticModel(fatigueDeck, fatigueDeck).findings.some(f => f.type === 'visualTemplateFatigue'),
+  'aesthetic model should catch deck-level generic route fatigue'
+);
+
+const weakImageDeck = normalizeDeckPlan({
+  industry:'saas-technology',
+  slides:[
+    { type:'auto', title:'产品证据汇报' },
+    { type:'content', title:'原型截图证据', images:['a.png','b.png','c.png','d.png'] },
+    { type:'content', title:'客户截图证据', images:['e.png','f.png','g.png','h.png'] },
+    { type:'closing', title:'谢谢观看' }
+  ]
+});
+assert.ok(
+  auditDeckPlan(weakImageDeck, weakImageDeck).some(f => f.type === 'captionCoverage'),
+  'audit should still catch weak image-caption relationships'
+);
+
+const weakFinance = normalizeDeckPlan({
+  industry:'finance-investment',
+  slides:[
+    { type:'auto', title:'产业基金汇报' },
+    ...Array.from({ length:7 }, (_, i) => ({
+      type:'content',
+      title:`管理议题 ${i + 1}`,
+      cards:[{ title:'背景', body:'市场变化。' }, { title:'动作', body:'推进沟通。' }, { title:'节奏', body:'下月复盘。' }]
+    })),
+    { type:'closing', title:'下一步行动', decision:'确认会议安排。' }
+  ]
+});
+assert.ok(
+  industryKnowledgeAudit(weakFinance, weakFinance).findings.some(f => f.type === 'industryKnowledgeCoverage' || f.type === 'industryDepthMissing'),
+  'industry knowledge audit should flag finance decks without finance proof depth'
+);
+
+const strongFinance = normalizeDeckPlan({
+  industry:'finance-investment',
+  slides:[
+    { type:'auto', title:'产业基金投委会材料' },
+    { type:'content', title:'收益归因桥', bridge:[{ label:'基准', value:10 }, { label:'估值提升', value:4 }, { label:'退出折价', value:-2 }] },
+    { type:'content', title:'估值敏感性与退出情景', valuationSensitivity:{ rows:['低增长','基准','高增长'], cols:['低倍数','基准','高倍数'], values:[[12,16,19],[15,20,24],[18,23,29]] } },
+    { type:'content', title:'组合行动表', portfolio:[{ name:'项目A', action:'继续持有', risk:'低' }, { name:'项目B', action:'择机退出', risk:'中' }] },
+    { type:'content', title:'退出风险矩阵', matrix:{ x:'退出可行性', y:'估值波动' }, rows:[{ name:'估值回撤' }, { name:'流动性不足' }, { name:'集中度过高' }] },
+    { type:'closing', title:'投委会决策', decision:'确认退出窗口和投后动作。' }
+  ]
+});
+assert.equal(
+  industryKnowledgeAudit(strongFinance, strongFinance).findings.length,
+  0,
+  'strong finance deck should satisfy industry proof-object depth'
+);
+
+console.log('intelligence layers ok');

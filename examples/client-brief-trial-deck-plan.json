@@ -1,0 +1,316 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "manufacturing-operations",
+  "palette": "signal-charcoal",
+  "visualMode": "auto",
+  "visualIntent": "strategy",
+  "contentDensity": "balanced",
+  "title": "恒越精工设备运维升级方案",
+  "subtitle": "把设备状态、维修处置和产线节拍接入同一套经营闭环",
+  "coverInsight": "先让关键产线可见、可派工、可复盘，再扩展到多车间协同",
+  "organization": "曜能数智科技有限公司",
+  "audience": "恒越精工管理层 / 工厂厂长 / 设备管理负责人",
+  "date": "2026年5月",
+  "showMeta": false,
+  "footer": "恒越精工设备运维升级方案",
+  "media": {
+    "cover": "assets/media/manufacturing-modern-line.jpg",
+    "detail": "assets/media/manufacturing-modern-detail.jpg",
+    "band": "assets/media/manufacturing-modern-band.jpg",
+    "gallery": [
+      "assets/media/manufacturing-modern-line.jpg",
+      "assets/media/manufacturing-modern-detail.jpg",
+      "assets/media/manufacturing-historical-line.jpg"
+    ]
+  },
+  "slides": [
+    {
+      "type": "content",
+      "title": "恒越精工设备运维升级方案",
+      "subtitle": "把设备状态、维修处置和产线节拍接入同一套经营闭环",
+      "visual": {
+        "mode": "hybrid",
+        "role": "showcase",
+        "caption": "现代自动化产线作为行业场景展示。"
+      }
+    },
+    {
+      "type": "chapter-divider",
+      "title": "从关键产线开始建立运维经营闭环",
+      "subtitle": "本次汇报围绕现状、产品包、架构、闭环、证据和治理展开。",
+      "items": [
+        "现场断点与升级目标",
+        "设备接入产品包",
+        "产线系统拓扑",
+        "维修闭环路径",
+        "试点证据与治理保障"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "现场运维现状与升级目标",
+      "subtitle": "当前问题不只是维修慢，而是状态、工单、备件和停机影响没有进入同一张事实表。",
+      "coreTitle": "先读结论，再看证据",
+      "summary": "关键设备运行、报警、点检和维修记录分散，班组可以处理单次故障，但管理层很难复盘停机影响和策略改进。",
+      "decision": "建议把长文案拆成现场断点、经营影响和下一步动作三层。",
+      "cards": [
+        {
+          "title": "状态不可见",
+          "body": "设备运行、报警、点检和维修数据分散在 PLC、MES、班组台账和人工表格中。"
+        },
+        {
+          "title": "响应不稳定",
+          "body": "故障发现、派工、备件协调和验收确认依赖人工沟通，过程透明度不足。"
+        },
+        {
+          "title": "损失难量化",
+          "body": "停机时间、节拍波动、返工和产能影响缺少同一口径，难以进入经营复盘。"
+        },
+        {
+          "title": "经验难复用",
+          "body": "维修经验停留在个人和班组层面，故障原因与处置策略没有沉淀成知识库。"
+        },
+        {
+          "title": "备件不协同",
+          "body": "关键备件库存、领用和采购计划没有和维修工单绑定，影响抢修效率。"
+        },
+        {
+          "title": "复盘不闭环",
+          "body": "管理层看到的是月度汇总，无法追踪单次故障如何影响 OEE 和后续策略。"
+        }
+      ]
+    },
+    {
+      "type": "content",
+      "title": "关键设备接入产品包",
+      "subtitle": "先把设备状态、现场点检和维修工单做成一个最小可运行产品包。",
+      "products": [
+        {
+          "title": "设备健康看板",
+          "body": "接入关键设备状态、报警、稼动和故障趋势。"
+        },
+        {
+          "title": "移动点检终端",
+          "body": "支持巡检、拍照、异常上报和现场留痕。"
+        },
+        {
+          "title": "维修工单中心",
+          "body": "异常、派工、备件、验收和复盘串成闭环。"
+        },
+        {
+          "title": "备件协同台账",
+          "body": "将库存、领用和采购计划绑定到维修场景。"
+        }
+      ],
+      "visual": {
+        "mode": "hybrid",
+        "role": "showcase",
+        "image": "assets/media/manufacturing-modern-detail.jpg",
+        "caption": "产品包围绕关键设备和现场处置展开。"
+      }
+    },
+    {
+      "type": "content",
+      "title": "移动点检终端单品页",
+      "subtitle": "一线班组先用移动终端把巡检、异常和工单统一起来。",
+      "product": {
+        "title": "移动点检终端",
+        "body": "现场扫码、点检表单、异常拍照、工单创建、验收留痕。"
+      },
+      "features": [
+        {
+          "title": "扫码定位",
+          "body": "绑定设备台账和点检标准。"
+        },
+        {
+          "title": "异常上报",
+          "body": "照片、语音和工况信息同步进入工单。"
+        },
+        {
+          "title": "验收留痕",
+          "body": "维修结果和复盘意见回写。"
+        }
+      ],
+      "visual": {
+        "mode": "hybrid",
+        "role": "showcase",
+        "image": "assets/media/manufacturing-modern-detail.jpg"
+      }
+    },
+    {
+      "type": "content",
+      "title": "OEE 与维修效率进入复盘区间",
+      "subtitle": "把稼动、性能、良率、停机和维修动作放在同一张产线复盘页。",
+      "metrics": [
+        {
+          "label": "OEE",
+          "value": "78%",
+          "delta": "+6pt",
+          "note": "关键设备接入后，异常处置次数和停机原因可被追踪。"
+        },
+        {
+          "label": "平均响应",
+          "value": "18min",
+          "delta": "-11min",
+          "note": "派工和备件协同减少等待。"
+        },
+        {
+          "label": "重复故障",
+          "value": "12%",
+          "delta": "-3pt",
+          "note": "同类故障被纳入策略更新。"
+        }
+      ],
+      "oeeComponents": [
+        {
+          "label": "稼动率",
+          "value": "92%",
+          "body": "计划外停机和换线等待进入复盘。"
+        },
+        {
+          "label": "性能率",
+          "value": "84%",
+          "body": "瓶颈工位和节拍波动可被识别。"
+        },
+        {
+          "label": "良率",
+          "value": "97%",
+          "body": "返工、报废和质量异常绑定工单。"
+        }
+      ],
+      "note": "OEE 是当前最明确的效率信号，建议优先追踪故障停机、维修响应和备件周转之间的联动关系。"
+    },
+    {
+      "type": "content",
+      "title": "设备运维能力架构",
+      "subtitle": "从设备接入、工单处置到指标复盘，形成现场运营底座。",
+      "layers": [
+        {
+          "title": "设备与现场层",
+          "items": ["PLC", "传感器", "点检终端", "备件台账"]
+        },
+        {
+          "title": "业务应用层",
+          "items": ["设备健康", "告警分级", "维修工单", "保养计划"]
+        },
+        {
+          "title": "数据支撑层",
+          "items": ["设备库", "故障库", "工单库", "备件库", "OEE 指标"]
+        }
+      ],
+      "note": "统一数据底座 · 统一服务入口 · 统一运营看板 · 统一闭环机制"
+    },
+    {
+      "type": "content",
+      "title": "维修闭环路径",
+      "subtitle": "不是把流程画完，而是让每次维修都能回流到策略更新。",
+      "phases": [
+        {
+          "title": "发现",
+          "body": "设备状态和报警事件统一接入。"
+        },
+        {
+          "title": "派工",
+          "body": "按设备、班组和影响等级自动分派。"
+        },
+        {
+          "title": "处置",
+          "body": "维修过程、备件消耗和验收留痕。"
+        },
+        {
+          "title": "复盘",
+          "body": "按停机影响和重复故障更新策略。"
+        }
+      ],
+      "centerTitle": "OEE复盘",
+      "note": "先用关键产线建立闭环，再扩展到多车间协同。"
+    },
+    {
+      "type": "content",
+      "title": "试点产线证据对比",
+      "subtitle": "用试点材料判断闭环是否真的跑起来。",
+      "before": {
+        "image": "assets/media/manufacturing-historical-line.jpg",
+        "title": "改造前",
+        "body": "点检和维修记录分散，停机原因靠人工汇总。"
+      },
+      "after": {
+        "image": "assets/media/manufacturing-modern-line.jpg",
+        "title": "改造后",
+        "body": "设备状态、工单和复盘指标进入同一套看板。"
+      },
+      "items": [
+        {
+          "title": "响应链路",
+          "body": "异常到派工的等待时间可追踪。"
+        },
+        {
+          "title": "证据留痕",
+          "body": "维修照片、备件和验收记录绑定。"
+        },
+        {
+          "title": "复盘指标",
+          "body": "停机原因、重复故障和 OEE 联动。"
+        }
+      ]
+    },
+    {
+      "type": "content",
+      "title": "实施风险与治理保障",
+      "subtitle": "围绕数据、现场执行、跨部门协同和系统集成建立治理闭环。",
+      "responsibilities": [
+        {
+          "owner": "设备部",
+          "action": "确认关键设备清单、点检规则和维修分级。",
+          "evidence": "设备台账、点检标准、工单样本",
+          "cadence": "每周"
+        },
+        {
+          "owner": "生产部",
+          "action": "确认停机影响、节拍波动和产线优先级。",
+          "evidence": "停机记录、产量数据、班组反馈",
+          "cadence": "每周"
+        },
+        {
+          "owner": "信息化",
+          "action": "确认 PLC、MES、备件台账和权限边界。",
+          "evidence": "接口清单、权限矩阵、上线记录",
+          "cadence": "双周"
+        },
+        {
+          "owner": "管理层",
+          "action": "确认试点范围、价值指标和推广节奏。",
+          "evidence": "月度复盘、OEE 看板、推广计划",
+          "cadence": "每月"
+        }
+      ],
+      "rows": [
+        ["数据口径不统一", "中", "建立设备、故障、工单、备件和 OEE 指标字典。"],
+        ["现场执行不稳定", "中", "用班组培训、试运行和问题反馈机制降低阻力。"],
+        ["系统集成边界复杂", "高", "先接入关键设备和工单，再逐步扩展 MES、ERP 和备件系统。"],
+        ["上线后复盘不足", "中", "把周度班组复盘和月度管理复盘写入治理节奏。"]
+      ]
+    },
+    {
+      "type": "content",
+      "title": "下一步行动与决策摘要",
+      "subtitle": "建议先确认首批产线、数据边界和试点节奏，再进入蓝图设计。",
+      "decision": "确认 1 条关键产线作为试点，锁定设备清单、工单字段、OEE 口径和 8 周试运行节奏。",
+      "summary": "本轮目标不是一次性替换所有系统，而是先让设备状态、维修动作和产线影响进入同一套可复盘机制。",
+      "actions": [
+        {
+          "title": "试点对象",
+          "body": "选择停机影响大、设备类型清晰的一条关键产线。"
+        },
+        {
+          "title": "数据边界",
+          "body": "确认设备台账、报警、工单、备件和 OEE 指标字段。"
+        },
+        {
+          "title": "推进节奏",
+          "body": "用 2 周蓝图、4 周上线、2 周复盘形成首轮闭环。"
+        }
+      ]
+    }
+  ]
+}

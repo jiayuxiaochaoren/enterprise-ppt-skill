@@ -1,0 +1,62 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "energy-utility",
+  "palette": "boardroom-ink",
+  "visualMode": "auto",
+  "visualIntent": "case-led",
+  "title": "重点站点试点复盘",
+  "subtitle": "以真实资产图片支撑问题、处置与推广判断",
+  "organization": "曜能数智科技有限公司",
+  "audience": "新能源投资运营企业管理层",
+  "date": "2026年5月",
+  "footer": "重点站点试点复盘",
+  "media": {
+    "cover": "assets/media/energy-storage-cover.jpg",
+    "detail": "assets/media/energy-storage-detail.jpg",
+    "band": "assets/media/energy-storage-band.jpg",
+    "gallery": [
+      "assets/media/energy-storage-cover.jpg",
+      "assets/media/energy-storage-detail.jpg",
+      "assets/media/energy-storage-band.jpg"
+    ]
+  },
+  "slides": [
+    {
+      "type": "cover",
+      "title": "重点站点试点复盘",
+      "subtitle": "以真实资产图片支撑问题、处置与推广判断"
+    },
+    {
+      "type": "two-column",
+      "title": "现场资产状态先进入统一视图",
+      "leftTitle": "试点观察",
+      "left": [
+        "站点设备类型复杂，PCS、BMS、电表和环境监测数据需要统一接入。",
+        "现场处置依赖人工沟通，告警、工单与策略复盘之间缺少稳定链路。",
+        "试点阶段应优先验证高频告警、核心设备状态和收益波动的闭环口径。"
+      ],
+      "rightTitle": "设计判断",
+      "cards": [
+        { "title": "资产可视", "body": "将站点、设备、状态和异常纳入同一张运行图。" },
+        { "title": "告警闭环", "body": "把告警分级、派工处置和结果验收放进同一链路。" },
+        { "title": "策略复盘", "body": "围绕 SOC、负荷、电价和收益波动复盘调度策略。" }
+      ]
+    },
+    {
+      "type": "case-gallery",
+      "title": "图片素材应作为案例证据，而不是装饰",
+      "intro": "当用户材料包含现场图、产品图、截图或案例图时，使用统一裁切和稳定网格建立证据感。",
+      "items": [
+        { "title": "站点全景", "body": "用于交代空间、规模与运营对象。" },
+        { "title": "设备细节", "body": "用于支撑接入范围和设备状态讨论。" },
+        { "title": "横向图带", "body": "用于章节过渡或推广路径的场景底座。" }
+      ]
+    },
+    {
+      "type": "closing",
+      "title": "让案例图片服务判断，而不是填满页面",
+      "subtitle": "素材多时用图库结构，素材少时回到纯色与结构图。",
+      "note": "建议把用户素材按封面主视觉、现场证据、产品细节、案例图库四类归档，并逐页记录来源与授权。"
+    }
+  ]
+}

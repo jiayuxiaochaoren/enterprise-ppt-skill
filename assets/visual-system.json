@@ -1,0 +1,572 @@
+{
+  "name": "premium-commercial-keynote-visual-system",
+  "version": "1.1.1",
+  "fonts": {
+    "zh": "PingFang SC",
+    "latin": "Avenir Next",
+    "number": "DIN Alternate"
+  },
+  "typography": {
+    "coverHeroTitle": { "size": 41, "min": 32, "weight": "bold", "lineHeight": 1.04 },
+    "coverTitle": { "size": 33, "min": 24, "weight": "bold", "lineHeight": 1.08, "breakAt": 22 },
+    "sectionTitle": { "size": 24, "min": 20, "weight": "bold", "lineHeight": 1.12 },
+    "pageTitle": { "size": 22.5, "min": 18, "weight": "bold", "lineHeight": 1.12 },
+    "cardTitle": { "size": 13.2, "min": 11.0, "weight": "bold", "lineHeight": 1.15 },
+    "body": { "size": 10.2, "min": 8.8, "weight": "regular", "lineHeight": 1.32 },
+    "caption": { "size": 7.6, "min": 6.8, "weight": "regular", "lineHeight": 1.2 },
+    "kicker": { "size": 7.1, "min": 6.2, "weight": "regular", "tracking": 1.0 },
+    "number": { "size": 13, "min": 9, "weight": "bold" }
+  },
+  "layout": {
+    "canvas": { "w": 13.333, "h": 7.5 },
+    "safeMargins": { "x": 0.82, "top": 0.64, "bottom": 0.45 },
+    "headerBand": { "height": 0.92 },
+    "footer": { "y": 7.05, "size": 7.8 },
+    "panelRadius": 0,
+    "cardRadius": 0,
+    "lightBreathingCircle": { "x": 9.58, "y": 0.42, "size": 3.45, "transparency": 50 },
+    "darkBreathingCircle": { "x": 8.2, "y": 0.78, "outer": 4.42, "inner": 2.5, "transparency": 88 },
+    "imageOverlays": {
+      "background": { "dark": 72, "light": 42 },
+      "showcase": { "dark": 100, "light": 100 },
+      "evidence": { "dark": 100, "light": 100 },
+      "gallery": { "dark": 100, "light": 100 },
+      "atmosphere": { "dark": 56, "light": 36 }
+    }
+  },
+  "layoutIntelligence": {
+    "principles": [
+      "Route by proof object first: metric, process, architecture, case image, value chain, risk, manifesto.",
+      "Use photos as evidence or showcase unless the image has a clean safe zone for text.",
+      "Vary rhythm at contact-sheet scale: stage cover, editorial content, proof object, system map, gallery, close."
+    ],
+    "archetypes": {
+      "editorial-cover": {
+        "inspiredBy": ["Slideland category covers", "Japanese integrated report openers"],
+        "slideType": "cover",
+        "signals": ["first slide", "title", "coverInsight"],
+        "proofObject": "brand/industry signal"
+      },
+      "metric-comparison": {
+        "inspiredBy": ["Japanese financial result decks", "IR annual report KPI spreads"],
+        "slideType": "metric-comparison",
+        "signals": ["metrics", "KPI", "YoY", "revenue", "profit", "percent", "forecast"],
+        "proofObject": "large number plus movement explanation"
+      },
+      "strategy-map": {
+        "inspiredBy": ["integrated report value creation maps", "sustainability value-chain pages"],
+        "slideType": "strategy-map",
+        "signals": ["value chain", "capital", "input", "output", "outcome", "business model"],
+        "proofObject": "flow from drivers to actions to outcomes"
+      },
+      "case-gallery": {
+        "inspiredBy": ["portfolio/product slide galleries", "Patagonia-style evidence spreads"],
+        "slideType": "case-gallery",
+        "signals": ["multiple images", "case", "portfolio", "before/after", "store", "product"],
+        "proofObject": "consistent image grid with captions"
+      },
+      "culture-manifesto": {
+        "inspiredBy": ["SpeakerDeck culture decks", "recruiting narrative decks"],
+        "slideType": "manifesto",
+        "signals": ["culture", "values", "mission", "team", "hiring", "principle"],
+        "proofObject": "one strong statement plus supporting values"
+      },
+      "risk-matrix": {
+        "inspiredBy": ["board report risk pages", "IR governance sections"],
+        "slideType": "risk-table",
+        "signals": ["risk", "mitigation", "governance", "issue", "control"],
+        "proofObject": "prioritized matrix, not a plain table"
+      }
+    }
+  },
+  "contentIntelligence": {
+    "claimSpine": {
+      "titleMaxChars": 24,
+      "introMaxChars": 68,
+      "bodyMaxChars": 120,
+      "cardBodyMaxChars": 46,
+      "rule": "Every slide needs one claim, one proof object, and only the supporting text needed to read the proof."
+    },
+    "signals": {
+      "metric": ["%", "％", "YoY", "KPI", "売上", "営業利益", "收入", "利润", "增长", "同比", "环比", "目标", "达成"],
+      "process": ["流程", "闭环", "路径", "阶段", "里程碑", "从", "到", "before", "after"],
+      "strategy": ["战略", "价值链", "商业模式", "资本", "投入", "产出", "outcome", "impact"],
+      "culture": ["文化", "价值观", "使命", "愿景", "团队", "招聘", "principle", "culture"],
+      "case": ["案例", "产品", "门店", "项目", "现场", "客户", "portfolio", "gallery"],
+      "risk": ["风险", "治理", "合规", "应对", "保障", "control", "mitigation"]
+    }
+  },
+  "semanticColorTokens": {
+    "darkText": "Primary readable text on dark pages.",
+    "darkMuted": "Secondary text and quiet metadata on dark pages.",
+    "darkLine": "Borders, dividers, and diagram lines on dark pages.",
+    "panelAlt": "Alternative panel fill for light pages.",
+    "photoOverlay": "Overlay color used to control photo contrast.",
+    "captionOnImage": "Caption text over darkened image bands.",
+    "onAccent": "Text placed on accent fills.",
+    "success": "Positive state or improvement signal.",
+    "warning": "Warning or attention state."
+  },
+  "assetIntelligence": {
+    "minDimensions": {
+      "background": { "w": 1920, "h": 1080 },
+      "showcase": { "w": 1200, "h": 800 },
+      "evidence": { "w": 900, "h": 600 },
+      "gallery": { "w": 800, "h": 600 }
+    },
+    "roleFit": {
+      "background": "Require wide aspect ratio and a clean text safe zone; busy product, factory, table, or screenshot images are rejected as backgrounds.",
+      "showcase": "Keep the subject visible in a dedicated image area; do not overlay paragraphs.",
+      "evidence": "Use framed panels and captions; screenshots and field photos remain inspectable.",
+      "gallery": "Use consistent crop ratios and captions; image quality beats image count."
+    }
+  },
+  "visualQA": {
+    "minFontSize": 6.8,
+    "preferredBodyMin": 8.8,
+    "preferredCaptionMin": 7.2,
+    "maxSmallChineseRunsPerSlide": 2,
+    "maxTinyRunsPerSlide": 10,
+    "maxTextRunsPerSlide": 80,
+    "maxTitleLineBreaks": 1,
+    "requirePreviewForFinal": true,
+    "checkpoints": [
+      "contrast",
+      "tinyText",
+      "titleWrap",
+      "slideSimilarity",
+      "lowVisualVariance",
+      "imageRoleFit",
+      "placeholderText",
+      "pageFamilyVariety"
+    ]
+  },
+  "industryProfiles": {
+    "general-operations": {
+      "label": "DIGITAL OPERATIONS",
+      "insight": "让业务闭环建立在统一数据之上",
+      "coreTitle": "运营能力地图",
+      "coreBody": "以中心能力雷达串联关键模块，表达平台不是功能堆叠，而是围绕业务闭环形成能力场。",
+      "coverField": "generic"
+    },
+    "manufacturing-operations": {
+      "label": "MANUFACTURING OPERATIONS",
+      "insight": "让设备状态成为现场协同的起点",
+      "coreTitle": "运维能力地图",
+      "coreBody": "以设备状态雷达串联资产、报警、工单、保养、备件和生产指标，形成现场运维闭环。",
+      "coverField": "manufacturing"
+    },
+    "industrial-park": {
+      "label": "INDUSTRIAL PARK OPERATIONS",
+      "insight": "让园区服务围绕空间与企业流动",
+      "coreTitle": "空间运营地图",
+      "coreBody": "以空间、企业、服务、资产与运营指标为核心节点，形成园区管理与服务协同网络。",
+      "coverField": "park"
+    },
+    "healthcare-operations": {
+      "label": "HEALTHCARE OPERATIONS",
+      "insight": "让服务质量、资源调度和患者体验进入同一套运营视图",
+      "coreTitle": "医疗运营质量地图",
+      "coreBody": "以患者旅程、医护资源、服务响应、风险治理和质量指标为核心，形成可信、合规、可追踪的医疗运营闭环。",
+      "coverField": "generic"
+    },
+    "finance-investment": {
+      "label": "FINANCE / INVESTMENT",
+      "insight": "让投资判断建立在统一口径、风险约束和资本效率之上",
+      "coreTitle": "投资决策地图",
+      "coreBody": "以市场假设、核心指标、组合风险、资本配置和复盘机制为核心，形成面向管理层的决策闭环。",
+      "coverField": "generic"
+    },
+    "brand-retail": {
+      "label": "BRAND RETAIL",
+      "insight": "以产品组合、空间体验与会员运营构建可复盘增长闭环",
+      "coreTitle": "品牌增长地图",
+      "coreBody": "以产品、门店、内容、会员和经营指标为核心，形成从品牌记忆到复购经营的增长闭环。",
+      "coverField": "generic"
+    },
+    "energy-utility": {
+      "label": "ENERGY OPERATIONS",
+      "insight": "让电站运行从事后巡检走向实时调度",
+      "coreTitle": "能源运维地图",
+      "coreBody": "以设备状态、负荷曲线、储能策略、告警工单与收益指标为核心，形成电站运行闭环。",
+      "coverField": "energy",
+      "layoutOverrides": {
+        "navigation": "energyToc",
+        "situation": "energySituationEditorial",
+        "split": "energyProblemSplit",
+        "capability": "energyCapabilityLoop",
+        "architecture": "energyArchitecture",
+        "timeline": "energyDeploymentRadius",
+        "value": "energyValueSignal"
+      }
+    }
+  },
+  "palettes": {
+    "boardroom-ink": {
+      "background": "F7FAFD",
+      "text": "111827",
+      "body": "475569",
+      "muted": "64748B",
+      "line": "E2E8F0",
+      "panel": "FFFFFF",
+      "dark": "0B1020",
+      "darkPanel": "111827",
+      "darkText": "F8FAFC",
+      "accent": "3B82F6",
+      "secondary": "22D3EE",
+      "tertiary": "8B5CF6",
+      "soft": "EFF6FF",
+      "dataHighlight": "F59E0B",
+      "presentation": {
+        "coverTone": "dark",
+        "coverMotif": "boardroom-circle",
+        "metaStyle": "folio",
+        "panelFill": "FFFFFF",
+        "surfaceFill": "F7FAFD"
+      },
+      "intent": "Default premium business palette for technology, operations, and client proposals."
+    },
+    "japan-editorial-navy": {
+      "background": "F8F9FB",
+      "text": "172033",
+      "body": "4B5563",
+      "muted": "7A8699",
+      "line": "DEE5EF",
+      "panel": "FFFFFF",
+      "dark": "101826",
+      "darkPanel": "172033",
+      "darkText": "F8FAFC",
+      "accent": "2F6FDB",
+      "secondary": "1B9AAA",
+      "tertiary": "6B7280",
+      "soft": "EEF4FF",
+      "dataHighlight": "E6A23C",
+      "presentation": {
+        "coverTone": "light",
+        "coverMotif": "editorial-rule",
+        "metaStyle": "folio",
+        "panelFill": "FFFFFF",
+        "surfaceFill": "F8F9FB"
+      },
+      "intent": "Japanese-style business clarity: navy structure, off-white background, restrained accent."
+    },
+    "graphite-ivory": {
+      "background": "F6F2EA",
+      "text": "1F2933",
+      "body": "4B5563",
+      "muted": "7B7468",
+      "line": "DDD6C8",
+      "panel": "FFFCF7",
+      "dark": "171A1F",
+      "darkPanel": "22262E",
+      "darkText": "F8F3EA",
+      "accent": "7A5C3A",
+      "secondary": "2F6B63",
+      "tertiary": "8A8F98",
+      "soft": "EFE7DA",
+      "dataHighlight": "B7791F",
+      "presentation": {
+        "coverTone": "split",
+        "coverMotif": "ivory-editorial",
+        "metaStyle": "folio",
+        "panelFill": "FFFCF7",
+        "surfaceFill": "F6F2EA"
+      },
+      "intent": "Premium but quiet palette for professional services, real estate, culture, and luxury-adjacent decks."
+    },
+    "sage-operations": {
+      "background": "F7FAF8",
+      "text": "15221C",
+      "body": "40534A",
+      "muted": "6B7E73",
+      "line": "DDE7E1",
+      "panel": "FFFFFF",
+      "dark": "0E1814",
+      "darkPanel": "17231E",
+      "darkText": "F8FAF8",
+      "accent": "2E6F5E",
+      "secondary": "7A9D54",
+      "tertiary": "4B5563",
+      "soft": "EAF3EE",
+      "dataHighlight": "C18F32",
+      "presentation": {
+        "coverTone": "light",
+        "coverMotif": "calm-field",
+        "metaStyle": "folio",
+        "panelFill": "FFFFFF",
+        "surfaceFill": "F7FAF8"
+      },
+      "intent": "Calm operations palette for healthcare, ESG, education, and service quality decks."
+    },
+    "signal-charcoal": {
+      "background": "F5F7FA",
+      "text": "111827",
+      "body": "4B5563",
+      "muted": "6B7280",
+      "line": "D8DEE8",
+      "panel": "FFFFFF",
+      "dark": "05070A",
+      "darkPanel": "101720",
+      "darkText": "F9FAFB",
+      "accent": "00A3FF",
+      "secondary": "2DD4BF",
+      "tertiary": "9CA3AF",
+      "soft": "EAF6FF",
+      "dataHighlight": "F2B84B",
+      "presentation": {
+        "coverTone": "dark",
+        "coverMotif": "signal-line",
+        "metaStyle": "folio",
+        "panelFill": "FFFFFF",
+        "surfaceFill": "F5F7FA"
+      },
+      "intent": "High-contrast product, AI, security, and launch decks; use sparingly."
+    },
+    "finance-slate": {
+      "background": "F7F8FA",
+      "text": "111827",
+      "body": "475569",
+      "muted": "667085",
+      "line": "E0E6EF",
+      "panel": "FFFFFF",
+      "dark": "0F172A",
+      "darkPanel": "1E293B",
+      "darkText": "F8FAFC",
+      "accent": "2454A6",
+      "secondary": "0F766E",
+      "tertiary": "64748B",
+      "soft": "EDF3FF",
+      "dataHighlight": "D97706",
+      "presentation": {
+        "coverTone": "dark",
+        "coverMotif": "governance-slate",
+        "metaStyle": "folio",
+        "panelFill": "FFFFFF",
+        "surfaceFill": "F7F8FA"
+      },
+      "intent": "Conservative executive reporting, finance, investment, and governance decks."
+    },
+    "warm-white-redline": {
+      "background": "FFF8F3",
+      "text": "1F2937",
+      "body": "4B5563",
+      "muted": "7A7168",
+      "line": "EADCD4",
+      "panel": "FFF4EE",
+      "dark": "3A171B",
+      "darkPanel": "4B2026",
+      "darkText": "FFF8F3",
+      "accent": "B6424C",
+      "secondary": "2F6F73",
+      "tertiary": "71717A",
+      "soft": "F7E8E5",
+      "dataHighlight": "B45309",
+      "presentation": {
+        "coverTone": "light",
+        "coverMotif": "redline-editorial",
+        "metaStyle": "folio",
+        "panelFill": "FFF4EE",
+        "surfaceFill": "FFF9F5"
+      },
+      "intent": "Editorial corporate palette for brand, retail, culture, and leadership narratives."
+    }
+  },
+  "visualRouter": {
+    "backgroundModes": {
+      "solid": "Use palette-driven pure or near-solid backgrounds. Best for data-heavy, management, legal, finance, governance, strategy, and internal reports.",
+      "photo": "Use a high-quality full-bleed or split photo when the image is evidence or creates the scene. Always darken or wash the image for text contrast.",
+      "hybrid": "Use a mostly solid slide with one disciplined photo panel, band, or case image. Best for product, case, site, manufacturing, energy, real estate, retail, healthcare, and education.",
+      "generated": "Use generated bitmap assets only when no real source asset exists and the slide needs an abstract scene, texture, product metaphor, or high-quality visual backdrop.",
+      "case-gallery": "Use multiple real images when the deck is case-led, portfolio-led, product-led, property-led, venue-led, or before/after-led."
+    },
+    "imageRoles": {
+      "background": "Atmospheric photo with safe text zones. Never use a busy product/equipment/screenshot image as background.",
+      "showcase": "Product, equipment, production line, venue, or object that must be clearly visible. Text lives in a separate solid area.",
+      "evidence": "Site photo, screenshot, case proof, or detail image. Use a bordered panel and short caption.",
+      "comparison": "Before/after or old/new image pair. Split into comparison zones instead of using a combined image as a background.",
+      "gallery": "Multiple case/product/place images with consistent crop ratios and captions."
+    },
+    "default": {
+      "defaultPalette": "japan-editorial-navy",
+      "visualMode": "solid",
+      "photoRoles": ["cover", "closing"],
+      "optionalPhotoRoles": ["situation", "value", "case-gallery"],
+      "caseRoles": ["case-gallery"],
+      "defaultImageRoles": {
+        "cover": "showcase",
+        "closing": "background",
+        "situation": "evidence",
+        "case-gallery": "gallery"
+      },
+      "assetPolicy": "Prefer solid backgrounds unless a user-provided or clearly sourced image directly proves the slide claim."
+    },
+    "industries": {
+      "energy-utility": {
+        "defaultPalette": "boardroom-ink",
+        "visualMode": "hybrid",
+        "photoRoles": ["cover", "closing"],
+        "optionalPhotoRoles": ["situation", "value", "timeline", "case-gallery"],
+        "defaultImageRoles": {
+          "cover": "background",
+          "closing": "background",
+          "situation": "evidence",
+          "value": "evidence",
+          "timeline": "evidence",
+          "case-gallery": "gallery"
+        },
+        "assetQueries": ["battery energy storage system site", "solar storage plant", "energy operations center"],
+        "assetPolicy": "Use real station/storage imagery selectively; internal pages should stay mostly structural unless discussing sites, assets, cases, or field context."
+      },
+      "manufacturing-operations": {
+        "defaultPalette": "signal-charcoal",
+        "visualMode": "hybrid",
+        "photoRoles": [],
+        "optionalPhotoRoles": ["situation", "case-gallery"],
+        "defaultImageRoles": {
+          "cover": "showcase",
+          "situation": "evidence",
+          "case-gallery": "gallery"
+        },
+        "assetQueries": ["modern factory production line", "industrial equipment monitoring", "smart manufacturing workshop"],
+        "assetPolicy": "Use factory/equipment photos for field evidence; use solid layouts for process, OEE, KPI, and architecture pages."
+      },
+      "industrial-park": {
+        "defaultPalette": "japan-editorial-navy",
+        "visualMode": "hybrid",
+        "photoRoles": ["cover"],
+        "optionalPhotoRoles": ["situation", "case-gallery", "value"],
+        "defaultImageRoles": {
+          "cover": "showcase",
+          "situation": "evidence",
+          "value": "evidence",
+          "case-gallery": "gallery"
+        },
+        "assetQueries": ["modern industrial park aerial", "business park campus", "park operations service"],
+        "assetPolicy": "Use spatial/park images for place context and case pages; keep management and risk pages clean."
+      },
+      "healthcare-operations": {
+        "defaultPalette": "sage-operations",
+        "visualMode": "solid",
+        "photoRoles": ["cover"],
+        "optionalPhotoRoles": ["case-gallery", "situation"],
+        "defaultImageRoles": {
+          "cover": "showcase",
+          "situation": "evidence",
+          "case-gallery": "gallery"
+        },
+        "assetQueries": ["hospital operations command center", "healthcare service workflow"],
+        "assetPolicy": "Use calm, human-safe imagery only when relevant; avoid decorative medical stock photos."
+      },
+      "finance-investment": {
+        "defaultPalette": "finance-slate",
+        "visualMode": "solid",
+        "photoRoles": [],
+        "optionalPhotoRoles": ["cover"],
+        "defaultImageRoles": {
+          "cover": "background",
+          "situation": "structure",
+          "case-gallery": "evidence"
+        },
+        "assetQueries": ["executive finance boardroom"],
+        "assetPolicy": "Prefer solid backgrounds, charts, evidence tables, and conservative contrast. Photos are exceptional."
+      },
+      "brand-retail": {
+        "defaultPalette": "warm-white-redline",
+        "visualMode": "case-gallery",
+        "photoRoles": ["cover", "case-gallery"],
+        "optionalPhotoRoles": ["situation", "value"],
+        "defaultImageRoles": {
+          "cover": "showcase",
+          "situation": "evidence",
+          "value": "showcase",
+          "case-gallery": "gallery"
+        },
+        "assetQueries": ["premium retail store interior", "consumer product detail photography"],
+        "assetPolicy": "Use product, venue, packaging, and campaign visuals as proof; keep text areas disciplined and uncluttered."
+      }
+    },
+    "layoutFamilies": {
+      "cover": {
+        "background": "photo-stage-cover",
+        "showcase": "showcase-cover",
+        "solid": "stage-cover"
+      },
+      "closing": {
+        "background": "photo-stage-closing",
+        "solid": "stage-closing"
+      },
+      "navigation": {
+        "solid": "spatial-navigation",
+        "evidence": "pathway-with-band"
+      },
+      "situation": {
+        "evidence": "evidence-split",
+        "showcase": "showcase-split",
+        "solid": "light-narrative"
+      },
+      "split": {
+        "solid": "split-insight",
+        "evidence": "split-insight-with-proof-panel"
+      },
+      "architecture": {
+        "structure": "system-architecture",
+        "solid": "system-architecture"
+      },
+      "capability": {
+        "structure": "capability-map",
+        "solid": "capability-map"
+      },
+      "timeline": {
+        "solid": "pathway-timeline",
+        "evidence": "pathway-with-evidence-band"
+      },
+      "value": {
+        "solid": "value-signal",
+        "evidence": "value-signal-with-proof-panel",
+        "showcase": "showcase-value"
+      },
+      "risk": {
+        "solid": "risk-matrix",
+        "structure": "risk-matrix"
+      },
+      "case-gallery": {
+        "gallery": "case-gallery"
+      }
+    }
+  },
+  "mediaDefaults": {
+    "energy-utility": {
+      "cover": "assets/media/energy-storage-cover.jpg",
+      "detail": "assets/media/energy-storage-detail.jpg",
+      "band": "assets/media/energy-storage-band.jpg",
+      "gallery": ["assets/media/energy-storage-detail.jpg", "assets/media/energy-storage-band.jpg"]
+    },
+    "manufacturing-operations": {
+      "cover": "assets/media/manufacturing-modern-line.jpg",
+      "detail": "assets/media/manufacturing-modern-detail.jpg",
+      "band": "assets/media/manufacturing-modern-band.jpg",
+      "gallery": [
+        "assets/media/manufacturing-modern-line.jpg",
+        "assets/media/manufacturing-modern-detail.jpg",
+        "assets/media/manufacturing-historical-line.jpg"
+      ]
+    }
+  },
+  "motifs": {
+    "breathing_circle": "Low-contrast circular field for dark and light canvases. Use it as atmosphere, never as a busy diagram.",
+    "energy_lens": "Energy-specific field made from circles, one quiet pulse curve, and minimal metric labels. No repeated diagonal slash decoration.",
+    "energy_photo_backdrop": "Real BESS site photo, dark-graded for cover and closing pages. Use for energy-utility decks when the deck needs a stronger first impression than vector-only atmosphere.",
+    "energy_photo_detail": "A tighter BESS detail crop for inner-page editorial splits, problem pages, and value pages. It should support the narrative instead of acting as decoration.",
+    "energy_photo_band": "A panoramic BESS band for chapter navigation and rollout pages. Use as a quiet grounding layer near the bottom or edge of the canvas.",
+    "energy_motion_backdrop": "Five-second slow-push MP4 derived from the energy photo. Optional only; use when the output environment supports embedded video cleanly.",
+    "operating_loop": "Closed oval loop for capability maps. Prefer one clean closed form over mixed ellipses plus arrows."
+  },
+  "rules": [
+    "Every visual line must explain structure, flow, or data; decorative diagonal stripe clusters are forbidden.",
+    "Chinese titles use PingFang SC or the platform fallback; Latin labels use Avenir Next; numbers use DIN Alternate.",
+    "Premium pages should feel spatial and calm first, detailed second.",
+    "Use one accent color per slide unless a chart or risk matrix genuinely needs a second signal color.",
+    "Prefer near-white or near-black backgrounds over pure white or pure black for long decks.",
+    "Images must be evidence, place, product, people, or case context. Do not add images just because a pure-color slide feels empty."
+  ]
+}

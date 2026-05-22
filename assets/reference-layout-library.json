@@ -1,0 +1,1050 @@
+{
+  "name": "premium-commercial-reference-layout-library",
+  "version": "0.2.0",
+  "copyrightPolicy": {
+    "mode": "inspiration-only",
+    "rule": "Never copy a reference slide one-to-one. Generalize page purpose, layout grammar, proof object, visual rhythm, and asset role; generate original compositions and original bitmap assets when needed."
+  },
+  "sources": [
+    {
+      "id": "slideland",
+      "url": "https://www.slideland.tech/",
+      "categoryUrl": "https://www.slideland.tech/docs/category-list",
+      "use": "category taxonomy, page-type routing, visual taste tags, industry/document-type tags"
+    },
+    {
+      "id": "japanese-ir-and-integrated-reports",
+      "examples": [
+        "https://coten.co.jp/wp-content/uploads/2025/06/0f17e9f5d0bf9c6c9004120304adefbb.pdf",
+        "https://sfc.jp/information/ir/library/pdf/ar2025jpn.pdf",
+        "https://www.amiya.co.jp/assets/ir/financial_results_2025_Q1.pdf",
+        "https://www.group.dentsu.com/jp/sustainability/common/pdf/integrated-report2025.pdf",
+        "https://www.itoki.jp/company/ir/accounts/anual/assets/pdf/accounts_annual_2025_02.pdf",
+        "https://finance-frontend-pc-dist.west.edge.storage-yahoo.jp/disclosure/20250704/20250703507829.pdf",
+        "https://www.patagonia.com/media/pdf/patagonia-progress-report-2025-jp.pdf",
+        "https://www.nice.co.jp/uploads/2025_11_13_02.pdf"
+      ],
+      "use": "financial readouts, value creation maps, sustainability/reporting structure, governance and risk pages, restrained editorial systems"
+    },
+    {
+      "id": "speakerdeck-recruiting-culture",
+      "examples": [
+        "https://speakerdeck.com/postas/posutasucai-yong-pitutizi-liao",
+        "https://speakerdeck.com/hrxteam/elements-culture-deck"
+      ],
+      "use": "culture manifesto, recruiting flow, team values, rhythm pages"
+    }
+  ],
+  "axes": {
+    "page": [
+      "cover",
+      "contents",
+      "chapter-divider",
+      "closing",
+      "company-profile",
+      "mission",
+      "background",
+      "problem",
+      "business-overview",
+      "case-study",
+      "roadmap",
+      "business-model",
+      "growth-strategy",
+      "market",
+      "comparison",
+      "pricing",
+      "culture",
+      "member",
+      "hiring-flow",
+      "governance",
+      "value-creation",
+      "kpi",
+      "financial-highlight",
+      "risk",
+      "sustainability"
+    ],
+    "chart": [
+      "pie",
+      "vertical-bar",
+      "stacked-bar",
+      "horizontal-bar",
+      "area",
+      "waterfall",
+      "line",
+      "icon-chart",
+      "scatter"
+    ],
+    "diagram": [
+      "table",
+      "tree",
+      "pyramid",
+      "horizontal-flow",
+      "vertical-flow",
+      "cycle",
+      "before-after",
+      "map",
+      "honeycomb",
+      "radial",
+      "concept-map",
+      "matrix",
+      "venn",
+      "group",
+      "scale-comparison",
+      "layer",
+      "triangle",
+      "steps",
+      "gantt",
+      "ranking"
+    ],
+    "photo": [
+      "group-photo",
+      "landscape",
+      "architecture",
+      "transport",
+      "interior",
+      "portrait",
+      "headshot",
+      "lifestyle",
+      "food",
+      "product",
+      "mockup",
+      "macro",
+      "office-sign",
+      "screenshot"
+    ],
+    "taste": [
+      "minimal",
+      "stylish",
+      "futuristic",
+      "gentle",
+      "fresh",
+      "pop",
+      "dynamic",
+      "trustworthy",
+      "luxury"
+    ],
+    "documentType": [
+      "company-deck",
+      "service-deck",
+      "financial-results",
+      "business-plan",
+      "mid-term-plan",
+      "integrated-report",
+      "seminar-deck",
+      "mobile"
+    ]
+  },
+  "recipes": [
+    {
+      "id": "editorial-cover-minimal",
+      "slideType": "cover",
+      "roles": [
+        "cover"
+      ],
+      "signals": [
+        "title",
+        "mission",
+        "company-deck",
+        "integrated-report"
+      ],
+      "industryFit": [
+        "general-operations",
+        "finance-investment",
+        "healthcare-operations",
+        "brand-retail"
+      ],
+      "taste": [
+        "minimal",
+        "trustworthy",
+        "luxury"
+      ],
+      "layout": "large claim on one side, tiny meta, one disciplined visual signal or quiet motif, no decorative clutter",
+      "proofObject": "brand/industry identity",
+      "assetRole": "background-or-showcase",
+      "generatedAsset": "optional editorial field texture or subject image with large empty safe zone",
+      "renderType": "cover"
+    },
+    {
+      "id": "product-showcase-cover",
+      "slideType": "cover",
+      "roles": [
+        "cover"
+      ],
+      "signals": [
+        "product",
+        "showcase",
+        "equipment",
+        "vehicle",
+        "food",
+        "beauty"
+      ],
+      "industryFit": [
+        "manufacturing-operations",
+        "brand-retail",
+        "energy-utility"
+      ],
+      "taste": [
+        "stylish",
+        "luxury",
+        "dynamic"
+      ],
+      "layout": "solid title area plus clear product/object image area; text never sits on top of busy product detail",
+      "proofObject": "inspectable product or equipment",
+      "assetRole": "showcase",
+      "generatedAsset": "product-style hero image when no real asset exists; no logos or readable text",
+      "renderType": "cover"
+    },
+    {
+      "id": "photo-evidence-split",
+      "slideType": "two-column",
+      "roles": [
+        "situation",
+        "case-gallery"
+      ],
+      "signals": [
+        "field",
+        "site",
+        "screenshot",
+        "case",
+        "before",
+        "after"
+      ],
+      "industryFit": [
+        "manufacturing-operations",
+        "industrial-park",
+        "healthcare-operations",
+        "brand-retail"
+      ],
+      "taste": [
+        "trustworthy",
+        "minimal"
+      ],
+      "layout": "one framed image panel and one insight panel with short claim and 2-3 evidence points",
+      "proofObject": "field/photo evidence",
+      "assetRole": "evidence",
+      "generatedAsset": "not allowed for factual customer/site evidence unless clearly synthetic",
+      "renderType": "two-column"
+    },
+    {
+      "id": "kpi-hero-readout",
+      "slideType": "metric-comparison",
+      "roles": [
+        "value",
+        "risk"
+      ],
+      "signals": [
+        "kpi",
+        "metric",
+        "growth",
+        "revenue",
+        "profit",
+        "target",
+        "yoy"
+      ],
+      "industryFit": [
+        "finance-investment",
+        "manufacturing-operations",
+        "saas-platform",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "trustworthy",
+        "stylish"
+      ],
+      "layout": "one large primary metric, 2-3 secondary metrics, movement explanation, caveat/footer",
+      "proofObject": "number plus reason",
+      "assetRole": "none",
+      "generatedAsset": "none",
+      "renderType": "metric-comparison"
+    },
+    {
+      "id": "financial-waterfall",
+      "slideType": "metric-comparison",
+      "roles": [
+        "value"
+      ],
+      "signals": [
+        "waterfall",
+        "bridge",
+        "margin",
+        "profit",
+        "cost",
+        "allocation"
+      ],
+      "industryFit": [
+        "finance-investment",
+        "manufacturing-operations"
+      ],
+      "taste": [
+        "trustworthy"
+      ],
+      "layout": "bridge chart or stepped metric movement with one explanatory callout",
+      "proofObject": "driver decomposition",
+      "assetRole": "none",
+      "generatedAsset": "none",
+      "renderType": "metric-comparison"
+    },
+    {
+      "id": "value-creation-process",
+      "slideType": "strategy-map",
+      "roles": [
+        "architecture",
+        "value"
+      ],
+      "signals": [
+        "value creation",
+        "capital",
+        "input",
+        "output",
+        "outcome",
+        "business model",
+        "sustainability"
+      ],
+      "industryFit": [
+        "finance-investment",
+        "brand-retail",
+        "energy-utility",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "trustworthy",
+        "minimal"
+      ],
+      "layout": "left-to-right flow from drivers to operating actions to outcomes; compact labels and light arrows",
+      "proofObject": "value flow",
+      "assetRole": "none",
+      "generatedAsset": "optional abstract texture only; no fake data",
+      "renderType": "strategy-map"
+    },
+    {
+      "id": "horizontal-flow-with-icons",
+      "slideType": "timeline",
+      "roles": [
+        "timeline",
+        "navigation"
+      ],
+      "signals": [
+        "flow",
+        "process",
+        "roadmap",
+        "phase",
+        "journey",
+        "deployment"
+      ],
+      "industryFit": [
+        "general-operations",
+        "saas-platform",
+        "manufacturing-operations",
+        "industrial-park"
+      ],
+      "taste": [
+        "minimal",
+        "fresh"
+      ],
+      "layout": "3-5 horizontal steps, small icons or numeric markers, one active step, light connector",
+      "proofObject": "sequence",
+      "assetRole": "icon-or-diagram",
+      "generatedAsset": "simple abstract step motif only if icons are unavailable",
+      "renderType": "timeline"
+    },
+    {
+      "id": "cycle-loop",
+      "slideType": "module-matrix",
+      "roles": [
+        "capability",
+        "architecture"
+      ],
+      "signals": [
+        "cycle",
+        "loop",
+        "closed loop",
+        "monitor",
+        "feedback",
+        "operation"
+      ],
+      "industryFit": [
+        "energy-utility",
+        "manufacturing-operations",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "stylish",
+        "trustworthy"
+      ],
+      "layout": "closed circular or elliptical process with clear arrows and 3-5 nodes; arrows must visibly connect",
+      "proofObject": "operating loop",
+      "assetRole": "diagram",
+      "generatedAsset": "none; draw natively for editability",
+      "renderType": "module-matrix"
+    },
+    {
+      "id": "before-after-comparison",
+      "slideType": "two-column",
+      "roles": [
+        "situation",
+        "value"
+      ],
+      "signals": [
+        "before",
+        "after",
+        "current",
+        "future",
+        "upgrade",
+        "comparison"
+      ],
+      "industryFit": [
+        "general-operations",
+        "manufacturing-operations",
+        "brand-retail",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "minimal",
+        "trustworthy"
+      ],
+      "layout": "two balanced states with a strong transition marker; use identical image/copy rhythm on both sides",
+      "proofObject": "state change",
+      "assetRole": "comparison",
+      "generatedAsset": "allowed for abstract future-state illustration only, not factual before state",
+      "renderType": "comparison"
+    },
+    {
+      "id": "case-product-gallery",
+      "slideType": "case-gallery",
+      "roles": [
+        "case-gallery"
+      ],
+      "signals": [
+        "case",
+        "gallery",
+        "portfolio",
+        "product",
+        "store",
+        "project",
+        "site"
+      ],
+      "industryFit": [
+        "brand-retail",
+        "manufacturing-operations",
+        "real-estate",
+        "industrial-park"
+      ],
+      "taste": [
+        "stylish",
+        "luxury",
+        "fresh"
+      ],
+      "layout": "one dominant image plus two or three smaller images, consistent crop ratios, captions aligned",
+      "proofObject": "visual evidence set",
+      "assetRole": "gallery",
+      "generatedAsset": "allowed for generic product/category mood images; never for named client proof",
+      "renderType": "case-gallery"
+    },
+    {
+      "id": "screenshot-panel",
+      "slideType": "two-column",
+      "roles": [
+        "case-gallery",
+        "situation"
+      ],
+      "signals": [
+        "screenshot",
+        "dashboard",
+        "screen",
+        "ui",
+        "product interface"
+      ],
+      "industryFit": [
+        "saas-platform",
+        "ai-platform",
+        "finance-investment"
+      ],
+      "taste": [
+        "stylish",
+        "futuristic"
+      ],
+      "layout": "screenshot in inspectable frame with short annotations outside the image; no tiny overlay paragraphs",
+      "proofObject": "product interface evidence",
+      "assetRole": "screenshot",
+      "generatedAsset": "use generated UI mock only when clearly labeled concept/mockup",
+      "renderType": "two-column"
+    },
+    {
+      "id": "culture-manifesto-stage",
+      "slideType": "manifesto",
+      "roles": [
+        "split",
+        "closing"
+      ],
+      "signals": [
+        "culture",
+        "mission",
+        "values",
+        "principle",
+        "hiring",
+        "team"
+      ],
+      "industryFit": [
+        "saas-platform",
+        "general-operations",
+        "brand-retail",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "minimal",
+        "dynamic"
+      ],
+      "layout": "one big statement, four supporting values, strong dark/light contrast",
+      "proofObject": "organizational belief",
+      "assetRole": "none-or-portrait",
+      "generatedAsset": "optional abstract culture background; avoid fake team photos",
+      "renderType": "manifesto"
+    },
+    {
+      "id": "member-portrait-grid",
+      "slideType": "case-gallery",
+      "roles": [
+        "case-gallery"
+      ],
+      "signals": [
+        "member",
+        "team",
+        "profile",
+        "interview",
+        "voice"
+      ],
+      "industryFit": [
+        "saas-platform",
+        "healthcare-operations",
+        "brand-retail"
+      ],
+      "taste": [
+        "fresh",
+        "trustworthy"
+      ],
+      "layout": "uniform portrait cards with role/name/caption; keep faces large and aligned",
+      "proofObject": "people credibility",
+      "assetRole": "portrait",
+      "generatedAsset": "not allowed for real employees; use silhouettes/abstract only if people are placeholders",
+      "renderType": "case-gallery"
+    },
+    {
+      "id": "market-competitor-matrix",
+      "slideType": "risk-table",
+      "roles": [
+        "risk",
+        "value"
+      ],
+      "signals": [
+        "market",
+        "competitor",
+        "positioning",
+        "matrix",
+        "comparison"
+      ],
+      "industryFit": [
+        "saas-platform",
+        "finance-investment",
+        "brand-retail"
+      ],
+      "taste": [
+        "trustworthy",
+        "stylish"
+      ],
+      "layout": "2x2 positioning matrix or feature comparison with one highlighted position",
+      "proofObject": "strategic position",
+      "assetRole": "none",
+      "generatedAsset": "none",
+      "renderType": "risk-table"
+    },
+    {
+      "id": "governance-risk-map",
+      "slideType": "risk-table",
+      "roles": [
+        "risk"
+      ],
+      "signals": [
+        "risk",
+        "governance",
+        "compliance",
+        "control",
+        "mitigation"
+      ],
+      "industryFit": [
+        "finance-investment",
+        "healthcare-operations",
+        "energy-utility",
+        "manufacturing-operations"
+      ],
+      "taste": [
+        "trustworthy"
+      ],
+      "layout": "risk summary plus matrix/scatter, then short mitigation strip",
+      "proofObject": "prioritized controls",
+      "assetRole": "none",
+      "generatedAsset": "none",
+      "renderType": "risk-table"
+    },
+    {
+      "id": "architecture-layer-stack",
+      "slideType": "architecture",
+      "roles": [
+        "architecture"
+      ],
+      "signals": [
+        "architecture",
+        "layer",
+        "platform",
+        "module",
+        "stack",
+        "data"
+      ],
+      "industryFit": [
+        "saas-platform",
+        "ai-platform",
+        "energy-utility",
+        "industrial-park"
+      ],
+      "taste": [
+        "futuristic",
+        "stylish"
+      ],
+      "layout": "3-5 horizontal layers, data bus or control plane, labels survive executive reading",
+      "proofObject": "system structure",
+      "assetRole": "diagram",
+      "generatedAsset": "none; draw natively for editability",
+      "renderType": "architecture"
+    },
+    {
+      "id": "pricing-plan-table",
+      "slideType": "module-matrix",
+      "roles": [
+        "capability"
+      ],
+      "signals": [
+        "pricing",
+        "plan",
+        "package",
+        "tier",
+        "subscription"
+      ],
+      "industryFit": [
+        "saas-platform",
+        "service-deck"
+      ],
+      "taste": [
+        "minimal",
+        "fresh"
+      ],
+      "layout": "3 plan columns with one recommended plan; restrained feature rows",
+      "proofObject": "commercial packaging",
+      "assetRole": "none",
+      "generatedAsset": "none",
+      "renderType": "module-matrix"
+    },
+    {
+      "id": "chapter-number-divider",
+      "slideType": "chapter-divider",
+      "roles": [
+        "navigation"
+      ],
+      "signals": [
+        "chapter",
+        "section",
+        "agenda",
+        "part",
+        "contents"
+      ],
+      "industryFit": [
+        "general-operations",
+        "finance-investment",
+        "brand-retail",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "minimal",
+        "stylish"
+      ],
+      "layout": "large chapter number, compact title, 2-3 agenda cues, strong whitespace and a quiet motif",
+      "proofObject": "chapter transition",
+      "assetRole": "none-or-background",
+      "generatedAsset": "optional abstract editorial motif with no text",
+      "renderType": "chapter-divider"
+    },
+    {
+      "id": "company-profile-proof",
+      "slideType": "profile-proof",
+      "roles": [
+        "situation"
+      ],
+      "signals": [
+        "company profile",
+        "about us",
+        "会社概要",
+        "company",
+        "history",
+        "clients",
+        "team",
+        "founded"
+      ],
+      "industryFit": [
+        "general-operations",
+        "saas-platform",
+        "brand-retail",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "trustworthy",
+        "minimal"
+      ],
+      "layout": "identity block, proof metrics strip, compact capability facts, optional logo/photo panel",
+      "proofObject": "credibility proof",
+      "assetRole": "showcase",
+      "generatedAsset": "optional generic office/product atmosphere only; no fake logo",
+      "renderType": "profile-proof"
+    },
+    {
+      "id": "quote-testimonial-proof",
+      "slideType": "quote-proof",
+      "roles": [
+        "split"
+      ],
+      "signals": [
+        "quote",
+        "voice",
+        "testimonial",
+        "customer voice",
+        "interview",
+        "message"
+      ],
+      "industryFit": [
+        "brand-retail",
+        "saas-platform",
+        "healthcare-operations",
+        "general-operations"
+      ],
+      "taste": [
+        "gentle",
+        "trustworthy"
+      ],
+      "layout": "large quotation with attribution/caption, one supporting image or proof fact, minimal decoration",
+      "proofObject": "human proof",
+      "assetRole": "portrait-or-none",
+      "generatedAsset": "not allowed for real people; use abstract portrait silhouette only if placeholder",
+      "renderType": "quote-proof"
+    },
+    {
+      "id": "feature-before-after",
+      "slideType": "comparison",
+      "roles": [
+        "value",
+        "situation"
+      ],
+      "signals": [
+        "before",
+        "after",
+        "old",
+        "new",
+        "upgrade",
+        "comparison",
+        "versus",
+        "vs",
+        "改善前",
+        "改善後"
+      ],
+      "industryFit": [
+        "saas-platform",
+        "manufacturing-operations",
+        "brand-retail",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "minimal",
+        "fresh"
+      ],
+      "layout": "two or three comparable columns with equal hierarchy, central transition cue, concise differences",
+      "proofObject": "state comparison",
+      "assetRole": "comparison",
+      "generatedAsset": "allowed for abstract future state only; factual before state must use real source",
+      "renderType": "comparison"
+    },
+    {
+      "id": "service-blueprint-lane",
+      "slideType": "strategy-map",
+      "roles": [
+        "architecture",
+        "timeline"
+      ],
+      "signals": [
+        "service blueprint",
+        "customer journey",
+        "touchpoint",
+        "frontstage",
+        "backstage",
+        "journey"
+      ],
+      "industryFit": [
+        "brand-retail",
+        "healthcare-operations",
+        "saas-platform"
+      ],
+      "taste": [
+        "fresh",
+        "trustworthy"
+      ],
+      "layout": "horizontal journey with lanes for user action, service operation, data/enablement",
+      "proofObject": "service process",
+      "assetRole": "diagram",
+      "generatedAsset": "none; draw natively for editability",
+      "renderType": "strategy-map"
+    },
+    {
+      "id": "sustainability-impact-map",
+      "slideType": "strategy-map",
+      "roles": [
+        "value",
+        "architecture"
+      ],
+      "signals": [
+        "sustainability",
+        "esg",
+        "impact",
+        "environment",
+        "social",
+        "progress",
+        "materiality"
+      ],
+      "industryFit": [
+        "brand-retail",
+        "finance-investment",
+        "energy-utility",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "trustworthy",
+        "gentle"
+      ],
+      "layout": "material issues linked to actions and outcomes with restrained proof metrics",
+      "proofObject": "impact logic",
+      "assetRole": "none-or-evidence",
+      "generatedAsset": "optional abstract nature/material texture only; no fake impact evidence",
+      "renderType": "strategy-map"
+    },
+    {
+      "id": "market-size-opportunity",
+      "slideType": "metric-comparison",
+      "roles": [
+        "value"
+      ],
+      "signals": [
+        "market size",
+        "tam",
+        "sam",
+        "som",
+        "opportunity",
+        "market growth",
+        "市場規模"
+      ],
+      "industryFit": [
+        "finance-investment",
+        "saas-platform",
+        "brand-retail"
+      ],
+      "taste": [
+        "trustworthy",
+        "stylish"
+      ],
+      "layout": "one large market number, segmented opportunity blocks, concise assumption note",
+      "proofObject": "market sizing",
+      "assetRole": "none",
+      "generatedAsset": "none",
+      "renderType": "metric-comparison"
+    },
+    {
+      "id": "mobile-screen-flow",
+      "slideType": "case-gallery",
+      "roles": [
+        "case-gallery",
+        "architecture"
+      ],
+      "signals": [
+        "mobile",
+        "app",
+        "screen",
+        "flow",
+        "prototype",
+        "mockup"
+      ],
+      "industryFit": [
+        "saas-platform",
+        "brand-retail",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "fresh",
+        "stylish"
+      ],
+      "layout": "3-4 phone frames in a flow with captions outside the screenshots",
+      "proofObject": "product flow",
+      "assetRole": "screenshot",
+      "generatedAsset": "allowed for clearly synthetic app mockup only; no fake real user data",
+      "renderType": "case-gallery"
+    },
+    {
+      "id": "map-coverage-expansion",
+      "slideType": "timeline",
+      "roles": [
+        "timeline",
+        "value"
+      ],
+      "signals": [
+        "map",
+        "area",
+        "region",
+        "coverage",
+        "expansion",
+        "store network",
+        "sites"
+      ],
+      "industryFit": [
+        "brand-retail",
+        "industrial-park",
+        "energy-utility",
+        "healthcare-operations"
+      ],
+      "taste": [
+        "minimal",
+        "trustworthy"
+      ],
+      "layout": "map or regional nodes paired with phased rollout and coverage metric",
+      "proofObject": "geographic scale",
+      "assetRole": "map",
+      "generatedAsset": "generic abstract map only; not a factual geography proof",
+      "renderType": "timeline"
+    },
+    {
+      "id": "pricing-packaging",
+      "slideType": "module-matrix",
+      "roles": [
+        "capability",
+        "value"
+      ],
+      "signals": [
+        "pricing",
+        "package",
+        "plan",
+        "tier",
+        "fee",
+        "subscription",
+        "プラン"
+      ],
+      "industryFit": [
+        "saas-platform",
+        "service-deck",
+        "brand-retail"
+      ],
+      "taste": [
+        "minimal",
+        "fresh"
+      ],
+      "layout": "3 tier cards with one highlighted recommendation and sparse feature rows",
+      "proofObject": "commercial offer",
+      "assetRole": "none",
+      "generatedAsset": "none",
+      "renderType": "module-matrix"
+    },
+    {
+      "id": "swot-strategy-matrix",
+      "slideType": "risk-table",
+      "roles": [
+        "risk",
+        "value"
+      ],
+      "signals": [
+        "swot",
+        "strength",
+        "weakness",
+        "opportunity",
+        "threat",
+        "strategy issue"
+      ],
+      "industryFit": [
+        "finance-investment",
+        "general-operations",
+        "brand-retail"
+      ],
+      "taste": [
+        "trustworthy"
+      ],
+      "layout": "four-quadrant strategy matrix with highlighted implications, not a dense table",
+      "proofObject": "strategic diagnosis",
+      "assetRole": "none",
+      "generatedAsset": "none",
+      "renderType": "risk-table"
+    },
+    {
+      "id": "portfolio-tile-index",
+      "slideType": "case-gallery",
+      "roles": [
+        "case-gallery"
+      ],
+      "signals": [
+        "portfolio",
+        "lineup",
+        "catalog",
+        "collection",
+        "works",
+        "products"
+      ],
+      "industryFit": [
+        "brand-retail",
+        "real-estate",
+        "manufacturing-operations"
+      ],
+      "taste": [
+        "stylish",
+        "luxury"
+      ],
+      "layout": "clean tile index with repeated image ratios and short category labels",
+      "proofObject": "portfolio breadth",
+      "assetRole": "gallery",
+      "generatedAsset": "allowed for generic category mood/product tiles; not for named real products",
+      "renderType": "case-gallery"
+    },
+    {
+      "id": "closing-editorial-statement",
+      "slideType": "closing",
+      "roles": [
+        "closing"
+      ],
+      "signals": [
+        "closing",
+        "next decision",
+        "thank",
+        "alignment"
+      ],
+      "industryFit": [
+        "general-operations",
+        "finance-investment",
+        "manufacturing-operations",
+        "brand-retail"
+      ],
+      "taste": [
+        "minimal",
+        "luxury"
+      ],
+      "layout": "one strategic closing statement, one next decision strip, quiet motif or image",
+      "proofObject": "decision ask",
+      "assetRole": "background-or-none",
+      "generatedAsset": "optional atmospheric bitmap with no text",
+      "renderType": "closing"
+    }
+  ],
+  "generatedAssetPromptPatterns": {
+    "background": "Create a premium business presentation background for {industryLabel}: {visualBrief}. Wide 16:9, large clean negative space for text, restrained color palette {paletteName}, no text, no logos, no fake charts, no UI labels, high-end keynote style.",
+    "showcase": "Create an original inspectable showcase image for {industryLabel}: {visualBrief}. Subject clearly visible, commercial lighting, uncluttered environment, 16:9 or 4:3 crop, no text, no logos, no brand marks, suitable for a business presentation image panel.",
+    "evidence": "Create a clearly synthetic evidence-style scene for {industryLabel}: {visualBrief}. Realistic but generic, no identifiable brand/client/site, no text, no logos, designed for a framed presentation panel with caption outside the image.",
+    "gallery": "Create a cohesive set of presentation gallery images for {industryLabel}: {visualBrief}. Same lighting and color temperature, consistent crop ratios, no text, no logos, no fake claims, premium commercial documentation style.",
+    "abstract": "Create an abstract high-end presentation visual motif for {industryLabel}: {visualBrief}. Subtle depth, clean geometry, palette-compatible with {paletteName}, no text, no logos, no charts, no noisy decorative lines."
+  }
+}
