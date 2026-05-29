@@ -1,0 +1,106 @@
+{
+  "name": "premium-commercial-reference-recipe-library",
+  "version": "reference-recipe-library-manifest/v1",
+  "sourceVersion": "0.1.0",
+  "generatedAt": "2026-05-26T09:26:41.642Z",
+  "sourcePolicy": "Reference-only abstraction. Do not copy source layouts, images, logos, brand assets, or text.",
+  "recipeCount": 1548,
+  "coverage": {
+    "recipeCount": 1548,
+    "byGroup": {
+      "page": 705,
+      "graph": 108,
+      "schematic": 205,
+      "taste": 76,
+      "category": 329,
+      "material": 75,
+      "deep-dive": 50
+    },
+    "byIndustry": {
+      "beauty-consumer": 557,
+      "saas-technology": 258,
+      "people-culture": 450,
+      "general-operations": 229,
+      "lifestyle-food-tourism-fashion": 153,
+      "finance-investment": 308,
+      "manufacturing-operations": 159,
+      "energy-utility": 19,
+      "government-public-sector": 17,
+      "healthcare-operations": 6,
+      "brand-retail": 7
+    },
+    "byRenderType": {
+      "cover": 102,
+      "strategy-map": 136,
+      "case-gallery": 655,
+      "metric-comparison": 253,
+      "risk-table": 288,
+      "toc-clean": 3,
+      "closing": 4,
+      "manifesto": 68,
+      "executive-blocks": 31,
+      "profile-proof": 3,
+      "table": 2,
+      "architecture": 1,
+      "timeline": 2
+    }
+  },
+  "index": "reference-recipes/index.json",
+  "shardDirectory": "reference-recipes/shards",
+  "shardStrategy": "renderType",
+  "shards": {
+    "architecture": {
+      "file": "shards/architecture.json",
+      "recipeCount": 1
+    },
+    "case-gallery": {
+      "file": "shards/case-gallery.json",
+      "recipeCount": 655
+    },
+    "closing": {
+      "file": "shards/closing.json",
+      "recipeCount": 4
+    },
+    "cover": {
+      "file": "shards/cover.json",
+      "recipeCount": 102
+    },
+    "executive-blocks": {
+      "file": "shards/executive-blocks.json",
+      "recipeCount": 31
+    },
+    "manifesto": {
+      "file": "shards/manifesto.json",
+      "recipeCount": 68
+    },
+    "metric-comparison": {
+      "file": "shards/metric-comparison.json",
+      "recipeCount": 253
+    },
+    "profile-proof": {
+      "file": "shards/profile-proof.json",
+      "recipeCount": 3
+    },
+    "risk-table": {
+      "file": "shards/risk-table.json",
+      "recipeCount": 288
+    },
+    "strategy-map": {
+      "file": "shards/strategy-map.json",
+      "recipeCount": 136
+    },
+    "table": {
+      "file": "shards/table.json",
+      "recipeCount": 2
+    },
+    "timeline": {
+      "file": "shards/timeline.json",
+      "recipeCount": 2
+    },
+    "toc-clean": {
+      "file": "shards/toc-clean.json",
+      "recipeCount": 3
+    }
+  },
+  "recipes": []
+}

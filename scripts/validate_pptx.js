@@ -5,23 +5,52 @@ const path = require('path');
 const cp = require('child_process');
 
 function usage() {
-  console.error('Usage: node scripts/validate_pptx.js <file.pptx> [--expect-slides N] [--require term1,term2] [--preview-dir dir] [--allow-placeholders]');
+  console.error('Usage: node scripts/validate_pptx.js <file.pptx> [--expect-slides N] [--require term1,term2] [--preview-dir dir] [--baseline manifest.json] [--plan deck-plan.json] [--run-visual-qa] [--formal] [--quality-mode draft|formal|delivery] [--allow-placeholders]');
   process.exit(2);
 }
 const args = process.argv.slice(2);
 if (!args[0]) usage();
-const file = path.resolve(args[0]);
+let fileArg = '';
 let expectSlides = null;
 let requireTerms = [];
 let previewDir = null;
+let baselinePath = null;
+let planPath = null;
+let runVisualQa = false;
+let formal = false;
+let qualityMode = '';
 let allowPlaceholders = false;
-for (let i=1; i<args.length; i++) {
+function normalizeQualityMode(value = '') {
+  const mode = String(value || '').trim().toLowerCase().replace(/_/g, '-');
+  if (mode === 'formal-review') return 'formal';
+  if (['draft', 'formal', 'delivery'].includes(mode)) return mode;
+  return '';
+}
+for (let i=0; i<args.length; i++) {
   if (args[i] === '--expect-slides') expectSlides = Number(args[++i]);
   else if (args[i] === '--require') requireTerms = String(args[++i] || '').split(',').filter(Boolean);
   else if (args[i] === '--preview-dir') previewDir = path.resolve(String(args[++i] || ''));
+  else if (args[i] === '--baseline') baselinePath = path.resolve(String(args[++i] || ''));
+  else if (args[i] === '--plan') planPath = path.resolve(String(args[++i] || ''));
+  else if (args[i] === '--run-visual-qa') runVisualQa = true;
+  else if (args[i] === '--formal') {
+    formal = true;
+    qualityMode = 'formal';
+    runVisualQa = true;
+  }
+  else if (args[i] === '--quality-mode') {
+    qualityMode = normalizeQualityMode(args[++i]);
+    if (!qualityMode) usage();
+    if (qualityMode === 'formal' || qualityMode === 'delivery') formal = true;
+    runVisualQa = true;
+  }
   else if (args[i] === '--allow-placeholders') allowPlaceholders = true;
+  else if (!fileArg) fileArg = args[i];
   else usage();
 }
+if (!fileArg) usage();
+const file = path.resolve(fileArg);
+if (!qualityMode) qualityMode = formal ? 'formal' : 'draft';
 function run(cmd, argv, opts={}) {
   return cp.execFileSync(cmd, argv, Object.assign({ encoding:'utf8' }, opts));
 }
@@ -52,7 +81,15 @@ for (const s of slides) {
 }
 const allText = textParts.join('\n');
 if (!/[\u4e00-\u9fff]/.test(allText)) fail('no_chinese_text_extracted', { file, slides:slides.length });
-const badPlaceholders = ['lorem', 'ipsum', 'xxxx', 'TODO', '示例', '测试稿', '验收稿', '占位', '待补充', '请批评指正'];
+const badPlaceholders = [
+  'lorem', 'ipsum', 'xxxx', 'TODO',
+  '示例', '测试稿', '验收稿', '占位', '待补充', '请批评指正',
+  '材料显示', '企业 PDF', '企业PDF', 'PDF 简介口径', '正式交付前',
+  '材料列出', '公司材料列出',
+  '图册页优先', '该页用于', '该页只展示', '模型抽取', '用户材料自动整理',
+  '第二页先', '后续页面', '后续再', '本页仅', '证明页优先', '对比页优先',
+  '测试 closing', '正式结束页用于'
+];
 const foundBad = allowPlaceholders ? [] : badPlaceholders.filter(p => allText.toLowerCase().includes(p.toLowerCase()));
 if (foundBad.length) fail('visible_scaffold_text_found', { foundBad });
 const missing = requireTerms.filter(t => !allText.includes(t));
@@ -82,14 +119,59 @@ function exportPreviews() {
     .map(x => path.join(previewDir, x));
 }
 const previewFiles = exportPreviews();
+function renderMetaPathFor(pptxFile) {
+  const candidates = [
+    `${pptxFile}.render-meta.json`,
+    path.join(path.dirname(pptxFile), `${path.basename(pptxFile, '.pptx')}.render-meta.json`)
+  ];
+  return candidates.find(p => fs.existsSync(p)) || '';
+}
+function runVisualQaCommand() {
+  const argv = [path.join(__dirname, 'visual_qa.js'), file, '--json'];
+  if (previewDir) argv.push('--preview-dir', previewDir);
+  if (baselinePath) argv.push('--baseline', baselinePath);
+  if (planPath) argv.push('--plan', planPath);
+  argv.push('--quality-mode', qualityMode);
+  const res = cp.spawnSync(process.execPath, argv, {
+    cwd: path.resolve(__dirname, '..'),
+    encoding:'utf8',
+    timeout:120000
+  });
+  const output = String(res.stdout || '').trim();
+  let parsed = null;
+  try {
+    parsed = output ? JSON.parse(output) : null;
+  } catch (e) {
+    fail('visual_qa_output_unreadable', {
+      status: res.status,
+      stdout: output.slice(0, 2000),
+      stderr: String(res.stderr || '').slice(0, 2000),
+      detail: String(e.message || e)
+    });
+  }
+  if (!parsed) {
+    fail('visual_qa_output_missing', {
+      status: res.status,
+      stderr: String(res.stderr || '').slice(0, 2000)
+    });
+  }
+  return parsed;
+}
+const renderMetaPath = renderMetaPathFor(file);
+if (formal && !renderMetaPath) fail('render_meta_required_for_formal_validation', { file });
+const visualQa = runVisualQa ? runVisualQaCommand() : null;
 const result = {
   success: true,
   file,
   size_bytes: fs.statSync(file).size,
   slide_count: slides.length,
+  quality_mode: qualityMode,
   preview_dir: previewDir,
+  baseline: baselinePath,
   preview_count: previewFiles.length,
   preview_files: previewFiles.slice(0, 20),
+  render_meta: renderMetaPath || null,
+  visualQa,
   text_sample: textParts.slice(0, 30),
   checks: {
     exists: true,
@@ -97,7 +179,15 @@ const result = {
     zip_ok: true,
     chinese_text: true,
     no_visible_scaffold_text: true,
-    required_terms_present: missing.length === 0
+    required_terms_present: missing.length === 0,
+    render_meta_present: Boolean(renderMetaPath),
+    visual_qa_passed: visualQa ? visualQa.success === true : null
   }
 };
+if (visualQa && visualQa.success !== true) {
+  result.success = false;
+  result.error = 'visual_qa_failed';
+  console.error(JSON.stringify(result, null, 2));
+  process.exit(1);
+}
 console.log(JSON.stringify(result, null, 2));

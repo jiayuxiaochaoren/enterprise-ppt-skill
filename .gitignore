@@ -8,3 +8,7 @@ out/
 !.gitkeep
 .env
 .env.*
+outputs/**
+*.pdf
+*.jpg
+*.mp4

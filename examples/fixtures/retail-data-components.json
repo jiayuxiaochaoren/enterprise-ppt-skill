@@ -1,0 +1,78 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "brand-retail",
+  "title": "B-23 Q1 Operating Review",
+  "subtitle": "Q1经营复盘与Q2增长作战图",
+  "footer": "B-23 Q1 OPERATING REVIEW",
+  "allowDraftRender": true,
+  "slides": [
+    {
+      "type": "cover",
+      "title": "Q1经营复盘与Q2增长作战图",
+      "subtitle": "美妆/消费品牌净销售、渠道、SKU、用户反馈与行动闭环",
+      "coverIndex": [
+        { "title": "防晒旺季", "body": "P04防晒承接增长" },
+        { "title": "退货修复", "body": "彩妆口径先降退货" },
+        { "title": "私域复购", "body": "精华面霜套组沉淀" }
+      ]
+    },
+    {
+      "type": "content",
+      "title": "3月把Q1拉回来了，但2月低谷暴露了节点依赖",
+      "dataComponent": "trend-line",
+      "monthlyPulse": [
+        { "label": "1月", "value": "456.2w", "note": "春节前礼盒与精华稳定" },
+        { "label": "2月", "value": "402.2w", "note": "节后流量低谷" },
+        { "label": "3月", "value": "618.4w", "note": "女神节+防晒预热" }
+      ],
+      "businessLogic": {
+        "currentState": "3月净销环比修复",
+        "cause": "2月流量和线下陈列没有跟上",
+        "action": "把节点节奏前置到搜索、内容和私域",
+        "metric": "月度净销与复购率"
+      }
+    },
+    {
+      "type": "content",
+      "title": "投放不是少花钱，而是让高效触点进入复购闭环",
+      "dataComponent": "scatter-bubble",
+      "channelEfficiency": [
+        { "label": "私域CRM", "value": "8x", "x": 22, "y": 82, "size": 66, "body": "ROAS高、花费低" },
+        { "label": "天猫搜索", "value": "4.1x", "x": 56, "y": 44, "size": 48, "body": "品牌词承接" },
+        { "label": "抖音", "value": "4.1x", "x": 84, "y": 43, "size": 46, "body": "脚本收口" },
+        { "label": "小红书KOL", "value": "3.3x", "x": 66, "y": 34, "size": 42, "body": "种草承接" },
+        { "label": "京东广告", "value": "3.2x", "x": 30, "y": 33, "size": 40, "body": "资源位" }
+      ],
+      "businessLogic": {
+        "currentState": "私域触点效率最高",
+        "cause": "内容种草与搜索承接没有形成完整链路",
+        "action": "保留高效触点，压缩低效放量",
+        "metric": "ROAS与复购贡献"
+      }
+    },
+    {
+      "type": "content",
+      "title": "Q2目标差额约368w，增长桥必须有明确来源",
+      "dataComponent": "waterfall-bridge",
+      "bridge": [
+        { "label": "Q1净销", "value": "1482w", "kind": "start" },
+        { "label": "P04防晒", "value": "+252w", "kind": "up" },
+        { "label": "私域", "value": "+39w", "kind": "up" },
+        { "label": "抖音缺口", "value": "+22w", "kind": "up" },
+        { "label": "其他修复", "value": "+55w", "kind": "up" },
+        { "label": "Q2目标", "value": "1850w", "kind": "end" }
+      ],
+      "businessLogic": {
+        "currentState": "Q2目标高于Q1约368w",
+        "cause": "防晒旺季、私域复购和渠道缺口共同决定增量",
+        "action": "把每个增量来源绑定到负责人和周度复盘",
+        "metric": "净销、毛利率、彩妆退货率"
+      }
+    },
+    {
+      "type": "closing",
+      "title": "Q2先保供给，再修退货，最后放大私域复购",
+      "subtitle": "确认防晒供给、彩妆退货上限和私域套组节奏。"
+    }
+  ]
+}

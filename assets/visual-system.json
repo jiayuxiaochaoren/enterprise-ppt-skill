@@ -1,21 +1,88 @@
 {
   "name": "premium-commercial-keynote-visual-system",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "fonts": {
     "zh": "PingFang SC",
     "latin": "Avenir Next",
     "number": "DIN Alternate"
   },
   "typography": {
-    "coverHeroTitle": { "size": 41, "min": 32, "weight": "bold", "lineHeight": 1.04 },
-    "coverTitle": { "size": 33, "min": 24, "weight": "bold", "lineHeight": 1.08, "breakAt": 22 },
-    "sectionTitle": { "size": 24, "min": 20, "weight": "bold", "lineHeight": 1.12 },
-    "pageTitle": { "size": 22.5, "min": 18, "weight": "bold", "lineHeight": 1.12 },
-    "cardTitle": { "size": 13.2, "min": 11.0, "weight": "bold", "lineHeight": 1.15 },
-    "body": { "size": 10.2, "min": 8.8, "weight": "regular", "lineHeight": 1.32 },
-    "caption": { "size": 7.6, "min": 6.8, "weight": "regular", "lineHeight": 1.2 },
-    "kicker": { "size": 7.1, "min": 6.2, "weight": "regular", "tracking": 1.0 },
-    "number": { "size": 13, "min": 9, "weight": "bold" }
+    "version": "typography-system/v2",
+    "fontPolicy": {
+      "cjk": "PingFang SC",
+      "latin": "Avenir Next",
+      "number": "DIN Alternate",
+      "editorial": "Songti SC",
+      "rule": "CJK body text favors PingFang SC; Chinese decks localize non-essential visible labels and use PingFang SC for them, while preserved acronyms/Latin source terms use Avenir Next; numbers use DIN Alternate, and editorial serif is limited to beauty/culture statement roles."
+    },
+    "scale": [43.5, 41, 34, 31, 28.5, 25.5, 22.5, 16.5, 13.5, 11.25, 10.5, 9.2, 8.25, 7.5, 6.8],
+    "coverHeroTitle": { "size": 41, "min": 32, "weight": "bold", "lineHeight": 1.04, "role": "display" },
+    "coverTitle": { "size": 33, "min": 24, "weight": "bold", "lineHeight": 1.08, "breakAt": 22, "role": "display" },
+    "sectionTitle": { "size": 24, "min": 20, "weight": "bold", "lineHeight": 1.12, "role": "title" },
+    "pageTitle": { "size": 22.5, "min": 18, "weight": "bold", "lineHeight": 1.12, "role": "title" },
+    "subtitle": { "size": 11.25, "min": 9.6, "weight": "regular", "lineHeight": 1.28, "role": "supporting" },
+    "intro": { "size": 10.5, "min": 9.0, "weight": "regular", "lineHeight": 1.34, "role": "body" },
+    "cardTitle": { "size": 13.2, "min": 11.0, "weight": "bold", "lineHeight": 1.15, "role": "title" },
+    "body": { "size": 10.2, "min": 8.8, "weight": "regular", "lineHeight": 1.32, "role": "body" },
+    "bodySmall": { "size": 9.2, "min": 8.25, "weight": "regular", "lineHeight": 1.24, "role": "body" },
+    "caption": { "size": 7.6, "min": 6.8, "weight": "regular", "lineHeight": 1.2, "role": "caption" },
+    "sourceNote": { "size": 7.3, "min": 6.8, "weight": "regular", "lineHeight": 1.16, "role": "caption" },
+    "kicker": { "size": 7.1, "min": 6.2, "weight": "regular", "tracking": 1.0, "role": "label" },
+    "microLabel": { "size": 6.8, "min": 6.2, "weight": "regular", "tracking": 0.7, "role": "label" },
+    "tableHeader": { "size": 8.4, "min": 7.4, "weight": "bold", "lineHeight": 1.15, "role": "table" },
+    "tableBody": { "size": 8.2, "min": 7.2, "weight": "regular", "lineHeight": 1.18, "role": "table" },
+    "chartTitle": { "size": 9.2, "min": 8.2, "weight": "bold", "lineHeight": 1.15, "role": "chart" },
+    "chartLabel": { "size": 7.2, "min": 6.8, "weight": "regular", "lineHeight": 1.12, "role": "chart" },
+    "metricLarge": { "size": 28.5, "min": 20, "weight": "bold", "lineHeight": 1.0, "role": "metric" },
+    "metricMedium": { "size": 16.5, "min": 12, "weight": "bold", "lineHeight": 1.04, "role": "metric" },
+    "metricSmall": { "size": 10.5, "min": 8.8, "weight": "bold", "lineHeight": 1.1, "role": "metric" },
+    "number": { "size": 13, "min": 9, "weight": "bold", "role": "number" },
+    "pageFolio": { "size": 11.8, "min": 9.2, "weight": "bold", "role": "number" }
+  },
+  "typographyProfiles": {
+    "default": {
+      "fonts": { "cjk": "PingFang SC", "latin": "Avenir Next", "number": "DIN Alternate" },
+      "roles": {}
+    },
+    "beauty-consumer": {
+      "fonts": { "cjk": "PingFang SC", "latin": "Avenir Next", "number": "DIN Alternate", "editorial": "Songti SC" },
+      "roles": {
+        "coverTitle": { "fontFace": "Songti SC", "size": 34, "lineHeight": 1.06 },
+        "coverHeroTitle": { "fontFace": "Songti SC", "size": 43.5, "lineHeight": 1.03 },
+        "pageTitle": { "size": 22.5 },
+        "subtitle": { "size": 11.25 },
+        "body": { "size": 10.5, "min": 9.0 },
+        "caption": { "size": 7.5, "min": 6.8 },
+        "sourceNote": { "size": 7.5, "min": 6.8 },
+        "kicker": { "size": 7.5, "tracking": 1.0 }
+      }
+    },
+    "finance-investment": {
+      "fonts": { "cjk": "PingFang SC", "latin": "Avenir Next", "number": "DIN Alternate" },
+      "roles": {
+        "metricLarge": { "size": 30, "min": 22 },
+        "metricMedium": { "size": 17.25, "min": 13.5 },
+        "tableBody": { "size": 8.4, "min": 7.5 },
+        "sourceNote": { "size": 7.2, "min": 6.8 }
+      }
+    },
+    "government-public-sector": {
+      "fonts": { "cjk": "PingFang SC", "latin": "Avenir Next", "number": "DIN Alternate" },
+      "roles": {
+        "pageTitle": { "size": 23.5, "min": 19 },
+        "body": { "size": 10.8, "min": 9.2 },
+        "tableBody": { "size": 8.8, "min": 7.8 }
+      }
+    },
+    "saas-technology": {
+      "fonts": { "cjk": "PingFang SC", "latin": "Avenir Next", "number": "DIN Alternate" },
+      "roles": {
+        "pageTitle": { "size": 22, "min": 18 },
+        "body": { "size": 9.8, "min": 8.8 },
+        "caption": { "size": 7.2, "min": 6.8 },
+        "chartLabel": { "size": 7.0, "min": 6.8 }
+      }
+    }
   },
   "layout": {
     "canvas": { "w": 13.333, "h": 7.5 },
@@ -107,6 +174,49 @@
     "success": "Positive state or improvement signal.",
     "warning": "Warning or attention state."
   },
+  "semanticColorRoles": {
+    "rule": "Colors are semantic roles, not decoration. A slide may use 2-3 roles; each role must have a visual carrier such as a caption bar, metric strip, side field, risk band, evidence frame, or action rail. In Chinese decks, these carriers use Chinese labels unless the term is a required acronym or source title.",
+    "roles": {
+      "brand": {
+        "token": "accent",
+        "meaning": "Brand, industry identity, navigation, page system, and structural emphasis.",
+        "carriers": ["side-color-field", "dark-anchor", "section-kicker", "page-number"]
+      },
+      "evidence": {
+        "token": "success",
+        "meaning": "Proof, real-image captions, source notes, screenshots, site photos, and case evidence.",
+        "carriers": ["caption-bar", "evidence-frame", "source-caption"]
+      },
+      "risk": {
+        "token": "risk",
+        "meaning": "Problems, gaps, constraints, compliance, authorization, and risk priority.",
+        "carriers": ["risk-band", "priority-line", "control-tag"]
+      },
+      "action": {
+        "token": "warning",
+        "meaning": "Implementation path, next step, decision gate, operating action, and rollout movement.",
+        "carriers": ["process-rail", "action-strip", "decision-caption"]
+      },
+      "data": {
+        "token": "dataHighlight",
+        "meaning": "Metric, value signal, comparison, scorecard, and chart emphasis.",
+        "carriers": ["metric-strip", "metric-highlight", "data-readout"]
+      },
+      "neutral": {
+        "token": "muted",
+        "meaning": "Readable background, body text, quiet separators, and low-emphasis labels.",
+        "carriers": ["top-rule", "panel-fill", "body-text"]
+      }
+    },
+    "industryRoleHints": {
+      "manufacturing-operations": { "brand": "steel blue", "evidence": "inspection green", "risk": "safety red", "action": "safety orange", "data": "amber readout" },
+      "energy-utility": { "brand": "dispatch blue", "evidence": "telemetry cyan", "risk": "alert red", "action": "load amber", "data": "SOC/load signal" },
+      "finance-investment": { "brand": "governance slate", "evidence": "disclosure teal", "risk": "sensitivity amber", "action": "decision blue", "data": "base-case blue" },
+      "healthcare-operations": { "brand": "clinical sage", "evidence": "quality green", "risk": "safety red", "action": "handoff olive", "data": "SLA score" },
+      "brand-retail": { "brand": "editorial redline", "evidence": "product caption", "risk": "channel warning", "action": "campaign teal", "data": "member metric" },
+      "saas-technology": { "brand": "platform blue", "evidence": "workflow cyan", "risk": "permission warning", "action": "automation cyan", "data": "adoption signal" }
+    }
+  },
   "assetIntelligence": {
     "minDimensions": {
       "background": { "w": 1920, "h": 1080 },
@@ -119,15 +229,25 @@
       "showcase": "Keep the subject visible in a dedicated image area; do not overlay paragraphs.",
       "evidence": "Use framed panels and captions; screenshots and field photos remain inspectable.",
       "gallery": "Use consistent crop ratios and captions; image quality beats image count."
+    },
+    "generatedAssetPolicy": {
+      "allowedRoles": ["background", "showcase", "gallery", "abstract"],
+      "conditionalRoles": ["evidence", "screenshot", "map", "portrait"],
+      "blockedUses": ["named customer proof", "real site evidence", "certificates", "logos", "real people", "real screenshots", "real data charts"],
+      "rule": "Generated bitmap assets may fill missing atmosphere, abstract motifs, concept scenes, and generic category visuals; they must never replace factual proof."
     }
   },
   "visualQA": {
     "minFontSize": 6.8,
     "preferredBodyMin": 8.8,
     "preferredCaptionMin": 7.2,
+    "minReadableCjkWidth": 1.15,
+    "maxReadableCharsPerInch": 14,
     "maxSmallChineseRunsPerSlide": 2,
     "maxTinyRunsPerSlide": 10,
     "maxTextRunsPerSlide": 80,
+    "maxFontFamiliesPerDeck": 5,
+    "maxFontSizesPerSlide": 14,
     "maxTitleLineBreaks": 1,
     "requirePreviewForFinal": true,
     "checkpoints": [
@@ -138,54 +258,153 @@
       "lowVisualVariance",
       "imageRoleFit",
       "placeholderText",
-      "pageFamilyVariety"
+      "commercialLogic",
+      "pageFamilyVariety",
+      "compositionPlan",
+      "themeCoverage",
+      "brandMotif",
+      "accentOnlyAsThinLine",
+      "imageTreatment",
+      "deckRhythm",
+      "themeIntentVariety",
+      "semanticColorRoles",
+      "adjacentLayoutSimilarity",
+      "typographyScale",
+      "fontFamilyDiscipline"
     ]
+  },
+  "compositionGrammar": {
+    "version": "composition-plan/v1",
+    "requiredFields": [
+      "composition",
+      "layoutPlan",
+      "backgroundTone",
+      "themeCoverage",
+      "primaryZone",
+      "secondaryZone",
+      "proofZone",
+      "primaryColorUse",
+      "imageTreatment",
+      "microComponents",
+      "rhythmRole",
+      "themeIntent",
+      "accentRole",
+      "layoutEnergy",
+      "visualDensity",
+      "rhythmTransition"
+    ],
+    "themeIntents": {
+      "industry-opening": "Deck opener or first proof of industry relevance.",
+      "navigation-map": "Contents or chapter-path page.",
+      "diagnosis": "Current-state, gap, or root-problem page.",
+      "risk-warning": "Risk, constraint, authorization, governance, or compliance page.",
+      "case-evidence": "Real image, screenshot, case, product, site, or certificate evidence page.",
+      "system-architecture": "Architecture, topology, data flow, operating model, or capability map.",
+      "value-signal": "Metric, scorecard, comparison, value, or outcome page.",
+      "operating-path": "Timeline, rollout, process, flywheel, or closed-loop page.",
+      "company-proof": "Company profile, capability proof, qualification, or business card page.",
+      "closing-anchor": "Back-cover, contact, next-step, or final decision anchor."
+    },
+    "backgroundTones": {
+      "dark-stage": "High-contrast dark anchor page for opener, chapter, quote, or closing rhythm.",
+      "tinted-paper": "Industry-tinted near-white page. Never pure white for finished commercial decks.",
+      "accent-wash": "Light page with stronger primary-color budget: top rule, side field, watermark, and accent rail."
+    },
+    "themeCoverage": {
+      "low": "Only allowed for appendices or deliberately plain tables.",
+      "medium": "Default body-page budget. Requires at least top rule, folio/page number, watermark or rail.",
+      "high": "Cover, chapter, company profile, evidence hero, and closing budget. Requires a visible dark/accent anchor."
+    },
+    "microComponents": [
+      "top-rule",
+      "page-number",
+      "watermark-circle",
+      "section-kicker",
+      "accent-rail",
+      "side-color-field",
+      "caption-bar",
+      "source-caption",
+      "evidence-frame",
+      "metric-strip",
+      "dark-sidebar",
+      "process-rail",
+      "system-rail",
+      "equipment-nameplate",
+      "technical-ruler",
+      "contact-block"
+    ],
+    "rule": "Structured content must first become a compositionPlan before drawing. Renderers consume the plan; they do not invent visual strategy ad hoc."
+  },
+  "referenceQualityBar": {
+    "derivedFrom": ["brand-retail3.pptx", "healthcare-operations3.pptx"],
+    "principles": [
+      "Reference decks are not color templates. They define rhythm, evidence hierarchy, and disciplined theme coverage.",
+      "Theme color must have visible carriers on body slides: dark information block, caption bar, metric strip, vertical axis, page number, or anchored rule. Thin lines alone are insufficient.",
+      "Slide numbers and item numbers are anchored components. Page numbers stay fixed at the same top-right coordinate; object numbers attach to a row, node, or cell instead of floating freely.",
+      "Most light pages use a low-saturation paper tone plus one strong dark or accent block. This produces premium calm without becoming blank.",
+      "Every image-led page treats images as evidence with caption bars or source notes; images are not decorative fillers.",
+      "Every three to four slides include a rhythm change, usually a dark statement/navigation page or a high-coverage evidence page."
+    ],
+    "portableRules": {
+      "minVisibleThemeCarriersPerBodySlide": 3,
+      "mustUseIndustryDialect": true,
+      "floatingNumberBadges": "forbidden",
+      "accentOnlyThinLine": "review",
+      "darkAnchorUse": "preferred for governance, company profile, proof board, chapter, and closing pages"
+    }
   },
   "industryProfiles": {
     "general-operations": {
-      "label": "DIGITAL OPERATIONS",
+      "label": "数字化运营",
       "insight": "让业务闭环建立在统一数据之上",
       "coreTitle": "运营能力地图",
       "coreBody": "以中心能力雷达串联关键模块，表达平台不是功能堆叠，而是围绕业务闭环形成能力场。",
       "coverField": "generic"
     },
     "manufacturing-operations": {
-      "label": "MANUFACTURING OPERATIONS",
+      "label": "制造运营",
       "insight": "让设备状态成为现场协同的起点",
       "coreTitle": "运维能力地图",
       "coreBody": "以设备状态雷达串联资产、报警、工单、保养、备件和生产指标，形成现场运维闭环。",
       "coverField": "manufacturing"
     },
     "industrial-park": {
-      "label": "INDUSTRIAL PARK OPERATIONS",
+      "label": "园区运营",
       "insight": "让园区服务围绕空间与企业流动",
       "coreTitle": "空间运营地图",
       "coreBody": "以空间、企业、服务、资产与运营指标为核心节点，形成园区管理与服务协同网络。",
       "coverField": "park"
     },
     "healthcare-operations": {
-      "label": "HEALTHCARE OPERATIONS",
+      "label": "医疗运营",
       "insight": "让服务质量、资源调度和患者体验进入同一套运营视图",
       "coreTitle": "医疗运营质量地图",
       "coreBody": "以患者旅程、医护资源、服务响应、风险治理和质量指标为核心，形成可信、合规、可追踪的医疗运营闭环。",
       "coverField": "generic"
     },
     "finance-investment": {
-      "label": "FINANCE / INVESTMENT",
+      "label": "金融投资",
       "insight": "让投资判断建立在统一口径、风险约束和资本效率之上",
       "coreTitle": "投资决策地图",
       "coreBody": "以市场假设、核心指标、组合风险、资本配置和复盘机制为核心，形成面向管理层的决策闭环。",
       "coverField": "generic"
     },
     "brand-retail": {
-      "label": "BRAND RETAIL",
+      "label": "品牌零售",
       "insight": "以产品组合、空间体验与会员运营构建可复盘增长闭环",
       "coreTitle": "品牌增长地图",
       "coreBody": "以产品、门店、内容、会员和经营指标为核心，形成从品牌记忆到复购经营的增长闭环。",
       "coverField": "generic"
     },
+    "beauty-consumer": {
+      "label": "美妆品牌世界",
+      "insight": "用产品质地、包装细节、场景记忆和会员经营共同证明品牌价值",
+      "coreTitle": "美妆品牌增长地图",
+      "coreBody": "以品牌世界观、单品证据、消费者场景、渠道会员和可持续证明为核心，形成高配图、可复盘的消费品牌叙事。",
+      "coverField": "generic"
+    },
     "energy-utility": {
-      "label": "ENERGY OPERATIONS",
+      "label": "能源运营",
       "insight": "让电站运行从事后巡检走向实时调度",
       "coreTitle": "能源运维地图",
       "coreBody": "以设备状态、负荷曲线、储能策略、告警工单与收益指标为核心，形成电站运行闭环。",
@@ -322,6 +541,59 @@
       },
       "intent": "High-contrast product, AI, security, and launch decks; use sparingly."
     },
+    "factory-steel-amber": {
+      "background": "F4F7F9",
+      "text": "12212B",
+      "body": "465866",
+      "muted": "697987",
+      "line": "D8E2E8",
+      "panel": "FFFFFF",
+      "dark": "0E2430",
+      "darkPanel": "183443",
+      "darkText": "F7FAFC",
+      "darkMuted": "A7B8C3",
+      "accent": "005288",
+      "secondary": "E36C14",
+      "tertiary": "3D7B71",
+      "soft": "E8F1F6",
+      "panelAlt": "E8F1F6",
+      "dataHighlight": "E36C14",
+      "warning": "E36C14",
+      "risk": "D65A52",
+      "onAccent": "FFFFFF",
+      "presentation": {
+        "coverTone": "light",
+        "coverMotif": "factory-id-plate",
+        "metaStyle": "folio",
+        "panelFill": "FFFFFB",
+        "surfaceFill": "F4F6F4"
+      },
+      "intent": "Manufacturing-specific palette: light steel paper, visible steel-blue brand structure, safety-orange action marks, and green evidence signals."
+    },
+    "industrial-graphite": {
+      "background": "F6F7F3",
+      "text": "17201D",
+      "body": "46534D",
+      "muted": "6C7A73",
+      "line": "DDE4DE",
+      "panel": "FFFFFB",
+      "dark": "101714",
+      "darkPanel": "1B2521",
+      "darkText": "F8FAF6",
+      "accent": "3E7568",
+      "secondary": "8B6F3E",
+      "tertiary": "66727A",
+      "soft": "EAF1EC",
+      "dataHighlight": "A96F38",
+      "presentation": {
+        "coverTone": "light",
+        "coverMotif": "calm-field",
+        "metaStyle": "folio",
+        "panelFill": "FFFFFB",
+        "surfaceFill": "F6F7F3"
+      },
+      "intent": "Low-saturation industrial palette for manufacturing company introductions, field proof, and operational evidence decks."
+    },
     "finance-slate": {
       "background": "F7F8FA",
       "text": "111827",
@@ -369,6 +641,33 @@
         "surfaceFill": "FFF9F5"
       },
       "intent": "Editorial corporate palette for brand, retail, culture, and leadership narratives."
+    },
+    "beauty-warm-premium": {
+      "background": "FBF3EF",
+      "text": "1C1A20",
+      "body": "5D5156",
+      "muted": "8A7A7F",
+      "line": "E7D4D2",
+      "panel": "FFFDFC",
+      "dark": "251014",
+      "darkPanel": "3E171D",
+      "darkText": "FFF7F2",
+      "darkMuted": "D8CDD0",
+      "darkLine": "5A2930",
+      "captionOnImage": "F7ECEF",
+      "accent": "A73345",
+      "secondary": "2F6F73",
+      "tertiary": "B9866A",
+      "soft": "F5DDD8",
+      "dataHighlight": "A96F38",
+      "presentation": {
+        "coverTone": "split",
+        "coverMotif": "luxury-editorial-frame",
+        "metaStyle": "folio",
+        "panelFill": "FFFDFC",
+        "surfaceFill": "FBF3EF"
+      },
+      "intent": "Luxury beauty and consumer-brand palette: warm ivory surfaces, deep lacquer anchors, product-proof red, teal evidence, and restrained bronze warmth."
     }
   },
   "visualRouter": {
@@ -418,7 +717,7 @@
         "assetPolicy": "Use real station/storage imagery selectively; internal pages should stay mostly structural unless discussing sites, assets, cases, or field context."
       },
       "manufacturing-operations": {
-        "defaultPalette": "signal-charcoal",
+        "defaultPalette": "factory-steel-amber",
         "visualMode": "hybrid",
         "photoRoles": [],
         "optionalPhotoRoles": ["situation", "case-gallery"],
@@ -483,6 +782,23 @@
         },
         "assetQueries": ["premium retail store interior", "consumer product detail photography"],
         "assetPolicy": "Use product, venue, packaging, and campaign visuals as proof; keep text areas disciplined and uncluttered."
+      },
+      "beauty-consumer": {
+        "defaultPalette": "beauty-warm-premium",
+        "visualMode": "case-gallery",
+        "photoRoles": ["cover", "situation", "product", "case-gallery"],
+        "optionalPhotoRoles": ["closing"],
+        "defaultImageRoles": {
+          "cover": "showcase",
+          "situation": "showcase",
+          "product": "showcase",
+          "value": "showcase",
+          "architecture": "showcase",
+          "case-gallery": "gallery",
+          "closing": "background"
+        },
+        "assetQueries": ["luxury skincare product photography", "premium cosmetic texture macro", "beauty retail counter editorial"],
+        "assetPolicy": "Beauty decks are image-led. If user-owned product/scene assets are missing, ask whether to provide assets, skip images, or generate clearly synthetic category visuals that never impersonate a real brand or product proof."
       }
     },
     "layoutFamilies": {
@@ -534,6 +850,198 @@
       }
     }
   },
+  "industryDesignDialects": {
+    "general-operations": {
+      "name": "executive-operations-system",
+      "defaultPalette": "japan-editorial-navy",
+      "principle": "Use restrained management-report structure: claims, operating evidence, and decision actions stay clearly separated.",
+      "motif": "executive-rule-grid",
+      "primaryColorLogic": "Navy anchors structure; blue accents mark decisions, page numbers, and key comparisons.",
+      "components": {
+        "common": ["page-number", "section-kicker", "source-note"],
+        "navigation": ["chapter-index-rail"],
+        "value": ["metric-strip", "decision-caption"],
+        "risk": ["control-tag", "priority-line"],
+        "closing": ["back-cover-anchor", "contact-block"]
+      },
+      "colorCarriers": {
+        "common": ["page-number", "accent-rail"],
+        "value": ["metric-highlight"],
+        "risk": ["priority-line"]
+      }
+    },
+    "manufacturing-operations": {
+      "name": "factory-evidence-system",
+      "defaultPalette": "factory-steel-amber",
+      "principle": "Make physical proof, process precision, and delivery traceability visible; avoid generic consulting card grids.",
+      "motif": "factory-id-plate",
+      "primaryColorLogic": "Steel blue carries the deck identity, page system, and structure; safety orange marks actions, gates, and risk; green marks evidence.",
+      "components": {
+        "common": ["page-number", "section-kicker", "source-note"],
+        "cover": ["factory-id-plate", "evidence-photo-card"],
+        "situation": ["factory-id-plate", "capacity-fact-tags", "equipment-nameplate"],
+        "company-profile-spread": ["factory-id-plate", "capacity-fact-tags", "equipment-nameplate", "evidence-caption-bar"],
+        "architecture": ["process-index-rail", "technical-ruler", "product-lineage-map", "equipment-nameplate"],
+        "production-topology": ["process-index-rail", "technical-ruler", "product-lineage-map", "equipment-nameplate"],
+        "timeline": ["process-index-rail", "handoff-stamp", "acceptance-gate"],
+        "case-gallery": ["evidence-image-frame", "caption-bar", "equipment-nameplate"],
+        "risk": ["inspection-matrix", "authorization-stamp"],
+        "closing": ["factory-id-plate", "back-cover-anchor", "contact-block"]
+      },
+      "colorCarriers": {
+        "common": ["page-number", "accent-rail"],
+        "situation": ["factory-id-plate", "capacity-fact-tags"],
+        "architecture": ["equipment-nameplate", "process-index-rail", "technical-ruler"],
+        "timeline": ["acceptance-gate", "process-index-rail"],
+        "case-gallery": ["caption-bar", "evidence-frame"],
+        "risk": ["authorization-stamp", "priority-line"]
+      },
+      "avoidComponents": ["patient-journey-band", "lookbook-frame", "member-ladder", "decorative-orb"]
+    },
+    "healthcare-operations": {
+      "name": "clinical-quality-system",
+      "defaultPalette": "sage-operations",
+      "principle": "Use calm clinical structure: patient journey, handoff responsibility, quality signals, and governance must stay legible.",
+      "motif": "patient-journey-field",
+      "primaryColorLogic": "Sage marks service flow and quality; olive marks throughput; dark green carries governance or quote anchors.",
+      "components": {
+        "common": ["page-number", "section-kicker", "source-note"],
+        "situation": ["patient-journey-band", "service-touchpoint-card"],
+        "architecture": ["patient-journey-band", "service-blueprint-lane", "frontstage-backstage-tag"],
+        "timeline": ["patient-journey-band", "handoff-checkpoint"],
+        "value": ["quality-scorecard", "sla-chip"],
+        "risk": ["responsibility-loop", "quality-risk-tag"],
+        "closing": ["care-loop-anchor", "contact-block"]
+      },
+      "colorCarriers": {
+        "common": ["page-number", "accent-rail"],
+        "architecture": ["service-lane-fill"],
+        "timeline": ["handoff-checkpoint"],
+        "value": ["quality-scorecard"],
+        "risk": ["responsibility-loop"]
+      },
+      "avoidComponents": ["equipment-nameplate", "technical-ruler", "lookbook-frame"]
+    },
+    "brand-retail": {
+      "name": "retail-editorial-system",
+      "defaultPalette": "warm-white-redline",
+      "principle": "Lead with product, space, and customer memory; images are edited like a lookbook and metrics explain behavior.",
+      "motif": "editorial-redline",
+      "primaryColorLogic": "Redline marks brand memory and editorial sectioning; teal is a secondary proof signal for member or channel data.",
+      "components": {
+        "common": ["page-number", "section-kicker", "source-note"],
+        "cover": ["lookbook-frame", "brand-proof-caption"],
+        "situation": ["brand-proof-card", "space-experience-frame"],
+        "case-gallery": ["lookbook-frame", "product-story-caption", "campaign-strip"],
+        "value": ["member-ladder", "basket-metric-strip"],
+        "timeline": ["growth-flywheel", "content-to-member-rail"],
+        "risk": ["channel-risk-tag"],
+        "closing": ["editorial-end-card", "contact-block"]
+      },
+      "colorCarriers": {
+        "common": ["page-number", "editorial-rule"],
+        "case-gallery": ["caption-bar", "lookbook-frame"],
+        "value": ["member-ladder", "metric-highlight"],
+        "timeline": ["growth-flywheel"]
+      },
+      "avoidComponents": ["equipment-nameplate", "technical-ruler", "patient-journey-band"]
+    },
+    "beauty-consumer": {
+      "name": "luxury-beauty-editorial-system",
+      "defaultPalette": "beauty-warm-premium",
+      "principle": "Lead with inspectable product and texture imagery, then make every metric, caption, and governance note explain what the visual proves.",
+      "motif": "luxury-editorial-frame",
+      "primaryColorLogic": "Deep lacquer carries brand authority, red marks product proof and editorial structure, teal marks evidence or member data, bronze marks business or sustainability warmth.",
+      "components": {
+        "common": ["page-number", "section-kicker", "source-note"],
+        "cover": ["large-product-frame", "brand-proof-caption", "editorial-index"],
+        "situation": ["product-texture-frame", "brand-world-caption"],
+        "strategy-map": ["brand-world-hero", "business-proof-rail"],
+        "case-gallery": ["proof-gallery-grid", "product-story-caption", "luxury-caption-bar"],
+        "value": ["member-ladder", "basket-metric-strip", "product-proof-callout"],
+        "timeline": ["campaign-to-member-rail", "launch-rhythm-strip"],
+        "risk": ["channel-risk-tag", "source-rights-note"],
+        "closing": ["lacquer-end-card", "contact-block"]
+      },
+      "colorCarriers": {
+        "common": ["page-number", "editorial-rule"],
+        "cover": ["large-product-frame", "brand-proof-caption"],
+        "case-gallery": ["caption-bar", "lookbook-frame"],
+        "value": ["member-ladder", "metric-highlight"],
+        "risk": ["source-rights-note", "priority-line"]
+      },
+      "avoidComponents": ["equipment-nameplate", "technical-ruler", "patient-journey-band", "generic-dashboard-card"]
+    },
+    "finance-investment": {
+      "name": "capital-governance-system",
+      "defaultPalette": "finance-slate",
+      "principle": "Use conservative disclosure logic: capital bridge, assumptions, risk, and decision gates must remain auditable.",
+      "motif": "governance-slate-grid",
+      "primaryColorLogic": "Slate carries governance; blue marks base case; teal marks upside or liquidity; amber marks risk or sensitivity.",
+      "components": {
+        "common": ["page-number", "section-kicker", "source-note"],
+        "value": ["capital-bridge", "scenario-band", "metric-strip"],
+        "risk": ["risk-matrix", "disclosure-footnote", "sensitivity-cell"],
+        "table": ["disclosure-footnote", "portfolio-row-band"],
+        "closing": ["decision-gate", "contact-block"]
+      },
+      "colorCarriers": {
+        "common": ["page-number", "accent-rail"],
+        "value": ["capital-bridge", "scenario-band"],
+        "risk": ["risk-matrix", "sensitivity-cell"]
+      },
+      "avoidComponents": ["lookbook-frame", "patient-journey-band", "equipment-nameplate"]
+    },
+    "energy-utility": {
+      "name": "site-dispatch-system",
+      "defaultPalette": "boardroom-ink",
+      "principle": "Tie site evidence to dispatch logic: assets, alerts, load, SOC, and operating actions form the visual grammar.",
+      "motif": "energy-lens",
+      "primaryColorLogic": "Blue marks dispatch state, cyan marks asset telemetry, amber marks alerts or commercial action.",
+      "components": {
+        "common": ["page-number", "section-kicker", "source-note"],
+        "cover": ["site-photo-backdrop", "asset-status-chip"],
+        "situation": ["site-evidence-frame", "asset-status-chip"],
+        "architecture": ["hub-spoke-dispatch-map", "telemetry-node"],
+        "timeline": ["dispatch-rail", "alert-checkpoint"],
+        "value": ["asset-readout-strip", "load-curve-band"],
+        "risk": ["alert-severity-tag"],
+        "closing": ["site-photo-backdrop", "contact-block"]
+      },
+      "colorCarriers": {
+        "common": ["page-number", "accent-rail"],
+        "architecture": ["telemetry-node"],
+        "timeline": ["dispatch-rail"],
+        "value": ["asset-readout-strip"],
+        "risk": ["alert-severity-tag"]
+      },
+      "avoidComponents": ["lookbook-frame", "patient-journey-band", "factory-id-plate"]
+    },
+    "saas-technology": {
+      "name": "product-platform-system",
+      "defaultPalette": "signal-charcoal",
+      "principle": "Make product workflows and adoption proof explicit; avoid generic feature-card grids without system relationships.",
+      "motif": "signal-line",
+      "primaryColorLogic": "Electric blue marks platform actions; cyan marks integration or automation; violet marks governance or AI layers.",
+      "components": {
+        "common": ["page-number", "section-kicker", "source-note"],
+        "architecture": ["capability-layer-stack", "api-connector-node"],
+        "case-gallery": ["prototype-frame", "workflow-caption"],
+        "timeline": ["activation-funnel", "workflow-rail"],
+        "value": ["adoption-funnel", "revenue-expansion-strip"],
+        "risk": ["permission-audit-tag"],
+        "closing": ["platform-stage-anchor", "contact-block"]
+      },
+      "colorCarriers": {
+        "common": ["page-number", "accent-rail"],
+        "architecture": ["api-connector-node"],
+        "case-gallery": ["prototype-frame"],
+        "timeline": ["activation-funnel"],
+        "value": ["adoption-funnel"]
+      },
+      "avoidComponents": ["equipment-nameplate", "patient-journey-band", "lookbook-frame"]
+    }
+  },
   "mediaDefaults": {
     "energy-utility": {
       "cover": "assets/media/energy-storage-cover.jpg",
@@ -563,7 +1071,7 @@
   },
   "rules": [
     "Every visual line must explain structure, flow, or data; decorative diagonal stripe clusters are forbidden.",
-    "Chinese titles use PingFang SC or the platform fallback; Latin labels use Avenir Next; numbers use DIN Alternate.",
+    "Chinese titles and localized labels use PingFang SC or the platform fallback; preserved Latin terms use Avenir Next; numbers use DIN Alternate.",
     "Premium pages should feel spatial and calm first, detailed second.",
     "Use one accent color per slide unless a chart or risk matrix genuinely needs a second signal color.",
     "Prefer near-white or near-black backgrounds over pure white or pure black for long decks.",

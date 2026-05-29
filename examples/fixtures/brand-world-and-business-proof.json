@@ -1,0 +1,53 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "beauty-consumer",
+  "documentType": "brand-report",
+  "title": "品牌世界观从护肤仪式感延伸到经营指标",
+  "subtitle": "品牌页要把视觉主张、产品承诺和业务证据放在同一个系统里。",
+  "organization": "肌研之光",
+  "footer": "brand-world-and-business-proof fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/brand-world-and-business-proof/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/brand-world-and-business-proof/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/brand-world-and-business-proof/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/brand-world-and-business-proof/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/brand-world-and-business-proof/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "strategy-map",
+      "layoutVariant": "brand-world-and-business-proof",
+      "title": "品牌世界观从护肤仪式感延伸到经营指标",
+      "claim": "品牌页要把视觉主张、产品承诺和业务证据放在同一个系统里。",
+      "drivers": [
+        "温和修护主张",
+        "高频使用场景",
+        "会员复购行为"
+      ],
+      "actions": [
+        "系列化表达",
+        "柜台体验统一",
+        "内容种草闭环"
+      ],
+      "outcomes": [
+        "品牌记忆增强",
+        "产品连带提升",
+        "复购质量改善"
+      ],
+      "note": "品牌证据和经营证据必须在同一页相互解释。"
+    }
+  ]
+}

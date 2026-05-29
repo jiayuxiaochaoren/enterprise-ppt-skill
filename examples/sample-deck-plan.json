@@ -1,6 +1,12 @@
 {
   "style": "premium-commercial-keynote",
   "industry": "energy-utility",
+  "sourceTracePolicy": {
+    "mode": "plan-authored",
+    "sourceId": "sample-energy-brief",
+    "label": "新能源电站智能运维平台方案样例 brief",
+    "sourceNote": "样例方案为 plan-authored 内容边界；未绑定外部客户材料。"
+  },
   "palette": "boardroom-ink",
   "visualMode": "auto",
   "visualIntent": "strategy",
@@ -51,7 +57,13 @@
           "title": "策略复盘闭环",
           "body": "将异常告警、派工处置、策略执行和收益波动纳入同一复盘机制。"
         }
-      ]
+      ],
+      "businessLogic": {
+        "currentState": "多站点数据与告警分散在设备、系统和人工沟通链路中。",
+        "impact": "管理层难以及时判断运行异常、处置责任和收益波动来源。",
+        "action": "先统一设备接入、运行看板和告警工单，再沉淀策略复盘口径。",
+        "metric": "站点可视覆盖率、告警闭环率、SOC 策略复盘频次。"
+      }
     },
     {
       "type": "cards",
@@ -74,7 +86,13 @@
           "title": "运营数据沉淀不足",
           "body": "巡检、维修、备件和处置记录没有形成面向管理决策的闭环数据。"
         }
-      ]
+      ],
+      "businessLogic": {
+        "currentState": "巡检、告警、维修和策略数据分散，现场处置依赖人工串联。",
+        "impact": "异常响应慢，责任留痕弱，难以把处置结果回写到运营规则。",
+        "action": "以告警事件和运维工单为主线，建立跨站点集中运营闭环。",
+        "metric": "平均响应时长、闭环工单占比、异常复盘完成率。"
+      }
     },
     {
       "type": "architecture",
@@ -167,7 +185,13 @@
           "body": "跨站点工单、人员和设备资源可统一调度与复盘。"
         }
       ],
-      "note": "收益测算需结合站点发电量、电价规则、历史告警和运行数据进一步校准。"
+      "note": "收益测算需结合站点发电量、电价规则、历史告警和运行数据进一步校准。",
+      "businessLogic": {
+        "currentState": "运行、告警、策略和收益复盘分别由不同角色维护。",
+        "impact": "价值无法稳定转化为管理动作，区域级推广缺少统一判断口径。",
+        "action": "用运行可视、响应闭环、策略复盘和区域协同形成管理闭环。",
+        "metric": "关键指标覆盖率、告警闭环率、策略收益复盘周期。"
+      }
     },
     {
       "type": "risk-table",

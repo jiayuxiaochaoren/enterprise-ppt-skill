@@ -1,0 +1,116 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "manufacturing-operations",
+  "documentType": "company-intro",
+  "title": "恒越精工能力介绍",
+  "subtitle": "以制造基础、产品谱系和现场交付经验建立合作信任",
+  "organization": "恒越精工",
+  "footer": "恒越精工",
+  "showMeta": false,
+  "visualMode": "auto",
+  "media": {
+    "cover": "assets/media/manufacturing-cover.jpg",
+    "detail": "assets/media/manufacturing-detail.jpg",
+    "gallery": [
+      "assets/media/manufacturing-source.jpg",
+      "assets/media/manufacturing-modern-detail.jpg",
+      "assets/media/manufacturing-band.jpg"
+    ]
+  },
+  "slides": [
+    {
+      "type": "auto",
+      "title": "恒越精工能力介绍",
+      "subtitle": "以制造基础、产品谱系和现场交付经验建立合作信任",
+      "visual": { "mode": "photo", "role": "showcase", "image": "assets/media/manufacturing-cover.jpg", "caption": "企业制造现场与设备对象" }
+    },
+    {
+      "type": "toc-clean",
+      "title": "目录",
+      "subtitle": "从公司概况、产品工艺到制造交付与合作方式",
+      "items": ["公司概况", "产品与工艺", "制造与交付能力", "现场证据", "合作方式"]
+    },
+    {
+      "type": "company-profile-spread",
+      "title": "公司介绍",
+      "company": "恒越精工",
+      "description": "围绕非标输送设备、涂装设备、控制系统和现场安装调试形成综合服务能力。",
+      "metrics": [
+        { "label": "成立时间", "value": "1998", "note": "长期服务工业装备场景" },
+        { "label": "核心品类", "value": "4类", "note": "输送、涂装、控制、安调" },
+        { "label": "交付环节", "value": "全流程", "note": "设计制造到现场联调" }
+      ],
+      "images": ["assets/media/manufacturing-source.jpg", "assets/media/manufacturing-modern-detail.jpg"],
+      "visual": { "mode": "photo", "role": "evidence", "image": "assets/media/manufacturing-source.jpg", "caption": "制造现场图片作为企业基础证据" }
+    },
+    {
+      "type": "report-board",
+      "title": "服务范围覆盖输送、涂装、控制与现场安调",
+      "claim": "按产品对象和交付动作组织能力，便于客户判断适配场景。",
+      "label": "SERVICE SCOPE",
+      "coreTitle": "从产品到现场交付",
+      "coreBody": "产品类型、控制集成和现场服务共同构成项目交付范围。",
+      "sections": [
+        { "title": "非标输送设备", "body": "围绕产线转运、节拍衔接和现场布置进行定制化设计与制造。" },
+        { "title": "涂装设备", "body": "承接涂装工艺相关设备配置、制造装配与现场配合。" },
+        { "title": "控制系统", "body": "配合输送和涂装设备完成控制系统集成、联调与运行交付。" },
+        { "title": "现场安装调试", "body": "围绕安装、调试、验收配合与后续服务形成交付闭环。" }
+      ]
+    },
+    {
+      "type": "architecture",
+      "layoutVariant": "production-topology",
+      "title": "产品谱系围绕工艺对象、制造动作和交付资料展开",
+      "layers": [
+        { "title": "产品与工艺对象", "items": ["输送设备", "涂装设备", "控制系统"] },
+        { "title": "制造交付动作", "items": ["方案确认", "加工制造", "控制联调", "现场安装"] },
+        { "title": "证据与交付资料", "items": ["图纸参数", "设备铭牌", "调试记录", "验收资料"] }
+      ]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "evidence-board",
+      "title": "现场图像证明制造对象和交付边界",
+      "subtitle": "图片证据承担产品、设备和现场环境说明。",
+      "images": [
+        "assets/media/manufacturing-source.jpg",
+        "assets/media/manufacturing-modern-detail.jpg",
+        "assets/media/manufacturing-band.jpg"
+      ],
+      "cards": [
+        { "title": "设备对象", "body": "展示制造对象和尺寸感" },
+        { "title": "现场细节", "body": "说明加工与装配质量" },
+        { "title": "产线场景", "body": "承接客户应用环境" }
+      ]
+    },
+    {
+      "type": "timeline",
+      "layoutVariant": "closed-loop",
+      "title": "交付闭环从需求确认延伸到现场复盘",
+      "phases": [
+        { "title": "需求确认", "body": "锁定工艺段、空间边界和控制要求。" },
+        { "title": "设计制造", "body": "形成图纸、参数和生产计划。" },
+        { "title": "现场联调", "body": "完成安装、调试和问题记录。" },
+        { "title": "交付复盘", "body": "沉淀验收资料和服务反馈。" }
+      ]
+    },
+    {
+      "type": "risk-table",
+      "layoutVariant": "governance-table-editorial",
+      "title": "合作前先明确参数、现场边界和验收责任",
+      "rows": [
+        ["工艺参数变化", "中", "方案确认阶段锁定关键参数"],
+        ["现场安装条件变化", "中", "提前确认空间、动线和施工边界"],
+        ["控制系统接口变化", "高", "联调前确认接口清单和责任人"],
+        ["验收口径不一致", "中", "形成验收记录和复盘机制"]
+      ]
+    },
+    {
+      "type": "closing",
+      "title": "谢谢观看",
+      "subtitle": "恒越精工",
+      "closingVariant": "company-thanks",
+      "contacts": ["www.hengyue-example.cn", "contact@hengyue-example.cn", "河北省承德市装备制造园区"]
+    }
+  ]
+}

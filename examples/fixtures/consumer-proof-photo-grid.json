@@ -1,0 +1,61 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "beauty-consumer",
+  "documentType": "brand-report",
+  "title": "消费者场景把柜台体验、内容触点和复购理由连起来",
+  "subtitle": "每个场景都需要一句 caption 说明它证明什么。",
+  "organization": "肌研之光",
+  "footer": "consumer-proof-photo-grid fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "case-gallery",
+      "layoutVariant": "consumer-proof-photo-grid",
+      "title": "消费者场景把柜台体验、内容触点和复购理由连起来",
+      "subtitle": "每个场景都需要一句 caption 说明它证明什么。",
+      "images": [
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-1.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-2.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-3.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-4.png"
+      ],
+      "cards": [
+        {
+          "title": "柜台咨询",
+          "body": "解释肤质问题与产品匹配。"
+        },
+        {
+          "title": "居家护理",
+          "body": "强化日常使用频次。"
+        },
+        {
+          "title": "内容种草",
+          "body": "把成分故事转为购买理由。"
+        },
+        {
+          "title": "会员复购",
+          "body": "让体验反馈回到经营指标。"
+        }
+      ]
+    }
+  ]
+}

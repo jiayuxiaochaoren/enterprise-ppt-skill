@@ -1,0 +1,60 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "people-culture",
+  "documentType": "company-introduction",
+  "title": "让组织共识变成每天可观察的行动",
+  "subtitle": "封面需要有人和组织的真实信号，同时保持克制的软几何舞台。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "culture-cover-with-soft-geometry fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/culture-cover-with-soft-geometry/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/culture-cover-with-soft-geometry/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/culture-cover-with-soft-geometry/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/culture-cover-with-soft-geometry/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/culture-cover-with-soft-geometry/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "manifesto",
+      "layoutVariant": "culture-cover-with-soft-geometry",
+      "title": "让组织共识变成每天可观察的行动",
+      "statement": "文化不是口号，而是团队交付方式",
+      "claim": "封面需要有人和组织的真实信号，同时保持克制的软几何舞台。",
+      "values": [
+        {
+          "title": "项目负责人",
+          "body": "对客户场景、交付节奏和复盘产出负责。"
+        },
+        {
+          "title": "产品运营",
+          "body": "把用户反馈转成可执行的产品动作。"
+        },
+        {
+          "title": "客户成功",
+          "body": "沉淀客户场景与可复用案例材料。"
+        },
+        {
+          "title": "数据分析",
+          "body": "用指标证明行为变化和经营结果。"
+        }
+      ],
+      "visual": {
+        "image": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/culture-cover-with-soft-geometry/proof-1.png",
+        "caption": "团队协作场景作为文化证据。"
+      }
+    }
+  ]
+}

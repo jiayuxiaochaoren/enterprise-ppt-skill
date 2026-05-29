@@ -1,10 +1,14 @@
 const assert = require('assert/strict');
 const {
   auditDeckPlan,
+  contentOverlapAudit,
   industryKnowledgeAudit,
   industryProofCandidates,
   normalizeDeckPlan,
   normalizeSlide,
+  languagePolicyFor,
+  localizeMicrocopy,
+  mediaForRole,
   semanticFrame,
   semanticMeaning,
   visualAestheticModel
@@ -107,6 +111,84 @@ assert.equal(
   industryKnowledgeAudit(strongFinance, strongFinance).findings.length,
   0,
   'strong finance deck should satisfy industry proof-object depth'
+);
+
+const generatedCover = normalizeSlide(
+  { industry:'brand-retail', title:'新品发布方案' },
+  { type:'cover', title:'新品发布方案', subtitle:'建立统一的新品视觉主张。', visual:{ mode:'generated', role:'background' } },
+  0,
+  3
+);
+assert.equal(generatedCover.assetGeneration.status, 'required', 'explicit generated background should be planned at architecture layer');
+assert.ok(generatedCover.generatedAssetPrompt && /no text/i.test(generatedCover.generatedAssetPrompt), 'generated prompt should enforce no text');
+
+const zhLanguagePlan = { title:'中文方案汇报', slides:[{ title:'平台总体架构' }] };
+assert.equal(languagePolicyFor(zhLanguagePlan).localizeNonEssentialMicrocopy, true, 'Chinese decks should localize non-essential visible microcopy');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'SOLUTION BLUEPRINT'), '方案蓝图');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'EDGE  →  DATA  →  DISPATCH  →  MANAGEMENT'), '边缘 → 数据 → 调度 → 管理');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'OEE'), 'OEE', 'standard acronyms should be preserved');
+assert.equal(localizeMicrocopy({ language:'en', title:'English report' }, 'SOLUTION BLUEPRINT'), 'SOLUTION BLUEPRINT');
+
+const imageLedBeauty = normalizeSlide(
+  { industry:'beauty-consumer', title:'肌研之光品牌经营报告', visualIntent:'image-rich' },
+  {
+    type:'content',
+    title:'品牌世界观与经营证据',
+    proofObject:'brand-world-and-business-proof',
+    drivers:[{ title:'肌肤屏障' }],
+    actions:[{ title:'成分故事' }],
+    outcomes:[{ title:'会员复购' }]
+  },
+  2,
+  8
+);
+assert.equal(imageLedBeauty.assetGeneration.status, 'required', 'image-led beauty proof pages should not silently fall back to placeholders when assets are missing');
+assert.ok(/no text/i.test(imageLedBeauty.generatedAssetPrompt || ''), 'image-led beauty pages should expose an imagegen prompt before rendering');
+
+const slideImageFallback = mediaForRole(
+  { industry:'beauty-consumer' },
+  { type:'cover', title:'品牌经营报告', images:['assets/media/energy-storage-cover.jpg'] },
+  'cover'
+);
+assert.ok(slideImageFallback.endsWith('assets/media/energy-storage-cover.jpg'), 'single-slide images should be available to cover/showcase renderers');
+
+const unsafeGeneratedEvidence = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  slides:[
+    { type:'auto', title:'客户案例材料' },
+    { type:'case-gallery', title:'特斯拉客户现场证据', subtitle:'真实客户现场与验收参数。', visual:{ mode:'generated', role:'evidence' } },
+    { type:'closing', title:'下一步', actions:[{ title:'补齐授权' }] }
+  ]
+});
+assert.ok(
+  auditDeckPlan(unsafeGeneratedEvidence, unsafeGeneratedEvidence).some(f => f.type === 'unsafeGeneratedAssetRequest'),
+  'audit should block generated assets from substituting factual customer/site evidence'
+);
+
+const repeatedCompanyFacts = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  materialIntelligence:{ pptType:'company-intro' },
+  title:'承德环宇输送机械制造有限公司',
+  slides:[
+    { type:'cover', title:'承德环宇输送机械制造有限公司' },
+    { type:'company-profile-spread', title:'公司介绍', metrics:[
+      { label:'始建年份', value:'1993' },
+      { label:'厂区规模', value:'20.5亩' },
+      { label:'生产车间', value:'3000余平米' },
+      { label:'加工中心', value:'1000余平米' }
+    ] },
+    { type:'metric-comparison', title:'长期制造基础支撑非标输送项目交付', metrics:[
+      { label:'始建年份', value:'1993' },
+      { label:'厂区规模', value:'20.5亩' },
+      { label:'生产车间', value:'3000余平米' },
+      { label:'加工中心', value:'1000余平米' }
+    ] },
+    { type:'closing', title:'谢谢观看' }
+  ]
+});
+assert.ok(
+  contentOverlapAudit(repeatedCompanyFacts, repeatedCompanyFacts).some(f => f.level === 'fail' && f.type === 'contentOverlap'),
+  'content overlap audit should fail repeated adjacent company-profile facts'
 );
 
 console.log('intelligence layers ok');

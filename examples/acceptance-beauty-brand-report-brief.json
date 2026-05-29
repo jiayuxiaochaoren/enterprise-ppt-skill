@@ -1,0 +1,116 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "beauty-consumer",
+  "documentType": "integrated-report",
+  "title": "肌研之光品牌经营报告",
+  "subtitle": "把品牌世界观、产品证据和消费者经营放入同一套增长叙事",
+  "organization": "肌研之光",
+  "footer": "Beauty Brand Report",
+  "slides": [
+    {
+      "type": "auto",
+      "layoutVariant": "beauty-brand-editorial-cover",
+      "title": "肌研之光品牌经营报告",
+      "subtitle": "把品牌世界观、产品证据和消费者经营放入同一套增长叙事",
+      "coverInsight": "以产品质感、场景记忆和会员复购解释品牌增长"
+    },
+    {
+      "type": "toc-clean",
+      "title": "阅读路径",
+      "subtitle": "从品牌世界观、产品证据到会员增长与品牌动作",
+      "items": ["品牌世界观", "产品证据", "消费者场景", "会员增长", "研发与可持续", "下一步品牌动作"]
+    },
+    {
+      "type": "strategy-map",
+      "layoutVariant": "brand-world-and-business-proof",
+      "title": "品牌世界观从护肤仪式感延伸到经营指标",
+      "claim": "品牌页要把视觉主张、产品承诺和业务证据放在同一个系统里。",
+      "drivers": ["温和修护主张", "高频使用场景", "会员复购行为"],
+      "actions": ["系列化表达", "柜台体验统一", "内容种草闭环"],
+      "outcomes": ["品牌记忆增强", "产品连带提升", "复购质量改善"]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "product-evidence-story",
+      "title": "明星单品需要同时证明质地、功效和使用场景",
+      "subtitle": "产品证据页不只展示好看图片，而是解释购买理由。",
+      "cards": [
+        { "title": "修护精华", "body": "承担高频复购入口" },
+        { "title": "面霜系列", "body": "承接换季与屏障修护" },
+        { "title": "套装组合", "body": "提升连带购买和客单" }
+      ]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "consumer-proof-photo-grid",
+      "title": "消费者场景把柜台体验、内容触点和复购理由连起来",
+      "subtitle": "每个场景都需要一句 caption 说明它证明什么。",
+      "cards": [
+        { "title": "柜台咨询", "body": "解释肤质问题与产品匹配" },
+        { "title": "居家护理", "body": "强化日常使用频次" },
+        { "title": "内容种草", "body": "把成分故事转为购买理由" },
+        { "title": "会员复购", "body": "让体验反馈回到经营指标" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "member-growth-board",
+      "title": "会员增长质量来自复购、客单和场景触达",
+      "claim": "消费者品牌的数据页要解释行为，不只摆销售数字。",
+      "metrics": [
+        { "label": "复购率", "value": "42%", "note": "明星单品贡献稳定复购" },
+        { "label": "客单价", "value": "¥386", "note": "套装组合提升连带" },
+        { "label": "内容转化", "value": "18%", "note": "成分教育带动下单" }
+      ],
+      "businessLogic": {
+        "currentState": "复购与客单共同改善。",
+        "impact": "会员经营质量高于单次促销。",
+        "cause": "产品组合和内容触点形成稳定购买理由。",
+        "action": "强化套装组合和柜台咨询脚本。",
+        "metric": "复购率、客单价、内容转化"
+      }
+    },
+    {
+      "type": "strategy-map",
+      "layoutVariant": "value-creation-process-map",
+      "title": "研发、供应链和可持续证据支撑品牌长期信任",
+      "drivers": ["配方研发", "包装减量", "供应链品控"],
+      "actions": ["成分透明", "批次追溯", "门店回收"],
+      "outcomes": ["信任提升", "风险降低", "长期复购"]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "sustainability-proof-spread",
+      "title": "可持续证据需要同时说明包装、供应链和消费者信任",
+      "subtitle": "可持续页必须把影响指标、行动和来源放在一起。",
+      "cards": [
+        { "title": "包装减量", "body": "关键包材减重，减少运输与陈列负担。" },
+        { "title": "批次追溯", "body": "把质量证明连接到供应链记录。" },
+        { "title": "门店回收", "body": "用会员触点沉淀长期信任。" }
+      ],
+      "note": "图片和指标都要服务于品牌信任，不做泛 ESG 装饰。"
+    },
+    {
+      "type": "risk-table",
+      "layoutVariant": "governance-table-editorial",
+      "title": "品牌表达需要守住功效、素材和渠道三条边界",
+      "rows": [
+        ["功效表达越界", "高", "所有宣称回到检测口径和法规审核"],
+        ["人物素材授权不清", "中", "外发前确认肖像与渠道授权"],
+        ["渠道折扣扰动品牌", "中", "区分会员权益和公开折扣"],
+        ["包装供应波动", "低", "保持关键物料安全库存"]
+      ]
+    },
+    {
+      "type": "closing",
+      "layoutVariant": "premium-closing-anchor",
+      "title": "下一步把品牌资产转成可复盘的增长动作",
+      "subtitle": "围绕单品、场景和会员三条线进入季度复盘。",
+      "actions": [
+        { "title": "单品", "body": "确认主推系列和证据口径" },
+        { "title": "场景", "body": "统一柜台与内容触点" },
+        { "title": "会员", "body": "复盘复购和客单结构" }
+      ]
+    }
+  ]
+}

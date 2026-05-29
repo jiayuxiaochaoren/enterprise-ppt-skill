@@ -1,0 +1,351 @@
+{
+  "version": "industry-benchmarks/v1",
+  "rule": "Public benchmark materials are used for regression coverage, source-trace expectations, and industry-specific QA. They do not grant permission to copy layouts, images, logos, or text into client decks.",
+  "minimumPerIndustry": 5,
+  "coverageDimensions": ["material-light", "material-rich", "missing-images", "missing-data", "strong-authorization", "image-heavy"],
+  "industries": {
+    "finance-investment": [
+      {
+        "id": "finance-jpmorgan-annual-report",
+        "name": "JPMorgan Chase annual report",
+        "sourceUrl": "https://www.jpmorganchase.com/ir/annual-report",
+        "materialTypes": ["annual-report", "financial-kpi", "risk-disclosure"],
+        "coverage": ["material-rich", "strong-authorization", "missing-images", "missing-data"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "finance-blackrock-annual-reports",
+        "name": "BlackRock annual reports and proxy materials",
+        "sourceUrl": "https://ir.blackrock.com/annual-reports-and-proxy/default.aspx",
+        "materialTypes": ["annual-report", "portfolio", "governance"],
+        "coverage": ["material-rich", "strong-authorization", "missing-images", "image-heavy"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "finance-berkshire-annual-reports",
+        "name": "Berkshire Hathaway annual reports",
+        "sourceUrl": "https://www.berkshirehathaway.com/reports.html",
+        "materialTypes": ["annual-report", "shareholder-letter", "financial-table"],
+        "coverage": ["material-light", "material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "finance-goldman-annual-reports",
+        "name": "Goldman Sachs annual reports",
+        "sourceUrl": "https://www.goldmansachs.com/investor-relations/financials/current/annual-reports/",
+        "materialTypes": ["annual-report", "segment-kpi", "risk"],
+        "coverage": ["material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "finance-morgan-stanley-annual-reports",
+        "name": "Morgan Stanley annual reports",
+        "sourceUrl": "https://www.morganstanley.com/about-us-ir/shareholder/annual-reports",
+        "materialTypes": ["annual-report", "financial-results", "risk"],
+        "coverage": ["material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      }
+    ],
+    "industrial-energy": [
+      {
+        "id": "industrial-siemens-annual-reports",
+        "name": "Siemens annual reports",
+        "sourceUrl": "https://www.siemens.com/global/en/company/investor-relations/events-publications-ad-hoc/annualreports.html",
+        "materialTypes": ["annual-report", "industrial-portfolio", "sustainability"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization", "missing-data"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "industrial-schneider-annual-reports",
+        "name": "Schneider Electric annual reports",
+        "sourceUrl": "https://www.se.com/ww/en/about-us/investor-relations/annual-reports.jsp",
+        "materialTypes": ["annual-report", "energy-management", "sustainability"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization", "missing-images"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "industrial-abb-annual-reporting-suite",
+        "name": "ABB annual reporting suite",
+        "sourceUrl": "https://global.abb/group/en/investors/annual-reporting-suite",
+        "materialTypes": ["annual-report", "industrial-automation", "sustainability"],
+        "coverage": ["material-light", "material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "industrial-caterpillar-annual-reports",
+        "name": "Caterpillar annual reports",
+        "sourceUrl": "https://investors.caterpillar.com/financials/annual-reports/default.aspx",
+        "materialTypes": ["annual-report", "equipment", "dealer-network"],
+        "coverage": ["material-light", "material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "industrial-tesla-impact-report",
+        "name": "Tesla impact report",
+        "sourceUrl": "https://www.tesla.com/impact",
+        "materialTypes": ["impact-report", "factory", "energy"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      }
+    ],
+    "saas-ai-technology": [
+      {
+        "id": "saas-salesforce-financials",
+        "name": "Salesforce financial reports",
+        "sourceUrl": "https://investor.salesforce.com/financials/default.aspx",
+        "materialTypes": ["annual-report", "subscription-metrics"],
+        "coverage": ["material-rich", "missing-images", "strong-authorization", "image-heavy"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "saas-servicenow-annual-reports",
+        "name": "ServiceNow annual reports",
+        "sourceUrl": "https://investors.servicenow.com/financials/annual-reports/default.aspx",
+        "materialTypes": ["annual-report", "workflow-platform"],
+        "coverage": ["material-light", "material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "saas-adobe-financial-documents",
+        "name": "Adobe financial documents",
+        "sourceUrl": "https://www.adobe.com/investor-relations/financial-documents.html",
+        "materialTypes": ["annual-report", "product-segment"],
+        "coverage": ["material-rich", "missing-images", "missing-data", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "saas-atlassian-sec-filings",
+        "name": "Atlassian SEC filings",
+        "sourceUrl": "https://investors.atlassian.com/financials/sec-filings/default.aspx",
+        "materialTypes": ["annual-report", "platform-adoption"],
+        "coverage": ["material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "saas-microsoft-annual-reports",
+        "name": "Microsoft annual reports",
+        "sourceUrl": "https://www.microsoft.com/en-us/Investor/annual-reports.aspx",
+        "materialTypes": ["annual-report", "cloud-ai", "governance"],
+        "coverage": ["material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      }
+    ],
+    "beauty-consumer": [
+      {
+        "id": "beauty-shiseido-ir-library",
+        "name": "Shiseido integrated and annual reports",
+        "sourceUrl": "https://corp.shiseido.com/en/ir/library/annual/",
+        "materialTypes": ["integrated-report", "product", "brand"],
+        "coverage": ["material-light", "material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "beauty-loreal-annual-report",
+        "name": "L'Oreal annual report",
+        "sourceUrl": "https://www.loreal-finance.com/en/annual-report-2024",
+        "materialTypes": ["annual-report", "brand-portfolio", "sustainability"],
+        "coverage": ["material-rich", "image-heavy", "missing-data", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "beauty-estee-lauder-annual-reports",
+        "name": "The Estee Lauder Companies annual reports",
+        "sourceUrl": "https://www.elcompanies.com/en/investors/financial-information/annual-reports",
+        "materialTypes": ["annual-report", "brand-portfolio", "financial-results"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization", "missing-images"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "beauty-kao-integrated-reports",
+        "name": "Kao integrated reports",
+        "sourceUrl": "https://www.kao.com/global/en/investor-relations/library/reports/",
+        "materialTypes": ["integrated-report", "consumer-products", "sustainability"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "beauty-amorepacific-reporting",
+        "name": "Amorepacific Group reporting materials",
+        "sourceUrl": "https://www.apgroup.com/int/en/investors/amorepacific-group.html",
+        "materialTypes": ["annual-report", "brand", "sustainability"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      }
+    ],
+    "healthcare-wellness": [
+      {
+        "id": "healthcare-unitedhealth-financial-reports",
+        "name": "UnitedHealth Group financial reports",
+        "sourceUrl": "https://www.unitedhealthgroup.com/investors/financial-reports.html",
+        "materialTypes": ["annual-report", "healthcare-services"],
+        "coverage": ["material-light", "material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "healthcare-siemens-healthineers-annual-reports",
+        "name": "Siemens Healthineers annual reports",
+        "sourceUrl": "https://www.siemens-healthineers.com/investor-relations/presentations-financial-publications/annual-reports",
+        "materialTypes": ["annual-report", "medical-technology"],
+        "coverage": ["material-rich", "image-heavy", "missing-data", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "healthcare-hca-annual-reports",
+        "name": "HCA Healthcare annual reports",
+        "sourceUrl": "https://investor.hcahealthcare.com/financials/annual-reports/default.aspx",
+        "materialTypes": ["annual-report", "hospital-operations"],
+        "coverage": ["material-light", "material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "healthcare-cvs-annual-reports",
+        "name": "CVS Health annual reports",
+        "sourceUrl": "https://www.cvshealth.com/investors/financial-information/annual-reports.html",
+        "materialTypes": ["annual-report", "retail-health", "care-delivery"],
+        "coverage": ["material-rich", "image-heavy", "missing-data", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "healthcare-philips-financial-results",
+        "name": "Philips financial results and annual reports",
+        "sourceUrl": "https://www.philips.com/a-w/about/investor/financial-results.html",
+        "materialTypes": ["annual-report", "health-technology"],
+        "coverage": ["material-light", "material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      }
+    ],
+    "lifestyle-food-tourism-fashion": [
+      {
+        "id": "lifestyle-starbucks-annual-reports",
+        "name": "Starbucks annual reports",
+        "sourceUrl": "https://investor.starbucks.com/financial-data/annual-reports/default.aspx",
+        "materialTypes": ["annual-report", "retail-experience"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "lifestyle-marriott-annual-reports",
+        "name": "Marriott annual reports",
+        "sourceUrl": "https://marriott.gcs-web.com/financial-information/annual-reports",
+        "materialTypes": ["annual-report", "hospitality", "loyalty"],
+        "coverage": ["material-light", "material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "lifestyle-yum-annual-reports",
+        "name": "Yum! Brands annual reports",
+        "sourceUrl": "https://investors.yum.com/financial-information/annual-reports/default.aspx",
+        "materialTypes": ["annual-report", "restaurant", "franchise"],
+        "coverage": ["material-rich", "missing-images", "missing-data", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "lifestyle-nike-reports",
+        "name": "Nike investor reports",
+        "sourceUrl": "https://investors.nike.com/investors/news-events-and-reports/?toggle=reports",
+        "materialTypes": ["annual-report", "brand", "product"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "lifestyle-lvmh-annual-reports",
+        "name": "LVMH annual reports",
+        "sourceUrl": "https://www.lvmh.com/investors/regulated-information/annual-reports",
+        "materialTypes": ["annual-report", "luxury", "fashion"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      }
+    ],
+    "government-public-sector": [
+      {
+        "id": "public-singapore-edb-annual-reports",
+        "name": "Singapore EDB annual reports",
+        "sourceUrl": "https://www.edb.gov.sg/en/about-edb/media-releases-publications/annual-reports.html",
+        "materialTypes": ["annual-report", "public-sector", "investment-promotion"],
+        "coverage": ["material-rich", "missing-images", "missing-data", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "public-hkstp-annual-report",
+        "name": "Hong Kong Science and Technology Parks annual report",
+        "sourceUrl": "https://www.hkstp.org/our-stories/annual-report/",
+        "materialTypes": ["annual-report", "park", "innovation"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "public-nycedc-documents",
+        "name": "NYCEDC financials and public documents",
+        "sourceUrl": "https://edc.nyc/about-nycedc/financials-public-documents",
+        "materialTypes": ["public-documents", "economic-development"],
+        "coverage": ["material-light", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "public-homes-england-annual-reports",
+        "name": "Homes England annual reports and accounts",
+        "sourceUrl": "https://www.gov.uk/government/collections/homes-england-annual-reports-and-accounts",
+        "materialTypes": ["annual-report", "public-agency", "housing"],
+        "coverage": ["material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "public-gsa-performance-reports",
+        "name": "U.S. GSA annual performance reports",
+        "sourceUrl": "https://www.gsa.gov/reference/reports/budget-performance/annual-performance-reports",
+        "materialTypes": ["performance-report", "public-sector", "budget"],
+        "coverage": ["material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      }
+    ],
+    "people-culture-company": [
+      {
+        "id": "culture-gitlab-handbook",
+        "name": "GitLab handbook",
+        "sourceUrl": "https://handbook.gitlab.com/",
+        "materialTypes": ["handbook", "culture", "remote-work"],
+        "coverage": ["material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "culture-netflix-culture",
+        "name": "Netflix culture memo",
+        "sourceUrl": "https://jobs.netflix.com/culture",
+        "materialTypes": ["culture", "recruiting"],
+        "coverage": ["material-light", "missing-data", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "culture-hubspot-culture-code",
+        "name": "HubSpot culture code",
+        "sourceUrl": "https://www.hubspot.com/culture-code",
+        "materialTypes": ["culture-deck", "values", "recruiting"],
+        "coverage": ["material-rich", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "culture-atlassian-team-anywhere",
+        "name": "Atlassian Team Anywhere",
+        "sourceUrl": "https://www.atlassian.com/company/careers/team-anywhere",
+        "materialTypes": ["culture", "workplace", "remote-work"],
+        "coverage": ["material-light", "image-heavy", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      },
+      {
+        "id": "culture-microsoft-diversity-report",
+        "name": "Microsoft diversity and inclusion report",
+        "sourceUrl": "https://www.microsoft.com/en-us/diversity/inside-microsoft/annual-report",
+        "materialTypes": ["culture-report", "people-data", "diversity"],
+        "coverage": ["material-rich", "missing-images", "strong-authorization"],
+        "authorizationStatus": "public with attribution"
+      }
+    ]
+  },
+  "aliases": {
+    "manufacturing-operations": "industrial-energy",
+    "saas-technology": "saas-ai-technology",
+    "healthcare-operations": "healthcare-wellness",
+    "people-culture": "people-culture-company",
+    "brand-retail": "beauty-consumer"
+  }
+}

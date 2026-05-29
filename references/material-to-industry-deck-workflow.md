@@ -10,8 +10,9 @@ Do not simply summarize the user's material into generic slides. Convert materia
 2. infer audience and decision goal
 3. extract facts, claims, constraints, and missing data
 4. select an industry profile and page-family rhythm
-5. generate page-level content and layout choices
-6. only then render PPTX
+5. run a clarification gate when missing inputs affect external delivery, data proof, cases, certificates, contacts, or visual evidence
+6. generate page-level content and layout choices from confirmed facts and chosen fallbacks
+7. only then render PPTX
 
 ## Industry detection
 
@@ -93,6 +94,8 @@ Rules:
 - Preserve real facts from the source material.
 - Do not invent customer names, metrics, revenue, awards, policy endorsements, or successful cases.
 - If data is missing, phrase as `需结合实际数据测算` in the assistant response, not as PPT-visible placeholder copy unless the user asks for placeholders.
+- Before structured extraction, run `scripts/material_clarification_gate.js` after source audit and story architecture. If it returns `needs_user_input`, ask the user the listed questions and apply their choices before writing the final claim spine.
+- Before PPTX rendering, run `scripts/deck_asset_decision_gate.js` on the compiled deck plan. For every missing visual proof page, ask the user to choose one of three paths: provide usable material, skip the image and render a native structure, or auto-generate a clearly synthetic category visual with `scripts/asset_prompt_planner.js` plus Codex imagegen. Never let a missing image silently become a visible placeholder.
 - Generated preview decks should look client-facing; avoid `示例 / 测试稿 / 验收稿 / 占位 / 待补充` in slide text.
 
 ## Deck structure generation
@@ -149,5 +152,6 @@ Industry-specific fields:
 - [ ] Is the cover text reduced to title + one insight + meta?
 - [ ] Are page families selected according to the material type?
 - [ ] Are missing facts handled outside the PPT or as clearly marked assumptions?
+- [ ] Did the clarification gate ask about missing contacts, data basis, asset rights, case authorization, certificates, and visual evidence when relevant?
 - [ ] Does the deck avoid fabricated metrics/cases/policies?
 - [ ] Does the layout differ meaningfully across industries, not just the wording?

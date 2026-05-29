@@ -1,0 +1,68 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "finance-investment",
+  "documentType": "financial-results",
+  "title": "经营质量由收入、现金流和毛利共同确认",
+  "subtitle": "主指标占据第一视觉层级，辅助指标只服务于同一个经营判断。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "financial-kpi-snapshot fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/financial-kpi-snapshot/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/financial-kpi-snapshot/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/financial-kpi-snapshot/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/financial-kpi-snapshot/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/financial-kpi-snapshot/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "financial-kpi-snapshot",
+      "title": "经营质量由收入、现金流和毛利共同确认",
+      "claim": "主指标占据第一视觉层级，辅助指标只服务于同一个经营判断。",
+      "period": "2026 Q1",
+      "source": "管理层经营复盘口径",
+      "metrics": [
+        {
+          "label": "收入",
+          "value": "+12.4%",
+          "note": "核心业务恢复"
+        },
+        {
+          "label": "经营现金流",
+          "value": "+18.0%",
+          "note": "回款节奏改善"
+        },
+        {
+          "label": "毛利率",
+          "value": "36.8%",
+          "note": "组合质量提升"
+        },
+        {
+          "label": "费用率",
+          "value": "-2.1pt",
+          "note": "投入边界更清晰"
+        }
+      ],
+      "businessLogic": {
+        "currentState": "收入和现金流同步改善。",
+        "cause": "核心客户复购和费用纪律共同驱动。",
+        "action": "继续压实回款和费用边界。",
+        "metric": "收入增速、经营现金流、毛利率"
+      },
+      "note": "数据页必须保留期间、口径和来源，避免成为孤立数字卡片。"
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "version": "template-component-readiness/v1",
+  "evidenceRoot": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures",
+  "componentFixtureQA": {
+    "script": "scripts/test_component_fixture_qa.js",
+    "checks": [
+      "each component has at least two page-family fixture uses",
+      "each fixture use has a rendered preview PNG",
+      "fixed component slots are covered by visual_qa fail_count=0 in industry acceptance",
+      "image evidence components require caption/source roles",
+      "data-heavy components require source-note or period/source fields"
+    ]
+  },
+  "components": [
+    {
+      "id": "kpi-primary-metric",
+      "supports": ["hero KPI", "compact metric strip", "comparison metric"],
+      "fixtureUses": [
+        {
+          "pageFamily": "financial-kpi-snapshot",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/financial-kpi-snapshot.001.png"
+        },
+        {
+          "pageFamily": "quarterly-results-summary",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/quarterly-results-summary.001.png"
+        },
+        {
+          "pageFamily": "executive-proof-board",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/executive-proof-board.001.png"
+        }
+      ]
+    },
+    {
+      "id": "chart-commentary",
+      "supports": ["side commentary", "bottom insight bar", "callout marker"],
+      "fixtureUses": [
+        {
+          "pageFamily": "chart-grid-with-commentary",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/chart-grid-with-commentary.001.png"
+        },
+        {
+          "pageFamily": "quarterly-results-summary",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/quarterly-results-summary.001.png"
+        }
+      ]
+    },
+    {
+      "id": "caption-image-evidence",
+      "supports": ["dark caption bar", "light caption bar", "source note"],
+      "fixtureUses": [
+        {
+          "pageFamily": "sustainability-proof-spread",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/sustainability-proof-spread.001.png"
+        },
+        {
+          "pageFamily": "people-proof-mosaic",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/people-proof-mosaic.001.png"
+        },
+        {
+          "pageFamily": "product-evidence-story",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/product-evidence-story.001.png"
+        }
+      ]
+    },
+    {
+      "id": "product-case-proof-gallery",
+      "supports": ["hero-plus-supporting", "3-column proof grid", "contact-sheet gallery"],
+      "fixtureUses": [
+        {
+          "pageFamily": "consumer-proof-photo-grid",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/consumer-proof-photo-grid.001.png"
+        },
+        {
+          "pageFamily": "product-evidence-story",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/product-evidence-story.001.png"
+        },
+        {
+          "pageFamily": "executive-proof-board",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/executive-proof-board.001.png"
+        }
+      ]
+    },
+    {
+      "id": "value-creation-flow",
+      "supports": ["input-output", "value chain", "process loop"],
+      "fixtureUses": [
+        {
+          "pageFamily": "value-creation-process-map",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/value-creation-process-map.001.png"
+        },
+        {
+          "pageFamily": "single-object-concept-map",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/single-object-concept-map.001.png"
+        },
+        {
+          "pageFamily": "brand-world-and-business-proof",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/brand-world-and-business-proof.001.png"
+        }
+      ]
+    },
+    {
+      "id": "risk-matrix",
+      "supports": ["2x2 matrix", "risk queue", "control stack"],
+      "fixtureUses": [
+        {
+          "pageFamily": "materiality-matrix-board",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/materiality-matrix-board.001.png"
+        },
+        {
+          "pageFamily": "guidance-and-risk-board",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/guidance-and-risk-board.001.png"
+        }
+      ]
+    },
+    {
+      "id": "governance-table",
+      "supports": ["owner", "cadence", "evidence", "decision columns"],
+      "fixtureUses": [
+        {
+          "pageFamily": "governance-table-editorial",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/governance-table-editorial.001.png"
+        },
+        {
+          "pageFamily": "guidance-and-risk-board",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/guidance-and-risk-board.001.png"
+        }
+      ]
+    },
+    {
+      "id": "people-team-evidence-wall",
+      "supports": ["role captions", "scene-output captions"],
+      "fixtureUses": [
+        {
+          "pageFamily": "people-proof-mosaic",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/people-proof-mosaic.001.png"
+        },
+        {
+          "pageFamily": "culture-cover-with-soft-geometry",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/culture-cover-with-soft-geometry.001.png"
+        }
+      ]
+    },
+    {
+      "id": "brand-world-hero",
+      "supports": ["image-led brand proof", "business proof side panel"],
+      "fixtureUses": [
+        {
+          "pageFamily": "beauty-brand-editorial-cover",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/beauty-brand-editorial-cover.001.png"
+        },
+        {
+          "pageFamily": "brand-world-and-business-proof",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/brand-world-and-business-proof.001.png"
+        }
+      ]
+    },
+    {
+      "id": "chrome-components",
+      "supports": ["industry label", "source note", "page number", "chapter rail", "dark sidebar"],
+      "fixtureUses": [
+        {
+          "pageFamily": "financial-kpi-snapshot",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/financial-kpi-snapshot.001.png"
+        },
+        {
+          "pageFamily": "premium-closing-anchor",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/premium-closing-anchor.001.png"
+        },
+        {
+          "pageFamily": "quarterly-results-summary",
+          "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/quarterly-results-summary.001.png"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 const assert = require('assert/strict');
-const { normalizeSlide } = require('./design-system');
+const { normalizeDeckPlan, normalizeSlide } = require('./design-system');
+const { createRenderRegistry } = require('./render/registry');
 
 function route(plan, slide, options = {}) {
   return normalizeSlide(plan, Object.assign({ type:'content' }, slide), options.index ?? 1, options.total ?? 3);
@@ -165,6 +166,35 @@ const cases = [
     expected:{ type:'metric-comparison', variant:'member-growth-board' }
   },
   {
+    name:'retail media efficiency routes to scatter matrix',
+    plan:{ industry:'brand-retail' },
+    slide:{ title:'投放不是少花钱，而是让高效触点进入复购闭环', dataComponent:'scatter-bubble', channelEfficiency:[
+      { label:'私域CRM', value:'8x', x:22, y:82 },
+      { label:'天猫搜索', value:'4.1x', x:56, y:44 }
+    ] },
+    expected:{ type:'industry-chart', variant:'channel-efficiency-matrix' }
+  },
+  {
+    name:'retail monthly pulse routes to trend line',
+    plan:{ industry:'brand-retail' },
+    slide:{ title:'3月把Q1拉回来了，但2月低谷暴露了节点依赖', dataComponent:'trend-line', monthlyPulse:[
+      { label:'1月', value:'456.2w' },
+      { label:'2月', value:'402.2w' },
+      { label:'3月', value:'618.4w' }
+    ] },
+    expected:{ type:'industry-chart', variant:'monthly-pulse-trend' }
+  },
+  {
+    name:'retail target bridge routes to waterfall',
+    plan:{ industry:'brand-retail' },
+    slide:{ title:'Q2目标差额约368w，增长桥必须有明确来源', dataComponent:'waterfall-bridge', bridge:[
+      { label:'Q1净销', value:'1482w' },
+      { label:'P04防晒', value:'+252w' },
+      { label:'Q2目标', value:'1850w' }
+    ] },
+    expected:{ type:'industry-chart', variant:'waterfall-bridge' }
+  },
+  {
     name:'saas adoption revenue board',
     plan:{ industry:'saas-technology' },
     slide:{ title:'增长指标进入复盘区间', metrics:[{ label:'NRR', value:'118%' }, { label:'激活率', value:'64%' }, { label:'集成客户', value:'72%' }] },
@@ -263,6 +293,13 @@ const cases = [
     options:{ index:2, total:3 }
   },
   {
+    name:'company intro thank you closing',
+    plan:{ industry:'manufacturing-operations', materialIntelligence:{ pptType:'company-intro' }, title:'恒越精工' },
+    slide:{ title:'谢谢观看', subtitle:'恒越精工' },
+    expected:{ type:'closing', variant:'company-thanks' },
+    options:{ index:2, total:3 }
+  },
+  {
     name:'explicit simple end beats industry default',
     plan:{ industry:'finance-investment' },
     slide:{ title:'正式结束', subtitle:'谢谢观看。', closingVariant:'simple-end' },
@@ -274,5 +311,65 @@ const cases = [
 for (const c of cases) {
   expectRoute(c.name, c.plan, c.slide, c.expected, c.options || {});
 }
+
+const diversified = normalizeDeckPlan({
+  industry:'beauty-consumer',
+  slides:[
+    { type:'timeline', layoutVariant:'process-board', title:'雾岛测试路径', phases:[{ title:'验证样品' }, { title:'锁定脚本' }] },
+    { type:'timeline', layoutVariant:'process-board', title:'Q3落地按「验证样品、锁定脚本、控制备货、阶段复盘」四步推进', subtitle:'6月底前完成选择、条款、样品、脚本和首批备货方案，Q3按阶段复盘。', phases:[{ title:'验证样品' }, { title:'锁定脚本' }, { title:'控制备货' }, { title:'阶段复盘' }] }
+  ]
+});
+assert.equal(diversified.slides[1].type, 'timeline', 'data diversity must not reroute explicit process pages into chart fallbacks');
+assert.equal(diversified.slides[1].layoutVariant, 'process-board');
+
+const sanitized = normalizeDeckPlan({
+  industry:'finance-investment',
+  slides:[{
+    type:'portfolio-table',
+    title:'组合行动表',
+    layoutVariant:'product-evidence-story',
+    proofObject:'product-evidence-story',
+    chartSpec:{ version:'chartSpec/v1', kind:'bar' },
+    dataComponent:'waterfall-bridge',
+    assetGeneration:{ status:'required', role:'showcase' },
+    generatedAssetPrompt:'make a product image',
+    portfolio:[{ company:'A', action:'退出' }]
+  }]
+}).slides[0];
+assert.equal(sanitized.type, 'portfolio-table');
+assert.equal(sanitized.layoutVariant, undefined);
+assert.notEqual(sanitized.proofObject, 'product-evidence-story');
+assert.equal(sanitized.previousProofObject, 'product-evidence-story');
+assert.equal(sanitized.chartSpec, undefined);
+assert.equal(sanitized.dataComponent, undefined);
+assert.equal(sanitized.generatedAssetPrompt, undefined);
+assert.equal(sanitized.previousDataComponent, 'waterfall-bridge');
+assert.ok(sanitized.routeSanitization, 'stale route metadata should produce routeSanitization audit');
+assert.ok(sanitized.routeSanitization.removed.some(item => item.field === 'chartSpec'));
+assert.ok(sanitized.routeSanitization.removed.some(item => item.field === 'dataComponent'));
+assert.ok(sanitized.routeSanitization.recomputed.some(item => item.field === 'assetGeneration'));
+
+function knownRenderer() {}
+function fallbackRenderer() {}
+const registry = createRenderRegistry([
+  { id:'known-renderer', types:['known-type'], aliases:['known-alias'], source:'routing-test', render:knownRenderer },
+  { id:'fallback-renderer', fallback:true, source:'routing-test', render:fallbackRenderer }
+]);
+const exactMatch = registry.matchFor('known-type');
+assert.equal(exactMatch.matchKind, 'exact');
+assert.equal(exactMatch.requestedType, 'known-type');
+assert.equal(exactMatch.matchedType, 'known-type');
+assert.equal(exactMatch.rendererId, 'known-renderer');
+assert.equal(exactMatch.render, knownRenderer);
+const aliasMatch = registry.matchFor('known-alias');
+assert.equal(aliasMatch.matchKind, 'alias');
+assert.equal(aliasMatch.requestedType, 'known-alias');
+assert.equal(aliasMatch.matchedType, 'known-type');
+assert.equal(aliasMatch.alias, 'known-alias');
+const fallbackMatch = registry.matchFor('unknown-type');
+assert.equal(fallbackMatch.matchKind, 'fallback');
+assert.equal(fallbackMatch.requestedType, 'unknown-type');
+assert.equal(fallbackMatch.rendererId, 'fallback-renderer');
+assert.equal(registry.renderFor('known-type'), knownRenderer);
 
 console.log(`routing acceptance ok (${cases.length} cases)`);

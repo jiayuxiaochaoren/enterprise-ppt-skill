@@ -1,0 +1,63 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "general-operations",
+  "documentType": "board-report",
+  "title": "确认下一阶段投入边界和复盘节奏",
+  "subtitle": "结束页必须交代决策、行动和负责人。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "premium-closing-anchor fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/premium-closing-anchor/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/premium-closing-anchor/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/premium-closing-anchor/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/premium-closing-anchor/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/premium-closing-anchor/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "closing",
+      "layoutVariant": "premium-closing-anchor",
+      "title": "确认下一阶段投入边界和复盘节奏",
+      "subtitle": "结束页必须交代决策、行动和负责人。",
+      "decision": "建议进入四周试点，并以数据口径确认扩大范围。",
+      "actions": [
+        {
+          "title": "范围",
+          "body": "确认首批业务场景。"
+        },
+        {
+          "title": "责任",
+          "body": "确定负责人和复盘节奏。"
+        },
+        {
+          "title": "口径",
+          "body": "锁定数据来源和判断阈值。"
+        }
+      ],
+      "contacts": [
+        {
+          "label": "Owner",
+          "value": "Template System"
+        },
+        {
+          "label": "Next",
+          "value": "四周试点复盘"
+        }
+      ],
+      "note": "以决策、行动和责任人完成收束。"
+    }
+  ]
+}

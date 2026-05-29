@@ -1,0 +1,62 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "people-culture",
+  "documentType": "company-introduction",
+  "title": "团队证据墙把角色、场景和产出放在同一画面",
+  "subtitle": "每个成员场景都需要角色和产出 caption。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "people-proof-mosaic fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/people-proof-mosaic/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/people-proof-mosaic/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/people-proof-mosaic/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/people-proof-mosaic/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/people-proof-mosaic/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "case-gallery",
+      "layoutVariant": "people-proof-mosaic",
+      "title": "团队证据墙把角色、场景和产出放在同一画面",
+      "subtitle": "每个成员场景都需要角色和产出 caption。",
+      "images": [
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/people-proof-mosaic/proof-1.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/people-proof-mosaic/proof-2.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/people-proof-mosaic/proof-3.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/people-proof-mosaic/proof-4.png"
+      ],
+      "cards": [
+        {
+          "title": "项目负责人",
+          "body": "对客户场景、交付节奏和复盘产出负责。"
+        },
+        {
+          "title": "产品运营",
+          "body": "把用户反馈转成可执行的产品动作。"
+        },
+        {
+          "title": "客户成功",
+          "body": "沉淀客户场景与可复用案例材料。"
+        },
+        {
+          "title": "数据分析",
+          "body": "用指标证明行为变化和经营结果。"
+        }
+      ],
+      "note": "人物图像承担证明协作方式的作用。"
+    }
+  ]
+}

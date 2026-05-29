@@ -1,0 +1,77 @@
+{
+  "version": "material-extraction/v1",
+  "document": {
+    "title": "恒越精工设备运维升级方案",
+    "subtitle": "先把关键设备接入产品包跑通，再扩展到多车间协同。",
+    "ppt_type": "solution",
+    "industry": "manufacturing-operations",
+    "organization": "恒越精工",
+    "audience": "管理层 / 工厂厂长 / 设备负责人",
+    "decision_goal": "确认关键设备试点范围和数据接口"
+  },
+  "facts": [
+    {
+      "id": "fact-001",
+      "text": "当前 OEE 约为 78%，停机主要来自等待备件、重复故障和换型调试。",
+      "source_ids": ["src-001"],
+      "confidence": 0.9
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-001",
+      "type": "metric",
+      "title": "OEE 与停机损失",
+      "summary": "证明维修闭环应优先解决备件和重复故障。",
+      "source_ids": ["src-001"]
+    }
+  ],
+  "claim_spine": [
+    {
+      "id": "claim-001",
+      "narrative_role": "diagnosis",
+      "claim": "停机损失先集中在备件等待和重复故障",
+      "support": "OEE 约为 78%，MTTR 需要下降。",
+      "proof_object": "downtime-pareto",
+      "evidence_ids": ["ev-001"],
+      "source_ids": ["src-001"],
+      "metrics": [
+        { "label": "等待备件", "value": "36%", "note": "停机主要来源" },
+        { "label": "重复故障", "value": "28%", "note": "维修记录未复盘" },
+        { "label": "换型调试", "value": "22%", "note": "节拍损失" }
+      ],
+      "confidence": 0.9
+    },
+    {
+      "id": "claim-002",
+      "narrative_role": "solution",
+      "claim": "关键设备接入包先把状态、点检和工单跑通",
+      "support": "设备状态、现场点检和维修工单构成最小可运行产品包。",
+      "proof_object": "production-topology",
+      "source_ids": ["src-001"],
+      "bullets": ["PLC 与传感器接入", "点检终端记录异常", "维修工单闭环留痕"],
+      "confidence": 0.86
+    },
+    {
+      "id": "claim-003",
+      "narrative_role": "operating-model",
+      "claim": "试点闭环验证后再扩展到多车间协同",
+      "support": "先覆盖关键设备，再把工单和备件台账扩展到更多车间。",
+      "proof_object": "maintenance-loop",
+      "source_ids": ["src-001"],
+      "bullets": ["关键设备试点", "维修工单闭环", "多车间推广"],
+      "confidence": 0.82
+    },
+    {
+      "id": "claim-004",
+      "narrative_role": "decision",
+      "claim": "下一步确认试点设备和数据接口",
+      "support": "需要确认 PLC、传感器和备件台账的数据接口。",
+      "proof_object": "decision-summary",
+      "source_ids": ["src-001"],
+      "bullets": ["确认设备清单", "梳理数据接口", "定义试点验收口径"],
+      "confidence": 0.88
+    }
+  ],
+  "missing_info": ["备件台账字段", "PLC 协议清单"]
+}

@@ -1,0 +1,62 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "general-operations",
+  "documentType": "integrated-report",
+  "title": "可持续行动必须用现场图、指标和来源共同证明",
+  "subtitle": "证据图像、影响指标和项目说明必须成对出现。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "sustainability-proof-spread fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/sustainability-proof-spread/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/sustainability-proof-spread/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/sustainability-proof-spread/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/sustainability-proof-spread/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/sustainability-proof-spread/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "case-gallery",
+      "layoutVariant": "sustainability-proof-spread",
+      "title": "可持续行动必须用现场图、指标和来源共同证明",
+      "subtitle": "证据图像、影响指标和项目说明必须成对出现。",
+      "images": [
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/sustainability-proof-spread/proof-1.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/sustainability-proof-spread/proof-2.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/sustainability-proof-spread/proof-3.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/sustainability-proof-spread/proof-4.png"
+      ],
+      "cards": [
+        {
+          "title": "包装减量",
+          "body": "关键物料减重 18%，来源为供应链月报。"
+        },
+        {
+          "title": "能源优化",
+          "body": "单件能耗下降 12%，绑定产线计量表。"
+        },
+        {
+          "title": "回收机制",
+          "body": "门店回收覆盖 64%，进入会员触达。"
+        },
+        {
+          "title": "供应商审核",
+          "body": "重点供应商完成年度责任审核。"
+        }
+      ],
+      "note": "每张图片都必须回答它证明什么。"
+    }
+  ]
+}

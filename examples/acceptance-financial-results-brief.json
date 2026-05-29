@@ -1,0 +1,164 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "finance-investment",
+  "documentType": "financial-results",
+  "title": "2026 Q1 经营结果与资本配置复盘",
+  "subtitle": "用统一口径解释收入质量、现金回收和下季度风险边界",
+  "audience": "董事会 / 投委会",
+  "footer": "Q1 Results Review",
+  "slides": [
+    {
+      "type": "auto",
+      "title": "2026 Q1 经营结果与资本配置复盘",
+      "subtitle": "用统一口径解释收入质量、现金回收和下季度风险边界"
+    },
+    {
+      "type": "toc-clean",
+      "title": "汇报路径",
+      "subtitle": "从季度结果、收益归因到组合行动与风险指引",
+      "items": ["季度结果摘要", "收益归因桥", "业务分层与经营读数", "组合行动表", "风险与指引"]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "financial-kpi-snapshot",
+      "title": "核心经营快照先给出本季度判断",
+      "claim": "董事会先看到收入、现金和毛利三项主信号，再进入归因拆解。",
+      "metrics": [
+        { "label": "预算达成", "value": "104%", "note": "超过本期经营基线" },
+        { "label": "现金转换", "value": "91%", "note": "回款质量进入安全区" },
+        { "label": "费用纪律", "value": "-2.1pt", "note": "投入边界更清晰" }
+      ],
+      "businessLogic": {
+        "currentState": "预算达成、现金转换和费用纪律共同支持本期判断。",
+        "impact": "管理层可以把讨论集中到投入边界。",
+        "cause": "核心客户复购、回款动作和费用纪律共同改善。",
+        "action": "继续按月复盘现金转换、费用纪律和预算达成。",
+        "metric": "预算达成率、现金转换率、费用纪律"
+      }
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "quarterly-results-summary",
+      "themeIntent": "executive-narrative",
+      "accentRole": "brand",
+      "title": "收入增长来自核心业务恢复和现金回收改善",
+      "claim": "指标页同时解释结果、驱动因素和下季度管理动作。",
+      "metrics": [
+        { "label": "收入", "value": "+12.4%", "note": "核心业务恢复" },
+        { "label": "经营现金流", "value": "+18.0%", "note": "回款节奏改善" },
+        { "label": "毛利率", "value": "36.8%", "note": "产品组合改善" },
+        { "label": "费用率", "value": "-2.1pt", "note": "组织效率提升" }
+      ],
+      "businessLogic": {
+        "currentState": "收入和现金流同步改善。",
+        "impact": "季度经营质量好于预算基线。",
+        "cause": "核心客户复购和费用纪律共同驱动。",
+        "action": "继续压实回款和费用边界。",
+        "metric": "收入增速、经营现金流、毛利率"
+      }
+    },
+    {
+      "type": "finance-bridge",
+      "themeIntent": "value-signal",
+      "accentRole": "data",
+      "title": "收益归因桥把结果拆成可审议的四个驱动",
+      "claim": "投委会需要看到结果来自业务改善、估值修复还是一次性因素。",
+      "bridge": [
+        { "label": "预算基线", "value": "100", "kind": "start" },
+        { "label": "销量恢复", "value": "+9", "kind": "up" },
+        { "label": "价格纪律", "value": "+4", "kind": "up" },
+        { "label": "费用投入", "value": "-3", "kind": "down" },
+        { "label": "Q1 结果", "value": "110", "kind": "end" }
+      ],
+      "actions": [
+        { "title": "维持投入", "body": "保留高转化渠道预算" },
+        { "title": "压降风险", "body": "审查低毛利订单" },
+        { "title": "复盘口径", "body": "月度更新归因桥" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "chart-grid-with-commentary",
+      "title": "三个经营读数解释下一季度节奏",
+      "claim": "图表评论区把经营信号转成行动，而不是停留在数字展示。",
+      "metrics": [
+        { "label": "核心客户复购", "value": "64%", "note": "稳定贡献收入" },
+        { "label": "新签回款周期", "value": "42天", "note": "较预算缩短" },
+        { "label": "重点项目毛利", "value": "39%", "note": "高于组合均值" }
+      ],
+      "businessLogic": {
+        "currentState": "复购和回款指标改善。",
+        "impact": "现金流韧性增强。",
+        "cause": "客户结构和订单筛选更清晰。",
+        "action": "优先投入高复购客户群。",
+        "metric": "复购率、回款天数、重点项目毛利"
+      }
+    },
+    {
+      "type": "portfolio-table",
+      "title": "组合行动表把资源配置转成明确选择",
+      "claim": "不同业务单元进入加码、观察和收缩三类动作。",
+      "portfolio": [
+        { "name": "核心业务", "theme": "现金回收", "weight": 45, "irr": "18%", "dpi": "0.6x", "risk": "低", "action": "继续加码" },
+        { "name": "成长业务", "theme": "客户扩张", "weight": 30, "irr": "14%", "dpi": "0.2x", "risk": "中", "action": "观察投入效率" },
+        { "name": "低效业务", "theme": "毛利压力", "weight": 15, "irr": "7%", "dpi": "0.1x", "risk": "高", "action": "压缩预算" }
+      ]
+    },
+    {
+      "type": "risk-table",
+      "layoutVariant": "guidance-and-risk-board",
+      "title": "下季度指引需要同时锁定增长假设和风险边界",
+      "claim": "风险页以假设、责任和触发条件承接经营结果。",
+      "rows": [
+        ["需求恢复低于预期", "中", "按周更新订单与复购数据"],
+        ["回款节奏波动", "高", "重点客户建立现金流预警"],
+        ["毛利率承压", "中", "审查低毛利订单和费用投入"],
+        ["渠道投放效率下降", "中", "保留高转化渠道预算"]
+      ]
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "valuation-sensitivity",
+      "title": "敏感性分析把增长假设和回款质量放进同一坐标",
+      "claim": "下季度配置不只看收入增速，还要看退出倍数、回款节奏和毛利韧性。",
+      "valuationSensitivity": {
+        "rows": ["保守回款", "基准回款", "加速回款"],
+        "cols": ["低毛利", "基准", "产品组合改善"],
+        "values": [[11, 14, 16], [14, 18, 22], [17, 22, 27]]
+      },
+      "themeIntent": "value-signal",
+      "accentRole": "data",
+      "businessLogic": {
+        "currentState": "下季度收入恢复仍依赖回款节奏和产品组合。",
+        "impact": "不同回款情景会改变预算投入和风险阈值。",
+        "cause": "低毛利订单、客户结构和回款周期共同影响现金质量。",
+        "action": "按保守、基准、加速三种情景锁定投入边界。",
+        "metric": "回款周期、毛利率、现金回收质量"
+      },
+      "note": "情景页把预算投入、现金回收和风险阈值放在同一套讨论口径中。"
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "executive-proof-board",
+      "title": "管理层证据板把指标、案例和风险连接到决策",
+      "subtitle": "最终建议必须来自多类证据，而不是单一 KPI。",
+      "cards": [
+        { "title": "指标证据", "body": "收入、现金流和毛利率同步改善。" },
+        { "title": "案例证据", "body": "重点客户复购稳定贡献收入。" },
+        { "title": "风险证据", "body": "回款和毛利仍需月度预警。" },
+        { "title": "决策含义", "body": "建议维持核心业务投入边界。" }
+      ],
+      "note": "证据板必须能导向董事会要确认的管理动作。"
+    },
+    {
+      "type": "closing",
+      "title": "确认下季度资本配置和风险阈值",
+      "decision": "建议维持核心业务投入，并按月复盘回款、毛利和费用效率。",
+      "actions": [
+        { "title": "预算", "body": "确认投入上限" },
+        { "title": "风险", "body": "确认预警阈值" },
+        { "title": "复盘", "body": "确认月度节奏" }
+      ]
+    }
+  ]
+}

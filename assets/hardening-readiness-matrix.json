@@ -1,0 +1,327 @@
+{
+  "version": "hardening-readiness/v1",
+  "lastReviewed": "2026-05-29",
+  "sourceBacklog": "references/pptx-skill-hardening-backlog.md",
+  "statusScale": ["missing", "partial", "pass"],
+  "qualityModes": {
+    "draft": {
+      "description": "Exploration and local preview are acceptable; no P0 task may be missing."
+    },
+    "formal_review": {
+      "description": "Formal review requires all P0 hardening families to be implemented and test-backed."
+    },
+    "delivery": {
+      "description": "Delivery additionally requires P1 hardening completion and template readiness proof."
+    }
+  },
+  "deliveryGates": [
+    {
+      "id": "formal-validate-with-visual-qa",
+      "required": true,
+      "command": "node scripts/validate_pptx.js outputs/hardening-smoke/sample.pptx --expect-slides 10 --require 新能源,运维 --plan examples/sample-deck-plan.json --formal",
+      "artifacts": [
+        "outputs/hardening-smoke/sample.pptx",
+        "outputs/hardening-smoke/sample.pptx.render-meta.json"
+      ]
+    },
+    {
+      "id": "hardening-smoke-visual-qa",
+      "required": true,
+      "command": "node scripts/visual_qa.js outputs/hardening-smoke/sample.pptx --plan examples/sample-deck-plan.json --json",
+      "artifacts": [
+        "outputs/hardening-smoke/sample.pptx",
+        "outputs/hardening-smoke/sample.pptx.render-meta.json"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "P0-01",
+      "priority": "P0",
+      "title": "Strict Render Registry And Unknown Type Gate",
+      "owner": "contract-routing",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/render/registry.js", "scripts/generate_pptx.js", "scripts/test_routing.js"],
+      "tests": ["node scripts/test_routing.js", "node scripts/test_render_contracts.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P0-02",
+      "priority": "P0",
+      "title": "Native Renderer Ownership Must Match Actually Drawn Components",
+      "owner": "contract-renderer",
+      "status": "pass",
+      "affectsVisualOutput": true,
+      "files": ["scripts/generate_pptx.js", "scripts/visual_qa.js", "scripts/test_visual_qa_render_counts.js"],
+      "tests": ["node scripts/test_visual_qa_render_counts.js", "node scripts/test_component_screenshot_qa.js", "node scripts/test_render_contracts.js"],
+      "renderedProof": ["outputs/test-visual-qa-render-counts/missing-card.pptx", "outputs/hardening-smoke/sample.pptx.render-meta.json"],
+      "remainingGaps": []
+    },
+    {
+      "id": "P0-03",
+      "priority": "P0",
+      "title": "Component Capability Registry",
+      "owner": "component-contract",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/components/index.js", "scripts/design-system.js", "scripts/visual_qa.js"],
+      "tests": ["node scripts/test_composition_planner.js", "node scripts/test_visual_qa_render_counts.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P0-04",
+      "priority": "P0",
+      "title": "Screenshot Baseline Regression QA",
+      "owner": "visual-qa",
+      "status": "pass",
+      "affectsVisualOutput": true,
+      "files": ["scripts/visual_qa.js", "scripts/test_visual_qa_baseline.js"],
+      "tests": ["node scripts/test_visual_qa_baseline.js"],
+      "renderedProof": ["outputs/test-visual-qa-baseline/preview/slide1.png", "outputs/test-visual-qa-baseline/baseline-manifest.json"],
+      "remainingGaps": []
+    },
+    {
+      "id": "P0-05",
+      "priority": "P0",
+      "title": "Text Shrink Risk Audit",
+      "owner": "typography-qa",
+      "status": "pass",
+      "affectsVisualOutput": true,
+      "files": ["scripts/design-system.js", "scripts/generate_pptx.js", "scripts/test_typography_system.js"],
+      "tests": ["node scripts/test_typography_system.js"],
+      "renderedProof": ["outputs/hardening-smoke/sample.pptx.render-meta.json"],
+      "remainingGaps": []
+    },
+    {
+      "id": "P0-06",
+      "priority": "P0",
+      "title": "Blank Or Missing-Content Page Detection",
+      "owner": "visual-qa",
+      "status": "pass",
+      "affectsVisualOutput": true,
+      "files": ["scripts/visual_qa.js", "scripts/test_visual_qa_content_coverage.js"],
+      "tests": ["node scripts/test_visual_qa_content_coverage.js"],
+      "renderedProof": ["outputs/test-visual-qa-content-coverage/blank-body.pptx"],
+      "remainingGaps": []
+    },
+    {
+      "id": "P0-07",
+      "priority": "P0",
+      "title": "Asset Decision Gate Blocks Unsafe Auto-Generate Paths",
+      "owner": "asset-gate",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/deck_asset_decision_gate.js", "scripts/asset_prompt_planner.js", "scripts/test_asset_decision_gate.js"],
+      "tests": ["node scripts/test_asset_decision_gate.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P0-08",
+      "priority": "P0",
+      "title": "Stale Metadata Normalization And Conflict Audit",
+      "owner": "normalization-contract",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/design-system.js", "scripts/generate_pptx.js", "scripts/test_routing.js", "scripts/test_chart_spec.js"],
+      "tests": ["node scripts/test_routing.js", "node scripts/test_chart_spec.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P0-09",
+      "priority": "P0",
+      "title": "Planner Output Immutability At Render Time",
+      "owner": "normalization-contract",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/generate_pptx.js", "scripts/design-system.js", "outputs/hardening-smoke/finalized-stale-plan.json"],
+      "tests": ["node scripts/test_render_contracts.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-01",
+      "priority": "P1",
+      "title": "Component Plan V2 As Hard Contract",
+      "owner": "component-contract",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/design-system.js", "scripts/generate_pptx.js", "scripts/visual_qa.js"],
+      "tests": ["node scripts/test_composition_planner.js", "node scripts/test_visual_qa_render_counts.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-02",
+      "priority": "P1",
+      "title": "Strict ChartSpec Consumption",
+      "owner": "chart-contract",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/chart-spec.js", "scripts/generate_pptx.js", "scripts/test_chart_spec.js"],
+      "tests": ["node scripts/test_chart_spec.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-03",
+      "priority": "P1",
+      "title": "Overlay Slot Strictness",
+      "owner": "overlay-contract",
+      "status": "pass",
+      "affectsVisualOutput": true,
+      "files": ["scripts/visual_qa.js", "scripts/generate_pptx.js", "scripts/test_visual_qa_render_counts.js"],
+      "tests": ["node scripts/test_visual_qa_render_counts.js", "node scripts/test_component_screenshot_qa.js"],
+      "renderedProof": ["outputs/test-visual-qa-render-counts/mode-mismatch.pptx"],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-04",
+      "priority": "P1",
+      "title": "Rendered Count Checks For Cards Rows Metrics And Images",
+      "owner": "visual-qa",
+      "status": "pass",
+      "affectsVisualOutput": true,
+      "files": ["scripts/visual_qa.js", "scripts/test_visual_qa_render_counts.js"],
+      "tests": ["node scripts/test_visual_qa_render_counts.js"],
+      "renderedProof": ["outputs/test-visual-qa-render-counts/missing-card.pptx"],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-05",
+      "priority": "P1",
+      "title": "General Text And Shape Overlap Detection",
+      "owner": "visual-qa",
+      "status": "pass",
+      "affectsVisualOutput": true,
+      "files": ["scripts/visual_qa.js", "scripts/test_visual_qa_overlap.js"],
+      "tests": ["node scripts/test_visual_qa_overlap.js"],
+      "renderedProof": ["outputs/test-visual-qa-overlap/text-covered-by-shape.pptx"],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-06",
+      "priority": "P1",
+      "title": "Validate PPTX Runs Visual QA In Formal Mode",
+      "owner": "qa-integration",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/validate_pptx.js", "scripts/visual_qa.js"],
+      "tests": ["node scripts/validate_pptx.js outputs/hardening-smoke/sample.pptx --expect-slides 10 --require 新能源,运维 --plan examples/sample-deck-plan.json --formal"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-07",
+      "priority": "P1",
+      "title": "Asset Binding Writes Unified Provenance",
+      "owner": "asset-provenance",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/bind_generated_assets.js", "scripts/test_asset_decision_gate.js"],
+      "tests": ["node scripts/test_asset_decision_gate.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-08",
+      "priority": "P1",
+      "title": "Asset Decisions Must Be Auditable In Render-Meta",
+      "owner": "asset-provenance",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/generate_pptx.js", "scripts/visual_qa.js", "scripts/test_asset_decision_gate.js"],
+      "tests": ["node scripts/test_asset_decision_gate.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-09",
+      "priority": "P1",
+      "title": "Formal Mode Severity Matrix",
+      "owner": "qa-integration",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/validate_pptx.js", "scripts/visual_qa.js", "scripts/generate_pptx.js", "scripts/test_quality_mode.js", "package.json"],
+      "tests": ["node scripts/test_quality_mode.js", "node scripts/validate_pptx.js outputs/hardening-smoke/sample.pptx --expect-slides 10 --require 新能源,运维 --plan examples/sample-deck-plan.json --formal"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-10",
+      "priority": "P1",
+      "title": "Render-Meta Schema Gate",
+      "owner": "qa-integration",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/visual_qa.js", "scripts/generate_pptx.js", "scripts/test_asset_decision_gate.js", "scripts/test_render_meta_schema.js"],
+      "tests": ["node scripts/test_asset_decision_gate.js", "node scripts/test_visual_qa_content_coverage.js", "node scripts/test_render_meta_schema.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P1-11",
+      "priority": "P1",
+      "title": "Generated Asset Proof Boundary Audit",
+      "owner": "asset-provenance",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/bind_generated_assets.js", "scripts/design-system.js", "scripts/test_commercial_readiness_qa.js", "scripts/test_asset_decision_gate.js"],
+      "tests": ["node scripts/test_commercial_readiness_qa.js", "node scripts/test_asset_decision_gate.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P2-01",
+      "priority": "P2",
+      "title": "Visual QA Negative Fixture Suite",
+      "owner": "qa-fixtures",
+      "status": "pass",
+      "affectsVisualOutput": true,
+      "files": ["scripts/test_visual_layout_qa.js", "scripts/test_visual_qa_baseline.js", "scripts/test_visual_qa_content_coverage.js", "scripts/test_visual_qa_overlap.js", "scripts/test_visual_qa_render_counts.js", "scripts/test_typography_system.js"],
+      "tests": ["node scripts/test_visual_layout_qa.js"],
+      "renderedProof": ["outputs/test-visual-qa-baseline/preview/slide1.png", "outputs/test-visual-qa-content-coverage/blank-body.pptx", "outputs/test-visual-qa-overlap/text-covered-by-shape.pptx", "outputs/test-visual-qa-render-counts/missing-card.pptx"],
+      "remainingGaps": []
+    },
+    {
+      "id": "P2-02",
+      "priority": "P2",
+      "title": "Asset Prompt Planner Execution Status",
+      "owner": "asset-pipeline",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["scripts/asset_prompt_planner.js", "scripts/test_asset_decision_gate.js", "package.json"],
+      "tests": ["node scripts/test_asset_decision_gate.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    },
+    {
+      "id": "P2-03",
+      "priority": "P2",
+      "title": "Page Family Fixture Contract Upgrade",
+      "owner": "template-fixtures",
+      "status": "pass",
+      "affectsVisualOutput": true,
+      "files": ["scripts/test_template_page_family_fixtures.js", "scripts/run_template_page_family_fixtures.js", "assets/template-readiness-matrix.json"],
+      "tests": ["node scripts/test_template_page_family_fixtures.js", "node scripts/test_component_fixture_qa.js"],
+      "renderedProof": ["outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/contact-sheets/template-page-families.contact-sheet.svg"],
+      "remainingGaps": []
+    },
+    {
+      "id": "P2-04",
+      "priority": "P2",
+      "title": "Hardening Progress Dashboard",
+      "owner": "fixture-readiness",
+      "status": "pass",
+      "affectsVisualOutput": false,
+      "files": ["assets/hardening-readiness-matrix.json", "scripts/audit_hardening_readiness.js", "package.json"],
+      "tests": ["node scripts/audit_hardening_readiness.js"],
+      "renderedProof": [],
+      "remainingGaps": []
+    }
+  ]
+}
