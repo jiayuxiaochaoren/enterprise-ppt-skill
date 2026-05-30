@@ -1,7 +1,7 @@
 const RENDERER_CONTEXT_CONTRACT = {
   colors: ['colors', 'presentationSpec', 'panelFill', 'surfaceFill'],
   text: ['addText', 'addLabel', 'addNumber', 'sectionKicker', 'footerText', 'publicSlideNote', 'copyFallback', 'copyPolicyList', 'typeSize', 'profileFont', 'itemTitle', 'itemBody'],
-  shapes: ['addRect', 'addHairline', 'addArrowLine', 'PageNumber', 'lightCanvas', 'stageCanvas', 'addPhotoPanel', 'addDarkBreathingCircle', 'addLightBreathingCircle', 'addPulseCurve'],
+  shapes: ['addRect', 'addHairline', 'addArrowLine', 'addClockwiseLoopConnectors', 'PageNumber', 'lightCanvas', 'stageCanvas', 'addPhotoPanel', 'addDarkBreathingCircle', 'addLightBreathingCircle', 'addPulseCurve'],
   components: ['componentRendererContext', 'renderChartSpec', 'recordChartConsumption'],
   assets: ['fileExists', 'designForSlide', 'galleryImages', 'mediaForRole', 'resolveAssetPath', 'smartPhotoFit'],
   variants: ['variantOf'],
@@ -26,6 +26,14 @@ const RENDERER_CONTEXT_CONTRACT = {
     'coverMetaText',
     'isCompanyIntroPlan',
     'metaDisabled'
+  ],
+  timeline: [
+    'addClockwiseLoopConnectors',
+    'compactEvidenceCaption'
+  ],
+  risk: [
+    'addClockwiseLoopConnectors',
+    'compactEvidenceCaption'
   ],
   evidenceGallery: [
     'brandWorldBusinessProof',

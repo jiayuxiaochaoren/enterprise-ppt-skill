@@ -47,7 +47,9 @@ function stableMeta(meta = {}) {
   ['financial-family.json', 'page-family:financial'],
   ['closing-family.json', 'page-family:closing'],
   ['architecture-family.json', 'page-family:architecture'],
-  ['evidence-gallery-family.json', 'page-family:evidence-gallery']
+  ['evidence-gallery-family.json', 'page-family:evidence-gallery'],
+  ['timeline-family.json', 'page-family:timeline'],
+  ['risk-family.json', 'page-family:risk']
 ].forEach(([fixture, expectedSource]) => {
   const plan = path.join(FIXTURES, fixture);
   const pptxA = path.join(OUT, `${path.basename(fixture, '.json')}.a.pptx`);

@@ -4,13 +4,17 @@ const beauty = require('./page-families/beauty');
 const closing = require('./page-families/closing');
 const evidenceGallery = require('./page-families/evidence-gallery');
 const financial = require('./page-families/financial');
+const risk = require('./page-families/risk');
+const timeline = require('./page-families/timeline');
 
 const PAGE_FAMILY_MODULES = {
   [architecture.family]: architecture.types,
   [beauty.family]: beauty.types,
   [closing.family]: closing.types,
   [evidenceGallery.family]: evidenceGallery.types,
-  [financial.family]: financial.types
+  [financial.family]: financial.types,
+  [risk.family]: risk.types,
+  [timeline.family]: timeline.types
 };
 
 function createSlideRenderRegistry(renderers = {}) {
@@ -32,10 +36,10 @@ function createSlideRenderRegistry(renderers = {}) {
     { types:['manifesto'], render:renderers.manifestoSlide },
     { types:['module-matrix'], render:renderers.moduleMatrix },
     ...architecture.entries(renderers),
-    { types:['timeline', 'timeline-dark'], render:renderers.timelineAdaptive },
+    ...timeline.entries(renderers),
     { types:['value-tiles'], render:renderers.valueTiles },
     ...evidenceGallery.entries(renderers),
-    { types:['table', 'risk-table'], render:renderers.riskAdaptive },
+    ...risk.entries(renderers),
     { fallback:true, render:renderers.fallbackBulletsSlide }
   ]);
 }

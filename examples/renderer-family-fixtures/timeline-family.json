@@ -1,0 +1,51 @@
+{
+  "title": "Renderer Timeline Family Fixture",
+  "industry": "manufacturing-operations",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "timeline",
+      "title": "试点路径按四个节点推进",
+      "phases": [
+        { "title": "样机验证", "body": "锁定边界与验收口径" },
+        { "title": "产线接入", "body": "打通设备与工单数据" },
+        { "title": "区域扩展", "body": "复制到重点站点" },
+        { "title": "复盘固化", "body": "沉淀标准作业机制" }
+      ],
+      "note": "先验证闭环，再扩大范围。"
+    },
+    {
+      "type": "timeline",
+      "layoutVariant": "closed-loop",
+      "title": "故障处置形成数据闭环",
+      "phases": [
+        { "title": "发现", "body": "异常触发工单" },
+        { "title": "处置", "body": "派工与备件协同" },
+        { "title": "复盘", "body": "回看停机原因" }
+      ]
+    },
+    {
+      "type": "timeline",
+      "layoutVariant": "flywheel",
+      "title": "运营飞轮把动作变成复利",
+      "flywheel": [
+        { "title": "采集", "body": "沉淀信号" },
+        { "title": "判断", "body": "识别瓶颈" },
+        { "title": "行动", "body": "形成工单" },
+        { "title": "复盘", "body": "更新规则" }
+      ]
+    },
+    {
+      "type": "timeline",
+      "layoutVariant": "process-board",
+      "title": "实施流程拆成可验收任务",
+      "phases": [
+        { "title": "需求确认", "body": "明确场景和口径" },
+        { "title": "数据接入", "body": "完成字段映射" },
+        { "title": "试运行", "body": "跟踪异常处置" },
+        { "title": "正式上线", "body": "交付运营手册" }
+      ]
+    }
+  ]
+}
