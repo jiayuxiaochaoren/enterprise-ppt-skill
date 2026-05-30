@@ -1,11 +1,32 @@
 const RENDERER_CONTEXT_CONTRACT = {
-  colors: ['colors', 'presentationSpec', 'panelFill'],
-  text: ['addText', 'addLabel', 'addNumber', 'sectionKicker', 'footerText', 'publicSlideNote', 'copyFallback', 'typeSize', 'profileFont', 'itemTitle', 'itemBody'],
-  shapes: ['addRect', 'addHairline', 'addArrowLine', 'PageNumber', 'lightCanvas', 'stageCanvas', 'addPhotoPanel', 'addDarkBreathingCircle', 'addPulseCurve'],
+  colors: ['colors', 'presentationSpec', 'panelFill', 'surfaceFill'],
+  text: ['addText', 'addLabel', 'addNumber', 'sectionKicker', 'footerText', 'publicSlideNote', 'copyFallback', 'copyPolicyList', 'typeSize', 'profileFont', 'itemTitle', 'itemBody'],
+  shapes: ['addRect', 'addHairline', 'addArrowLine', 'PageNumber', 'lightCanvas', 'stageCanvas', 'addPhotoPanel', 'addDarkBreathingCircle', 'addLightBreathingCircle', 'addPulseCurve'],
   components: ['componentRendererContext', 'renderChartSpec', 'recordChartConsumption'],
-  assets: ['fileExists', 'designForSlide', 'galleryImages'],
+  assets: ['fileExists', 'designForSlide', 'galleryImages', 'mediaForRole', 'resolveAssetPath', 'smartPhotoFit'],
   variants: ['variantOf'],
-  closing: ['closingActions', 'closingMeta'],
+  financial: [
+    'chartSpecToComponentId',
+    'compactEvidenceCaption',
+    'formatMetricDelta',
+    'publicSlideNote',
+    'recordChartConsumption',
+    'renderChartSpec',
+    'routeChartSpec'
+  ],
+  closing: [
+    'ContactBlock',
+    'activePlan',
+    'addEnergyLens',
+    'addEnergyMotionBackdrop',
+    'addEnergyPhotoBackdrop',
+    'addVisualPhotoBackdrop',
+    'canvasHeight',
+    'canvasWidth',
+    'coverMetaText',
+    'isCompanyIntroPlan',
+    'metaDisabled'
+  ],
   evidenceGallery: [
     'brandWorldBusinessProof',
     'caseComparisonSlide',

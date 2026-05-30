@@ -19,6 +19,85 @@
       "closingVariant": "thank-you",
       "title": "谢谢观看",
       "subtitle": "期待继续交流"
+    },
+    {
+      "type": "closing-dark",
+      "closingVariant": "energy-stage",
+      "title": "能耗运营进入统一收口",
+      "subtitle": "围绕站点接入、策略复盘和告警处置形成闭环",
+      "note": "先完成核心站点接入，再扩展跨区域复盘。"
+    },
+    {
+      "type": "closing",
+      "closingVariant": "simple-end",
+      "title": "以小范围试点验证价值",
+      "subtitle": "保留复盘节奏和责任边界"
+    },
+    {
+      "type": "closing",
+      "closingVariant": "editorial-light",
+      "title": "下一步围绕范围和资源确认",
+      "subtitle": "形成项目启动前的共同判断",
+      "actions": [
+        { "title": "范围", "body": "锁定首批对象" },
+        { "title": "资源", "body": "明确接口人" },
+        { "title": "复盘", "body": "两周一次检查" }
+      ]
+    },
+    {
+      "type": "closing",
+      "closingVariant": "pilot-rollout",
+      "title": "试点按设备对象逐步展开",
+      "subtitle": "先验证产线闭环再扩大范围",
+      "decision": "确认首批设备和工单责任。",
+      "actions": [
+        { "title": "设备", "body": "确定对象" },
+        { "title": "工单", "body": "跑通闭环" },
+        { "title": "复盘", "body": "沉淀指标" }
+      ]
+    },
+    {
+      "type": "closing",
+      "closingVariant": "investment-decision",
+      "title": "投资判断进入约束条件确认",
+      "subtitle": "收益、风险和退出节奏同步评估",
+      "decision": "确认投委会评审口径。",
+      "actions": [
+        { "title": "配置", "body": "明确比例" },
+        { "title": "风险", "body": "设定阈值" },
+        { "title": "退出", "body": "定义窗口" }
+      ]
+    },
+    {
+      "type": "closing",
+      "closingVariant": "quality-handoff",
+      "title": "质量交接围绕旅程断点闭环",
+      "subtitle": "把服务、后台和证据链放在同一节奏里",
+      "decision": "确认下一轮质量复盘。"
+    },
+    {
+      "type": "closing",
+      "closingVariant": "adoption-close",
+      "title": "采用深度决定后续收入质量",
+      "subtitle": "从使用路径回到客户健康信号",
+      "decision": "确认客户健康指标口径。",
+      "actions": [
+        { "title": "激活", "body": "完成关键动作" },
+        { "title": "扩展", "body": "进入团队协同" },
+        { "title": "复购", "body": "跟踪收入质量" }
+      ]
+    },
+    {
+      "type": "closing",
+      "closingVariant": "premium-closing-anchor",
+      "title": "最终决策锚定范围、责任和材料",
+      "subtitle": "输出可进入评审的下一步安排",
+      "decision": "确认试点范围与材料补充责任。",
+      "actions": [
+        { "title": "范围确认", "body": "锁定首批场景" },
+        { "title": "素材补齐", "body": "完成授权检查" },
+        { "title": "评审安排", "body": "进入项目会" }
+      ]
     }
   ]
 }

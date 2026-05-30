@@ -35,6 +35,49 @@
         { "label": "DPI", "value": "0.74", "delta": "+0.06", "note": "现金回收提升" },
         { "label": "风险项目", "value": "3", "delta": "-1", "note": "退出计划推进" }
       ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "financial-kpi-snapshot",
+      "title": "核心经营快照形成单页判断",
+      "period": "FY2026 Q1",
+      "metrics": [
+        { "label": "Revenue", "value": "12.8亿", "note": "收入保持增长" },
+        { "label": "Gross Margin", "value": "42%", "note": "毛利率稳定" },
+        { "label": "Cash", "value": "1.6亿", "note": "现金回收改善" },
+        { "label": "Expense", "value": "18%", "note": "费用纪律可控" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "chart-grid-with-commentary",
+      "title": "图表和管理评论绑定动作",
+      "metrics": [
+        { "label": "收入趋势", "value": "+9%", "note": "连续三个周期提升" },
+        { "label": "费用率", "value": "18%", "note": "低于预算上限" },
+        { "label": "现金回收", "value": "+6%", "note": "回款节奏改善" }
+      ],
+      "businessLogic": {
+        "currentState": "收入和现金回收同步改善。",
+        "cause": "重点客户复购和项目筛选提升质量。",
+        "action": "下季度继续控制费用并加快回款。"
+      }
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "quarterly-results-summary",
+      "title": "季度结果摘要回答结果原因动作",
+      "period": "Q1 2026",
+      "metrics": [
+        { "label": "Revenue", "value": "12.8亿", "note": "高于预算" },
+        { "label": "EBIT", "value": "1.9亿", "note": "盈利修复" },
+        { "label": "Cash", "value": "0.9亿", "note": "回款改善" }
+      ],
+      "businessLogic": {
+        "currentState": "本期结果好于预算基线。",
+        "cause": "复购客户和费用纪律共同推动。",
+        "action": "保持投入边界，按月复盘现金回收。"
+      }
     }
   ]
 }

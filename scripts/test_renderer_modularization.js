@@ -15,7 +15,9 @@ assert.equal(typeof requirePptxGen(), 'function');
 const context = createRendererContext({ colors: () => ({ accent: '000000' }) });
 assert.equal(context.colors().accent, '000000');
 assert.ok(RENDERER_CONTEXT_CONTRACT.text.includes('addText'));
-assert.deepEqual(missingRendererContextKeys(context, ['colors']), ['presentationSpec', 'panelFill']);
+assert.deepEqual(missingRendererContextKeys(context, ['colors']), ['presentationSpec', 'panelFill', 'surfaceFill']);
+assert.ok(RENDERER_CONTEXT_CONTRACT.closing.includes('addVisualPhotoBackdrop'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('renderChartSpec'));
 ['financial', 'beauty', 'evidenceGallery', 'closing', 'architecture'].forEach(key => {
   assert.ok(Array.isArray(PAGE_FAMILY_MODULES[key]), `${key} page-family module boundary should be declared`);
   assert.ok(PAGE_FAMILY_MODULES[key].length > 0, `${key} page-family module should list routed types`);
