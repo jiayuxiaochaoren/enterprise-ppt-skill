@@ -1,0 +1,24 @@
+{
+  "title": "Renderer Closing Family Fixture",
+  "industry": "general-operations",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "closing",
+      "closingVariant": "decision-summary",
+      "title": "形成下一步决策共识",
+      "subtitle": "围绕试点范围、资源投入和复盘节奏收束",
+      "actions": [
+        { "title": "确认范围", "body": "锁定首批场景" },
+        { "title": "安排复盘", "body": "两周一次推进" }
+      ]
+    },
+    {
+      "type": "closing-dark",
+      "closingVariant": "thank-you",
+      "title": "谢谢观看",
+      "subtitle": "期待继续交流"
+    }
+  ]
+}

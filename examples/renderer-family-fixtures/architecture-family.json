@@ -1,0 +1,29 @@
+{
+  "title": "Renderer Architecture Family Fixture",
+  "industry": "saas-technology",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "architecture",
+      "layoutVariant": "platform-capability-map",
+      "title": "平台能力按接入、流程和治理分层",
+      "layers": [
+        { "title": "入口层", "items": ["管理端", "移动端", "开放 API"] },
+        { "title": "流程层", "items": ["工单", "审批", "自动化"] },
+        { "title": "治理层", "items": ["权限", "审计", "指标"] }
+      ]
+    },
+    {
+      "type": "architecture-dark",
+      "layoutVariant": "blueprint-stack",
+      "title": "系统架构保持分层可追踪",
+      "subtitle": "从数据到应用再到决策视图",
+      "layers": [
+        { "title": "用户入口层", "items": ["驾驶舱", "企业门户"] },
+        { "title": "业务应用层", "items": ["运营", "服务", "分析"] },
+        { "title": "数据支撑层", "items": ["企业库", "工单库", "指标库"] }
+      ]
+    }
+  ]
+}

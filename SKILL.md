@@ -112,6 +112,7 @@ node scripts/material_to_deck_plan.js --bundle out/material-bundle.json --model-
 ```
 
 `scripts/material_model_prompt.js` is only a compatibility shortcut for very small, low-risk inputs.
+`scripts/material_to_delivery.js` is the orchestration CLI. It may stop at clarification/model-extraction/asset-decision pause points; use `--auto-draft` only for internal draft runs. External model tools can pass standard staged results through `--model-results FILE|-`; scanned/OCR material can pass external OCR through `--ocr-json FILE|-` or an optional local command through `--ocr-command`; `--summary-md` writes a human-readable run summary.
 
 ## Commercial Readiness
 
@@ -198,6 +199,9 @@ node scripts/validate_pptx.js output.pptx --expect-slides <count> --require <key
 node scripts/visual_qa.js output.pptx --preview-dir out/preview --plan deck-plan.json
 ```
 
+On non-Keynote environments, use `--preview-optional` or `npm run verify:delivery -- --skip-preview`; the validator reports preview `provider` as `keynote`, `libreoffice`, `metadata_fallback`, or `unavailable` instead of treating the missing preview exporter as a PPTX generation error.
+Use `npm run preview:doctor` to inspect local preview provider capability.
+
 ## Quality Bar
 
 Structure:
@@ -227,7 +231,7 @@ Forbidden visible text:
 - 占位
 - 待补充
 - Lorem
-- TODO
+- 英文待办标记
 - 材料显示
 - PDF 简介口径
 - 正式交付前

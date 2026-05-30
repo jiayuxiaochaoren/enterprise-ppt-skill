@@ -3,9 +3,11 @@
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+const { exportPreviews } = require('./preview/provider');
+const { validationMarkdown, validationReport } = require('./reports/delivery-report');
 
 function usage() {
-  console.error('Usage: node scripts/validate_pptx.js <file.pptx> [--expect-slides N] [--require term1,term2] [--preview-dir dir] [--baseline manifest.json] [--plan deck-plan.json] [--run-visual-qa] [--formal] [--quality-mode draft|formal|delivery] [--allow-placeholders]');
+  console.error('Usage: node scripts/validate_pptx.js <file.pptx> [--expect-slides N] [--require term1,term2] [--preview-dir dir] [--preview-optional] [--baseline manifest.json] [--plan deck-plan.json] [--run-visual-qa] [--skip-visual-qa] [--summary] [--summary-md file] [--formal] [--quality-mode draft|formal|delivery] [--allow-placeholders]');
   process.exit(2);
 }
 const args = process.argv.slice(2);
@@ -20,6 +22,10 @@ let runVisualQa = false;
 let formal = false;
 let qualityMode = '';
 let allowPlaceholders = false;
+let previewOptional = false;
+let summaryOnly = false;
+let summaryMarkdownPath = '';
+let skipVisualQa = false;
 function normalizeQualityMode(value = '') {
   const mode = String(value || '').trim().toLowerCase().replace(/_/g, '-');
   if (mode === 'formal-review') return 'formal';
@@ -33,6 +39,10 @@ for (let i=0; i<args.length; i++) {
   else if (args[i] === '--baseline') baselinePath = path.resolve(String(args[++i] || ''));
   else if (args[i] === '--plan') planPath = path.resolve(String(args[++i] || ''));
   else if (args[i] === '--run-visual-qa') runVisualQa = true;
+  else if (args[i] === '--skip-visual-qa') skipVisualQa = true;
+  else if (args[i] === '--preview-optional') previewOptional = true;
+  else if (args[i] === '--summary') summaryOnly = true;
+  else if (args[i] === '--summary-md') summaryMarkdownPath = path.resolve(String(args[++i] || ''));
   else if (args[i] === '--formal') {
     formal = true;
     qualityMode = 'formal';
@@ -49,6 +59,7 @@ for (let i=0; i<args.length; i++) {
   else usage();
 }
 if (!fileArg) usage();
+if (skipVisualQa) runVisualQa = false;
 const file = path.resolve(fileArg);
 if (!qualityMode) qualityMode = formal ? 'formal' : 'draft';
 function run(cmd, argv, opts={}) {
@@ -94,31 +105,12 @@ const foundBad = allowPlaceholders ? [] : badPlaceholders.filter(p => allText.to
 if (foundBad.length) fail('visible_scaffold_text_found', { foundBad });
 const missing = requireTerms.filter(t => !allText.includes(t));
 if (missing.length) fail('required_terms_missing', { missing });
-function applePath(p) {
-  return String(p).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+const previewResult = exportPreviews({ file, previewDir, qualityMode, previewOptional, run });
+const previewFiles = previewResult.files;
+const previewState = previewResult.state;
+if (previewState.required && previewState.error) {
+  fail(previewState.error, { previewDir, provider:previewState.provider, detail:previewState.detail });
 }
-function exportPreviews() {
-  if (!previewDir) return [];
-  fs.mkdirSync(previewDir, { recursive:true });
-  const keynoteApp = '/Applications/Keynote.app';
-  if (!fs.existsSync(keynoteApp)) fail('preview_export_requires_keynote', { previewDir });
-  try {
-    run('osascript', [
-      '-e', 'tell application "Keynote"',
-      '-e', `set theDoc to open POSIX file "${applePath(file)}"`,
-      '-e', `export theDoc to POSIX file "${applePath(previewDir)}" as slide images with properties {image format:PNG}`,
-      '-e', 'close theDoc saving no',
-      '-e', 'end tell'
-    ], { timeout:90000 });
-  } catch (e) {
-    fail('preview_export_failed', { previewDir, detail:String(e.message || e) });
-  }
-  return fs.readdirSync(previewDir)
-    .filter(x => /\.png$/i.test(x))
-    .sort()
-    .map(x => path.join(previewDir, x));
-}
-const previewFiles = exportPreviews();
 function renderMetaPathFor(pptxFile) {
   const candidates = [
     `${pptxFile}.render-meta.json`,
@@ -160,6 +152,47 @@ function runVisualQaCommand() {
 const renderMetaPath = renderMetaPathFor(file);
 if (formal && !renderMetaPath) fail('render_meta_required_for_formal_validation', { file });
 const visualQa = runVisualQa ? runVisualQaCommand() : null;
+const validationSummary = {
+  success: true,
+  file,
+  slide_count: slides.length,
+  quality_mode: qualityMode,
+  preview: {
+    requested: previewState.requested,
+    required: previewState.required,
+    status: previewState.status,
+    provider: previewState.provider,
+    error: previewState.error,
+    detail: previewState.detail,
+    count: previewFiles.length
+  },
+  render_meta_present: Boolean(renderMetaPath),
+  visual_qa: visualQa ? {
+    success: visualQa.success === true,
+    fail_count: visualQa.fail_count || 0,
+    review_count: visualQa.review_count || 0,
+    quality_mode: visualQa.quality_mode || qualityMode
+  } : null,
+  checks: {
+    exists: true,
+    pptx_extension: true,
+    zip_ok: true,
+    chinese_text: true,
+    no_visible_scaffold_text: true,
+    required_terms_present: missing.length === 0,
+    render_meta_present: Boolean(renderMetaPath),
+    visual_qa_passed: visualQa ? visualQa.success === true : null
+  },
+  next_actions: []
+};
+if (previewState.status === 'unavailable') {
+  validationSummary.next_actions.push('Run on macOS with Keynote or provide a preview directory generated by another renderer for screenshot-level QA.');
+}
+if (previewState.status === 'metadata_fallback') {
+  validationSummary.next_actions.push('Install pdftoppm or run on macOS with Keynote for screenshot-level QA; metadata/render-meta QA has continued.');
+}
+if (!visualQa) validationSummary.next_actions.push('Run with --run-visual-qa for contract and visual metadata checks.');
+validationSummary.report = validationReport(validationSummary);
 const result = {
   success: true,
   file,
@@ -167,10 +200,16 @@ const result = {
   slide_count: slides.length,
   quality_mode: qualityMode,
   preview_dir: previewDir,
+  preview_status: previewState.status,
+  preview_provider: previewState.provider,
+  preview_error: previewState.error,
+  preview_detail: previewState.detail,
+  preview_required: previewState.required,
   baseline: baselinePath,
   preview_count: previewFiles.length,
   preview_files: previewFiles.slice(0, 20),
   render_meta: renderMetaPath || null,
+  summary: validationSummary,
   visualQa,
   text_sample: textParts.slice(0, 30),
   checks: {
@@ -186,8 +225,18 @@ const result = {
 };
 if (visualQa && visualQa.success !== true) {
   result.success = false;
+  result.summary.success = false;
+  result.summary.report = validationReport(result.summary);
   result.error = 'visual_qa_failed';
-  console.error(JSON.stringify(result, null, 2));
+  if (summaryMarkdownPath) {
+    fs.mkdirSync(path.dirname(summaryMarkdownPath), { recursive:true });
+    fs.writeFileSync(summaryMarkdownPath, validationMarkdown(result.summary), 'utf8');
+  }
+  console.error(JSON.stringify(summaryOnly ? result.summary : result, null, 2));
   process.exit(1);
 }
-console.log(JSON.stringify(result, null, 2));
+if (summaryMarkdownPath) {
+  fs.mkdirSync(path.dirname(summaryMarkdownPath), { recursive:true });
+  fs.writeFileSync(summaryMarkdownPath, validationMarkdown(result.summary), 'utf8');
+}
+console.log(JSON.stringify(summaryOnly ? result.summary : result, null, 2));

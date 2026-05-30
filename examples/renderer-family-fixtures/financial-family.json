@@ -1,0 +1,40 @@
+{
+  "title": "Renderer Financial Family Fixture",
+  "industry": "finance-investment",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "finance-bridge",
+      "title": "组合回报归因桥保持可解释",
+      "bridge": [
+        { "label": "期初", "value": "12%", "kind": "start" },
+        { "label": "经营改善", "value": "+4%", "kind": "up" },
+        { "label": "估值回撤", "value": "-2%", "kind": "down" },
+        { "label": "期末", "value": "14%", "kind": "end" }
+      ],
+      "actions": [
+        { "title": "加仓", "body": "经营改善持续验证" },
+        { "title": "隔离", "body": "估值波动单独复盘" }
+      ]
+    },
+    {
+      "type": "portfolio-table",
+      "title": "组合分层进入行动表",
+      "portfolio": [
+        { "theme": "成长制造", "weight": 32, "irr": "21%", "dpi": "0.62", "risk": "中", "action": "维持加仓观察" },
+        { "theme": "企业服务", "weight": 28, "irr": "17%", "dpi": "0.81", "risk": "低", "action": "维持分红节奏" },
+        { "theme": "消费科技", "weight": 19, "irr": "13%", "dpi": "0.48", "risk": "高", "action": "控制新增敞口" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "title": "关键指标解释增长质量",
+      "metrics": [
+        { "label": "IRR", "value": "18.6%", "delta": "+2.1pt", "note": "核心组合改善" },
+        { "label": "DPI", "value": "0.74", "delta": "+0.06", "note": "现金回收提升" },
+        { "label": "风险项目", "value": "3", "delta": "-1", "note": "退出计划推进" }
+      ]
+    }
+  ]
+}

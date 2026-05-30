@@ -50,6 +50,18 @@ function commandLooksAvailable(command = '') {
   return exists(script);
 }
 
+function taskEvidenceStrength(task = {}) {
+  const tests = Array.isArray(task.tests) ? task.tests : [];
+  const renderedProof = Array.isArray(task.renderedProof) ? task.renderedProof : [];
+  const testsAvailable = tests.length > 0 && tests.every(commandLooksAvailable);
+  const visualProofRequired = task.affectsVisualOutput === true;
+  const renderedProofAvailable = !visualProofRequired || renderedProof.some(exists);
+  if (task.status === 'pass' && testsAvailable && renderedProofAvailable) return 'strong';
+  if (task.status === 'pass' && testsAvailable) return 'moderate';
+  if (task.status === 'partial' && testsAvailable) return 'partial';
+  return 'weak';
+}
+
 function backlogTaskIds() {
   const text = readText(BACKLOG_PATH);
   return [...text.matchAll(/^###\s+(P\d-\d{2})\s+/gm)].map(match => match[1]);
@@ -95,6 +107,7 @@ function summarize(matrix) {
   extraIds.forEach(id => issues.push(issue('review', 'extraTask', id, 'task is not present in source backlog headings')));
 
   const totals = {};
+  const evidenceStrength = { strong: 0, moderate: 0, partial: 0, weak: 0 };
   ['P0', 'P1', 'P2'].forEach(priority => {
     totals[priority] = { missing: 0, partial: 0, pass: 0 };
   });
@@ -102,6 +115,8 @@ function summarize(matrix) {
   tasks.forEach(task => {
     const status = STATUS_VALUES.includes(task.status) ? task.status : 'missing';
     const priority = task.priority || task.id.slice(0, 2);
+    const strength = taskEvidenceStrength(task);
+    evidenceStrength[strength] = (evidenceStrength[strength] || 0) + 1;
     if (!totals[priority]) totals[priority] = { missing: 0, partial: 0, pass: 0 };
     totals[priority][status] += 1;
 
@@ -134,6 +149,9 @@ function summarize(matrix) {
     }
     if (status === 'pass' && task.affectsVisualOutput && !(task.renderedProof || []).length) {
       issues.push(issue(priority === 'P0' ? 'blocking' : 'review', 'visualProofMissing', task.id, 'visual-affecting pass task must list rendered proof'));
+    }
+    if (status === 'pass' && strength !== 'strong') {
+      issues.push(issue('review', 'evidenceStrengthNotStrong', task.id, `pass task evidence strength is ${strength}`));
     }
     if (status === 'pass' && Array.isArray(task.remainingGaps) && task.remainingGaps.length) {
       issues.push(issue(priority === 'P0' ? 'blocking' : 'review', 'passTaskHasRemainingGaps', task.id, 'pass task should not list remaining gaps'));
@@ -188,6 +206,7 @@ function summarize(matrix) {
     taskCount: tasks.length,
     backlogTaskCount: backlogIds.length,
     totals,
+    evidenceStrength,
     modes,
     template,
     blockingCount: blocking.length,
@@ -197,6 +216,7 @@ function summarize(matrix) {
       id: task.id,
       priority: task.priority,
       status: task.status,
+      evidenceStrength: taskEvidenceStrength(task),
       owner: task.owner,
       tests: task.tests || [],
       renderedProof: task.renderedProof || [],
@@ -212,6 +232,7 @@ function printHuman(summary) {
   Object.entries(summary.totals).forEach(([priority, totals]) => {
     console.log(`${priority.padEnd(3)} pass ${String(totals.pass).padStart(2)}  partial ${String(totals.partial).padStart(2)}  missing ${String(totals.missing).padStart(2)}`);
   });
+  console.log(`Evidence strength: strong ${summary.evidenceStrength.strong || 0}  moderate ${summary.evidenceStrength.moderate || 0}  partial ${summary.evidenceStrength.partial || 0}  weak ${summary.evidenceStrength.weak || 0}`);
   console.log('');
   Object.entries(summary.modes).forEach(([mode, result]) => {
     console.log(`${mode.padEnd(13)} ${result.safe ? 'safe' : 'not safe'} - ${result.reason}`);

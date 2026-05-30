@@ -13,8 +13,17 @@ Use this map before opening large implementation files.
 - `scripts/material_ingest.js`: reads user files/directories and creates a material bundle.
 - `scripts/material_orchestration_prompt.js`: creates staged prompts for source audit, story architecture, clarification gate, extraction, and critic.
 - `scripts/material_clarification_gate.js`: turns missing inputs and risks into user-facing choices.
-- `scripts/material_pipeline.js`: schema, prompt, and plan compilation logic used by material tests and compatibility paths.
+- `scripts/material_pipeline.js`: thin compatibility facade for material ingestion, gates, extraction prompts, and deck-plan compilation.
+- `scripts/material/common.js`: shared material hygiene, text normalization, number extraction, and JSON helpers.
+- `scripts/material/ingest.js`: material collection, PDF/Office/text/image ingestion, OCR attachment, table diagnostics, and source reliability reporting.
+- `scripts/material/clarification.js`: deterministic clarification gate and answer normalization.
+- `scripts/material/extraction-schema.js`: model extraction schema, prompt payload, and reference-context packaging.
+- `scripts/material/deck-plan-compiler.js`: material extraction validation and deck-plan compilation.
+- `scripts/material/ocr.js`: OCR JSON normalization, page-level OCR helpers, and optional local OCR command adapter.
+- `scripts/material/tables.js`: lightweight table row/column detection for text-like sources.
+- `scripts/material/model-results-contract.js`: standard model-results validation and critic blocking detection.
 - `scripts/material_to_deck_plan.js`: compiles model extraction plus bundle context into a deck plan.
+- `scripts/material_to_delivery.js`: one-command orchestrator for material ingestion, staged model handoff, clarification/asset gates, PPTX generation, validation, and Markdown summaries.
 
 ## Design Intelligence
 
@@ -36,7 +45,7 @@ Use this map before opening large implementation files.
 
 ## Rendering
 
-- `scripts/generate_pptx.js`: deterministic PPTX renderer.
+- `scripts/generate_pptx.js`: deterministic PPTX renderer and shared drawing helper host.
   - `addLabel`: shared visible label renderer. It must pass through language localization.
   - `sectionKicker`: small section labels.
   - `renderCover`: cover pages.
@@ -49,12 +58,18 @@ Use this map before opening large implementation files.
   - `renderClosing`: closing pages.
   - `RENDER_META`: output metadata for validation and debugging.
 - `scripts/render/registry.js`: renderer registry used by `generate_pptx.js`.
+- `scripts/render/renderer-context.js`: stable context passed to extracted page-family renderers.
+- `scripts/render/page-families/**`: page-family route ownership and extracted high-value renderer entrypoints.
+- `examples/renderer-family-fixtures/**`: focused renderer family regression plans.
 - `scripts/components/**`: reusable chart, table, scorecard, gallery, and proof components.
 
 ## QA
 
-- `scripts/validate_pptx.js`: PPTX structure, text, placeholder, and optional preview validation.
+- `scripts/validate_pptx.js`: PPTX structure, text, placeholder, optional preview validation, provider fallback, and Markdown summary output.
+- `scripts/preview/provider.js`: Keynote, LibreOffice, and metadata fallback preview provider adapter.
+- `scripts/reports/delivery-report.js`: shared Markdown summary formatting for validation and delivery runs.
 - `scripts/visual_qa.js`: visual/readability/composition checks from previews and deck plan metadata.
+- `scripts/run_all_tests.js`: grouped test runner for unit, pipeline, render, visual, and delivery layers, with fast/slow/full profiles for PR and nightly gates.
 - `scripts/test_intelligence_layers.js`: broad design intelligence regression.
 - `scripts/test_orchestration_contract.js`: staged orchestration schema/contract regression.
 - `scripts/test_material_pipeline.js`: material pipeline regression.

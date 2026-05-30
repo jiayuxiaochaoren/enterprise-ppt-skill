@@ -40,9 +40,42 @@ const bundle = ingestMaterials([dir], { root: dir });
 assert.equal(bundle.sourceCount, 2);
 assert.equal(bundle.images.length, 1);
 assert.equal(bundle.textSummary.industryCandidates[0].industry, 'manufacturing-operations');
+assert.equal(bundle.ingestReport.version, 'material-ingest-report/v1');
+assert.equal(bundle.ingestReport.textSourceCount, 1);
+assert.equal(bundle.ingestReport.imageSourceCount, 1);
+assert.equal(bundle.images[0].ocr.status, 'not_configured');
+assert.ok(bundle.images[0].neighboringText[0].candidateFacts.length >= 1);
+assert.ok(bundle.sources[0].extractionDiagnostics.textCharCount > 0);
+assert.ok(bundle.ingestReport.factReliability.reliableFacts.length >= 1);
 assert.ok(bundle.modelContract.nextStep.includes('material_orchestration_prompt.js'));
 assert.ok(bundle.modelContract.nextStep.includes('material_clarification_gate.js'));
 assert.ok(bundle.modelContract.nextStep.includes('material_model_prompt.js is only'));
+
+const tableBrief = path.join(dir, 'table-benchmark.md');
+fs.writeFileSync(tableBrief, [
+  '# 设备指标表',
+  '指标 | 当前值 | 目标',
+  'OEE | 78% | 85%',
+  'MTTR | 46分钟 | 30分钟'
+].join('\n'), 'utf8');
+const tableBundle = ingestMaterials([tableBrief], { root: dir });
+assert.ok(tableBundle.sources[0].tables.length >= 1);
+assert.ok(tableBundle.ingestReport.structuredTableCount >= 1);
+
+const ocrBundle = ingestMaterials([image], {
+  root: dir,
+  ocrResults: {
+    results: [{
+      path: image,
+      text: '产线看板显示当前 OEE 78%，重复故障需要优先闭环。',
+      confidence: 0.91,
+      provider: 'fixture-ocr'
+    }]
+  }
+});
+assert.equal(ocrBundle.images[0].ocr.status, 'provided');
+assert.equal(ocrBundle.images[0].extractionDiagnostics.ocrStatus, 'provided');
+assert.equal(ocrBundle.ingestReport.ocrProvidedCount, 1);
 
 const prompt = buildModelPrompt(bundle);
 assert.ok(prompt.includes('material-extraction/v1'));

@@ -11,25 +11,14 @@ Usage:
 */
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
-const cp = require('child_process');
 const crypto = require('crypto');
+const { requirePptxGen } = require('./render/pptx-runtime');
+const { createRendererContext } = require('./render/renderer-context');
+const { createSlideRenderRegistry } = require('./render/page-family-registry');
+const { createArchitectureRenderers } = require('./render/page-families/architecture');
+const { createClosingRenderers } = require('./render/page-families/closing');
+const { createFinancialRenderers } = require('./render/page-families/financial');
 
-const CACHE_DIR = path.join(process.env.HERMES_HOME || path.join(os.homedir(), '.hermes'), 'cache', 'premium-commercial-ppt-node');
-
-function requirePptxGen() {
-  try { return require('pptxgenjs'); } catch (_) {
-    try { return require(path.join(CACHE_DIR, 'node_modules', 'pptxgenjs')); } catch (__) {
-      console.error('[premium-commercial-ppt] pptxgenjs not found; installing into Hermes cache...');
-      fs.mkdirSync(CACHE_DIR, { recursive: true });
-      if (!fs.existsSync(path.join(CACHE_DIR, 'package.json'))) {
-        cp.execFileSync('npm', ['init', '-y'], { cwd: CACHE_DIR, stdio: 'ignore' });
-      }
-      cp.execFileSync('npm', ['install', 'pptxgenjs', '--silent'], { cwd: CACHE_DIR, stdio: 'inherit' });
-      return require(path.join(CACHE_DIR, 'node_modules', 'pptxgenjs'));
-    }
-  }
-}
 const pptxgen = requirePptxGen();
 
 const {
@@ -68,7 +57,6 @@ const {
   chartSpecToComponentId,
   routeChartSpec
 } = require('./chart-spec');
-const { createRenderRegistry } = require('./render/registry');
 
 let DESIGN = makeDeckContext({});
 let PROFILE = DESIGN.profile;
@@ -2453,40 +2441,6 @@ function closingDecisionBoard(slide, plan, s, idx) {
   });
   addText(slide, closingMeta(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.4, color:C.muted, fit:'shrink' });
 }
-function closingDecisionSummary(slide, plan, s, idx) {
-  lightCanvas(slide);
-  sectionKicker(slide, s.label || 'FINAL DECISION', 0.86, 0.72, false);
-  addText(slide, s.title || plan.closingTitle || copyFallback(plan, 'closingTitle'), {
-    x:0.84, y:1.18, w:6.72, h:0.72,
-    fontSize:typeSize('coverTitle', 30.0), bold:true, color:C.text, fit:'shrink', breakLine:true
-  });
-  addText(slide, s.subtitle || plan.closingSubtitle || copyFallback(plan, 'closingSubtitle'), {
-    x:0.86, y:2.20, w:5.88, h:0.22, fontSize:11.0, color:C.body, fit:'shrink'
-  });
-  addNumber(slide, String(idx || '').padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
-  addRect(slide, 8.60, 0.96, 2.92, 5.58, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-  addText(slide, 'DECISION', { x:9.00, y:1.32, w:1.88, h:0.36, fontFace:profileFont('latin'), fontSize:23.0, bold:true, color:C.accent, align:'right', fit:'shrink' });
-  addLabel(slide, 'BOARD READY', { x:9.58, y:1.86, w:1.14, h:0.10, fontSize:5.8, color:C.darkMuted || '94A3B8', align:'right', charSpace:0.8 });
-  addHairline(slide, 9.02, 2.54, 1.28, C.accent, 0, 0.58);
-  addText(slide, s.decision || s.note || copyFallback(plan, 'closingNote'), {
-    x:9.02, y:3.02, w:1.88, h:0.56, fontSize:9.0, bold:true, color:C.white, breakLine:true, fit:'shrink'
-  });
-  addText(slide, copyFallback(plan, 'closingDecisionOutcome'), { x:9.02, y:4.72, w:1.72, h:0.22, fontSize:7.4, color:C.captionOnImage, fit:'shrink' });
-  const actions = closingActions(s);
-  actions.forEach((a,i)=>{
-    const x = 0.92 + i*2.50;
-    const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
-    addRect(slide, x, 4.02, 2.10, 1.30, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?accent:C.line, transparency:i===0?22:16, width:0.46} });
-    addRect(slide, x, 4.02, 2.10, 0.04, accent, accent, { line:{color:accent, transparency:100} });
-    addNumber(slide, String(i+1).padStart(2,'0'), { x:x+0.22, y:4.36, w:0.34, h:0.12, fontSize:7.0, color:accent });
-    addText(slide, a.title || '', { x:x+0.68, y:4.30, w:0.98, h:0.15, fontSize:9.2, bold:true, color:C.text, fit:'shrink' });
-    addText(slide, a.body || '', { x:x+0.22, y:4.78, w:1.56, h:0.18, fontSize:7.1, color:C.body, fit:'shrink' });
-  });
-  addHairline(slide, 0.92, 6.18, 6.80, C.line, 14, 0.45);
-  addText(slide, closingMeta(plan), { x:0.92, y:6.46, w:6.40, h:0.14, fontSize:7.2, color:C.muted, fit:'shrink' });
-  addText(slide, footerText(plan), { x:0.86, y:6.98, w:7.80, h:0.13, fontSize:7.2, color:C.muted, fit:'shrink' });
-}
-
 function closingManufacturingPilotRollout(slide, plan, s, idx) {
   lightCanvas(slide);
   sectionKicker(slide, s.label || 'PILOT ROLLOUT', 0.86, 0.72, false);
@@ -2760,41 +2714,6 @@ function premiumClosingAnchor(slide, plan, s, idx) {
   }
   addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.darkMuted || 'D8CDD0' });
 }
-
-function closingAdaptive(slide, plan, s, idx) {
-  if (plan.industry === 'energy-utility' || s.closingVariant === 'energy-stage') {
-    return closingDark(slide, plan, s, idx);
-  }
-  const design = designForSlide(plan, s, 'closing');
-  const closingVariant = variantOf(s) || s.closingVariant || '';
-  if (closingVariant === 'premium-closing-anchor') return premiumClosingAnchor(slide, plan, s, idx);
-  const closingText = [s.title, s.subtitle, s.label, s.note].filter(Boolean).join(' ');
-  if (isCompanyIntroPlan(plan) && (['company-thanks', 'thank-you', 'thanks', 'simple-end', 'end'].includes(closingVariant) || /谢谢|感谢|联系|交流|观看|答疑|Q&A/i.test(closingText))) {
-    return closingCompanyThanks(slide, plan, s, idx);
-  }
-  if (['simple-end', 'end'].includes(closingVariant)) {
-    return closingSimpleEnd(slide, plan, s, idx);
-  }
-  if (['thank-you', 'thanks'].includes(closingVariant) || /谢谢|感谢|thank|thanks|观看|答疑|Q&A/i.test(closingText)) {
-    return closingThankYou(slide, plan, s, idx);
-  }
-  if (closingVariant === 'pilot-rollout') return closingManufacturingPilotRollout(slide, plan, s, idx);
-  if (closingVariant === 'investment-decision') return closingFinanceInvestmentDecision(slide, plan, s, idx);
-  if (closingVariant === 'quality-handoff') return closingHealthcareQualityHandoff(slide, plan, s, idx);
-  if (closingVariant === 'adoption-close') return closingSaasAdoptionClose(slide, plan, s, idx);
-  if (closingVariant === 'decision-summary' || s.closingVariant === 'decision-summary') {
-    return closingDecisionSummary(slide, plan, s, idx);
-  }
-  if ((s.closingVariant === 'image' || design.wantsImage) && design.imagePath && fs.existsSync(design.imagePath)) {
-    return closingImageStatement(slide, plan, s, idx);
-  }
-  const tone = presentationSpec().coverTone || 'dark';
-  if (s.closingVariant === 'editorial-light' || tone === 'light' || tone === 'split') {
-    return closingEditorialLight(slide, plan, s, idx);
-  }
-  return closingDecisionBoard(slide, plan, s, idx);
-}
-
 
 function energyToc(slide, plan, s, idx) {
   stageCanvas(slide, { field:false });
@@ -3601,107 +3520,6 @@ function quarterlyResultsSummary(slide, plan, s, idx) {
   addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
 }
 
-function financeBridgeSlide(slide, plan, s, idx) {
-  lightCanvas(slide);
-  sectionKicker(slide, 'RETURN BRIDGE', 0.86, 0.72, false);
-  addText(slide, s.title || '组合回报归因桥', { x:0.84, y:1.06, w:5.8, h:0.36, fontSize:24, bold:true, color:C.text, fit:'shrink' });
-  if (s.subtitle || s.claim) addText(slide, s.subtitle || s.claim, { x:0.86, y:1.54, w:6.9, h:0.20, fontSize:10.2, color:C.muted, fit:'shrink' });
-  PageNumber(slide, idx);
-
-  const bridge = (s.bridge || []).slice(0,6);
-  const chart = { x:0.92, y:2.08, w:7.28, h:4.00 };
-  addRect(slide, chart.x, chart.y, chart.w, chart.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.52} });
-  addLabel(slide, 'IRR CONTRIBUTION', { x:chart.x+0.30, y:chart.y+0.32, w:1.52, h:0.12, fontSize:6.8, color:C.accent, charSpace:0.8 });
-  addHairline(slide, chart.x+0.44, chart.y+3.22, chart.w-0.88, C.line, 10, 0.48);
-  const barW = 0.62;
-  const gap = bridge.length > 1 ? (chart.w - 1.24 - bridge.length*barW) / (bridge.length - 1) : 0.80;
-  bridge.forEach((b,i)=>{
-    const kind = b.kind || b.type || (i===0?'start':(i===bridge.length-1?'end':'up'));
-    const h = Math.max(0.30, Math.min(2.20, Number(b.height) || (kind === 'down' ? 0.76 : (kind === 'end' ? 1.68 : 0.92))));
-    const x = chart.x + 0.62 + i*(barW+gap);
-    const y = chart.y + 3.22 - h;
-    const color = kind === 'down' ? C.risk : (kind === 'end' || kind === 'start' ? C.accent : C.cyan);
-    addRect(slide, x, y, barW, h, color, color, { fill:{color, transparency:kind === 'down' ? 12 : 0}, line:{color, transparency:100} });
-    addText(slide, b.value || '', { x:x-0.22, y:y-0.26, w:1.06, h:0.12, fontSize:7.0, bold:true, color:kind === 'down' ? C.risk : C.text, align:'center', fit:'shrink' });
-    addText(slide, b.label || `项目 ${i+1}`, { x:x-0.36, y:chart.y+3.46, w:1.32, h:0.24, fontSize:6.8, color:C.body, align:'center', fit:'shrink' });
-    if (i < bridge.length - 1) addHairline(slide, x+barW, y, gap*0.72, C.line, 34, 0.30);
-  });
-
-  const actions = s.actions || s.items || [];
-  const side = { x:8.66, y:2.08, w:3.06, h:4.00 };
-  addRect(slide, side.x, side.y, side.w, side.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-  addLabel(slide, 'CAPITAL ACTIONS', { x:side.x+0.28, y:side.y+0.34, w:1.44, h:0.12, fontSize:6.8, color:C.accent, charSpace:0.8 });
-  addText(slide, s.decision || '把归因结果转化为加仓、维持、退出和风险隔离动作。', { x:side.x+0.28, y:side.y+0.80, w:2.14, h:0.40, fontSize:8.2, color:'CBD5E1', breakLine:true, fit:'shrink' });
-  actions.slice(0,4).forEach((a,i)=>{
-    const y = side.y + 1.66 + i*0.58;
-    const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.risk : '94A3B8'));
-    addNumber(slide, String(i+1).padStart(2,'0'), { x:side.x+0.30, y:y+0.06, w:0.28, h:0.12, fontSize:6.8, color:accent });
-    addText(slide, itemTitle(a, `动作 ${i+1}`), { x:side.x+0.70, y:y+0.01, w:1.78, h:0.12, fontSize:7.8, bold:true, color:C.white, fit:'shrink' });
-    const body = compactEvidenceCaption(itemBody(a), 18);
-    if (body) addText(slide, body, { x:side.x+0.70, y:y+0.27, w:1.76, h:0.12, fontSize:6.8, color:'A8B3C3', fit:'shrink' });
-  });
-  addText(slide, s.note || '桥图解释变化来源，让投委会同时看到结果和驱动因素。', { x:0.94, y:6.42, w:8.6, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
-  addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
-}
-
-function portfolioTableSlide(slide, plan, s, idx) {
-  lightCanvas(slide);
-  sectionKicker(slide, 'PORTFOLIO ACTION TABLE', 0.86, 0.72, false);
-  addText(slide, s.title || '组合分层与行动清单', { x:0.84, y:1.06, w:5.9, h:0.36, fontSize:24, bold:true, color:C.text, fit:'shrink' });
-  if (s.subtitle || s.claim) addText(slide, s.subtitle || s.claim, { x:0.86, y:1.54, w:7.0, h:0.20, fontSize:10.2, color:C.muted, fit:'shrink' });
-  addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
-
-  const rows = (s.portfolio || s.allocations || s.rows || []).slice(0,5);
-  const summary = { x:0.92, y:2.10, w:2.72, h:3.94 };
-  addRect(slide, summary.x, summary.y, summary.w, summary.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-  addLabel(slide, 'ALLOCATION VIEW', { x:summary.x+0.28, y:summary.y+0.34, w:1.46, h:0.12, fontSize:6.8, color:C.accent, charSpace:0.8 });
-  const total = rows.reduce((sum,r)=>sum+(Number(r.weight) || 0), 0) || 100;
-  rows.slice(0,4).forEach((r,i)=>{
-    const y = summary.y + 1.06 + i*0.58;
-    const share = Math.max(0.18, Math.min(0.96, (Number(r.weight) || (25 - i*3)) / total * 2.4));
-    const color = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : '94A3B8'));
-    slide.addShape('ellipse', { x:summary.x+0.34, y:y+0.05, w:0.10, h:0.10, fill:{color}, line:{color, transparency:100} });
-    addText(slide, r.theme || r.name || `组合 ${i+1}`, { x:summary.x+0.58, y:y, w:1.10, h:0.12, fontSize:6.8, bold:true, color:C.white, fit:'shrink' });
-    addText(slide, `${r.weight || ''}%`, { x:summary.x+2.00, y:y, w:0.40, h:0.12, fontSize:6.8, color:'A8B3C3', align:'right', fit:'shrink' });
-    addRect(slide, summary.x+0.58, y+0.28, 1.58, 0.035, '334155', '334155', { line:{color:'334155', transparency:100} });
-    addRect(slide, summary.x+0.58, y+0.28, share, 0.035, color, color, { line:{color, transparency:100} });
-  });
-  addHairline(slide, summary.x+0.32, summary.y+3.42, 0.82, C.accent, 0, 0.56);
-  addText(slide, s.summary || '按主题、风险和现金回收能力决定下一阶段配置动作。', { x:summary.x+0.32, y:summary.y+3.58, w:1.94, h:0.22, fontSize:6.8, color:'A8B3C3', fit:'shrink' });
-
-  const table = { x:3.94, y:2.10, w:7.84, h:3.94 };
-  addRect(slide, table.x, table.y, table.w, table.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.52} });
-  const headers = ['主题', '权重', 'IRR', 'DPI', '风险', '动作'];
-  const col = [0, 1.62, 2.54, 3.38, 4.20, 5.10];
-  const colW = [1.40, 0.70, 0.62, 0.62, 0.76, 1.92];
-  headers.forEach((h,i)=>addText(slide, h, {
-    x:table.x+0.28+col[i], y:table.y+0.30, w:colW[i], h:0.15,
-    fontSize:7.7, bold:true, color:i===0?C.accent:C.muted, fit:false
-  }));
-  addHairline(slide, table.x+0.24, table.y+0.66, table.w-0.48, C.line, 12, 0.45);
-  rows.forEach((r,i)=>{
-    const y = table.y + 0.96 + i*0.54;
-    const riskColor = r.risk === '高' ? C.risk : (r.risk === '低' ? C.cyan : C.accent);
-    addNumber(slide, String(i+1).padStart(2,'0'), { x:table.x+0.28, y:y, w:0.28, h:0.14, fontSize:7.3, color:i===0?C.accent:C.muted });
-    addText(slide, r.theme || r.name || `主题 ${i+1}`, { x:table.x+0.66, y:y, w:1.16, h:0.14, fontSize:7.8, bold:true, color:C.text, fit:false });
-    addText(slide, `${r.weight || '—'}%`, { x:table.x+1.88, y:y, w:0.52, h:0.14, fontSize:7.6, color:C.body, align:'right', fit:false });
-    addText(slide, r.irr || '—', { x:table.x+2.78, y:y, w:0.48, h:0.14, fontSize:7.6, color:C.body, align:'right', fit:false });
-    addText(slide, r.dpi || '—', { x:table.x+3.60, y:y, w:0.48, h:0.14, fontSize:7.6, color:C.body, align:'right', fit:false });
-    addRect(slide, table.x+4.46, y-0.02, 0.54, 0.24, riskColor, riskColor, { fill:{color:riskColor, transparency:8}, line:{color:riskColor, transparency:100} });
-    addText(slide, r.risk || '中', {
-      x:table.x+4.46, y:y+0.02, w:0.54, h:0.16,
-      fontSize:7.2, bold:true, color:C.onAccent || C.white, align:'center', valign:'mid', fit:false
-    });
-    addText(slide, compactEvidenceCaption(r.action || '维持观察', 26), {
-      x:table.x+5.34, y:y-0.01, w:1.88, h:0.24,
-      fontSize:7.5, bold:true, color:C.text, fit:false, breakLine:true, valign:'mid'
-    });
-    addHairline(slide, table.x+0.24, y+0.34, table.w-0.48, C.line, 20, 0.30);
-  });
-  addText(slide, s.note || '配置比例、回收质量、风险等级和下一步动作放在同一坐标。', { x:0.94, y:6.42, w:8.6, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
-  addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
-}
-
 function coerceChartItems(value, fallback = []) {
   if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? { title:v } : v);
   if (value && Array.isArray(value.items)) return value.items.map(v => typeof v === 'string' ? { title:v } : v);
@@ -4354,92 +4172,6 @@ function saasAdoptionRevenueBoard(slide, plan, s, idx) {
   addText(slide, nrr.note || '扩展收入和留存改善共同解释增长质量。', { x:revenue.x+4.40, y:revenue.y+0.26, w:3.66, h:0.14, fontSize:8.9, color:C.white, fit:'shrink' });
   addHairline(slide, revenue.x+8.42, revenue.y+0.42, 0.70, C.accent, 0, 0.52);
   addText(slide, s.note || 'SaaS 指标页要把产品采用、企业集成和扩展收入连起来看。', { x:0.94, y:6.42, w:8.8, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
-  addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
-}
-
-function metricComparison(slide, plan, s, idx) {
-  const variant = variantOf(s, '');
-  if (variant === 'brand-world-and-business-proof') return brandWorldBusinessProof(slide, plan, s, idx);
-  if (variant === 'product-evidence-story') return productEvidenceStory(slide, plan, s, idx);
-  if (variant === 'consumer-proof-photo-grid') return consumerProofPhotoGrid(slide, plan, s, idx);
-  if (variant === 'sustainability-proof-spread') return sustainabilityProofSpread(slide, plan, s, idx);
-  if (variant === 'financial-kpi-snapshot') return financialKpiSnapshot(slide, plan, s, idx);
-  if (variant === 'chart-grid-with-commentary') return chartGridWithCommentary(slide, plan, s, idx);
-  if (variant === 'quarterly-results-summary') return quarterlyResultsSummary(slide, plan, s, idx);
-  if (variant === 'oee-board' || s.oee || s.oeeComponents) {
-    return manufacturingOeeBoard(slide, plan, s, idx);
-  }
-  if (variant === 'patient-service-scorecard' || plan.industry === 'healthcare-operations') return healthcareServiceScorecard(slide, plan, s, idx);
-  if (variant === 'member-growth-board' || isVisualIndustry(plan, 'brand-retail')) return retailMemberGrowthBoard(slide, plan, s, idx);
-  if (variant === 'adoption-revenue-board' || plan.industry === 'saas-technology') return saasAdoptionRevenueBoard(slide, plan, s, idx);
-  if (plan.industry === 'finance-investment' || /financial-kpi-snapshot|chart-grid-with-commentary|quarterly-results-summary/i.test(variant)) return financeMetricDashboard(slide, plan, s, idx);
-  lightCanvas(slide);
-  sectionKicker(slide, 'PERFORMANCE SIGNAL', 0.86, 0.72, false);
-  addText(slide, s.title || '关键指标变化', { x:0.84, y:1.06, w:5.9, h:0.36, fontSize:24, bold:true, color:C.text, fit:'shrink' });
-  const claim = s.claim || s.subtitle || s.intro || '以少量核心指标判断增长质量，并把变化原因收束到下一步经营动作。';
-  addText(slide, claim, { x:0.86, y:1.54, w:6.8, h:0.20, fontSize:10.2, color:C.muted, fit:'shrink' });
-  addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
-
-  const metrics = (s.metrics || []).slice(0,4);
-  const big = metrics[0] || {};
-  const side = metrics.slice(1,3);
-  const panel = { x:0.92, y:2.12, w:11.28, h:3.72 };
-  addRect(slide, panel.x, panel.y, panel.w, panel.h, panelFill(), C.line, {
-    fill:{color:panelFill(), transparency:0},
-    line:{color:C.line, transparency:14, width:0.55}
-  });
-  addRect(slide, panel.x, panel.y, 0.06, panel.h, C.accent, C.accent, { line:{color:C.accent, transparency:100} });
-
-  addLabel(slide, 'PRIMARY KPI', { x:1.34, y:2.50, w:1.16, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.9 });
-  addText(slide, big.label || '核心指标', { x:1.34, y:2.82, w:2.20, h:0.20, fontSize:11.2, bold:true, color:C.text, fit:'shrink' });
-  addNumber(slide, big.value || '—', { x:1.30, y:3.18, w:2.72, h:0.86, fontSize:50, color:C.accent, fit:'shrink' });
-  const bigDelta = formatMetricDelta(big.delta || big.unit);
-  if (bigDelta) {
-    addRect(slide, 1.36, 4.18, 1.70, 0.28, C.accent, C.accent, { fill:{color:C.accent, transparency:0}, line:{color:C.accent, transparency:100} });
-    addText(slide, bigDelta, { x:1.50, y:4.25, w:1.42, h:0.11, fontSize:7.0, bold:true, color:C.onAccent || C.white, fit:'shrink' });
-  }
-  addText(slide, big.note || '核心增长信号已经形成，需要继续验证触达、组合与成交之间的贡献关系。', {
-    x:1.36, y:4.74, w:3.00, h:0.42, fontSize:8.8, color:C.body, breakLine:true, fit:'shrink'
-  });
-
-  slide.addShape('line', { x:4.78, y:2.54, w:0, h:2.70, line:{color:C.line, transparency:10, width:0.55} });
-  side.forEach((m,i)=>{
-    const x = 5.28 + i*3.10;
-    const accent = i === 0 ? C.cyan : C.tertiary || C.violet;
-    addLabel(slide, `SUPPORT 0${i+1}`, { x, y:2.54, w:1.10, h:0.10, fontSize:5.8, color:accent, charSpace:0.9 });
-    addText(slide, m.label || `指标 ${i+2}`, { x, y:2.86, w:1.72, h:0.17, fontSize:9.8, bold:true, color:C.text, fit:'shrink' });
-    addNumber(slide, m.value || '—', { x, y:3.22, w:1.74, h:0.42, fontSize:28, color:accent, fit:'shrink' });
-    const delta = formatMetricDelta(m.delta || m.unit);
-    if (delta) addText(slide, delta, { x, y:3.92, w:1.58, h:0.13, fontSize:7.6, bold:true, color:C.text, fit:'shrink' });
-    addText(slide, m.note || '', { x, y:4.36, w:2.04, h:0.30, fontSize:7.8, color:C.body, breakLine:true, fit:'shrink' });
-    addRect(slide, x, 5.18, 1.84, 0.04, C.line, C.line, { line:{color:C.line, transparency:100} });
-    addRect(slide, x, 5.18, i === 0 ? 0.94 : 1.20, 0.04, accent, accent, { line:{color:accent, transparency:100} });
-  });
-
-  const foot = publicSlideNote(s.note);
-  const logic = s.businessLogic || s.business_logic || s.diagnosticChain || s.diagnostic_chain;
-  if (logic && typeof logic === 'object') {
-    const logicItems = [
-      { label:'现状', text:logic.currentState || logic.current_state || logic.problem || '' },
-      { label:'原因', text:logic.cause || logic.root_cause || logic.driver || '' },
-      { label:'动作', text:logic.action || logic.operating_action || logic.response || '' },
-      { label:'衡量', text:logic.metric || logic.measure || logic.kpi || logic.expected_result || '' }
-    ].filter(item => item.text);
-    if (logicItems.length >= 2) {
-      addHairline(slide, 0.94, 6.10, 10.90, C.line, 12, 0.55);
-      const slotW = 10.64 / logicItems.length;
-      logicItems.forEach((item, i) => {
-        const x = 1.00 + i * slotW;
-        const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : (i === 2 ? C.violet : C.muted));
-        addLabel(slide, item.label, { x, y:6.34, w:0.46, h:0.10, fontSize:5.8, color:accent, charSpace:0 });
-        addText(slide, compactEvidenceCaption(item.text, 22), { x:x+0.54, y:6.30, w:slotW-0.66, h:0.14, fontSize:7.8, color:C.body, fit:'shrink' });
-      });
-    }
-  } else if (foot) {
-    addHairline(slide, 0.94, 6.28, 10.90, C.line, 12, 0.55);
-    addLabel(slide, '管理信号', { x:0.96, y:6.54, w:1.52, h:0.10, fontSize:5.8, color:C.accent, charSpace:0 });
-    addText(slide, foot, { x:2.52, y:6.50, w:7.75, h:0.15, fontSize:8.4, color:C.body, fit:'shrink' });
-  }
   addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
 }
 
@@ -6776,77 +6508,6 @@ function architectureManufacturingTopology(slide, plan, s, idx) {
   addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
 }
 
-function architectureAdaptive(slide, plan, s, idx) {
-  const variant = variantOf(s, 'layer-stack');
-  if (variant === 'service-blueprint') return architectureServiceBlueprint(slide, plan, s, idx);
-  if (variant === 'platform-capability-map') return architectureSaasCapabilityMap(slide, plan, s, idx);
-  if (variant === 'production-topology') return architectureManufacturingTopology(slide, plan, s, idx);
-  if (variant === 'blueprint-stack') return architectureBlueprint(slide, plan, s, idx);
-  if (variant === 'hub-spoke') return architectureHubSpoke(slide, plan, s, idx);
-  return architectureDark(slide, plan, s, idx);
-}
-
-function architectureDark(slide, plan, s, idx) {
-  // Platform section architecture v10: no overlaid vertical core card; core is a foreground capsule inside the application stratum.
-  stageCanvas(slide);
-  sectionKicker(slide, 'SYSTEM ARCHITECTURE', 0.84, 0.72, true);
-  addText(slide, s.title, { x:0.82, y:1.08, w:5.8, h:0.36, fontSize:24, bold:true, color:C.white });
-  if (s.subtitle) addText(slide, s.subtitle, { x:0.84, y:1.55, w:5.4, h:0.22, fontSize:10.8, color:'94A3B8' });
-  addText(slide, String(idx).padStart(2,'0'), { x:11.76, y:0.74, w:0.58, h:0.18, fontSize:11.5, bold:true, color:'64748B', align:'right' });
-
-  const layers = s.layers || [];
-  const entrance = layers[0] || {title:'用户入口层', items:[]};
-  const apps = layers[1] || {title:'业务应用层', items:[]};
-  const data = layers[2] || {title:'数据支撑层', items:[]};
-  const panelX = 2.45, panelW = 8.70;
-  const layerDefs = [
-    { layer: entrance, y:2.10, h:0.58, accent:C.accent, label:'ACCESS' },
-    { layer: apps, y:3.18, h:1.18, accent:C.cyan, label:'APPLICATIONS' },
-    { layer: data, y:5.02, h:0.64, accent:C.violet, label:'DATA FOUNDATION' }
-  ];
-
-  layerDefs.forEach((def, li)=>{
-    const {layer,y,h,accent,label} = def;
-    addText(slide, layer.title, { x:0.92, y:y+0.16, w:1.18, h:0.16, fontSize:9.6, bold:true, color:'CBD5E1' });
-    addText(slide, label, { x:2.45, y:y-0.22, w:1.45, h:0.10, fontSize:6.5, color:'64748B', charSpace:0.8 });
-    addRect(slide, panelX, y, panelW, h, C.ink2, '334155', { fill:{color:C.ink2, transparency:li===1?22:34}, line:{color:accent, transparency:li===1?44:68, width:0.48} });
-    addHairline(slide, 2.10, y+h/2, 0.22, accent, 8, 0.65);
-  });
-
-  (entrance.items || []).slice(0,4).forEach((it,i)=>{
-    const x = 2.76 + i*1.86;
-    addText(slide, it, { x, y:2.29, w:1.24, h:0.13, fontSize:8.8, bold:true, color:C.white, align:'center', fit:'shrink' });
-  });
-
-  // Business zones are derived from the current plan's application items; never hardcode an industry.
-  const appItems = apps.items || [];
-  const appGroups = [
-    { title: appItems[0] || '核心应用', items: appItems.slice(1,2).join(' · '), x:2.86, w:2.20, accent:C.cyan },
-    { title: appItems[2] || appItems[1] || '协同处置', items: appItems.slice(3,4).join(' · '), x:7.58, w:2.20, accent:C.accent },
-    { title: appItems[4] || '策略复盘', items: appItems.slice(5,6).join(' · '), x:9.98, w:0.92, accent:C.violet }
-  ];
-  appGroups.forEach((g,i)=>{
-    addRect(slide, g.x, 3.48, g.w, 0.48, C.ink2, '334155', { fill:{color:C.ink2, transparency:18}, line:{color:g.accent, transparency:i===0?30:62, width:0.4} });
-    addText(slide, g.title, { x:g.x+0.12, y:3.59, w:g.w-0.24, h:0.12, fontSize:8.8, bold:true, color:C.white, align:'center', fit:'shrink' });
-    if (g.items) addText(slide, g.items, { x:g.x+0.10, y:3.80, w:g.w-0.20, h:0.11, fontSize:8.8, color:'94A3B8', align:'center', fit:'shrink' });
-  });
-  // Foreground core capsule, intentionally on top and bounded inside the application stratum.
-  addRect(slide, 5.66, 3.33, 1.22, 0.78, C.ink, C.accent, { fill:{color:C.ink, transparency:6}, line:{color:C.accent, transparency:22, width:0.55} });
-  addText(slide, '统一运营核心', { x:5.78, y:3.54, w:0.98, h:0.14, fontSize:9.2, bold:true, color:C.white, align:'center', fit:'shrink' });
-  addText(slide, '认证 · 流程 · 指标', { x:5.76, y:3.80, w:1.02, h:0.12, fontSize:8.8, color:'94A3B8', align:'center', fit:'shrink' });
-  addHairline(slide, 5.08, 3.72, 0.58, '334155', 48, 0.38);
-  addHairline(slide, 6.88, 3.72, 0.70, '334155', 48, 0.38);
-  slide.addShape('line', { x:6.27, y:4.11, w:0, h:0.91, line:{color:C.violet, transparency:28, width:0.45} });
-
-  (data.items || []).slice(0,7).forEach((it,i)=>{
-    const x = 2.72 + i*1.12;
-    addText(slide, it, { x, y:5.25, w:0.78, h:0.13, fontSize:8.8, color:'CBD5E1', bold:true, align:'center', fit:'shrink' });
-    if (i>0) slide.addShape('line', { x:x-0.17, y:5.13, w:0, h:0.40, line:{color:'334155', transparency:56, width:0.3} });
-  });
-  addText(slide, '统一数据底座 · 统一服务入口 · 统一运营看板 · 统一闭环机制', { x:0.90, y:6.25, w:8.2, h:0.20, fontSize:12.2, bold:true, color:'CBD5E1' });
-  addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:'64748B' });
-}
-
 function energyDeploymentRadius(slide, plan, s, idx) {
   stageCanvas(slide, { field:false });
   const useImage = slideWantsImage(plan, s, 'timeline');
@@ -7527,33 +7188,103 @@ function fallbackBulletsSlide(slide, plan, s, idx) {
 let SLIDE_RENDER_REGISTRY = null;
 function slideRenderRegistry() {
   if (SLIDE_RENDER_REGISTRY) return SLIDE_RENDER_REGISTRY;
-  SLIDE_RENDER_REGISTRY = createRenderRegistry([
-    { types:['cover', 'cover-dark'], render:coverDark },
-    { types:['closing', 'closing-dark'], render:closingAdaptive },
-    { types:['chapter-divider'], render:chapterDivider },
-    { types:['toc', 'toc-clean'], render:tocClean },
-    { types:['comparison'], render:comparisonSlide },
-    { types:['company-profile-spread'], render:companyProfileSpread },
-    { types:['profile-proof'], render:profileProof },
-    { types:['quote-proof'], render:quoteProof },
-    { types:['two-column', 'two-column-clean'], render:twoColumnClean },
-    { types:['report-board'], render:reportBoard },
-    { types:['cards', 'executive-blocks'], render:executiveBlocks },
-    { types:['product-showcase'], render:productShowcase },
-    { types:['metric-comparison'], render:metricComparison },
-    { types:['industry-chart'], render:industryChartSlide },
-    { types:['finance-bridge'], render:financeBridgeSlide },
-    { types:['portfolio-table'], render:portfolioTableSlide },
-    { types:['strategy-map'], render:strategyMap },
-    { types:['manifesto'], render:manifestoSlide },
-    { types:['module-matrix'], render:moduleMatrix },
-    { types:['architecture', 'architecture-dark'], render:architectureAdaptive },
-    { types:['timeline', 'timeline-dark'], render:timelineAdaptive },
-    { types:['value-tiles'], render:valueTiles },
-    { types:['case-gallery', 'gallery', 'portfolio'], render:caseGallery },
-    { types:['table', 'risk-table'], render:riskAdaptive },
-    { fallback:true, render:fallbackBulletsSlide }
-  ]);
+  const rendererContext = createRendererContext({
+    colors: () => C,
+    fileExists: file => fs.existsSync(file),
+    addHairline,
+    addLabel,
+    addNumber,
+    addRect,
+    addText,
+    PageNumber,
+    panelFill,
+    stageCanvas,
+    lightCanvas,
+    sectionKicker,
+    copyFallback,
+    compactEvidenceCaption,
+    componentRendererContext,
+    designForSlide,
+    footerText,
+    typeSize,
+    profileFont,
+    formatMetricDelta,
+    isCompanyIntroPlan,
+    isVisualIndustry,
+    itemBody,
+    itemTitle,
+    presentationSpec,
+    publicSlideNote,
+    recordChartConsumption,
+    routeChartSpec,
+    renderChartSpec,
+    chartSpecToComponentId,
+    variantOf,
+    closingActions,
+    closingMeta,
+    architectureBlueprint,
+    architectureHubSpoke,
+    architectureManufacturingTopology,
+    architectureSaasCapabilityMap,
+    architectureServiceBlueprint,
+    brandWorldBusinessProof,
+    chartGridWithCommentary,
+    closingCompanyThanks,
+    closingDark,
+    closingDecisionBoard,
+    closingEditorialLight,
+    closingFinanceInvestmentDecision,
+    closingHealthcareQualityHandoff,
+    closingImageStatement,
+    closingManufacturingPilotRollout,
+    closingSaasAdoptionClose,
+    closingSimpleEnd,
+    closingThankYou,
+    consumerProofPhotoGrid,
+    financeMetricDashboard,
+    financialKpiSnapshot,
+    healthcareServiceScorecard,
+    industryChartSlideBase: industryChartSlide,
+    manufacturingOeeBoard,
+    premiumClosingAnchor,
+    productEvidenceStory,
+    quarterlyResultsSummary,
+    retailMemberGrowthBoard,
+    saasAdoptionRevenueBoard,
+    sustainabilityProofSpread
+  });
+  const familyRenderers = Object.assign({},
+    createFinancialRenderers(rendererContext),
+    createClosingRenderers(rendererContext),
+    createArchitectureRenderers(rendererContext)
+  );
+  SLIDE_RENDER_REGISTRY = createSlideRenderRegistry({
+    architectureAdaptive: familyRenderers.architectureAdaptive,
+    caseGallery,
+    chapterDivider,
+    closingAdaptive: familyRenderers.closingAdaptive,
+    comparisonSlide,
+    companyProfileSpread,
+    coverDark,
+    executiveBlocks,
+    fallbackBulletsSlide,
+    financeBridgeSlide: familyRenderers.financeBridgeSlide,
+    industryChartSlide: familyRenderers.industryChartSlide,
+    manifestoSlide,
+    metricComparison: familyRenderers.metricComparison,
+    moduleMatrix,
+    portfolioTableSlide: familyRenderers.portfolioTableSlide,
+    productShowcase,
+    profileProof,
+    quoteProof,
+    reportBoard,
+    riskAdaptive,
+    strategyMap,
+    timelineAdaptive,
+    tocClean,
+    twoColumnClean,
+    valueTiles
+  });
   return SLIDE_RENDER_REGISTRY;
 }
 

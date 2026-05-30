@@ -815,18 +815,32 @@ function pageLevelChartScores(plan = {}, normalizedPlan = null, renderMeta = nul
       const chartEligible = slideHasChartIntent(slide);
       const spec = chartEligible ? routeChartSpec(normalized, slide, { index: i + 1, total: (normalized.slides || []).length }) : null;
       const findings = bySlide.get(i + 1) || [];
+      if (!spec) {
+        return {
+          slide: i + 1,
+          applicability: 'not_applicable',
+          chartKind: '',
+          componentId: '',
+          chartFitScore: null,
+          dataSufficiencyScore: null,
+          visualLegibilityScore: null,
+          evidenceTraceScore: null,
+          findings
+        };
+      }
       const fail = findings.filter(f => f.level === 'fail').length;
       const review = findings.filter(f => f.level !== 'fail' && f.level !== 'info').length;
-      const sufficiency = spec ? dataSufficiency(spec) : { ok: true };
-      const sourceIds = spec && spec.sourceTrace ? spec.sourceTrace.sourceIds || [] : [];
+      const sufficiency = dataSufficiency(spec);
+      const sourceIds = spec.sourceTrace ? spec.sourceTrace.sourceIds || [] : [];
       return {
         slide: i + 1,
-        chartKind: spec ? spec.kind : '',
-        componentId: spec ? spec.componentId : '',
+        applicability: 'applicable',
+        chartKind: spec.kind,
+        componentId: spec.componentId,
         chartFitScore: Math.max(0, 100 - fail * 45 - review * 14),
-        dataSufficiencyScore: !spec ? 100 : (sufficiency.ok ? 100 : 40),
+        dataSufficiencyScore: sufficiency.ok ? 100 : 40,
         visualLegibilityScore: Math.max(0, 100 - findings.filter(f => f.issueCategory === 'renderer_layout_bug').length * 22),
-        evidenceTraceScore: !spec ? 100 : (sourceIds.length ? 100 : 64),
+        evidenceTraceScore: sourceIds.length ? 100 : 64,
         findings
       };
     })

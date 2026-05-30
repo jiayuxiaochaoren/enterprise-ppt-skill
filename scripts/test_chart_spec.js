@@ -255,6 +255,12 @@ const visual = chartVisualQA(normalized, normalized, {
 assert.equal(visual.status, 'pass');
 const scores = pageLevelChartScores(normalized, normalized, null);
 assert.equal(scores.slides[0].chartKind, 'bar');
+const noChartScores = pageLevelChartScores(normalizeDeckPlan({
+  industry: 'general-operations',
+  slides: [{ type: 'content', title: 'Narrative slide', claim: 'No chart intent here.' }]
+}), null, null);
+assert.equal(noChartScores.slides[0].applicability, 'not_applicable');
+assert.equal(noChartScores.slides[0].chartFitScore, null);
 const gate = chartAcceptanceGate(normalized, normalized, { slides: [{ slide: 1, missingRequiredComponents: [] }] }, { strict: false });
 assert.notEqual(gate.status, 'fail');
 

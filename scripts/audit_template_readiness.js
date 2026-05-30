@@ -83,6 +83,21 @@ function countPngs(dir) {
   }
 }
 
+function evidenceStrengthForRow(row = {}) {
+  const statuses = row.statuses || {};
+  const fixtures = row.fixtures || {};
+  const fixtureEvidence = [fixtures.plan, fixtures.pptx, fixtures.preview, fixtures.renderMeta]
+    .filter(Boolean)
+    .every(file => fs.existsSync(absolute(file)));
+  const qaEvidence = row.qa && row.qa.evidence && fs.existsSync(absolute(row.qa.evidence));
+  const acceptanceEvidence = Array.isArray(row.acceptanceEvidence) && row.acceptanceEvidence.length > 0;
+  const statusAllPass = REQUIRED_STATUS_FIELDS.every(field => normalizeStatus(statuses[field]) === 'pass');
+  if (statusAllPass && fixtureEvidence && qaEvidence && acceptanceEvidence) return 'strong';
+  if (statusAllPass && fixtureEvidence && qaEvidence) return 'moderate';
+  if (fixtureEvidence || qaEvidence) return 'partial';
+  return 'weak';
+}
+
 function statusMax(a, b) {
   return STATUS_RANK[a] >= STATUS_RANK[b] ? a : b;
 }
@@ -190,6 +205,10 @@ function summarize(matrix) {
   const orchestrationText = [
     readText('scripts/material_orchestration_prompt.js'),
     readText('scripts/material_pipeline.js'),
+    readText('scripts/material/clarification.js'),
+    readText('scripts/material/deck-plan-compiler.js'),
+    readText('scripts/material/extraction-schema.js'),
+    readText('scripts/material/ingest.js'),
     readText('scripts/material_to_deck_plan.js'),
     readText('scripts/industry_acceptance_matrix.js')
   ].join('\n');
@@ -262,11 +281,24 @@ function summarize(matrix) {
   invalidRows.forEach(label => issues.push({ id: label, field: 'statuses', type: 'invalid-status', message: `status must be one of ${STATUS_VALUES.join(', ')}` }));
 
   const totals = {};
+  const evidenceStrength = { strong: 0, moderate: 0, partial: 0, weak: 0 };
   REQUIRED_STATUS_FIELDS.forEach(field => {
     totals[field] = { missing: 0, partial: 0, pass: 0 };
     rows.forEach(row => {
       totals[field][normalizeStatus((row.statuses || {})[field])] += 1;
     });
+  });
+  rows.forEach(row => {
+    const strength = evidenceStrengthForRow(row);
+    evidenceStrength[strength] = (evidenceStrength[strength] || 0) + 1;
+    if (normalizeStatus((row.statuses || {}).qa) === 'pass' && strength !== 'strong') {
+      issues.push({
+        id: row.id,
+        field: 'evidenceStrength',
+        type: 'weak-evidence-strength',
+        message: `page family evidence strength is ${strength}`
+      });
+    }
   });
 
   const allPass = rows.length === REQUIRED_PAGE_FAMILIES.length && rows.every(row =>
@@ -287,12 +319,14 @@ function summarize(matrix) {
     pageFamilyCount: rows.length,
     requiredPageFamilyCount: REQUIRED_PAGE_FAMILIES.length,
     totals,
+    evidenceStrength,
     allPass,
     blockingCount: blocking.length,
     issues,
     rows: rows.map(row => ({
       id: row.id,
       statuses: row.statuses,
+      evidenceStrength: evidenceStrengthForRow(row),
       observed: row.observed,
       acceptanceEvidence: row.acceptanceEvidence
     }))
@@ -307,6 +341,7 @@ function printHuman(summary) {
     const t = summary.totals[field];
     console.log(`${field.padEnd(15)} pass ${String(t.pass).padStart(2)}  partial ${String(t.partial).padStart(2)}  missing ${String(t.missing).padStart(2)}`);
   });
+  console.log(`Evidence strength ${' '.padEnd(1)}strong ${String(summary.evidenceStrength.strong || 0).padStart(2)}  moderate ${String(summary.evidenceStrength.moderate || 0).padStart(2)}  partial ${String(summary.evidenceStrength.partial || 0).padStart(2)}  weak ${String(summary.evidenceStrength.weak || 0).padStart(2)}`);
   console.log('');
   const blockers = summary.issues.filter(issue =>
     issue.type === 'missing-renderer' ||
