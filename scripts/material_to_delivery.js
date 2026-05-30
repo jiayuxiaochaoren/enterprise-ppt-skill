@@ -9,11 +9,11 @@ const {
   validateExtraction,
   writeJson
 } = require('./material_pipeline');
-const {
-  criticBlockingFindings,
-  normalizeModelResults
-} = require('./material/model-results-contract');
 const { buildDraftExtraction } = require('./material/draft-extraction');
+const {
+  applyStandardModelResults,
+  readJsonOrStdin
+} = require('./material/model-results-io');
 const { deliveryMarkdown, deliveryReport } = require('./reports/delivery-report');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -115,49 +115,6 @@ function writeReport(outDir, report) {
   return reportPath;
 }
 
-function readJsonOrStdin(file) {
-  if (!file) return null;
-  if (file === '-') return JSON.parse(fs.readFileSync(0, 'utf8'));
-  return readJson(path.resolve(file));
-}
-
-function writeModelStage(outDir, name, value) {
-  if (!value) return '';
-  const file = path.join(outDir, `${name}.json`);
-  writeJson(file, value);
-  return file;
-}
-
-function applyStandardModelResults(opts, orchestrationDir, report) {
-  const raw = readJsonOrStdin(opts.modelResults);
-  if (!raw) return;
-  const normalized = normalizeModelResults(raw);
-  if (normalized.errors.length) {
-    report.status = 'invalid_model_results';
-    report.risks = [...(report.risks || []), ...normalized.errors];
-    report.nextActions.push('Fix --model-results JSON so it contains supported object stages: sourceAudit, storyPlan, extraction, critic.');
-    report.modelResultsInvalid = true;
-    return;
-  }
-  const { sourceAudit, storyPlan, extraction, critic } = normalized.value;
-  const sourceAuditPath = !opts.sourceAudit ? writeModelStage(orchestrationDir, 'source-audit', sourceAudit) : '';
-  const storyPlanPath = !opts.storyPlan ? writeModelStage(orchestrationDir, 'story-architecture', storyPlan) : '';
-  const extractionPath = !opts.modelJson ? writeModelStage(orchestrationDir, 'material-extraction', extraction) : '';
-  const criticPath = writeModelStage(orchestrationDir, 'model-critic', critic);
-  if (sourceAuditPath) opts.sourceAudit = sourceAuditPath;
-  if (storyPlanPath) opts.storyPlan = storyPlanPath;
-  if (extractionPath) opts.modelJson = extractionPath;
-  report.outputs.modelResults = rel(opts.modelResults === '-' ? orchestrationDir : opts.modelResults);
-  if (criticPath) report.outputs.modelCritic = rel(criticPath);
-  const blockers = criticBlockingFindings(critic);
-  if (blockers.length) {
-    report.status = 'critic_blocked';
-    report.risks = [...(report.risks || []), ...blockers.map(item => item.message || item.title || item.type || item.id)];
-    report.criticBlockingFindings = blockers;
-    report.nextActions.push('Resolve blocking model critic findings before deck planning or external delivery.');
-  }
-}
-
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help || !opts.inputs.length) {
@@ -182,7 +139,7 @@ function main() {
   if (report.summaryMarkdownPath) report.outputs.markdownSummary = rel(report.summaryMarkdownPath);
 
   const bundlePath = path.join(outDir, 'material-bundle.json');
-  const ocrResults = opts.ocrJson ? readJsonOrStdin(opts.ocrJson) : null;
+  const ocrResults = opts.ocrJson ? readJsonOrStdin(opts.ocrJson, readJson) : null;
   const bundle = ingestMaterials(opts.inputs, { root: process.cwd(), ocrResults, ocrCommand: opts.ocrCommand });
   writeJson(bundlePath, bundle);
   report.outputs.materialBundle = rel(bundlePath);
@@ -205,7 +162,14 @@ function main() {
   ]);
   report.steps.push(orchestration);
   report.outputs.orchestrationDir = rel(orchestrationDir);
-  applyStandardModelResults(opts, orchestrationDir, report);
+  applyStandardModelResults({
+    opts,
+    orchestrationDir,
+    report,
+    readJson,
+    writeJson,
+    rel
+  });
   if (report.modelResultsInvalid) {
     writeReport(outDir, report);
     process.exit(1);
