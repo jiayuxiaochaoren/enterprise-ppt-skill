@@ -18,7 +18,9 @@ Use this map before opening large implementation files.
 - `scripts/material/ingest.js`: material collection, PDF/Office/text/image ingestion, OCR attachment, table diagnostics, and source reliability reporting.
 - `scripts/material/clarification.js`: deterministic clarification gate and answer normalization.
 - `scripts/material/extraction-schema.js`: model extraction schema, prompt payload, and reference-context packaging.
-- `scripts/material/deck-plan-compiler.js`: material extraction validation and deck-plan compilation.
+- `scripts/material/deck-plan-compiler.js`: material extraction validation and deck-plan compilation facade for slide construction.
+- `scripts/material/source-trace.js`: source trace, proof object, and claim spine contract construction.
+- `scripts/material/slide-contract.js`: target slide count and material density contract logic.
 - `scripts/material/ocr.js`: OCR JSON normalization, page-level OCR helpers, and optional local OCR command adapter.
 - `scripts/material/tables.js`: lightweight table row/column detection for text-like sources.
 - `scripts/material/model-results-contract.js`: standard model-results validation and critic blocking detection.

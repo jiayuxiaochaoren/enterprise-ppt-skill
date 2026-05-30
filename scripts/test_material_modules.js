@@ -7,6 +7,8 @@ const { buildClarificationGate } = require('./material/clarification');
 const { validateExtraction } = require('./material/deck-plan-compiler');
 const { extractionSchema } = require('./material/extraction-schema');
 const { classifyImageRole } = require('./material/ingest');
+const { targetSlideContract } = require('./material/slide-contract');
+const { sourceTraceForClaim } = require('./material/source-trace');
 const { detectStructuredTables } = require('./material/tables');
 const {
   normalizeOcrResults,
@@ -49,6 +51,22 @@ assert.ok(ocrConfidence(match) < 0.9);
 const schema = extractionSchema();
 assert.equal(schema.version, 'material-extraction/v1');
 assert.ok(schema.claim_spine[0].source_pages);
+const contract = targetSlideContract(
+  { document: { requested_slide_count: 8 }, claim_spine: [{}, {}, {}], evidence: [{}], facts: [{}] },
+  { images: [], sources: [{}], textSummary: { numbers: ['78%'], charCount: 2000 } },
+  {},
+  { baseSlides: 3, claimCount: 3 }
+);
+assert.equal(contract.version, 'target-slides/v1');
+assert.equal(contract.requested, 8);
+
+const trace = sourceTraceForClaim(
+  { id:'claim-1', source_ids:['src-001'], source_pages:{ 'src-001':2 }, source_excerpts:{ 'src-001':'原文摘录' } },
+  { evidence: [] },
+  { sources: [{ id:'src-001', kind:'text', name:'brief.md', relativePath:'brief.md' }] }
+);
+assert.equal(trace.version, 'source-trace/v2');
+assert.equal(trace.sources[0].page, 2);
 
 const gate = buildClarificationGate(
   { images: [], textSummary: { numbers: [] }, sources: [{ text:'客户案例授权不明确，缺少联系人。' }] },

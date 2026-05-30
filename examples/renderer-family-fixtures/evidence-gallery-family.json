@@ -1,0 +1,28 @@
+{
+  "title": "Renderer Evidence Gallery Family Fixture",
+  "industry": "general-operations",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "case-gallery",
+      "title": "案例证据围绕现场、产品和结果展开",
+      "subtitle": "没有图片时仍保持证据叙事结构",
+      "items": [
+        { "title": "现场线索", "body": "说明客户场景和部署边界" },
+        { "title": "产品线索", "body": "说明能力和使用方式" },
+        { "title": "结果线索", "body": "说明复盘和下一步动作" }
+      ]
+    },
+    {
+      "type": "gallery",
+      "layoutVariant": "evidence-board",
+      "title": "证据板把材料来源和行动建议放在一起",
+      "cards": [
+        { "title": "来源", "body": "用户材料、截图和访谈摘要" },
+        { "title": "判断", "body": "优先确认可外发证据" },
+        { "title": "动作", "body": "补齐授权后进入正式版本" }
+      ]
+    }
+  ]
+}
