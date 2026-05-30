@@ -7,6 +7,12 @@ const { buildClarificationGate } = require('./material/clarification');
 const { validateExtraction } = require('./material/deck-plan-compiler');
 const { extractionSchema } = require('./material/extraction-schema');
 const { classifyImageRole } = require('./material/ingest');
+const {
+  chartFieldForProof,
+  claimVisibleText,
+  imagesForClaim,
+  metricsFromClaim
+} = require('./material/claim-slide-fields');
 const { targetSlideContract } = require('./material/slide-contract');
 const { sourceTraceForClaim } = require('./material/source-trace');
 const { detectStructuredTables } = require('./material/tables');
@@ -51,6 +57,17 @@ assert.ok(ocrConfidence(match) < 0.9);
 const schema = extractionSchema();
 assert.equal(schema.version, 'material-extraction/v1');
 assert.ok(schema.claim_spine[0].source_pages);
+assert.equal(chartFieldForProof('monthly-pulse-trend'), 'monthlyPulse');
+assert.deepEqual(metricsFromClaim({ claim:'OEE 提升至 78%，计划达到 85%' }).map(m => m.value), ['78%', '85%']);
+assert.ok(claimVisibleText({ claim:'核心判断', bullets:['证据一'] }).includes('证据一'));
+assert.deepEqual(
+  imagesForClaim(
+    { visuals:[{ source_id:'img-001', caption:'现场照片', role:'evidence' }] },
+    { evidence:[] },
+    { sources:[{ id:'img-001', kind:'image', path:'/tmp/site.png', name:'site.png' }] }
+  ),
+  [{ path:'/tmp/site.png', caption:'现场照片', role:'evidence' }]
+);
 const contract = targetSlideContract(
   { document: { requested_slide_count: 8 }, claim_spine: [{}, {}, {}], evidence: [{}], facts: [{}] },
   { images: [], sources: [{}], textSummary: { numbers: ['78%'], charCount: 2000 } },

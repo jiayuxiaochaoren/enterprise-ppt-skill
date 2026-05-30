@@ -24,6 +24,36 @@
         { "title": "业务应用层", "items": ["运营", "服务", "分析"] },
         { "title": "数据支撑层", "items": ["企业库", "工单库", "指标库"] }
       ]
+    },
+    {
+      "type": "architecture",
+      "layoutVariant": "service-blueprint",
+      "title": "服务蓝图把触点和后台责任连起来",
+      "touchpoints": [
+        { "title": "预约", "patient": "线上登记", "frontstage": "客服确认", "backstage": "排班协调", "evidence": "等待时长" },
+        { "title": "到场", "patient": "签到分诊", "frontstage": "导诊服务", "backstage": "资源联动", "evidence": "排队状态" },
+        { "title": "随访", "patient": "接收建议", "frontstage": "回访解释", "backstage": "质控复盘", "evidence": "满意度" }
+      ]
+    },
+    {
+      "type": "architecture-dark",
+      "layoutVariant": "hub-spoke",
+      "title": "多系统协同围绕统一平台展开",
+      "nodes": [
+        { "title": "客户入口", "body": "门户 / 小程序" },
+        { "title": "工单中心", "body": "派发 / 跟踪" },
+        { "title": "数据看板", "body": "指标 / 复盘" }
+      ]
+    },
+    {
+      "type": "architecture",
+      "layoutVariant": "production-topology",
+      "title": "产线拓扑把产品对象和交付资料对齐",
+      "layers": [
+        { "title": "产品与工艺对象", "items": ["输送设备", "涂装设备", "控制系统"] },
+        { "title": "制造交付动作", "items": ["需求确认", "加工制造", "控制联调", "现场安装"] },
+        { "title": "证据与交付资料", "items": ["图纸参数", "调试记录", "项目验收"] }
+      ]
     }
   ]
 }

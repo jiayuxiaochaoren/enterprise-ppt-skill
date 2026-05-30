@@ -1,7 +1,7 @@
 const RENDERER_CONTEXT_CONTRACT = {
   colors: ['colors', 'presentationSpec', 'panelFill'],
-  text: ['addText', 'addLabel', 'addNumber', 'sectionKicker', 'footerText', 'publicSlideNote', 'copyFallback', 'typeSize', 'profileFont'],
-  shapes: ['addRect', 'addHairline', 'PageNumber', 'lightCanvas', 'stageCanvas', 'addPhotoPanel', 'addDarkBreathingCircle', 'addPulseCurve'],
+  text: ['addText', 'addLabel', 'addNumber', 'sectionKicker', 'footerText', 'publicSlideNote', 'copyFallback', 'typeSize', 'profileFont', 'itemTitle', 'itemBody'],
+  shapes: ['addRect', 'addHairline', 'addArrowLine', 'PageNumber', 'lightCanvas', 'stageCanvas', 'addPhotoPanel', 'addDarkBreathingCircle', 'addPulseCurve'],
   components: ['componentRendererContext', 'renderChartSpec', 'recordChartConsumption'],
   assets: ['fileExists', 'designForSlide', 'galleryImages'],
   variants: ['variantOf'],

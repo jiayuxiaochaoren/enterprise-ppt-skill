@@ -19,6 +19,7 @@ Use this map before opening large implementation files.
 - `scripts/material/clarification.js`: deterministic clarification gate and answer normalization.
 - `scripts/material/extraction-schema.js`: model extraction schema, prompt payload, and reference-context packaging.
 - `scripts/material/deck-plan-compiler.js`: material extraction validation and deck-plan compilation facade for slide construction.
+- `scripts/material/claim-slide-fields.js`: claim-to-slide field helpers for metrics, chart/data component routing, visible text, contact extraction, and image refs.
 - `scripts/material/source-trace.js`: source trace, proof object, and claim spine contract construction.
 - `scripts/material/slide-contract.js`: target slide count and material density contract logic.
 - `scripts/material/ocr.js`: OCR JSON normalization, page-level OCR helpers, and optional local OCR command adapter.
@@ -61,7 +62,7 @@ Use this map before opening large implementation files.
   - `RENDER_META`: output metadata for validation and debugging.
 - `scripts/render/registry.js`: renderer registry used by `generate_pptx.js`.
 - `scripts/render/renderer-context.js`: stable context passed to extracted page-family renderers.
-- `scripts/render/page-families/**`: page-family route ownership and extracted high-value renderer entrypoints.
+- `scripts/render/page-families/**`: page-family route ownership and extracted high-value renderer implementations for financial, closing, architecture, and evidence/gallery flows.
 - `examples/renderer-family-fixtures/**`: focused renderer family regression plans.
 - `scripts/components/**`: reusable chart, table, scorecard, gallery, and proof components.
 
