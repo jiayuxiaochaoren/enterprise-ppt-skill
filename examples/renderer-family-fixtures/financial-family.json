@@ -78,6 +78,51 @@
         "cause": "复购客户和费用纪律共同推动。",
         "action": "保持投入边界，按月复盘现金回收。"
       }
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "oee-board",
+      "title": "产线 OEE 复盘连接维修动作",
+      "metrics": [
+        { "label": "OEE", "value": "78%", "delta": "+4pt", "note": "瓶颈工位改善" },
+        { "label": "维修响应", "value": "18min", "note": "班组响应更快" },
+        { "label": "良率", "value": "97%", "note": "返工率下降" }
+      ],
+      "oeeComponents": [
+        { "label": "稼动率", "value": "92%", "body": "停机窗口进入复盘" },
+        { "label": "性能率", "value": "84%", "body": "节拍波动可定位" },
+        { "label": "良率", "value": "97%", "body": "质量异常绑定工单" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "patient-service-scorecard",
+      "title": "患者服务指标回到触点闭环",
+      "metrics": [
+        { "label": "满意度", "value": "92%", "note": "复诊反馈改善" },
+        { "label": "等待时长", "value": "18min", "note": "预约分诊优化" },
+        { "label": "反馈闭环", "value": "86%", "note": "异常反馈更快处理" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "member-growth-board",
+      "title": "会员增长指标解释复购质量",
+      "metrics": [
+        { "label": "复购率", "value": "42%", "delta": "+6pt", "note": "高价值会员贡献提升" },
+        { "label": "客单价", "value": "268", "note": "套装组合拉动" },
+        { "label": "门店转化", "value": "31%", "note": "导购触达更稳定" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "adoption-revenue-board",
+      "title": "SaaS 采用指标连接收入扩展",
+      "metrics": [
+        { "label": "NRR", "value": "118%", "note": "扩展收入稳定" },
+        { "label": "激活率", "value": "64%", "note": "关键动作完成" },
+        { "label": "集成深度", "value": "3.2", "note": "系统嵌入提升" }
+      ]
     }
   ]
 }
