@@ -5,6 +5,21 @@ const RENDERER_CONTEXT_CONTRACT = {
   components: ['componentRendererContext', 'renderChartSpec', 'recordChartConsumption'],
   assets: ['fileExists', 'designForSlide', 'galleryImages', 'mediaForRole', 'resolveAssetPath', 'smartPhotoFit'],
   variants: ['variantOf'],
+  business: [
+    'PageNumber',
+    'addVisualPhotoPanel',
+    'canvasHeight',
+    'canvasWidth',
+    'copyFallback',
+    'footerText',
+    'itemBody',
+    'itemTitle',
+    'panelFill',
+    'profileFont',
+    'publicSlideNote',
+    'reportBoardNeedsRightOverlayRail',
+    'sectionKicker'
+  ],
   financial: [
     'brandWorldBusinessProof',
     'chartSpecToComponentId',

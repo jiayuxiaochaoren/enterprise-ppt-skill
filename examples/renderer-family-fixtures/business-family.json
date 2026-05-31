@@ -1,0 +1,49 @@
+{
+  "title": "Renderer Business Family Fixture",
+  "industry": "enterprise-services",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "comparison",
+      "title": "升级前后体验差异必须被量化",
+      "subtitle": "把现状、目标和管理动作放进同一张对比页。",
+      "columns": [
+        {
+          "title": "当前状态",
+          "items": ["流程分散", "数据口径不统一", "复盘依赖人工汇总"]
+        },
+        {
+          "title": "目标状态",
+          "items": ["统一入口", "指标口径固化", "例会直接读取证据"]
+        }
+      ],
+      "note": "对比项仅作为决策框架，最终口径需由业务负责人确认。"
+    },
+    {
+      "type": "report-board",
+      "title": "经营复盘集中呈现证据链",
+      "claim": "先看结论，再看支撑证据和决策建议。",
+      "coreTitle": "管理结论",
+      "summary": "当前增长来自关键客户扩容，但交付节奏仍需按风险等级分层管理。",
+      "decision": "优先固化高确定性机会，同时保留风险复盘机制。",
+      "items": [
+        { "title": "客户扩容", "body": "头部客户追加需求明确。" },
+        { "title": "交付风险", "body": "跨团队排期仍需统一。" },
+        { "title": "现金回收", "body": "关键节点需要绑定验收。" }
+      ]
+    },
+    {
+      "type": "value-tiles",
+      "title": "业务价值要能落到管理动作",
+      "intro": "一页说明价值主张、证据来源和后续动作。",
+      "cards": [
+        { "title": "提升复盘效率", "body": "把分散材料转为可讨论的管理视图。" },
+        { "title": "减少口径漂移", "body": "固定关键指标和事实来源。" },
+        { "title": "支持外部沟通", "body": "把可公开证据和待确认内容分开。" },
+        { "title": "沉淀交付资产", "body": "每次交付都生成可复用基线。" }
+      ],
+      "note": "真实收益需要结合客户材料继续校准。"
+    }
+  ]
+}
