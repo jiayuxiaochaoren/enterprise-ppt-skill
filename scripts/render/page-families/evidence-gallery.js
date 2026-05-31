@@ -1,4 +1,7 @@
 const family = 'evidenceGallery';
+const {
+  evidenceGalleryRendererKey
+} = require('./evidence-gallery-routing');
 
 const types = [
   'case-gallery',
@@ -843,22 +846,18 @@ function createEvidenceGalleryRenderers(ctx = {}) {
   function caseGallery(slide, plan, s, idx) {
     const C = ctx.colors();
     const variant = ctx.variantOf(s, 'triptych-gallery');
-    if (variant === 'case-hero') return caseEvidenceHero(slide, plan, s, idx);
-    if (variant === 'case-comparison') return plan.industry === 'energy-utility'
-      ? energySiteComparisonSlide(slide, plan, s, idx)
-      : caseComparisonSlide(slide, plan, s, idx);
-    if (variant === 'people-proof-mosaic') return peopleProofMosaic(slide, plan, s, idx);
-    if (variant === 'sustainability-proof-spread') return sustainabilityProofSpread(slide, plan, s, idx);
-    if (variant === 'consumer-proof-photo-grid') return consumerProofPhotoGrid(slide, plan, s, idx);
-    if (variant === 'product-evidence-story') return productEvidenceStory(slide, plan, s, idx);
-    if (variant === 'executive-proof-board') return executiveProofBoard(slide, plan, s, idx);
-    if (variant === 'brand-world-and-business-proof') return ctx.brandWorldBusinessProof(slide, plan, s, idx);
-    if (variant === 'evidence-board') return caseEvidenceBoard(slide, plan, s, idx);
-    if (variant === 'lookbook-story') return retailLookbookStory(slide, plan, s, idx);
-    if (variant === 'portfolio-evidence') return financePortfolioEvidenceGallery(slide, plan, s, idx);
-    if (variant === 'service-touchpoint') return healthcareTouchpointEvidenceGallery(slide, plan, s, idx);
-    if (variant === 'site-evidence') return energySiteEvidenceGallery(slide, plan, s, idx);
-    if (variant === 'prototype-flow') return saasPrototypeFlowGallery(slide, plan, s, idx);
+    const variantRenderers = {
+      brandWorldBusinessProof: ctx.brandWorldBusinessProof, caseComparisonSlide, caseEvidenceBoard, caseEvidenceHero,
+      consumerProofPhotoGrid, energySiteComparisonSlide, energySiteEvidenceGallery, executiveProofBoard,
+      financePortfolioEvidenceGallery, healthcareTouchpointEvidenceGallery, peopleProofMosaic, productEvidenceStory,
+      retailLookbookStory, saasPrototypeFlowGallery, sustainabilityProofSpread
+    };
+    const rendererKey = evidenceGalleryRendererKey(variant, plan);
+    if (rendererKey) {
+      const renderer = variantRenderers[rendererKey];
+      if (typeof renderer !== 'function') throw new Error(`missing evidence gallery renderer: ${rendererKey}`);
+      return renderer(slide, plan, s, idx);
+    }
     ctx.lightCanvas(slide);
     ctx.sectionKicker(slide, 'CASE EVIDENCE', 0.86, 0.72, false);
     ctx.addText(slide, s.title || '案例与素材证据', { x:0.84, y:1.05, w:5.8, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
