@@ -542,7 +542,7 @@ function createFinancialRenderers(ctx = {}) {
     addHairline(slide, chart.x, chart.y+chart.h, chart.w, C.line, 10, 0.50);
     slide.addShape('line', { x:chart.x, y:chart.y, w:0, h:chart.h, line:{color:C.line, transparency:24, width:0.34} });
     const trend = computeMonthlyTrendPoints(items, chart, [456.2, 402.2, 618.4, 520, 560]);
-    const { values, max, points, baselineY } = trend;
+    const { values, min, max, points, baselineY } = trend;
     points.forEach((p, i) => {
       const color = i === values.indexOf(max) ? C.accent : (i === values.indexOf(min) ? C.cyan : C.violet);
       slide.addShape('line', { x:p.x, y:p.y, w:0, h:Math.max(0.04, baselineY - p.y), line:{color, transparency:18, width:0.44} });
