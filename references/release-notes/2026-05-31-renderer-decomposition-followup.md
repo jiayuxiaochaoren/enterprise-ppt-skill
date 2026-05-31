@@ -51,9 +51,9 @@
 
 ### P2: Improve Delivery Evidence
 
-- Add a concise "what changed since baseline" section to delivery/validation summaries.
-- Surface preview provider, OCR confidence risks, model critic blockers, and asset authorization state in one short human-readable report.
-- Preserve full JSON for machine checks.
+- Added `sections.evidence` to the shared validation, delivery, and verification summary schema.
+- Markdown summaries now include an "Evidence Snapshot" before pass/risk details.
+- Preview provider, render-meta state, visual QA status, OCR risk counts, model critic blockers, asset gate state, and audit evidence strength now surface in one short human-readable report while preserving full JSON for machine checks.
 
 ### P2: Reduce Test Matrix Friction
 

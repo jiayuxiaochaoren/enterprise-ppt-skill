@@ -1,7 +1,9 @@
 const assert = require('assert/strict');
 const {
+  deliveryMarkdown,
   deliveryReport,
   parseJsonFromOutput,
+  validationMarkdown,
   validationReport,
   verificationReport
 } = require('./reports/delivery-report');
@@ -37,9 +39,12 @@ const validation = validationReport({
 assert.equal(validation.version, 'delivery-report-summary/v1');
 assert.equal(validation.kind, 'validation');
 assert.equal(validation.meta.previewStatus, 'metadata_fallback');
+assert.ok(validation.sections.evidence.some(item => item.id === 'preview' && item.provider === 'metadata_fallback'));
+assert.ok(validation.sections.evidence.some(item => item.id === 'render_meta' && item.present === true));
 assert.ok(validation.sections.not_applicable.some(item => item.id === 'chart_score'));
 assert.ok(validation.sections.risk.some(item => item.id === 'preview_available'));
 assert.ok(validation.sections.unavailable.some(item => item.id === 'preview'));
+assert.ok(validationMarkdown({ report: validation }).includes('## Evidence Snapshot'));
 
 const delivery = deliveryReport({
   status: 'complete',
@@ -49,11 +54,18 @@ const delivery = deliveryReport({
     { label: 'validation', status: 'pass', stdout: '{"preview":{"status":"unavailable","provider":"unavailable","error":"visual_preview_unavailable"}}' }
   ],
   outputs: { pptx: 'deck.pptx' },
+  assetGate: { status: 'needs_user_input', questionCount: 2 },
+  ocr: { providedCount: 1, possibleMissingCount: 2, needsConfirmationCount: 1 },
+  criticBlockingFindings: [{ id: 'claim-risk', severity: 'high' }],
   nextActions: []
 });
 assert.equal(delivery.kind, 'delivery');
 assert.equal(delivery.meta.previewStatus, 'unavailable');
 assert.ok(delivery.sections.unavailable.some(item => /Preview/.test(item.label)));
+assert.ok(delivery.sections.evidence.some(item => item.id === 'asset_gate' && item.status === 'needs_user_input'));
+assert.ok(delivery.sections.evidence.some(item => item.id === 'ocr' && item.needsConfirmationCount === 1));
+assert.ok(delivery.sections.evidence.some(item => item.id === 'model_critic' && item.status === 'blocked'));
+assert.ok(deliveryMarkdown({ report: delivery }).includes('Model critic: blocked by 1 finding'));
 
 const verification = verificationReport({
   success: true,
@@ -78,6 +90,8 @@ const verification = verificationReport({
 assert.equal(verification.kind, 'delivery-verification');
 assert.equal(verification.meta.previewProvider, 'unavailable');
 assert.equal(verification.meta.hardeningEvidenceStrength.strong, 1);
+assert.ok(verification.sections.evidence.some(item => item.id === 'hardening_evidence_strength' && /strong:1/.test(item.label)));
+assert.ok(verification.sections.evidence.some(item => item.id === 'verification_steps' && item.passCount === 2));
 assert.ok(verification.sections.pass.some(item => item.id === 'formal validation'));
 assert.ok(verification.sections.unavailable.some(item => item.id === 'preview'));
 

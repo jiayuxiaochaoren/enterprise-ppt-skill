@@ -76,7 +76,7 @@ Use this map before opening large implementation files.
 
 - `scripts/validate_pptx.js`: PPTX structure, text, placeholder, optional preview validation, provider fallback, and Markdown summary output.
 - `scripts/preview/provider.js`: Keynote, LibreOffice, and metadata fallback preview provider adapter.
-- `scripts/reports/delivery-report.js`: shared Markdown summary formatting for validation and delivery runs.
+- `scripts/reports/delivery-report.js`: shared JSON/Markdown summary formatting for validation, delivery, and verification runs, including the human-readable evidence snapshot.
 - `scripts/visual_qa.js`: visual/readability/composition checks from previews and deck plan metadata.
 - `scripts/run_all_tests.js`: grouped test runner for unit, pipeline, render, visual, and delivery layers, with fast/slow/full profiles for PR and nightly gates.
 - `scripts/test_intelligence_layers.js`: broad design intelligence regression.
