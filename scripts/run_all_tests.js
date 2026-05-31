@@ -6,7 +6,7 @@ const cp = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const TEST_GROUPS = {
   unit: [
-    /^test_(chart_spec|density_strategy|design_system_modules|image_layout_strategy|metadata_policy|quality_mode|render_content_helpers|render_geometry|render_meta_audits|render_meta_schema|renderer_modularization|routing|typography_system)\.js$/
+    /^test_(chart_spec|density_strategy|design_system_modules|design_text_utils|image_layout_strategy|metadata_policy|quality_mode|render_content_helpers|render_geometry|render_meta_audits|render_meta_schema|renderer_modularization|routing|typography_system)\.js$/
   ],
   pipeline: [
     /^test_(acceptance_briefs|asset_decision_gate|composition_planner|connector_pages|industry_pack_depth|intelligence_layers|material_modules|material_pipeline|model_orchestration|orchestration_contract|reference_recipe_system|rhythm_planner)\.js$/

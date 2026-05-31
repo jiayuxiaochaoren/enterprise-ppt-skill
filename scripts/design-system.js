@@ -74,6 +74,14 @@ const {
   createAestheticModelHelpers
 } = require('./design/aesthetic-model');
 const {
+  clampText,
+  compactUnique,
+  flattenText,
+  keywordHit,
+  matchKeywordList,
+  textKeywords
+} = require('./design/text-utils');
+const {
   containsCjkText,
   inferDeckLanguage,
   languagePolicyFor,
@@ -346,10 +354,6 @@ const {
   themeIntentFor
 });
 
-function compactUnique(values = []) {
-  return [...new Set(values.filter(Boolean))];
-}
-
 function isCompanyIntroDeck(plan = {}) {
   return /company-intro|公司介绍|能力介绍|企业介绍|企业简介|宣传册/i.test(String(
     (plan.materialIntelligence && plan.materialIntelligence.pptType) ||
@@ -529,64 +533,6 @@ function proofObjectIdForSlide(s = {}) {
     return String(s.layoutVariant || s.variant || '');
   }
   return value;
-}
-
-function flattenText(value) {
-  if (value == null) return '';
-  if (typeof value === 'string' || typeof value === 'number') return String(value);
-  if (Array.isArray(value)) return value.map(flattenText).filter(Boolean).join(' ');
-  if (typeof value === 'object') {
-    return Object.keys(value)
-      .filter(k => ![
-        'image',
-        'images',
-        'visual',
-        'media',
-        'referenceRecipe',
-        'previousLayoutVariant',
-        'previousVariant',
-        'previousProofObject',
-        'previousChartSpec',
-        'generatedAssetPrompt',
-        'semanticIntent',
-        'semanticConfidence',
-        'semanticPurpose',
-        'semanticRelations',
-        'semanticScores',
-        'industryEntities',
-        'candidateProofObjects',
-        'narrativeRole',
-        'proofObject',
-        'proof',
-        'assetGeneration',
-        'compositionPlan',
-        'componentPlan',
-        'layoutPlan',
-        'sourceTrace',
-        'sourceIds',
-        'source_ids',
-        'evidenceIds',
-        'evidence_ids',
-        'sources',
-        'materialIntelligence'
-      ].includes(k))
-      .map(k => flattenText(value[k]))
-      .filter(Boolean)
-      .join(' ');
-  }
-  return '';
-}
-
-function keywordHit(text, names = []) {
-  const lower = String(text || '').toLowerCase();
-  return names.some(k => lower.includes(String(k).toLowerCase()));
-}
-
-function matchKeywordList(text, names = []) {
-  const lower = String(text || '').toLowerCase();
-  return names
-    .filter(k => lower.includes(String(k).toLowerCase()))
-    .map(String);
 }
 
 function camelProofField(id = '') {
@@ -1599,16 +1545,6 @@ function pickLayoutVariant(plan = {}, s = {}, type = s.type, signals = contentSi
     return s.closingVariant || 'auto';
   }
   return s.layoutVariant;
-}
-
-function textKeywords(text) {
-  return String(text || '').toLowerCase().split(/[^a-z0-9\u4e00-\u9fff%％+-]+/).filter(Boolean);
-}
-
-function clampText(text, maxChars) {
-  const s = String(text || '').replace(/\s+/g, ' ').trim();
-  if (!maxChars || s.length <= maxChars) return s;
-  return `${s.slice(0, Math.max(0, maxChars - 1)).trim()}…`;
 }
 
 const CHART_SPEC_SUPPRESSED_NATIVE_VARIANTS = new Set([
