@@ -37,6 +37,9 @@ const {
   createComponentPlanAuditHelpers
 } = require('./design/component-plan-audit');
 const {
+  createDeckStructureAuditHelpers
+} = require('./design/deck-structure-audit');
+const {
   createCompositionPlanningHelpers
 } = require('./design/composition-planning');
 const {
@@ -277,5 +280,29 @@ const componentAudit = componentAuditHelpers.componentPlanAudit({}, {
   }]
 });
 assert.ok(componentAudit.findings.some(f => f.type === 'riskRegisterWithoutRows'));
+
+const structureAuditHelpers = createDeckStructureAuditHelpers({
+  hasCommercialLogicChain: slide => Boolean(slide.businessLogic),
+  normalizeDeckPlan: plan => plan,
+  proofObjectIdForSlide: slide => slide.proofObject || ''
+});
+const pageCountAudit = structureAuditHelpers.pageCountAudit(
+  { targetSlides:{ requested:3 } },
+  { targetSlides:{ requested:3 }, slides:[{ type:'cover' }, { type:'closing' }] }
+);
+assert.equal(pageCountAudit.status, 'fail');
+const reportDepthAudit = structureAuditHelpers.reportDepthAudit({}, {
+  slides: [
+    { type:'cover' },
+    { type:'executive-blocks', proofObject:'claim-1', componentPlan:{ version:'component-plan/v1' }, businessLogic:{ action:'fix' } },
+    { type:'executive-blocks' },
+    { type:'executive-blocks' },
+    { type:'executive-blocks' },
+    { type:'executive-blocks' },
+    { type:'executive-blocks' },
+    { type:'closing' }
+  ]
+});
+assert.ok(reportDepthAudit.findings.some(f => f.type === 'reportProofDepthThin'));
 
 console.log('design system modules ok');
