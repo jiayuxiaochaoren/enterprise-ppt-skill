@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "commonjs",
   "scripts": {
-    "sample": "mkdir -p out/preview && node scripts/generate_pptx.js examples/sample-deck-plan.json out/sample.pptx && node scripts/validate_pptx.js out/sample.pptx --expect-slides 10 --require 新能源,告警 --preview-dir out/preview",
+    "sample": "mkdir -p out/preview && node scripts/generate_pptx.js examples/sample-deck-plan.json out/sample.pptx && node scripts/validate_pptx.js out/sample.pptx --expect-slides 10 --require 新能源,告警 --preview-dir out/preview --preview-optional --summary",
     "test": "node scripts/run_all_tests.js",
     "test:unit": "node scripts/run_all_tests.js --group unit",
     "test:pipeline": "node scripts/run_all_tests.js --group pipeline",

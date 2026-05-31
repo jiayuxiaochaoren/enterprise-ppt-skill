@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+const { detectPreviewProviders } = require('./preview/provider');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -62,28 +63,39 @@ function runStep(name, cmd, argv, opts = {}) {
   return row;
 }
 
-function keynoteAvailable() {
-  return fs.existsSync('/Applications/Keynote.app') && process.platform === 'darwin';
-}
-
 function parseJson(text = '') {
+  const trimmed = String(text || '').trim();
   try {
-    return JSON.parse(text);
+    return JSON.parse(trimmed);
   } catch (_) {
-    return null;
+    const first = trimmed.indexOf('{');
+    const last = trimmed.lastIndexOf('}');
+    if (first >= 0 && last > first) {
+      try {
+        return JSON.parse(trimmed.slice(first, last + 1));
+      } catch (__) {
+        return null;
+      }
+    }
   }
+  return null;
 }
 
 function stepByName(steps = [], name = '') {
   return steps.find(step => step.name === name) || {};
 }
 
+function validationPreview(raw = {}) {
+  const validation = raw.validation || {};
+  const validationSummary = validation.summary || validation;
+  return validationSummary.preview || {};
+}
+
 function verificationSummary(report = {}, raw = {}) {
   const hardening = raw.hardening || {};
   const template = raw.template || {};
-  const validation = raw.validation || {};
-  const validationSummary = validation.summary || validation;
-  const preview = validationSummary.preview || {};
+  const preview = validationPreview(raw);
+  const previewUnavailable = Boolean(preview.error || ['metadata_fallback', 'unavailable'].includes(preview.status));
   return {
     version: 'delivery-report-summary/v1',
     kind: 'delivery-verification',
@@ -99,7 +111,9 @@ function verificationSummary(report = {}, raw = {}) {
       pass: report.steps.filter(step => step.status === 'pass').map(step => ({ id: step.name, label: step.name })),
       risk: report.steps.filter(step => step.status === 'fail').map(step => ({ id: step.name, label: `${step.name} failed` })),
       not_applicable: [],
-      unavailable: preview.error ? [{ id: 'preview', label: preview.error, detail: preview.detail || '' }] : [{ id: 'none', label: 'None' }],
+      unavailable: previewUnavailable
+        ? [{ id: 'preview', label: preview.error || preview.status, detail: preview.detail || '' }]
+        : [{ id: 'none', label: 'None' }],
       next_actions: report.success ? [{ id: 'review', label: 'Review generated PPTX, render-meta, and preview images before external delivery.' }] : [{ id: 'fix', label: 'Fix failing delivery verification step and rerun verify:delivery.' }]
     }
   };
@@ -116,6 +130,7 @@ function main() {
   const previewDir = path.resolve(ROOT, opts.previewDir);
   fs.mkdirSync(path.dirname(sampleOut), { recursive: true });
   fs.mkdirSync(previewDir, { recursive: true });
+  const previewCapability = detectPreviewProviders();
 
   const steps = [];
   steps.push(runStep('skill metadata', 'npm', ['run', 'validate:skill', '--silent']));
@@ -135,7 +150,7 @@ function main() {
     ];
     if (!opts.skipPreview) validateArgs.push('--preview-dir', previewDir);
     if (opts.summary) validateArgs.push('--summary');
-    if (!keynoteAvailable() || opts.skipPreview) validateArgs.push('--preview-optional');
+    if (!previewCapability.keynote || opts.skipPreview) validateArgs.push('--preview-optional');
     steps.push(runStep('formal validation', process.execPath, validateArgs, { timeout: 180000 }));
   }
 
@@ -145,6 +160,7 @@ function main() {
     template: parseJson(stepByName(steps, 'template readiness').stdout),
     validation: parseJson(stepByName(steps, 'formal validation').stdout)
   };
+  const preview = validationPreview(raw);
   const report = {
     version: 'delivery-verification/v1',
     success: failed.length === 0,
@@ -152,7 +168,14 @@ function main() {
     samplePlan: path.relative(ROOT, samplePlan),
     sampleOut: path.relative(ROOT, sampleOut),
     previewDir: path.relative(ROOT, previewDir),
-    previewMode: opts.skipPreview ? 'skipped' : (keynoteAvailable() ? 'keynote' : 'metadata-fallback'),
+    previewMode: opts.skipPreview ? 'skipped' : (preview.provider || preview.status || previewCapability.preferredProvider || 'metadata_fallback'),
+    previewCapability: {
+      preferredProvider: previewCapability.preferredProvider,
+      keynote: Boolean(previewCapability.keynote),
+      keynoteDetail: previewCapability.keynoteDetail || '',
+      libreoffice: Boolean(previewCapability.libreoffice),
+      pdftoppm: Boolean(previewCapability.pdftoppm)
+    },
     steps: steps.map(step => ({
       name: step.name,
       status: step.status,

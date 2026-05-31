@@ -2,11 +2,25 @@ const assert = require('assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { detectPreviewProviders, exportPreviews } = require('./preview/provider');
+const {
+  detectPreviewProviders,
+  exportPreviews,
+  keynoteAutomationStatus,
+  keynoteExportScript
+} = require('./preview/provider');
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ppt-preview-provider-'));
 const pptx = path.join(dir, 'sample.pptx');
 fs.writeFileSync(pptx, 'not a real pptx; provider mock only');
+
+const keynoteScript = keynoteExportScript({
+  file: '/tmp/deck "quote".pptx',
+  previewDir: '/tmp/preview dir'
+});
+assert.ok(keynoteScript.includes('export theDoc to POSIX file "/tmp/preview dir" as slide images'));
+assert.ok(!keynoteScript.includes('image format:PNG'));
+assert.ok(keynoteScript.includes('/tmp/deck \\"quote\\".pptx'));
+assert.equal(keynoteAutomationStatus({ PPTX_DISABLE_KEYNOTE_PREVIEW: '1' }).available, false);
 
 const unavailable = exportPreviews({
   file: pptx,

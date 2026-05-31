@@ -26,38 +26,101 @@ function firstCommand(candidates = []) {
   return '';
 }
 
+function numericEnv(env = {}, key, fallback) {
+  const value = Number(env[key]);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function sleepSync(ms) {
+  try {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+  } catch (_) {
+    const end = Date.now() + ms;
+    while (Date.now() < end) {}
+  }
+}
+
+function transientKeynoteError(detail = '') {
+  return /Connection Invalid|Connection invalid|cannot get application|不能获得|Application isn't running|-1728/i.test(String(detail));
+}
+
 function previewFilesInDir(dir) {
   return fs.existsSync(dir)
     ? fs.readdirSync(dir).filter(x => /\.png$/i.test(x)).sort().map(x => path.join(dir, x))
     : [];
 }
 
+function keynoteAutomationStatus(env = process.env, opts = {}) {
+  const keynoteApp = '/Applications/Keynote.app';
+  if (env.PPTX_DISABLE_KEYNOTE_PREVIEW === '1') {
+    return { available:false, app:'', detail:'PPTX_DISABLE_KEYNOTE_PREVIEW=1' };
+  }
+  if (process.platform !== 'darwin' || !fs.existsSync(keynoteApp)) {
+    return { available:false, app:'', detail:'Keynote.app is not installed' };
+  }
+  const attempts = Math.max(1, Math.floor(opts.attempts || numericEnv(env, 'PPTX_KEYNOTE_PROBE_ATTEMPTS', 2)));
+  const delayMs = Math.max(0, Math.floor(opts.delayMs || numericEnv(env, 'PPTX_KEYNOTE_RETRY_DELAY_MS', 400)));
+  let detail = '';
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const res = cp.spawnSync('osascript', ['-e', 'tell application "Keynote" to count documents'], {
+      encoding:'utf8',
+      stdio:['ignore', 'pipe', 'pipe'],
+      timeout:10000
+    });
+    if (res.status === 0) return { available:true, app:keynoteApp, detail:'' };
+    detail = String(res.stderr || res.stdout || '').trim() || `osascript exited with ${res.status}`;
+    if (attempt < attempts && transientKeynoteError(detail)) sleepSync(delayMs);
+    else break;
+  }
+  return { available:false, app:keynoteApp, detail:`Keynote automation unavailable: ${detail}` };
+}
+
+function keynoteExportScript({ file, previewDir }) {
+  return [
+    'tell application "Keynote"',
+    `  set theDoc to open POSIX file "${applePath(file)}"`,
+    `  export theDoc to POSIX file "${applePath(previewDir)}" as slide images`,
+    '  close theDoc saving no',
+    'end tell',
+    ''
+  ].join('\n');
+}
+
 function detectPreviewProviders(env = process.env) {
-  const keynote = process.platform === 'darwin' && fs.existsSync('/Applications/Keynote.app') && env.PPTX_DISABLE_KEYNOTE_PREVIEW !== '1';
+  const keynote = keynoteAutomationStatus(env);
   const libreoffice = firstCommand([env.LIBREOFFICE_BIN, env.SOFFICE_BIN, 'soffice', 'libreoffice']);
   const pdftoppm = firstCommand([env.PDFTOPPM_BIN, 'pdftoppm']);
   return {
-    keynote: keynote ? '/Applications/Keynote.app' : '',
+    keynote: keynote.available ? keynote.app : '',
+    keynoteDetail: keynote.detail || '',
     libreoffice,
     pdftoppm,
-    preferredProvider: keynote ? 'keynote' : (libreoffice && pdftoppm ? 'libreoffice' : 'metadata_fallback')
+    preferredProvider: keynote.available ? 'keynote' : (libreoffice && pdftoppm ? 'libreoffice' : 'metadata_fallback')
   };
 }
 
 function exportKeynotePreviews({ file, previewDir, run, env = process.env }) {
-  const keynoteApp = '/Applications/Keynote.app';
-  if (env.PPTX_DISABLE_KEYNOTE_PREVIEW === '1') return { skipped:true, detail:'PPTX_DISABLE_KEYNOTE_PREVIEW=1' };
-  if (process.platform !== 'darwin' || !fs.existsSync(keynoteApp)) return { skipped:true, detail:'Keynote.app is not installed' };
+  const keynote = keynoteAutomationStatus(env);
+  if (!keynote.available) return { skipped:true, detail:keynote.detail };
+  const scriptPath = path.join(previewDir, `.keynote-export-${process.pid}-${Date.now()}.applescript`);
+  const attempts = Math.max(1, Math.floor(numericEnv(env, 'PPTX_KEYNOTE_EXPORT_ATTEMPTS', 2)));
+  const delayMs = Math.max(0, Math.floor(numericEnv(env, 'PPTX_KEYNOTE_RETRY_DELAY_MS', 400)));
+  let detail = '';
   try {
-    run('osascript', [
-      '-e', 'tell application "Keynote"',
-      '-e', `set theDoc to open POSIX file "${applePath(file)}"`,
-      '-e', `export theDoc to POSIX file "${applePath(previewDir)}" as slide images with properties {image format:PNG}`,
-      '-e', 'close theDoc saving no',
-      '-e', 'end tell'
-    ], { timeout:90000 });
-  } catch (e) {
-    return { failed:true, detail:String(e.message || e) };
+    fs.writeFileSync(scriptPath, keynoteExportScript({ file, previewDir }), 'utf8');
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        run('osascript', [scriptPath], { timeout:90000 });
+        detail = '';
+        break;
+      } catch (e) {
+        detail = String(e.message || e);
+        if (attempt < attempts && transientKeynoteError(detail)) sleepSync(delayMs);
+        else return { failed:true, detail };
+      }
+    }
+  } finally {
+    fs.rmSync(scriptPath, { force:true });
   }
   const files = previewFilesInDir(previewDir);
   return files.length ? { provider:'keynote', files } : { failed:true, detail:'Keynote export completed but produced no PNG files' };
@@ -144,5 +207,7 @@ module.exports = {
   detectPreviewProviders,
   exportPreviews,
   firstCommand,
+  keynoteAutomationStatus,
+  keynoteExportScript,
   previewFilesInDir
 };
