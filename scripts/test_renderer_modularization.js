@@ -31,6 +31,9 @@ const {
   plannedComponentsForSlide,
   reportBoardNeedsRightOverlayRail
 } = require('./render/overlay-contract');
+const {
+  createRenderMetaHelpers
+} = require('./render/render-meta');
 
 assert.equal(typeof requirePptxGen(), 'function');
 assert.equal(stableStringify({ b:2, a:1 }), '{"a":1,"b":2}');
@@ -103,6 +106,34 @@ assert.equal(overlayHelpers.overlaySlotConflicts([{ id:'a', x:0, y:0, w:1, h:1 }
 const energyContract = overlayHelpers.nativeRendererContractFor({ industry:'energy-utility' }, { type:'architecture' }, 'energyArchitecture');
 assert.ok(energyContract.ownedComponents.includes('load-curve-band'));
 assert.ok(energyContract.occupiedZones.some(item => item.id === 'topology-board'));
+const renderMetaHelpers = createRenderMetaHelpers({
+  chartConsumedFields: spec => Object.keys(spec).filter(key => key !== 'visualChecks'),
+  chartSpecToComponentId: spec => `${spec.kind || 'unknown'}-component`,
+  cwd: () => '/repo',
+  mediaForRole: () => 'assets/photo.jpg',
+  shortHash: value => `hash:${String(value).slice(0, 4)}`,
+  slideRole: () => 'evidence',
+  visualRole: () => 'proof'
+});
+assert.deepEqual(renderMetaHelpers.assetRefsForSlide({}, {
+  image:'assets/photo.jpg',
+  visual:{ images:['https://example.com/a.png', 'assets/photo.jpg'] }
+}), ['assets/photo.jpg', 'https://example.com/a.png']);
+const assetDecision = renderMetaHelpers.assetDecisionForMeta({}, {
+  generatedAssetPrompt:'render product proof',
+  proof:{ sourceTrace:{
+    assetAuthorizationStatus:'licensed',
+    imageProvenance:[{ proofEligibility:'factual-proof', provenanceClass:'client-supplied', authorizationStatus:'licensed' }]
+  } }
+});
+assert.equal(assetDecision.mode, 'bound');
+assert.equal(assetDecision.generatedAssetPromptHash, 'hash:rend');
+assert.equal(assetDecision.proofUse, 'factual-proof');
+assert.deepEqual(renderMetaHelpers.compactChartSpecForMeta({ kind:'bar', categories:['A'], sourceTrace:{ id:'s1' } }).componentId, 'bar-component');
+const chartSlide = {};
+renderMetaHelpers.recordChartConsumption(chartSlide, { requestedKind:'waterfall', kind:'bar', title:'Chart' }, { rendered:true, rendererModule:'fixture', componentId:'bar-chart' }, { mode:'overlay' });
+assert.equal(chartSlide.__codexChartConsumption.degraded, true);
+assert.equal(chartSlide.__codexChartConsumption.actualComponentId, 'bar-chart');
 const context = createRendererContext({ colors: () => ({ accent: '000000' }) });
 assert.equal(context.colors().accent, '000000');
 assert.ok(RENDERER_CONTEXT_CONTRACT.text.includes('addText'));
