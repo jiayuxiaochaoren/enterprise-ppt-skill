@@ -34,6 +34,9 @@ const {
 const {
   createRenderMetaHelpers
 } = require('./render/render-meta');
+const {
+  createOverlayRenderer
+} = require('./render/overlay-renderer');
 
 assert.equal(typeof requirePptxGen(), 'function');
 assert.equal(stableStringify({ b:2, a:1 }), '{"a":1,"b":2}');
@@ -106,6 +109,81 @@ assert.equal(overlayHelpers.overlaySlotConflicts([{ id:'a', x:0, y:0, w:1, h:1 }
 const energyContract = overlayHelpers.nativeRendererContractFor({ industry:'energy-utility' }, { type:'architecture' }, 'energyArchitecture');
 assert.ok(energyContract.ownedComponents.includes('load-curve-band'));
 assert.ok(energyContract.occupiedZones.some(item => item.id === 'topology-board'));
+const overlayRendererCalls = [];
+const overlayRenderer = createOverlayRenderer({
+  chartComponentIds: new Set(['bar-chart']),
+  colors: () => ({
+    accent:'0066FF',
+    body:'222222',
+    captionOnImage:'FFFFFF',
+    cyan:'00FFFF',
+    darkLine:'334155',
+    ink2:'0F172A',
+    line:'CBD5E1',
+    white:'FFFFFF'
+  }),
+  compactText: (text, maxChars) => String(text || '').replace(/\s+/g, ' ').trim().slice(0, maxChars),
+  componentRendererContext: slide => ({ slide, fixture:true }),
+  itemBody: value => typeof value === 'string' ? '' : ((value && (value.body || value.note || value.text)) || ''),
+  itemTitle: (value, fallback = '') => typeof value === 'string' ? value : ((value && (value.title || value.label || value.value)) || fallback),
+  addCaptionBar: (...args) => overlayRendererCalls.push(['caption', args]),
+  addLabel: (...args) => overlayRendererCalls.push(['label', args]),
+  addRect: (...args) => overlayRendererCalls.push(['rect', args]),
+  addSmartPhotoPanel: (...args) => overlayRendererCalls.push(['photo', args]),
+  addText: (...args) => overlayRendererCalls.push(['text', args]),
+  fileExists: file => file === '/tmp/fixture-image.png',
+  mediaForRole: () => '/tmp/fixture-image.png',
+  metricStrip: (slide, metrics, x, y, w, opts) => ({ rendered:true, bbox:{ x, y, w, h:opts.h }, itemCount:metrics.length }),
+  nativeDrawnEvidenceRendererModule: 'fixture/native',
+  overlaySlotForComponent: overlayHelpers.overlaySlotForComponent,
+  componentBlockedByContract: overlayHelpers.componentBlockedByContract,
+  componentSlotConflicts: overlayHelpers.componentSlotConflicts,
+  overlaySlotConflicts: overlayHelpers.overlaySlotConflicts,
+  panelFill: () => 'F8FAFC',
+  processRail: (...args) => overlayRendererCalls.push(['process', args]),
+  recordChartConsumption: (slide, spec, component, meta) => { slide.__chartRecorded = { spec, component, meta }; },
+  renderChartSpec: (ctx, spec, box) => ({ rendered:true, bbox:box, rendererModule:'fixture/chart', componentId:'bar-chart' }),
+  renderProofGallery: (ctx, items, opts) => ({ rendered:Boolean(items.length), bbox:opts, itemCount:items.length }),
+  renderRiskRegister: (ctx, rows, opts) => ({ rendered:Boolean(rows.length), bbox:opts, rowCount:rows.length }),
+  renderValueChain: (ctx, points, opts) => ({ rendered:Boolean(points.length), bbox:opts, itemCount:points.length }),
+  routeChartSpec: () => ({ kind:'bar', values:[1, 2] }),
+  slideHasChartSpecIntent: slide => Boolean(slide.chartSpec),
+  slideRenderedDark: () => false,
+  slideRole: () => 'evidence',
+  sourceNote: (...args) => overlayRendererCalls.push(['source', args]),
+  zone: (id, x, y, w, h, role = 'native') => ({ id, x, y, w, h, role }),
+  canvasWidth: () => 13.333,
+  canvasHeight: () => 7.5
+});
+assert.equal(overlayRenderer.componentSourceNoteText({}, { source_note:'Source A' }), 'Source A');
+assert.equal(overlayRenderer.overlayMetricsForSlide({}, { title:'Revenue +12% YoY' })[0].value, '+12%');
+assert.deepEqual(overlayRenderer.overlayPointsForSlide({ phases:[{ title:'A' }, { title:'B' }] }).map(item => item.title), ['A', 'B']);
+assert.equal(overlayRenderer.overlayProofItemsForSlide({}, { rows:[['Risk', 'Action']] })[0].body, 'Action');
+const blockedOverlay = overlayRenderer.renderOverlayComponent({}, {}, {}, 1, 'proof-gallery', new Set(), { ownedComponents:[], safeOverlayZones:{}, occupiedZones:[] }, []);
+assert.equal(blockedOverlay.mode, 'blocked-unsafe-overlay');
+const kpiOverlay = overlayRenderer.renderOverlayComponent({}, {}, { metrics:[{ label:'ARR', value:'42%' }] }, 1, 'kpi-strip', new Set(), {
+  ownedComponents:[],
+  occupiedZones:[],
+  safeOverlayZones:{ 'kpi-strip':{ id:'kpi-strip-bottom-band', x:1, y:6, w:4, h:0.5, role:'safe-overlay' } }
+}, []);
+assert.equal(kpiOverlay.rendered, true);
+assert.equal(kpiOverlay.mode, 'overlay');
+assert.equal(kpiOverlay.itemCount, 1);
+const chartSlideFixture = {};
+const chartOverlay = overlayRenderer.renderOverlayComponent(chartSlideFixture, { slides:[{}] }, { chartSpec:{ kind:'bar' } }, 1, 'bar-chart', new Set(), {
+  ownedComponents:[],
+  occupiedZones:[],
+  safeOverlayZones:{ 'bar-chart':{ id:'chart-overlay', x:1, y:1, w:3, h:2, role:'safe-overlay' } }
+}, []);
+assert.equal(chartOverlay.rendered, true);
+assert.equal(chartSlideFixture.__chartRecorded.meta.plannedComponentId, 'bar-chart');
+const nativeEvidence = overlayRenderer.renderOverlayComponent({}, {}, { type:'architecture-dark', layers:[{ title:'Data' }] }, 1, 'value-chain', new Set(['value-chain']), {
+  ownedComponents:['value-chain'],
+  safeOverlayZones:{},
+  occupiedZones:[{ id:'topology-board', x:1, y:1, w:4, h:3, role:'native' }]
+}, []);
+assert.equal(nativeEvidence.mode, 'native-renderer');
+assert.equal(nativeEvidence.rendererModule, 'fixture/native');
 const renderMetaHelpers = createRenderMetaHelpers({
   chartConsumedFields: spec => Object.keys(spec).filter(key => key !== 'visualChecks'),
   chartSpecToComponentId: spec => `${spec.kind || 'unknown'}-component`,
