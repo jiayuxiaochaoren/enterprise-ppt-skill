@@ -15,6 +15,9 @@ const {
   createImageAssetHelpers
 } = require('./design/image-assets');
 const {
+  createIndustryRuntime
+} = require('./design/industry-runtime');
+const {
   createContentOverlapHelpers
 } = require('./design/content-overlap');
 const {
@@ -109,6 +112,25 @@ const REFERENCE_RECIPE_LIBRARY = loadReferenceRecipeLibrary();
 const INDUSTRY_PACK_LIBRARY = loadIndustryPackLibrary();
 const COPY_POLICY = loadCopyPolicy();
 const INDUSTRY_BENCHMARKS = loadIndustryBenchmarks();
+const PALETTES = VISUAL_SYSTEM.palettes || {};
+const VISUAL_ROUTER = VISUAL_SYSTEM.visualRouter || {};
+const INDUSTRY_DESIGN_DIALECTS = VISUAL_SYSTEM.industryDesignDialects || {};
+const {
+  normalizeIndustryId,
+  visualIndustryId,
+  industryMatchIds,
+  industryPackFor,
+  copyPolicyFor,
+  copyPolicyText,
+  copyPolicyList,
+  industryBenchmarksFor
+} = createIndustryRuntime({
+  industryDesignDialects: INDUSTRY_DESIGN_DIALECTS,
+  visualRouter: VISUAL_ROUTER,
+  industryPackLibrary: INDUSTRY_PACK_LIBRARY,
+  copyPolicy: COPY_POLICY,
+  industryBenchmarks: INDUSTRY_BENCHMARKS
+});
 const FONT_STACK = Object.assign(
   { zh: 'PingFang SC', latin: 'Avenir Next', number: 'DIN Alternate' },
   VISUAL_SYSTEM.fonts || {}
@@ -127,113 +149,12 @@ const {
   industryMatchIds,
   visualIndustryId
 });
-const PALETTES = VISUAL_SYSTEM.palettes || {};
-const VISUAL_ROUTER = VISUAL_SYSTEM.visualRouter || {};
-const INDUSTRY_DESIGN_DIALECTS = VISUAL_SYSTEM.industryDesignDialects || {};
 
 const {
   HIGH_VALUE_PAGE_FAMILIES,
   PRIORITY_PAGE_FAMILY_RECIPES,
   layoutVariantCompatibleWithType
 } = require('./design/page-family-routing');
-const INDUSTRY_RUNTIME_ALIASES = {
-  'industrial-energy': 'manufacturing-operations',
-  'saas-ai-technology': 'saas-technology',
-  'beauty-consumer': 'brand-retail',
-  'healthcare-wellness': 'healthcare-operations',
-  'lifestyle-food-tourism-fashion': 'brand-retail',
-  'people-culture': 'brand-retail',
-  'people-culture-company': 'people-culture',
-  'government-public-sector': 'general-operations'
-};
-
-function normalizeIndustryId(industry = '') {
-  return String(industry || '').trim();
-}
-
-function visualIndustryId(industry = '') {
-  const id = normalizeIndustryId(industry);
-  if (!id) return '';
-  if (INDUSTRY_DESIGN_DIALECTS[id] || (VISUAL_ROUTER.industries || {})[id]) return id;
-  return INDUSTRY_RUNTIME_ALIASES[id] || id;
-}
-
-function industryMatchIds(industry = '') {
-  const id = normalizeIndustryId(industry);
-  const visualId = visualIndustryId(id);
-  const ids = [id, visualId];
-  Object.entries(INDUSTRY_RUNTIME_ALIASES).forEach(([alias, target]) => {
-    if (id === target || visualId === target) ids.push(alias);
-  });
-  return compactUnique(ids);
-}
-
-function industryPackFor(planOrIndustry = {}) {
-  const id = typeof planOrIndustry === 'string'
-    ? normalizeIndustryId(planOrIndustry)
-    : normalizeIndustryId(planOrIndustry.industry);
-  if (!id) return null;
-  const ids = new Set(industryMatchIds(id));
-  const text = String(id).toLowerCase();
-  const packs = INDUSTRY_PACK_LIBRARY.packs || [];
-  const exact = packs.find(pack => pack && pack.id === id);
-  if (exact) return exact;
-  return packs.find(pack => {
-    if (!pack) return false;
-    if (ids.has(pack.id)) return true;
-    const aliases = (pack.aliases || []).map(v => String(v).toLowerCase());
-    return aliases.includes(text) || aliases.some(alias => alias && text.includes(alias));
-  }) || null;
-}
-
-function copyPolicyFor(planOrIndustry = {}) {
-  const id = typeof planOrIndustry === 'string'
-    ? normalizeIndustryId(planOrIndustry)
-    : normalizeIndustryId(planOrIndustry.industry);
-  const industries = COPY_POLICY.industries || {};
-  const ids = compactUnique(industryMatchIds(id || 'general-operations'));
-  ids.push('general-operations');
-  let policy = null;
-  for (const candidate of ids) {
-    const row = industries[candidate];
-    if (!row) continue;
-    policy = row.aliasOf ? industries[row.aliasOf] || row : row;
-    break;
-  }
-  return {
-    version: COPY_POLICY.version || 'copy-policy/v1',
-    global: COPY_POLICY.global || {},
-    industry: policy || industries['general-operations'] || {}
-  };
-}
-
-function copyPolicyText(planOrIndustry = {}, key = '', fallback = '') {
-  const policy = copyPolicyFor(planOrIndustry);
-  const industryText = ((policy.industry || {}).rendererFallbacks || {})[key];
-  const globalText = ((policy.global || {}).rendererFallbacks || {})[key];
-  return industryText || globalText || fallback || '';
-}
-
-function copyPolicyList(planOrIndustry = {}, key = '', fallback = []) {
-  const policy = copyPolicyFor(planOrIndustry);
-  const industryList = (policy.industry || {})[key];
-  const globalList = (policy.global || {})[key];
-  const list = Array.isArray(industryList) ? industryList : (Array.isArray(globalList) ? globalList : fallback);
-  return Array.isArray(list) ? JSON.parse(JSON.stringify(list)) : [];
-}
-
-function industryBenchmarksFor(planOrIndustry = {}) {
-  const id = typeof planOrIndustry === 'string'
-    ? normalizeIndustryId(planOrIndustry)
-    : normalizeIndustryId(planOrIndustry.industry);
-  const aliases = INDUSTRY_BENCHMARKS.aliases || {};
-  const industries = INDUSTRY_BENCHMARKS.industries || {};
-  const ids = compactUnique([id, visualIndustryId(id), aliases[id], aliases[visualIndustryId(id)]].filter(Boolean));
-  for (const candidate of ids) {
-    if (Array.isArray(industries[candidate])) return JSON.parse(JSON.stringify(industries[candidate]));
-  }
-  return [];
-}
 
 const MEDIA_ASSETS = {
   energyStorageCover: path.join(ASSET_DIR, 'media', 'energy-storage-cover.jpg'),
