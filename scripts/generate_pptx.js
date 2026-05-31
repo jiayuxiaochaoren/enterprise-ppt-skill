@@ -23,6 +23,17 @@ const {
   shortHash
 } = require('./render/route-metadata');
 const {
+  compactEvidenceCaption,
+  formatMetricDelta,
+  itemBody,
+  itemBodyNoEllipsis,
+  itemTitle,
+  publicSlideNote,
+  slideSemanticText,
+  stripEllipsisText,
+  variantOf
+} = require('./render/content-helpers');
+const {
   containsCjk,
   createTextRenderHelpers
 } = require('./render/text-meta');
@@ -198,20 +209,6 @@ function zonesIntersect(a = {}, b = {}, pad = 0.015) {
   return Math.max(ra.x, rb.x) < Math.min(ra.x + ra.w, rb.x + rb.w) - pad &&
     Math.max(ra.y, rb.y) < Math.min(ra.y + ra.h, rb.y + rb.h) - pad;
 }
-function slideSemanticText(s = {}) {
-  const chunks = [
-    s.title,
-    s.subtitle,
-    s.claim,
-    s.intro,
-    s.note,
-    s.footerNote,
-    ...(Array.isArray(s.cards) ? s.cards.map(c => `${c.title || ''} ${c.body || c.note || ''}`) : []),
-    ...(Array.isArray(s.items) ? s.items.map(v => typeof v === 'string' ? v : `${v.title || v.label || ''} ${v.body || v.note || ''}`) : []),
-    ...(Array.isArray(s.phases) ? s.phases.map(v => typeof v === 'string' ? v : `${v.title || ''} ${v.body || v.note || ''}`) : [])
-  ];
-  return chunks.filter(Boolean).join(' ');
-}
 function hasEnergyCurveSemantics(s = {}) {
   if (s.loadCurve || s.loadCurveBand || s.curve || s.trend || s.monthlyTrend || s.monthlyPulse) return true;
   return /曲线|趋势|负荷|SOC|load|curve|trend|pulse/i.test(slideSemanticText(s));
@@ -356,14 +353,6 @@ function isCompanyIntroPlan(plan={}) {
     plan.deckType
   ].filter(Boolean).join(' ');
   return /company-intro|公司介绍|企业介绍|企业简介|能力介绍|宣传册/i.test(text);
-}
-function publicSlideNote(note='') {
-  const text = String(note || '').trim();
-  if (!text) return '';
-  if (/(第[一二三四五六七八九十0-9]+页|后续页面|后续再|该页|本页仅|用于测试|测试\s*closing|示例|占位|材料显示|企业\s*PDF|模型抽取|用户材料自动整理|proof object|页面族|优先呈现|优先表达|阅读顺序|普通目录|普通简介|closing)/i.test(text)) {
-    return '';
-  }
-  return text;
 }
 function deckMetaFields(plan={}) {
   if (metaDisabled(plan)) return [];
@@ -1067,31 +1056,6 @@ function keyTile(slide, title, body, x, y, w, h, num, accent=C.ink) {
   addText(slide, title, { x:x+0.24, y:y+0.72, w:w-0.48, h:0.28, fontSize:17.5, bold:true, color:C.ink });
   addText(slide, body, { x:x+0.24, y:y+1.22, w:w-0.48, h:h-1.38, fontSize:11.8, color:C.body, valign:'top' });
 }
-function itemTitle(v, fallback='') {
-  if (typeof v === 'string') return v;
-  return (v && (v.title || v.label || v.name || v.value)) || fallback;
-}
-function itemBody(v, fallback='') {
-  if (typeof v === 'string') return '';
-  return (v && (v.body || v.note || v.text || v.description)) || fallback;
-}
-function hasEllipsisText(text='') {
-  return /(?:\.{3,}|…)/.test(String(text || ''));
-}
-function stripEllipsisText(text='') {
-  return String(text || '')
-    .replace(/\s+/g, ' ')
-    .replace(/\s*(?:\.{3,}|…)\s*$/g, '')
-    .trim();
-}
-function itemBodyNoEllipsis(v, fallback='') {
-  const raw = itemBody(v, '');
-  if (!raw || hasEllipsisText(raw)) return fallback;
-  return raw;
-}
-function compactEvidenceCaption(text='', maxChars=30) {
-  return stripEllipsisText(text);
-}
 function addEvidenceCaptionStack(slide, item, fallbackTitle, box, opts={}) {
   const accent = opts.accent || C.accent;
   const hasNumber = opts.number != null && opts.number !== false;
@@ -1136,9 +1100,6 @@ function addEvidenceCaptionStack(slide, item, fallbackTitle, box, opts={}) {
     });
   }
 }
-function variantOf(s, fallback='') {
-  return s.layoutVariant || s.variant || fallback;
-}
 function genericShowcaseField(slide, x, y, w, h, label='PRODUCT SYSTEM') {
   addRect(slide, x, y, w, h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
   addDarkBreathingCircle(slide, x+w*0.44, y+h*0.12, Math.min(w, h)*0.86, Math.min(w, h)*0.48, C.accent);
@@ -1175,15 +1136,6 @@ function executiveBlocks(slide, plan, s, idx) {
     addText(slide, c.body, { x:x+0.28, y:y+1.06, w:w-0.56, h:0.40, fontSize:9.8, color:C.body, valign:'top' });
     if (i===0) addHairline(slide, x+0.28, y+1.48, 0.72, C.accent, 0, 0.75);
   });
-}
-
-function formatMetricDelta(raw) {
-  const text = String(raw || '').trim();
-  if (!text) return '';
-  return text
-    .replace(/^\+(\d+(?:\.\d+)?)\s*pt$/i, '提升 $1 个百分点')
-    .replace(/^\+(\d+(?:\.\d+)?)\s*pts$/i, '提升 $1 个百分点')
-    .replace(/^\+(\d+(?:\.\d+)?)%$/i, '提升 $1%');
 }
 
 function brandWorldBusinessProof(slide, plan, s, idx) {
