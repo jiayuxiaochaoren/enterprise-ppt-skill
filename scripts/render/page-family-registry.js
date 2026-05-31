@@ -9,6 +9,7 @@ const financial = require('./page-families/financial');
 const manifesto = require('./page-families/manifesto');
 const profile = require('./page-families/profile');
 const risk = require('./page-families/risk');
+const strategy = require('./page-families/strategy');
 const timeline = require('./page-families/timeline');
 const toc = require('./page-families/toc');
 
@@ -23,6 +24,7 @@ const PAGE_FAMILY_MODULES = {
   [manifesto.family]: manifesto.types,
   [profile.family]: profile.types,
   [risk.family]: risk.types,
+  [strategy.family]: strategy.types,
   [timeline.family]: timeline.types,
   [toc.family]: toc.types
 };
@@ -41,9 +43,9 @@ function createSlideRenderRegistry(renderers = {}) {
     { types:['cards', 'executive-blocks'], render:renderers.executiveBlocks },
     ...beauty.entries(renderers).filter(entry => entry.types.includes('product-showcase')),
     ...financial.entries(renderers),
-    { types:['strategy-map'], render:renderers.strategyMap },
+    ...strategy.entries(renderers).filter(entry => entry.types.includes('strategy-map')),
     ...manifesto.entries(renderers),
-    { types:['module-matrix'], render:renderers.moduleMatrix },
+    ...strategy.entries(renderers).filter(entry => entry.types.includes('module-matrix')),
     ...architecture.entries(renderers),
     ...timeline.entries(renderers),
     ...businessEntries.filter(entry => entry.types.includes('value-tiles')),

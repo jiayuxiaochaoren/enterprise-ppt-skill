@@ -26,7 +26,8 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.beauty.includes('genericShowcaseField'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('renderChartSpec'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.timeline.includes('addClockwiseLoopConnectors'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('compactEvidenceCaption'));
-['financial', 'beauty', 'business', 'chapter', 'toc', 'manifesto', 'profile', 'evidenceGallery', 'closing', 'architecture', 'timeline', 'risk'].forEach(key => {
+assert.ok(RENDERER_CONTEXT_CONTRACT.strategy.includes('industryProfile'));
+['financial', 'beauty', 'business', 'chapter', 'toc', 'manifesto', 'profile', 'evidenceGallery', 'closing', 'architecture', 'timeline', 'risk', 'strategy'].forEach(key => {
   assert.ok(Array.isArray(PAGE_FAMILY_MODULES[key]), `${key} page-family module boundary should be declared`);
   assert.ok(PAGE_FAMILY_MODULES[key].length > 0, `${key} page-family module should list routed types`);
 });
@@ -42,7 +43,8 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('compactEvidenceCaption'));
   'closing',
   'architecture',
   'timeline',
-  'risk'
+  'risk',
+  'strategy'
 ].forEach(name => {
   const family = require(path.join(__dirname, 'render', 'page-families', name));
   assert.equal(typeof family.entries, 'function', `${name} should expose registry entries`);
@@ -98,6 +100,8 @@ assert.equal(registry.matchFor('timeline').rendererId, 'timeline');
 assert.equal(registry.matchFor('timeline').source, 'page-family:timeline');
 assert.equal(registry.matchFor('risk-table').rendererId, 'table');
 assert.equal(registry.matchFor('risk-table').source, 'page-family:risk');
+assert.equal(registry.matchFor('strategy-map').source, 'page-family:strategy');
+assert.equal(registry.matchFor('module-matrix').source, 'page-family:strategy');
 assert.equal(registry.matchFor('unknown-type').matchKind, 'fallback');
 
 console.log('renderer modularization boundaries ok');

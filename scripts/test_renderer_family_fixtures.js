@@ -54,6 +54,7 @@ function stableMeta(meta = {}) {
   ['profile-finance-family.json', 'page-family:profile'],
   ['closing-family.json', 'page-family:closing'],
   ['architecture-family.json', 'page-family:architecture'],
+  ['strategy-family.json', 'page-family:strategy'],
   ['evidence-gallery-family.json', 'page-family:evidence-gallery'],
   ['timeline-family.json', 'page-family:timeline'],
   ['risk-family.json', 'page-family:risk']

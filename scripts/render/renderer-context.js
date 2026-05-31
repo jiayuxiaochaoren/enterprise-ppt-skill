@@ -152,6 +152,26 @@ const RENDERER_CONTEXT_CONTRACT = {
     'addClockwiseLoopConnectors',
     'compactEvidenceCaption'
   ],
+  strategy: [
+    'addArrowLine',
+    'addHairline',
+    'addLabel',
+    'addNumber',
+    'addRect',
+    'addText',
+    'brandWorldBusinessProof',
+    'canvasHeight',
+    'canvasWidth',
+    'footerText',
+    'glassPanel',
+    'industryProfile',
+    'lightCanvas',
+    'panelFill',
+    'sectionKicker',
+    'singleObjectConceptMapSlide',
+    'valueCreationProcessMapSlide',
+    'variantOf'
+  ],
   evidenceGallery: [
     'addEvidenceCaptionStack',
     'chooseEvidenceImageLayout',
