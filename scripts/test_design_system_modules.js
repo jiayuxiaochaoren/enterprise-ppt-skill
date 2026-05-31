@@ -22,6 +22,14 @@ const {
   createVisualMediaHelpers
 } = require('./design/visual-media');
 const {
+  addComponent,
+  componentIdFromHint,
+  hasContactBlockData,
+  isSystemPlannedComponent,
+  normalizeComponentEntry,
+  normalizeComponentId
+} = require('./design/component-planning');
+const {
   INDUSTRY_EXPRESSION_RULES,
   INDUSTRY_KNOWLEDGE_BASE,
   SEMANTIC_RELATION_PATTERNS,
@@ -54,6 +62,19 @@ assert.equal(artHelpers.selectPaletteName({}), 'dialect-palette');
 assert.equal(artHelpers.themeIntentFor({}, { type:'metric-comparison' }, 1, 3), 'value-signal');
 assert.equal(artHelpers.accentRoleFor({}, { type:'metric-comparison' }, 1, 3, 'value-signal'), 'data');
 assert.deepEqual(artHelpers.semanticColorRolesFor({}, 'evidence').carrierGuidance, ['caption']);
+assert.equal(normalizeComponentId('Hero KPI Strip'), 'hero-kpi-strip');
+assert.equal(componentIdFromHint('metric_strip'), 'kpi-strip');
+assert.deepEqual(
+  normalizeComponentEntry({ name:'source-caption', required:false }, 'fixture'),
+  { id:'caption-bar', role:'', required:false, source:'fixture', renderer:'auto', name:'source-caption' }
+);
+const plannedComponents = [];
+addComponent(plannedComponents, 'metric-strip', 'rule');
+addComponent(plannedComponents, 'hero-kpis', 'rule');
+assert.deepEqual(plannedComponents.map(item => item.id), ['kpi-strip']);
+assert.equal(isSystemPlannedComponent({ source:'metric-signal' }), true);
+assert.equal(isSystemPlannedComponent({ source:'explicit-plan' }), false);
+assert.equal(hasContactBlockData({ contact: { email:'hello@example.com' } }, {}), true);
 const visualHelpers = createVisualMediaHelpers({
   assetDir: '/tmp/assets',
   assetRoleNeedsImage: role => /photo/.test(String(role || '')),
