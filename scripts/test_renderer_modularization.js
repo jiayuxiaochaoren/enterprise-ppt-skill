@@ -10,8 +10,36 @@ const {
   PAGE_FAMILY_MODULES,
   createSlideRenderRegistry
 } = require('./render/page-family-registry');
+const {
+  compactDiffValue,
+  compactRenderMatch,
+  isStrictRenderMode,
+  normalizationModeFor,
+  qualityModeForPlan,
+  routeSensitiveDiffs,
+  shortHash,
+  stableStringify
+} = require('./render/route-metadata');
 
 assert.equal(typeof requirePptxGen(), 'function');
+assert.equal(stableStringify({ b:2, a:1 }), '{"a":1,"b":2}');
+assert.equal(shortHash({ b:2, a:1 }), shortHash({ a:1, b:2 }));
+assert.equal(normalizationModeFor({ plannerFinalized:true }), 'finalized');
+assert.equal(isStrictRenderMode({ quality_mode:'delivery' }), true);
+assert.equal(qualityModeForPlan({ outputIntent:'formal_review' }), 'formal');
+assert.equal(compactDiffValue({ text:'x'.repeat(300) }).length, 240);
+assert.deepEqual(
+  compactRenderMatch({ requestedType:'x', matchedType:'y', matchKind:'alias', rendererId:'r', rendererName:'render', source:'fixture', alias:'legacy' }),
+  { requestedType:'x', matchedType:'y', matchKind:'alias', rendererId:'r', rendererName:'render', source:'fixture', alias:'legacy' }
+);
+assert.deepEqual(routeSensitiveDiffs(
+  { slides:[{ type:'metric-comparison', layoutVariant:'old', notes:'ignored' }] },
+  { slides:[{ type:'metric-comparison', layoutVariant:'new', notes:'ignored-new' }] }
+), [{
+  slide: 1,
+  changed: true,
+  changes: [{ field:'layoutVariant', before:'old', after:'new' }]
+}]);
 const context = createRendererContext({ colors: () => ({ accent: '000000' }) });
 assert.equal(context.colors().accent, '000000');
 assert.ok(RENDERER_CONTEXT_CONTRACT.text.includes('addText'));
