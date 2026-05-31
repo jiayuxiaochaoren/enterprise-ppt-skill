@@ -14,7 +14,11 @@ const {
   applyStandardModelResults,
   readJsonOrStdin
 } = require('./material/model-results-io');
-const { deliveryMarkdown, deliveryReport } = require('./reports/delivery-report');
+const {
+  deliveryMarkdown,
+  deliveryReport,
+  parseJsonFromOutput
+} = require('./reports/delivery-report');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -343,7 +347,7 @@ function main() {
   report.steps.push(validationStep);
   report.outputs.validation = 'inline:steps.validation.stdout';
   try {
-    const validationJson = JSON.parse(validationStep.stdout || '{}');
+    const validationJson = parseJsonFromOutput(validationStep.stdout || '{}') || {};
     const validationSummary = validationJson.summary || validationJson;
     report.preview = validationSummary.preview || {};
     report.validationReport = validationSummary.report || null;

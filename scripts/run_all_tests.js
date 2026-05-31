@@ -18,7 +18,7 @@ const TEST_GROUPS = {
     /^test_(art_direction|commercial_readiness_qa|component_screenshot_qa|semantic_narrative_qa|visual_layout_qa|visual_qa_baseline|visual_qa_content_coverage|visual_qa_overlap|visual_qa_render_counts)\.js$/
   ],
   delivery: [
-    /^test_(material_to_delivery|preview_provider|validate_preview_fallback|delivery_fixtures)\.js$/
+    /^test_(material_to_delivery|preview_provider|validate_preview_fallback|delivery_fixtures|delivery_report_schema)\.js$/
   ]
 };
 const SLOW_TESTS = new Set([

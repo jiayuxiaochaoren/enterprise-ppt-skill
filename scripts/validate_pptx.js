@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
 const { exportPreviews } = require('./preview/provider');
-const { validationMarkdown, validationReport } = require('./reports/delivery-report');
+const { parseJsonFromOutput, validationMarkdown, validationReport } = require('./reports/delivery-report');
 
 function usage() {
   console.error('Usage: node scripts/validate_pptx.js <file.pptx> [--expect-slides N] [--require term1,term2] [--preview-dir dir] [--preview-optional] [--baseline manifest.json] [--plan deck-plan.json] [--run-visual-qa] [--skip-visual-qa] [--summary] [--summary-md file] [--formal] [--quality-mode draft|formal|delivery] [--allow-placeholders]');
@@ -130,15 +130,13 @@ function runVisualQaCommand() {
     timeout:120000
   });
   const output = String(res.stdout || '').trim();
-  let parsed = null;
-  try {
-    parsed = output ? JSON.parse(output) : null;
-  } catch (e) {
+  const parsed = output ? parseJsonFromOutput(output) : null;
+  if (output && !parsed) {
     fail('visual_qa_output_unreadable', {
       status: res.status,
       stdout: output.slice(0, 2000),
       stderr: String(res.stderr || '').slice(0, 2000),
-      detail: String(e.message || e)
+      detail: 'Unable to parse visual QA JSON output.'
     });
   }
   if (!parsed) {

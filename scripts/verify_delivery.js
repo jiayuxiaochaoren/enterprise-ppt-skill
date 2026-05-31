@@ -3,6 +3,10 @@ const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
 const { detectPreviewProviders } = require('./preview/provider');
+const {
+  parseJsonFromOutput,
+  verificationReport
+} = require('./reports/delivery-report');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -63,24 +67,6 @@ function runStep(name, cmd, argv, opts = {}) {
   return row;
 }
 
-function parseJson(text = '') {
-  const trimmed = String(text || '').trim();
-  try {
-    return JSON.parse(trimmed);
-  } catch (_) {
-    const first = trimmed.indexOf('{');
-    const last = trimmed.lastIndexOf('}');
-    if (first >= 0 && last > first) {
-      try {
-        return JSON.parse(trimmed.slice(first, last + 1));
-      } catch (__) {
-        return null;
-      }
-    }
-  }
-  return null;
-}
-
 function stepByName(steps = [], name = '') {
   return steps.find(step => step.name === name) || {};
 }
@@ -89,34 +75,6 @@ function validationPreview(raw = {}) {
   const validation = raw.validation || {};
   const validationSummary = validation.summary || validation;
   return validationSummary.preview || {};
-}
-
-function verificationSummary(report = {}, raw = {}) {
-  const hardening = raw.hardening || {};
-  const template = raw.template || {};
-  const preview = validationPreview(raw);
-  const previewUnavailable = Boolean(preview.error || ['metadata_fallback', 'unavailable'].includes(preview.status));
-  return {
-    version: 'delivery-report-summary/v1',
-    kind: 'delivery-verification',
-    status: report.success ? 'pass' : 'fail',
-    meta: {
-      qualityMode: report.qualityMode,
-      previewProvider: preview.provider || report.previewMode || 'none',
-      previewStatus: preview.status || report.previewMode || 'unknown',
-      hardeningEvidenceStrength: hardening.evidenceStrength || {},
-      templateEvidenceStrength: template.evidenceStrength || {}
-    },
-    sections: {
-      pass: report.steps.filter(step => step.status === 'pass').map(step => ({ id: step.name, label: step.name })),
-      risk: report.steps.filter(step => step.status === 'fail').map(step => ({ id: step.name, label: `${step.name} failed` })),
-      not_applicable: [],
-      unavailable: previewUnavailable
-        ? [{ id: 'preview', label: preview.error || preview.status, detail: preview.detail || '' }]
-        : [{ id: 'none', label: 'None' }],
-      next_actions: report.success ? [{ id: 'review', label: 'Review generated PPTX, render-meta, and preview images before external delivery.' }] : [{ id: 'fix', label: 'Fix failing delivery verification step and rerun verify:delivery.' }]
-    }
-  };
 }
 
 function main() {
@@ -156,9 +114,9 @@ function main() {
 
   const failed = steps.filter(step => step.status === 'fail');
   const raw = {
-    hardening: parseJson(stepByName(steps, 'hardening readiness').stdout),
-    template: parseJson(stepByName(steps, 'template readiness').stdout),
-    validation: parseJson(stepByName(steps, 'formal validation').stdout)
+    hardening: parseJsonFromOutput(stepByName(steps, 'hardening readiness').stdout),
+    template: parseJsonFromOutput(stepByName(steps, 'template readiness').stdout),
+    validation: parseJsonFromOutput(stepByName(steps, 'formal validation').stdout)
   };
   const preview = validationPreview(raw);
   const report = {
@@ -187,7 +145,7 @@ function main() {
       template: raw.template && raw.template.evidenceStrength || {}
     }
   };
-  report.summary = verificationSummary(report, raw);
+  report.summary = verificationReport(report, raw);
   console.log(JSON.stringify(report, null, 2));
   if (failed.length) process.exit(1);
 }

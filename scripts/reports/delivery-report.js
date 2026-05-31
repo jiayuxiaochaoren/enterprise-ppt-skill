@@ -22,6 +22,25 @@ function buildReportSchema(kind, status, meta = {}, sections = {}) {
   };
 }
 
+function parseJsonFromOutput(text = '') {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch (_) {
+    const first = trimmed.indexOf('{');
+    const last = trimmed.lastIndexOf('}');
+    if (first >= 0 && last > first) {
+      try {
+        return JSON.parse(trimmed.slice(first, last + 1));
+      } catch (__) {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
 function validationReport(summary = {}) {
   const checks = summary.checks || {};
   const preview = summary.preview || {};
@@ -66,11 +85,7 @@ function validationReport(summary = {}) {
 
 function parseStepJson(step = {}) {
   if (!step || !step.stdout) return null;
-  try {
-    return JSON.parse(step.stdout);
-  } catch (_) {
-    return null;
-  }
+  return parseJsonFromOutput(step.stdout);
 }
 
 function deliveryReport(report = {}) {
@@ -153,9 +168,46 @@ function deliveryMarkdown(report = {}) {
   return markdownFromReport(report.report || deliveryReport(report));
 }
 
+function validationPreview(raw = {}) {
+  const validation = raw.validation || {};
+  const validationSummary = validation.summary || validation;
+  return validationSummary.preview || {};
+}
+
+function verificationReport(report = {}, raw = {}) {
+  const hardening = raw.hardening || {};
+  const template = raw.template || {};
+  const preview = validationPreview(raw);
+  const previewUnavailable = Boolean(preview.error || ['metadata_fallback', 'unavailable'].includes(preview.status));
+  const steps = report.steps || [];
+  return buildReportSchema('delivery-verification', report.success ? 'pass' : 'fail', {
+    qualityMode: report.qualityMode || '',
+    previewProvider: preview.provider || report.previewMode || 'none',
+    previewStatus: preview.status || report.previewMode || 'unknown',
+    hardeningEvidenceStrength: hardening.evidenceStrength || {},
+    templateEvidenceStrength: template.evidenceStrength || {}
+  }, {
+    pass: steps
+      .filter(step => step.status === 'pass')
+      .map(step => sectionItem(step.name || step.label, step.name || step.label)),
+    risk: steps
+      .filter(step => step.status === 'fail')
+      .map(step => sectionItem(step.name || step.label, `${step.name || step.label} failed`)),
+    not_applicable: [],
+    unavailable: previewUnavailable
+      ? [sectionItem('preview', preview.error || preview.status, { detail: preview.detail || '' })]
+      : [sectionItem('none', 'None')],
+    next_actions: report.success
+      ? [sectionItem('review', 'Review generated PPTX, render-meta, and preview images before external delivery.')]
+      : [sectionItem('fix', 'Fix failing delivery verification step and rerun verify:delivery.')]
+  });
+}
+
 module.exports = {
   deliveryReport,
   deliveryMarkdown,
+  parseJsonFromOutput,
+  verificationReport,
   validationReport,
   validationMarkdown
 };
