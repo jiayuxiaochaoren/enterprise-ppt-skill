@@ -43,6 +43,19 @@ const RENDERER_CONTEXT_CONTRACT = {
     'stageCanvas',
     'variantOf'
   ],
+  toc: [
+    'PageNumber',
+    'addHairline',
+    'addRect',
+    'addText',
+    'canvasHeight',
+    'canvasWidth',
+    'copyFallback',
+    'copyPolicyList',
+    'footerText',
+    'glassPanel',
+    'isCompanyIntroPlan'
+  ],
   financial: [
     'brandWorldBusinessProof',
     'chartSpecToComponentId',

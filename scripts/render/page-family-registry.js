@@ -8,6 +8,7 @@ const evidenceGallery = require('./page-families/evidence-gallery');
 const financial = require('./page-families/financial');
 const risk = require('./page-families/risk');
 const timeline = require('./page-families/timeline');
+const toc = require('./page-families/toc');
 
 const PAGE_FAMILY_MODULES = {
   [architecture.family]: architecture.types,
@@ -18,7 +19,8 @@ const PAGE_FAMILY_MODULES = {
   [evidenceGallery.family]: evidenceGallery.types,
   [financial.family]: financial.types,
   [risk.family]: risk.types,
-  [timeline.family]: timeline.types
+  [timeline.family]: timeline.types,
+  [toc.family]: toc.types
 };
 
 function createSlideRenderRegistry(renderers = {}) {
@@ -27,7 +29,7 @@ function createSlideRenderRegistry(renderers = {}) {
     ...beauty.entries(renderers).filter(entry => entry.types.includes('cover')),
     ...closing.entries(renderers),
     ...chapter.entries(renderers),
-    { types:['toc', 'toc-clean'], render:renderers.tocClean },
+    ...toc.entries(renderers),
     ...businessEntries.filter(entry => entry.types.includes('comparison')),
     { types:['company-profile-spread'], render:renderers.companyProfileSpread },
     { types:['profile-proof'], render:renderers.profileProof },
