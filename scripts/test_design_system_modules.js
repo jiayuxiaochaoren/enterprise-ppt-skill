@@ -19,6 +19,9 @@ const {
   paletteToColors
 } = require('./design/style-profile');
 const {
+  createVisualMediaHelpers
+} = require('./design/visual-media');
+const {
   INDUSTRY_EXPRESSION_RULES,
   INDUSTRY_KNOWLEDGE_BASE,
   SEMANTIC_RELATION_PATTERNS,
@@ -51,6 +54,21 @@ assert.equal(artHelpers.selectPaletteName({}), 'dialect-palette');
 assert.equal(artHelpers.themeIntentFor({}, { type:'metric-comparison' }, 1, 3), 'value-signal');
 assert.equal(artHelpers.accentRoleFor({}, { type:'metric-comparison' }, 1, 3, 'value-signal'), 'data');
 assert.deepEqual(artHelpers.semanticColorRolesFor({}, 'evidence').carrierGuidance, ['caption']);
+const visualHelpers = createVisualMediaHelpers({
+  assetDir: '/tmp/assets',
+  assetRoleNeedsImage: role => /photo/.test(String(role || '')),
+  industryVisualPolicy: () => ({ visualMode:'hybrid', defaultImageRoles: { situation:'evidence' }, photoRoles:['cover'] }),
+  mediaAssets: { energyStorageCover:'/media/cover.jpg', energyStorageBand:'/media/band.jpg', energyStorageDetail:'/media/detail.jpg' },
+  normalizeAssetRole: role => String(role || '').replace(/-photo$/, ''),
+  visualRouter: { layoutFamilies: { cover: { showcase:'custom-cover' } } },
+  visualSystem: { mediaDefaults: { demo: { cover:'assets/demo-cover.jpg' } } }
+});
+assert.equal(visualHelpers.slideRole({ type:'case-gallery' }), 'case-gallery');
+assert.equal(visualHelpers.visualRole({ industry:'demo' }, { type:'company-profile-spread' }), 'evidence');
+assert.equal(visualHelpers.slideWantsImage({ visualMode:'solid' }, { type:'cover' }, 'cover'), false);
+assert.equal(visualHelpers.resolveAssetPath('assets/demo.png'), '/tmp/assets/demo.png');
+assert.equal(visualHelpers.defaultIndustryMedia({ industry:'energy-utility' }, 'timeline'), '/media/band.jpg');
+assert.equal(visualHelpers.pageFamily({}, { type:'cover', visualMode:'photo' }, 'cover'), 'custom-cover');
 assert.equal(copyPolicyText('__missing__', '__missing_key__', 'fallback text'), 'fallback text');
 assert.deepEqual(copyPolicyList('__missing__', '__missing_list__', ['a', 'b']), ['a', 'b']);
 assert.deepEqual(industryBenchmarksFor('__missing__'), []);
