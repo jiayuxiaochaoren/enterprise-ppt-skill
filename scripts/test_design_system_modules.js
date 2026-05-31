@@ -24,6 +24,7 @@ const {
 const {
   addComponent,
   componentIdFromHint,
+  createComponentPlanHelpers,
   hasContactBlockData,
   isSystemPlannedComponent,
   normalizeComponentEntry,
@@ -78,6 +79,25 @@ assert.deepEqual(plannedComponents.map(item => item.id), ['kpi-strip']);
 assert.equal(isSystemPlannedComponent({ source:'metric-signal' }), true);
 assert.equal(isSystemPlannedComponent({ source:'explicit-plan' }), false);
 assert.equal(hasContactBlockData({ contact: { email:'hello@example.com' } }, {}), true);
+const componentPlanHelpers = createComponentPlanHelpers({
+  chartSpecToComponentId: spec => spec.kind === 'bar' ? 'bar-chart' : '',
+  compactUnique: values => Array.from(new Set(values.filter(Boolean))),
+  componentCapabilityFor: id => ({ supportedModes:['native'], ownershipPolicy:'native', family:`fixture:${id}`, dataRequirements:[] }),
+  contentSignals: () => ({ hasMetrics:true, metricCount:1, imageCount:0 }),
+  dialectComponentsFor: () => ['metric-strip'],
+  flattenText: value => JSON.stringify(value),
+  hasExplicitChartSignal: () => true,
+  industryDesignDialect: () => ({ avoidComponents:[] }),
+  proofObjectIdForSlide: s => s.layoutVariant || '',
+  routeChartSpec: () => ({ kind:'bar' }),
+  slideHasChartIntent: () => true,
+  themeIntentFor: () => 'value-signal'
+});
+const componentPlan = componentPlanHelpers.componentPlanFor({}, { type:'metric-comparison', layoutVariant:'growth-kpi', chartSpec:{ kind:'bar' } });
+assert.equal(componentPlan.version, 'component-plan/v1');
+assert.ok(componentPlan.componentIds.includes('kpi-strip'));
+assert.ok(componentPlan.componentIds.includes('kpi-primary-metric'));
+assert.ok(componentPlan.componentIds.includes('bar-chart'));
 const compositionHelpers = createCompositionPlanningHelpers({
   accentRoleFor: () => 'data',
   backgroundToneFor: () => 'light',
