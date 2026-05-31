@@ -56,6 +56,22 @@ const RENDERER_CONTEXT_CONTRACT = {
     'glassPanel',
     'isCompanyIntroPlan'
   ],
+  manifesto: [
+    'addDarkBreathingCircle',
+    'addHairline',
+    'addLabel',
+    'addNumber',
+    'addRect',
+    'addText',
+    'footerText',
+    'itemBody',
+    'itemTitle',
+    'lightCanvas',
+    'panelFill',
+    'sectionKicker',
+    'stageCanvas',
+    'variantOf'
+  ],
   financial: [
     'brandWorldBusinessProof',
     'chartSpecToComponentId',

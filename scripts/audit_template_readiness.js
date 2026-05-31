@@ -204,7 +204,11 @@ function summarize(matrix) {
     readText('scripts/design-system.js'),
     readText('scripts/design/page-family-routing.js')
   ].join('\n');
-  const generateText = readText('scripts/generate_pptx.js');
+  const generateText = [
+    readText('scripts/generate_pptx.js'),
+    ...listFiles(path.join(ROOT, 'scripts', 'render', 'page-families'), file => /\.js$/i.test(file))
+      .map(file => fs.readFileSync(file, 'utf8'))
+  ].join('\n');
   const orchestrationText = [
     readText('scripts/material_orchestration_prompt.js'),
     readText('scripts/material_pipeline.js'),

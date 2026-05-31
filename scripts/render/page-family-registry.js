@@ -6,6 +6,7 @@ const chapter = require('./page-families/chapter');
 const closing = require('./page-families/closing');
 const evidenceGallery = require('./page-families/evidence-gallery');
 const financial = require('./page-families/financial');
+const manifesto = require('./page-families/manifesto');
 const risk = require('./page-families/risk');
 const timeline = require('./page-families/timeline');
 const toc = require('./page-families/toc');
@@ -18,6 +19,7 @@ const PAGE_FAMILY_MODULES = {
   [closing.family]: closing.types,
   [evidenceGallery.family]: evidenceGallery.types,
   [financial.family]: financial.types,
+  [manifesto.family]: manifesto.types,
   [risk.family]: risk.types,
   [timeline.family]: timeline.types,
   [toc.family]: toc.types
@@ -40,7 +42,7 @@ function createSlideRenderRegistry(renderers = {}) {
     ...beauty.entries(renderers).filter(entry => entry.types.includes('product-showcase')),
     ...financial.entries(renderers),
     { types:['strategy-map'], render:renderers.strategyMap },
-    { types:['manifesto'], render:renderers.manifestoSlide },
+    ...manifesto.entries(renderers),
     { types:['module-matrix'], render:renderers.moduleMatrix },
     ...architecture.entries(renderers),
     ...timeline.entries(renderers),

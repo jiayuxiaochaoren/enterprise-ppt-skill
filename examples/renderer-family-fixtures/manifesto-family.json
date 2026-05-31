@@ -1,0 +1,54 @@
+{
+  "title": "Renderer Manifesto Family Fixture",
+  "industry": "people-culture",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "manifesto",
+      "title": "共识不是口号，而是持续行动的方式",
+      "claim": "用行为原则和产出证据说明文化如何发生。",
+      "values": [
+        { "title": "客户视角", "body": "所有判断回到真实使用场景。" },
+        { "title": "证据优先", "body": "用事实而非偏好推动选择。" },
+        { "title": "协作闭环", "body": "责任、动作和复盘保持连贯。" }
+      ]
+    },
+    {
+      "type": "manifesto",
+      "layoutVariant": "culture-cover-with-soft-geometry",
+      "title": "文化不是口号，而是团队交付方式",
+      "claim": "组织场景、行为原则和产出证据必须相互支撑。",
+      "values": [
+        { "title": "行为清晰", "body": "可观察、可反馈。" },
+        { "title": "场景真实", "body": "来自一线协作。" },
+        { "title": "产出可证", "body": "能落到交付物。" }
+      ]
+    },
+    {
+      "type": "manifesto",
+      "layoutVariant": "mission-statement-stage",
+      "title": "使命必须被行为证明",
+      "statement": "使命必须被行为证明",
+      "claim": "使命页必须用行为原则和证据支撑。",
+      "values": [
+        { "title": "看见问题", "body": "主动识别客户和组织阻塞。" },
+        { "title": "承担结果", "body": "把承诺写入交付节奏。" },
+        { "title": "复盘机制", "body": "每次交付沉淀证据。" }
+      ]
+    },
+    {
+      "type": "manifesto",
+      "layoutVariant": "value-principle-cards",
+      "title": "价值观卡片必须写出可观察行为",
+      "claim": "每张卡片都包含原则、行为和证明材料。",
+      "values": [
+        { "title": "长期主义", "body": "用可复用资产降低下一次交付成本。" },
+        { "title": "事实透明", "body": "标明来源、置信度和待确认项。" },
+        { "title": "交付负责", "body": "把风险写进下一步，而不是隐藏。" },
+        { "title": "持续改善", "body": "每轮复盘都更新工程基线。" }
+      ],
+      "note": "价值观卡片没有行为证据时不能通过。"
+    }
+  ]
+}
