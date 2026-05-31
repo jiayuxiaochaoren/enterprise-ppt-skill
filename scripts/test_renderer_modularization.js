@@ -40,6 +40,9 @@ const {
 const {
   createEnergyIndustryRenderers
 } = require('./render/industry/energy');
+const {
+  createCoverRenderers
+} = require('./render/page-families/cover');
 
 assert.equal(typeof requirePptxGen(), 'function');
 assert.equal(stableStringify({ b:2, a:1 }), '{"a":1,"b":2}');
@@ -234,6 +237,65 @@ const energySlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type,
 energyRenderers.energyToc(energySlide, {}, { title:'运行路径', items:['A', 'B'] }, 2);
 assert.ok(energyCalls.some(([kind, args]) => kind === 'label' && args[1] === 'OPERATING SEQUENCE'));
 assert.ok(energySlide.shapes.length > 0);
+const coverCalls = [];
+const coverCtx = {
+  colors: () => ({
+    accent:'0066FF',
+    body:'222222',
+    captionOnImage:'FFFFFF',
+    cyan:'00FFFF',
+    ink:'0F172A',
+    ink2:'111827',
+    line:'CBD5E1',
+    muted:'64748B',
+    softBlue:'EFF6FF',
+    text:'111111',
+    violet:'7C3AED',
+    white:'FFFFFF'
+  }),
+  canvasWidth: () => 13.333,
+  canvasHeight: () => 7.5,
+  fileExists: () => false,
+  addArrowLine: (...args) => coverCalls.push(['arrow', args]),
+  addDarkBreathingCircle: (...args) => coverCalls.push(['darkCircle', args]),
+  addDeckMeta: (...args) => coverCalls.push(['deckMeta', args]),
+  addEnergyLens: (...args) => coverCalls.push(['energyLens', args]),
+  addEnergyMotionBackdrop: () => false,
+  addEnergyPhotoBackdrop: (...args) => coverCalls.push(['energyPhoto', args]),
+  addHairline: (...args) => coverCalls.push(['hairline', args]),
+  addLabel: (...args) => coverCalls.push(['label', args]),
+  addLightBreathingCircle: (...args) => coverCalls.push(['lightCircle', args]),
+  addPhotoPanel: (...args) => coverCalls.push(['photo', args]),
+  addPulseCurve: (...args) => coverCalls.push(['pulse', args]),
+  addRect: (...args) => coverCalls.push(['rect', args]),
+  addText: (...args) => coverCalls.push(['text', args]),
+  addVisualPhotoBackdrop: () => false,
+  copyFallback: (plan, key, fallback = '') => fallback || key,
+  designForSlide: () => ({ wantsImage:false, imagePath:'', imageRole:'' }),
+  footerText: () => 'Footer',
+  genericShowcaseField: (...args) => coverCalls.push(['showcase', args]),
+  industryProfile: () => ({ label:'DIGITAL', insight:'Insight', coverField:'generic' }),
+  isCompanyIntroPlan: () => false,
+  itemBody: value => (value && value.body) || '',
+  itemTitle: value => (value && value.title) || '',
+  lightCanvas: (...args) => coverCalls.push(['lightCanvas', args]),
+  masterDark: (...args) => coverCalls.push(['masterDark', args]),
+  metaDisabled: () => false,
+  panelFill: () => 'FFFFFF',
+  presentationSpec: () => ({ coverTone:'dark' }),
+  profile: () => ({ palette:'fixture' }),
+  profileFont: () => 'Fixture',
+  stageCanvas: (...args) => coverCalls.push(['stageCanvas', args]),
+  surfaceFill: () => 'FFFFFF',
+  typeSize: (name, fallback) => fallback,
+  typeToken: () => ({ breakAt:22 }),
+  variantOf: () => ''
+};
+const coverRenderers = createCoverRenderers(coverCtx);
+assert.equal(typeof coverRenderers.coverDark, 'function');
+coverRenderers.coverDark({ addShape() {} }, { title:'Digital Operations Platform', date:'2026' }, { title:'Digital Operations Platform' });
+assert.ok(coverCalls.some(([kind]) => kind === 'masterDark'));
+assert.ok(coverCalls.some(([kind]) => kind === 'deckMeta'));
 const renderMetaHelpers = createRenderMetaHelpers({
   chartConsumedFields: spec => Object.keys(spec).filter(key => key !== 'visualChecks'),
   chartSpecToComponentId: spec => `${spec.kind || 'unknown'}-component`,
@@ -274,13 +336,14 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.toc.includes('glassPanel'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.manifesto.includes('stageCanvas'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.profile.includes('EvidenceImageFrame'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.beauty.includes('genericShowcaseField'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.cover.includes('addDeckMeta'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('renderChartSpec'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('componentRendererContext'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('variantOf'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.timeline.includes('addClockwiseLoopConnectors'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('compactEvidenceCaption'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.strategy.includes('industryProfile'));
-['financial', 'beauty', 'business', 'chapter', 'general', 'toc', 'manifesto', 'profile', 'evidenceGallery', 'closing', 'architecture', 'timeline', 'risk', 'strategy'].forEach(key => {
+['financial', 'beauty', 'business', 'chapter', 'cover', 'general', 'toc', 'manifesto', 'profile', 'evidenceGallery', 'closing', 'architecture', 'timeline', 'risk', 'strategy'].forEach(key => {
   assert.ok(Array.isArray(PAGE_FAMILY_MODULES[key]), `${key} page-family module boundary should be declared`);
   assert.ok(PAGE_FAMILY_MODULES[key].length > 0, `${key} page-family module should list routed types`);
 });
@@ -289,6 +352,7 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.strategy.includes('industryProfile'));
   'beauty',
   'business',
   'chapter',
+  'cover',
   'general',
   'toc',
   'manifesto',

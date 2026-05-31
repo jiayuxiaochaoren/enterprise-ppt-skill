@@ -4,6 +4,7 @@ const beauty = require('./page-families/beauty');
 const business = require('./page-families/business');
 const chapter = require('./page-families/chapter');
 const closing = require('./page-families/closing');
+const cover = require('./page-families/cover');
 const evidenceGallery = require('./page-families/evidence-gallery');
 const financial = require('./page-families/financial');
 const general = require('./page-families/general');
@@ -20,6 +21,7 @@ const PAGE_FAMILY_MODULES = {
   [business.family]: business.types,
   [chapter.family]: chapter.types,
   [closing.family]: closing.types,
+  [cover.family]: cover.types,
   [evidenceGallery.family]: evidenceGallery.types,
   [financial.family]: financial.types,
   [general.family]: general.types,
@@ -34,7 +36,7 @@ const PAGE_FAMILY_MODULES = {
 function createSlideRenderRegistry(renderers = {}) {
   const businessEntries = business.entries(renderers);
   return createRenderRegistry([
-    ...beauty.entries(renderers).filter(entry => entry.types.includes('cover')),
+    ...cover.entries(renderers),
     ...closing.entries(renderers),
     ...chapter.entries(renderers),
     ...toc.entries(renderers),
