@@ -1,4 +1,8 @@
 const family = 'closing';
+const {
+  closingRendererKey,
+  closingTextForSlide
+} = require('./closing-routing');
 
 const types = [
   'closing',
@@ -573,37 +577,23 @@ function createClosingRenderers(ctx = {}) {
   }
 
   function closingAdaptive(slide, plan, s, idx) {
-    if (plan.industry === 'energy-utility' || s.closingVariant === 'energy-stage') {
-      return closingDark(slide, plan, s, idx);
-    }
     const design = ctx.designForSlide(plan, s, 'closing');
     const closingVariant = ctx.variantOf(s) || s.closingVariant || '';
-    if (closingVariant === 'premium-closing-anchor') return premiumClosingAnchor(slide, plan, s, idx);
-    const closingText = [s.title, s.subtitle, s.label, s.note].filter(Boolean).join(' ');
-    if (ctx.isCompanyIntroPlan(plan) && (['company-thanks', 'thank-you', 'thanks', 'simple-end', 'end'].includes(closingVariant) || /谢谢|感谢|联系|交流|观看|答疑|Q&A/i.test(closingText))) {
-      return closingCompanyThanks(slide, plan, s, idx);
-    }
-    if (['simple-end', 'end'].includes(closingVariant)) {
-      return closingSimpleEnd(slide, plan, s, idx);
-    }
-    if (['thank-you', 'thanks'].includes(closingVariant) || /谢谢|感谢|thank|thanks|观看|答疑|Q&A/i.test(closingText)) {
-      return closingThankYou(slide, plan, s, idx);
-    }
-    if (closingVariant === 'pilot-rollout') return closingManufacturingPilotRollout(slide, plan, s, idx);
-    if (closingVariant === 'investment-decision') return closingFinanceInvestmentDecision(slide, plan, s, idx);
-    if (closingVariant === 'quality-handoff') return closingHealthcareQualityHandoff(slide, plan, s, idx);
-    if (closingVariant === 'adoption-close') return closingSaasAdoptionClose(slide, plan, s, idx);
-    if (closingVariant === 'decision-summary' || s.closingVariant === 'decision-summary') {
-      return closingDecisionSummary(slide, plan, s, idx);
-    }
-    if ((s.closingVariant === 'image' || design.wantsImage) && design.imagePath && ctx.fileExists(design.imagePath)) {
-      return closingImageStatement(slide, plan, s, idx);
-    }
     const tone = ctx.presentationSpec().coverTone || 'dark';
-    if (s.closingVariant === 'editorial-light' || tone === 'light' || tone === 'split') {
-      return closingEditorialLight(slide, plan, s, idx);
-    }
-    return closingDecisionBoard(slide, plan, s, idx);
+    const rendererKey = closingRendererKey(plan, s, {
+      variant: closingVariant,
+      closingText: closingTextForSlide(s),
+      isCompanyIntro: ctx.isCompanyIntroPlan(plan),
+      hasImageStatement: Boolean(design.wantsImage && design.imagePath && ctx.fileExists(design.imagePath)),
+      coverTone: tone
+    });
+    const renderers = {
+      closingCompanyThanks, closingDark, closingDecisionBoard, closingDecisionSummary, closingEditorialLight,
+      closingFinanceInvestmentDecision, closingHealthcareQualityHandoff, closingImageStatement,
+      closingManufacturingPilotRollout, closingSaasAdoptionClose, closingSimpleEnd, closingThankYou,
+      premiumClosingAnchor
+    };
+    return renderers[rendererKey](slide, plan, s, idx);
   }
 
   return {
