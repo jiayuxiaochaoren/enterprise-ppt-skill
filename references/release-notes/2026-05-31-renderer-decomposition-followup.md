@@ -1,0 +1,63 @@
+# 2026-05-31 Renderer Decomposition Follow-up
+
+## Scope
+
+- Continued the renderer decomposition baseline after the material/CI hardening pass.
+- Extracted financial scorecard renderers from the financial family entry module.
+- Extracted risk/governance board renderers from the risk family entry module.
+- Added focused unit coverage for the new financial scorecard and risk board renderer modules.
+- Kept deck plan schema, render-meta schema, page types, and renderer family public interfaces compatible.
+
+## Structural Baseline
+
+- `scripts/material_pipeline.js`: 37 lines; remains a compatibility facade over `scripts/material/`.
+- `scripts/generate_pptx.js`: 1504 lines; still the shared orchestration and drawing-helper host.
+- `scripts/render/page-families/financial.js`: 158 lines; delegates scorecard, industry, investment, and results renderers.
+- `scripts/render/page-families/risk.js`: 23 lines; delegates risk board implementation to `risk-boards.js`.
+
+## Verification Baseline
+
+- `npm run test:unit`: 36/36 passed.
+- `npm run test:render`: 6/6 passed.
+- `npm test`: 68/68 passed.
+- `npm run verify:delivery`: passed with Keynote preview provider.
+
+## Remaining Optimization Plan
+
+### P0: Continue Renderer Decomposition
+
+- Split the remaining large page-family modules with the same wrapper-plus-focused-test pattern:
+  - `scripts/render/page-families/closing.js`
+  - `scripts/render/page-families/evidence-gallery.js`
+  - `scripts/render/page-families/cover.js`
+- Keep `generate_pptx.js` focused on orchestration, shared helper creation, render-meta, and compatibility routing.
+- Add one focused unit test per extracted module so family-level regressions do not rely only on fixture decks.
+
+### P1: Strengthen Equivalence Fixtures
+
+- Extend renderer equivalence checks beyond slide count and routing metadata.
+- Compare extracted text, component consumption, render-meta key fields, and family renderer match data for split families.
+- Add focused fixtures for risk/governance, scorecard, gallery, cover, and closing variants.
+
+### P1: Harden Renderer Context Contracts
+
+- Turn implicit helper dependencies into explicit per-family contract checks.
+- Fail fast when an extracted renderer expects a missing context helper or color token.
+- Keep public page-family APIs stable while making internal helper contracts auditable.
+
+### P2: Improve Delivery Evidence
+
+- Add a concise "what changed since baseline" section to delivery/validation summaries.
+- Surface preview provider, OCR confidence risks, model critic blockers, and asset authorization state in one short human-readable report.
+- Preserve full JSON for machine checks.
+
+### P2: Reduce Test Matrix Friction
+
+- Keep `fast`/`slow` test profiles, but add clearer per-family smoke targets for renderer decomposition work.
+- Continue writing generated artifacts under `out/` or `outputs/`, with `clean:outputs` as the documented reset path.
+
+## Compatibility Notes
+
+- OCR, LibreOffice, and external model tools remain optional.
+- Keynote remains the highest-fidelity preview path on macOS.
+- New renderer modules are internal implementation details; consumers should continue using existing npm scripts and deck-plan schema.

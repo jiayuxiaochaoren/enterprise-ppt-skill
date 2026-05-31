@@ -62,7 +62,10 @@ Use this map before opening large implementation files.
   - `RENDER_META`: output metadata for validation and debugging.
 - `scripts/render/registry.js`: renderer registry used by `generate_pptx.js`.
 - `scripts/render/renderer-context.js`: stable context passed to extracted page-family renderers.
-- `scripts/render/page-families/**`: page-family route ownership and extracted high-value renderer implementations for financial, closing, architecture, and evidence/gallery flows.
+- `scripts/render/page-families/**`: page-family route ownership and extracted high-value renderer implementations.
+  - `financial.js`: financial family wrapper; delegates investment, results, scorecard, and industry renderers.
+  - `risk.js`: risk family wrapper; delegates governance/risk board renderers to `risk-boards.js`.
+  - `closing.js`, `evidence-gallery.js`, and `cover.js`: current larger remaining page-family modules targeted for continued decomposition.
 - `examples/renderer-family-fixtures/**`: focused renderer family regression plans.
 - `scripts/components/**`: reusable chart, table, scorecard, gallery, and proof components.
 

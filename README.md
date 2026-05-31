@@ -154,6 +154,7 @@ npm run test:materials
 
 当前工程基线见 [2026-05-29 Delivery Baseline](references/release-notes/2026-05-29-delivery-baseline.md)。
 本轮材料/renderer/CI 基线见 [2026-05-30 Material And Renderer Hardening](references/release-notes/2026-05-30-material-renderer-hardening.md)。
+后续 renderer 拆分基线见 [2026-05-31 Renderer Decomposition Follow-up](references/release-notes/2026-05-31-renderer-decomposition-followup.md)。
 
 ## 参考文档
 
