@@ -40,6 +40,12 @@ const {
   createDeckStructureAuditHelpers
 } = require('./design/deck-structure-audit');
 const {
+  createEvidenceAuditHelpers
+} = require('./design/evidence-audit');
+const {
+  createIndustryFitAuditHelpers
+} = require('./design/industry-fit-audit');
+const {
   createCompositionPlanningHelpers
 } = require('./design/composition-planning');
 const {
@@ -304,5 +310,40 @@ const reportDepthAudit = structureAuditHelpers.reportDepthAudit({}, {
   ]
 });
 assert.ok(reportDepthAudit.findings.some(f => f.type === 'reportProofDepthThin'));
+
+const evidenceAuditHelpers = createEvidenceAuditHelpers({
+  normalizeDeckPlan: plan => plan,
+  slideProofObject: slide => slide.proof || { id:slide.proofObject || 'unknown', factual:false },
+  sourceTraceAudit: () => ({ findings:[] }),
+  sourceTraceForSlide: () => ({})
+});
+const evidenceAudit = evidenceAuditHelpers.evidenceAudit({}, {
+  slides:[{ type:'cover' }, { type:'executive-blocks' }]
+});
+assert.ok(evidenceAudit.findings.some(f => f.type === 'proofObjectMissing'));
+
+const industryFitHelpers = createIndustryFitAuditHelpers({
+  flattenText: value => JSON.stringify(value),
+  industryExpressionRules: { demo:{ proofObjects:['expected-proof'] } },
+  industryPackFor: industry => industry === 'demo' ? { id:'demo', labelZh:'Demo', proofObjects:['base-proof'], forbiddenTemplates:['forbidden phrase'] } : null,
+  normalizeDeckPlan: plan => plan,
+  proofObjectIdForSlide: slide => slide.proofObject || '',
+  visualIndustryId: value => value
+});
+const industryFitAudit = industryFitHelpers.industryFitAudit({}, {
+  industry:'demo',
+  slides:[
+    { type:'cover' },
+    { type:'executive-blocks', proofObject:'base-proof' },
+    { type:'executive-blocks', title:'forbidden phrase' },
+    { type:'executive-blocks' },
+    { type:'executive-blocks' },
+    { type:'executive-blocks' },
+    { type:'executive-blocks' },
+    { type:'closing' }
+  ]
+});
+assert.ok(industryFitAudit.findings.some(f => f.type === 'industryForbiddenPattern'));
+assert.ok(industryFitAudit.findings.some(f => f.type === 'industryFitProofObjectsThin'));
 
 console.log('design system modules ok');

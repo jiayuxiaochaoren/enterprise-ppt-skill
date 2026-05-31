@@ -35,6 +35,12 @@ const {
   createDeckStructureAuditHelpers
 } = require('./design/deck-structure-audit');
 const {
+  createEvidenceAuditHelpers
+} = require('./design/evidence-audit');
+const {
+  createIndustryFitAuditHelpers
+} = require('./design/industry-fit-audit');
+const {
   createTypographyHelpers
 } = require('./design/typography');
 const {
@@ -1207,51 +1213,14 @@ function slideProofObject(slide = {}) {
   };
 }
 
-function evidenceAudit(plan = {}, normalizedPlan = null) {
-  const normalized = normalizedPlan || normalizeDeckPlan(plan);
-  const slides = normalized.slides || [];
-  const findings = [];
-  const bodySlides = slides.filter(s => !['cover', 'closing', 'toc', 'toc-clean', 'chapter-divider'].includes(s.type || ''));
-  bodySlides.forEach((slide, i) => {
-    const absoluteIndex = slides.indexOf(slide) + 1;
-    const proof = slideProofObject(slide);
-    if (!proof.id || proof.id === 'unknown' || proof.id === 'narrative-block') {
-      findings.push({
-        slide: absoluteIndex,
-        level: 'review',
-        type: 'proofObjectMissing',
-        message: 'body slide should expose a concrete proof object, not only a title/body block'
-      });
-    }
-    if (!proof.factual && !proof.generatedIllustration && !['toc-clean', 'chapter-divider'].includes(slide.type || '')) {
-      const trace = sourceTraceForSlide(slide);
-      const explicitBoundary = /plan-authored|brief|source-derived|structure-only|synthetic|generated/i.test(String(proof.provenance || proof.evidenceMode || proof.evidence_mode || trace.sourceNote || trace.source_note || ''));
-      if (!explicitBoundary) {
-        findings.push({
-          slide: absoluteIndex,
-          level: 'review',
-          type: 'evidenceProvenanceWeak',
-          message: 'proof object lacks source ids or explicit generated-illustration provenance'
-        });
-      }
-    }
-    if (proof.generatedIllustration && proof.factual) {
-      findings.push({
-        slide: absoluteIndex,
-        level: 'fail',
-        type: 'generatedEvidenceMisclassified',
-        message: 'model-generated illustration is marked as factual evidence'
-      });
-    }
-  });
-  sourceTraceAudit(plan, normalized).findings.forEach(f => findings.push(f));
-  return {
-    version: 'evidence-audit/v1',
-    checkedSlides: bodySlides.length,
-    status: findings.some(f => f.level === 'fail') ? 'fail' : (findings.length ? 'review' : 'pass'),
-    findings
-  };
-}
+const {
+  evidenceAudit
+} = createEvidenceAuditHelpers({
+  normalizeDeckPlan,
+  slideProofObject,
+  sourceTraceAudit,
+  sourceTraceForSlide
+});
 
 const {
   pageCountAudit,
@@ -1270,45 +1239,16 @@ const {
   normalizeDeckPlan
 });
 
-function industryFitAudit(plan = {}, normalizedPlan = null) {
-  const normalized = normalizedPlan || normalizeDeckPlan(plan);
-  const industry = normalized.industry || plan.industry || '';
-  const pack = industryPackFor(industry);
-  const findings = [];
-  if (!pack) return { version: 'industry-fit-audit/v1', industry, status: 'review', findings: [{ level: 'review', type: 'industryPackMissing', message: `no industry pack for ${industry || 'unknown industry'}` }] };
-  const text = flattenText(normalized.slides || []);
-  (pack.forbiddenTemplates || []).forEach(item => {
-    const normalizedItem = String(item || '').toLowerCase();
-    if (/generic|decorative|risk page as plain table|beautiful photo without proof/i.test(normalizedItem)) return;
-    if (normalizedItem && text.toLowerCase().includes(normalizedItem)) {
-      findings.push({
-        level: 'review',
-        type: 'industryForbiddenPattern',
-        message: `deck visible text appears to use forbidden industry pattern: ${item}`
-      });
-    }
-  });
-  const expressionRules = INDUSTRY_EXPRESSION_RULES[industry] || INDUSTRY_EXPRESSION_RULES[visualIndustryId(industry)] || {};
-  const expectedProof = new Set([...(pack.proofObjects || []), ...((expressionRules.proofObjects) || [])].map(String));
-  const presentProof = new Set((normalized.slides || []).map(proofObjectIdForSlide).filter(Boolean));
-  const matched = [...presentProof].filter(id => expectedProof.has(id));
-  if ((normalized.slides || []).length >= 8 && expectedProof.size && matched.length < Math.min(2, expectedProof.size)) {
-    findings.push({
-      level: 'review',
-      type: 'industryFitProofObjectsThin',
-      message: `${pack.labelZh || industry} report only uses ${matched.length} expected proof objects`
-    });
-  }
-  return {
-    version: 'industry-fit-audit/v1',
-    industry,
-    packId: pack.id,
-    matchedProofObjects: matched,
-    expectedProofObjects: [...expectedProof],
-    status: findings.some(f => f.level === 'fail') ? 'fail' : (findings.length ? 'review' : 'pass'),
-    findings
-  };
-}
+const {
+  industryFitAudit
+} = createIndustryFitAuditHelpers({
+  flattenText,
+  industryExpressionRules: INDUSTRY_EXPRESSION_RULES,
+  industryPackFor,
+  normalizeDeckPlan,
+  proofObjectIdForSlide,
+  visualIndustryId
+});
 
 function visibleProductionCopyIssues(text = '') {
   return VISIBLE_PRODUCTION_COPY_BANS
