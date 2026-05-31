@@ -57,8 +57,9 @@
 
 ### P2: Reduce Test Matrix Friction
 
-- Keep `fast`/`slow` test profiles, but add clearer per-family smoke targets for renderer decomposition work.
-- Continue writing generated artifacts under `out/` or `outputs/`, with `clean:outputs` as the documented reset path.
+- Added `--family` and `--fixture` filters to `scripts/test_renderer_family_fixtures.js`.
+- Added per-family smoke targets for architecture, closing, cover, evidence-gallery, financial, and risk renderer decomposition work.
+- Continued writing generated artifacts under `out/` or `outputs/`, with `clean:outputs` as the documented reset path.
 
 ## Compatibility Notes
 

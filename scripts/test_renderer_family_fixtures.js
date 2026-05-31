@@ -7,8 +7,54 @@ const cp = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const FIXTURES = path.join(ROOT, 'examples', 'renderer-family-fixtures');
 const OUT = path.join(ROOT, 'outputs', 'test-renderer-family-fixtures');
-fs.rmSync(OUT, { recursive: true, force: true });
-fs.mkdirSync(OUT, { recursive: true });
+const CASES = [
+  ['financial-family.json', 'page-family:financial'],
+  ['business-family.json', 'page-family:business'],
+  ['chapter-family.json', 'page-family:chapter'],
+  ['toc-family.json', 'page-family:toc'],
+  ['manifesto-family.json', 'page-family:manifesto'],
+  ['beauty-family.json', 'page-family:beauty'],
+  ['general-family.json', 'page-family:general'],
+  ['profile-family.json', 'page-family:profile'],
+  ['profile-finance-family.json', 'page-family:profile'],
+  ['closing-family.json', 'page-family:closing'],
+  ['cover-family.json', 'page-family:cover'],
+  ['cover-energy-family.json', 'page-family:cover'],
+  ['architecture-family.json', 'page-family:architecture'],
+  ['strategy-family.json', 'page-family:strategy'],
+  ['evidence-gallery-family.json', 'page-family:evidence-gallery'],
+  ['timeline-family.json', 'page-family:timeline'],
+  ['risk-family.json', 'page-family:risk']
+];
+
+function parseArgs(argv) {
+  const opts = {};
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--family') opts.family = String(argv[++i] || '').toLowerCase();
+    else if (arg === '--fixture') opts.fixture = String(argv[++i] || '');
+    else if (arg === '--help' || arg === '-h') opts.help = true;
+    else throw new Error(`unknown argument: ${arg}`);
+  }
+  return opts;
+}
+
+function usage() {
+  const families = [...new Set(CASES.map(([, source]) => source.replace(/^page-family:/, '')))].sort();
+  console.error([
+    'Usage: node scripts/test_renderer_family_fixtures.js [--family name] [--fixture file.json]',
+    '',
+    `Families: ${families.join(', ')}`
+  ].join('\n'));
+}
+
+function selectedCases(opts = {}) {
+  return CASES.filter(([fixture, expectedSource]) => {
+    if (opts.family && expectedSource !== `page-family:${opts.family}`) return false;
+    if (opts.fixture && fixture !== opts.fixture && path.basename(fixture, '.json') !== opts.fixture) return false;
+    return true;
+  });
+}
 
 function run(args) {
   const result = cp.spawnSync(process.execPath, args, {
@@ -58,52 +104,53 @@ function stableMeta(meta = {}) {
   };
 }
 
-[
-  ['financial-family.json', 'page-family:financial'],
-  ['business-family.json', 'page-family:business'],
-  ['chapter-family.json', 'page-family:chapter'],
-  ['toc-family.json', 'page-family:toc'],
-  ['manifesto-family.json', 'page-family:manifesto'],
-  ['beauty-family.json', 'page-family:beauty'],
-  ['general-family.json', 'page-family:general'],
-  ['profile-family.json', 'page-family:profile'],
-  ['profile-finance-family.json', 'page-family:profile'],
-  ['closing-family.json', 'page-family:closing'],
-  ['cover-family.json', 'page-family:cover'],
-  ['cover-energy-family.json', 'page-family:cover'],
-  ['architecture-family.json', 'page-family:architecture'],
-  ['strategy-family.json', 'page-family:strategy'],
-  ['evidence-gallery-family.json', 'page-family:evidence-gallery'],
-  ['timeline-family.json', 'page-family:timeline'],
-  ['risk-family.json', 'page-family:risk']
-].forEach(([fixture, expectedSource]) => {
-  const plan = path.join(FIXTURES, fixture);
-  const pptxA = path.join(OUT, `${path.basename(fixture, '.json')}.a.pptx`);
-  const pptxB = path.join(OUT, `${path.basename(fixture, '.json')}.b.pptx`);
-  run(['scripts/generate_pptx.js', plan, pptxA]);
-  run(['scripts/generate_pptx.js', plan, pptxB]);
-  const metaA = JSON.parse(fs.readFileSync(`${pptxA}.render-meta.json`, 'utf8'));
-  const metaB = JSON.parse(fs.readFileSync(`${pptxB}.render-meta.json`, 'utf8'));
-  assert.deepEqual(stableMeta(metaA), stableMeta(metaB), `${fixture} render-meta should be stable`);
-  assert.ok((metaA.slides || []).every(slide => slide.rendererMatch && slide.rendererMatch.source === expectedSource), `${fixture} should route through ${expectedSource}`);
-  if (fixture === 'financial-family.json') {
-    const industrySlides = (metaA.slides || []).filter(slide => slide.type === 'industry-chart');
-    assert.ok(industrySlides.length >= 5, 'financial-family should cover industry-chart variants');
-    assert.ok(industrySlides.every(slide => slide.rendererMatch && slide.rendererMatch.rendererId === 'industry-chart'), 'financial industry-chart fixtures should keep rendererMatch stable');
-    const consumedIds = industrySlides.flatMap(slide => (slide.consumedComponents || []).map(component => component.id || component));
-    assert.ok(consumedIds.includes('bar-chart'), 'financial industry-chart chartSpec fixture should consume the native bar-chart component');
+function main() {
+  const opts = parseArgs(process.argv.slice(2));
+  if (opts.help) {
+    usage();
+    return;
   }
-  const planJson = JSON.parse(fs.readFileSync(plan, 'utf8'));
-  const textA = stableText(pptxText(pptxA));
-  const textB = stableText(pptxText(pptxB));
-  assert.equal(textHash(textA), textHash(textB), `${fixture} extracted text hash should be stable`);
-  assert.equal(textA.length, textB.length, `${fixture} extracted text length should be stable`);
-  assert.ok(textA.length > 80, `${fixture} should render meaningful extracted text`);
-  const compactTextA = textA.replace(/\s+/g, '');
-  (planJson.slides || []).forEach(slide => {
-    const titlePrefix = String(slide.title || '').replace(/\s+/g, '').slice(0, 8);
-    assert.ok(compactTextA.includes(titlePrefix), `${fixture} should render title text: ${slide.title}`);
+  const cases = selectedCases(opts);
+  assert.ok(cases.length, `no renderer family fixtures matched family=${opts.family || '*'} fixture=${opts.fixture || '*'}`);
+  fs.rmSync(OUT, { recursive: true, force: true });
+  fs.mkdirSync(OUT, { recursive: true });
+  cases.forEach(([fixture, expectedSource]) => {
+    const plan = path.join(FIXTURES, fixture);
+    const pptxA = path.join(OUT, `${path.basename(fixture, '.json')}.a.pptx`);
+    const pptxB = path.join(OUT, `${path.basename(fixture, '.json')}.b.pptx`);
+    run(['scripts/generate_pptx.js', plan, pptxA]);
+    run(['scripts/generate_pptx.js', plan, pptxB]);
+    const metaA = JSON.parse(fs.readFileSync(`${pptxA}.render-meta.json`, 'utf8'));
+    const metaB = JSON.parse(fs.readFileSync(`${pptxB}.render-meta.json`, 'utf8'));
+    assert.deepEqual(stableMeta(metaA), stableMeta(metaB), `${fixture} render-meta should be stable`);
+    assert.ok((metaA.slides || []).every(slide => slide.rendererMatch && slide.rendererMatch.source === expectedSource), `${fixture} should route through ${expectedSource}`);
+    if (fixture === 'financial-family.json') {
+      const industrySlides = (metaA.slides || []).filter(slide => slide.type === 'industry-chart');
+      assert.ok(industrySlides.length >= 5, 'financial-family should cover industry-chart variants');
+      assert.ok(industrySlides.every(slide => slide.rendererMatch && slide.rendererMatch.rendererId === 'industry-chart'), 'financial industry-chart fixtures should keep rendererMatch stable');
+      const consumedIds = industrySlides.flatMap(slide => (slide.consumedComponents || []).map(component => component.id || component));
+      assert.ok(consumedIds.includes('bar-chart'), 'financial industry-chart chartSpec fixture should consume the native bar-chart component');
+    }
+    const planJson = JSON.parse(fs.readFileSync(plan, 'utf8'));
+    const textA = stableText(pptxText(pptxA));
+    const textB = stableText(pptxText(pptxB));
+    assert.equal(textHash(textA), textHash(textB), `${fixture} extracted text hash should be stable`);
+    assert.equal(textA.length, textB.length, `${fixture} extracted text length should be stable`);
+    assert.ok(textA.length > 80, `${fixture} should render meaningful extracted text`);
+    const compactTextA = textA.replace(/\s+/g, '');
+    (planJson.slides || []).forEach(slide => {
+      const titlePrefix = String(slide.title || '').replace(/\s+/g, '').slice(0, 8);
+      assert.ok(compactTextA.includes(titlePrefix), `${fixture} should render title text: ${slide.title}`);
+    });
   });
-});
 
-console.log('renderer family fixtures ok');
+  console.log(`renderer family fixtures ok (${cases.length}/${CASES.length})`);
+}
+
+try {
+  main();
+} catch (err) {
+  usage();
+  console.error(err.stack || err.message || err);
+  process.exit(1);
+}

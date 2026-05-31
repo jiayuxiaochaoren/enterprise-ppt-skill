@@ -140,6 +140,8 @@ npm run test:render
 npm run test:visual
 npm run test:delivery
 npm run test:renderer-family
+npm run test:renderer-family:cover
+npm run test:renderer-family:financial
 npm run verify:ci
 npm run verify:nightly
 npm run verify:delivery -- --skip-preview
@@ -149,6 +151,8 @@ npm run test:intelligence
 npm run test:orchestration-contract
 npm run test:materials
 ```
+
+Renderer family smoke tests can be scoped with `--family` or the npm shortcuts for `architecture`、`closing`、`cover`、`evidence-gallery`、`financial`、`risk`，用于单个页面族迁移后的快速回归。
 
 预览验证优先使用 macOS Keynote；无 Keynote 时会尝试 LibreOffice/soffice + pdftoppm，仍不可用时进入 render-meta/metadata fallback，并在 summary 中标记 preview provider。
 
