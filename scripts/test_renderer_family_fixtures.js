@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
@@ -28,14 +29,28 @@ function pptxText(file) {
     .replace(/<[^>]+>/g, ' ');
 }
 
+function stableText(text = '') {
+  return String(text || '').replace(/\s+/g, ' ').trim();
+}
+
+function textHash(text = '') {
+  return crypto.createHash('sha256').update(stableText(text)).digest('hex').slice(0, 16);
+}
+
 function stableMeta(meta = {}) {
   return {
     slideCount: meta.slideCount,
     slides: (meta.slides || []).map(slide => ({
       slide: slide.slide,
       type: slide.type,
-      rendererId: slide.rendererMatch && slide.rendererMatch.rendererId,
-      source: slide.rendererMatch && slide.rendererMatch.source,
+      rendererMatch: slide.rendererMatch ? {
+        requestedType: slide.rendererMatch.requestedType,
+        matchedType: slide.rendererMatch.matchedType,
+        matchKind: slide.rendererMatch.matchKind,
+        rendererId: slide.rendererMatch.rendererId,
+        rendererName: slide.rendererMatch.rendererName,
+        source: slide.rendererMatch.source
+      } : null,
       planned: (slide.plannedComponents || []).map(component => component.id).sort(),
       consumed: (slide.consumedComponents || []).map(component => component.id || component).sort(),
       missing: (slide.missingRequiredComponents || []).map(component => component.id || component).sort()
@@ -54,6 +69,8 @@ function stableMeta(meta = {}) {
   ['profile-family.json', 'page-family:profile'],
   ['profile-finance-family.json', 'page-family:profile'],
   ['closing-family.json', 'page-family:closing'],
+  ['cover-family.json', 'page-family:cover'],
+  ['cover-energy-family.json', 'page-family:cover'],
   ['architecture-family.json', 'page-family:architecture'],
   ['strategy-family.json', 'page-family:strategy'],
   ['evidence-gallery-family.json', 'page-family:evidence-gallery'],
@@ -77,9 +94,15 @@ function stableMeta(meta = {}) {
     assert.ok(consumedIds.includes('bar-chart'), 'financial industry-chart chartSpec fixture should consume the native bar-chart component');
   }
   const planJson = JSON.parse(fs.readFileSync(plan, 'utf8'));
-  const text = pptxText(pptxA);
+  const textA = stableText(pptxText(pptxA));
+  const textB = stableText(pptxText(pptxB));
+  assert.equal(textHash(textA), textHash(textB), `${fixture} extracted text hash should be stable`);
+  assert.equal(textA.length, textB.length, `${fixture} extracted text length should be stable`);
+  assert.ok(textA.length > 80, `${fixture} should render meaningful extracted text`);
+  const compactTextA = textA.replace(/\s+/g, '');
   (planJson.slides || []).forEach(slide => {
-    assert.ok(text.includes(slide.title.slice(0, 8)), `${fixture} should render title text: ${slide.title}`);
+    const titlePrefix = String(slide.title || '').replace(/\s+/g, '').slice(0, 8);
+    assert.ok(compactTextA.includes(titlePrefix), `${fixture} should render title text: ${slide.title}`);
   });
 });
 

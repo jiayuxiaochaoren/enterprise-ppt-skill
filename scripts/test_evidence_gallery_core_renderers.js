@@ -30,6 +30,7 @@ function createFakeCtx(ops) {
     addRect: (...args) => record('addRect', args),
     addSmartPhotoPanel: (...args) => record('addSmartPhotoPanel', args),
     addText: (...args) => record('addText', args),
+    brandWorldBusinessProof: (...args) => record('brandWorldBusinessProof', args),
     chooseEvidenceImageLayout: () => 'mosaic-1-3',
     colors: () => ({
       accent: '2563EB',

@@ -10,8 +10,12 @@ const {
 const {
   createEvidenceProofBoardRenderers
 } = require('./evidence-proof-boards');
+const {
+  assertRendererContext
+} = require('../renderer-context');
 
 function createEvidenceGalleryCoreRenderers(ctx = {}) {
+  assertRendererContext(ctx, ['evidenceGallery'], { label:'evidence gallery renderer context' });
   const {
     addArrowBetweenRects,
     addArrowLine,

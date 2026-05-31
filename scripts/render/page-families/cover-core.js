@@ -1,4 +1,9 @@
+const {
+  assertRendererContext
+} = require('../renderer-context');
+
 function createCoverCoreRenderers(ctx = {}) {
+  assertRendererContext(ctx, ['cover'], { label:'cover renderer context' });
   const colors = () => ctx.colors();
   const canvasWidth = () => typeof ctx.canvasWidth === 'function' ? ctx.canvasWidth() : 13.333;
   const canvasHeight = () => typeof ctx.canvasHeight === 'function' ? ctx.canvasHeight() : 7.5;

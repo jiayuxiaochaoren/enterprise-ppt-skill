@@ -159,15 +159,45 @@ const RENDERER_CONTEXT_CONTRACT = {
   closing: [
     'ContactBlock',
     'activePlan',
+    'addArrowLine',
+    'addDarkBreathingCircle',
     'addEnergyLens',
     'addEnergyMotionBackdrop',
     'addEnergyPhotoBackdrop',
+    'addHairline',
+    'addLabel',
+    'addLightBreathingCircle',
+    'addNumber',
+    'addPhotoPanel',
+    'addRect',
+    'addText',
     'addVisualPhotoBackdrop',
     'canvasHeight',
     'canvasWidth',
+    'colors',
+    'copyFallback',
+    'copyPolicyList',
     'coverMetaText',
+    'designForSlide',
+    'fileExists',
+    'footerText',
+    'galleryImages',
     'isCompanyIntroPlan',
-    'metaDisabled'
+    'itemBody',
+    'itemTitle',
+    'lightCanvas',
+    'mediaForRole',
+    'metaDisabled',
+    'panelFill',
+    'presentationSpec',
+    'profileFont',
+    'resolveAssetPath',
+    'sectionKicker',
+    'smartPhotoFit',
+    'stageCanvas',
+    'surfaceFill',
+    'typeSize',
+    'variantOf'
   ],
   cover: [
     'addArrowLine',
@@ -179,6 +209,7 @@ const RENDERER_CONTEXT_CONTRACT = {
     'addHairline',
     'addLabel',
     'addLightBreathingCircle',
+    'addNumber',
     'addPhotoPanel',
     'addPulseCurve',
     'addRect',
@@ -186,6 +217,7 @@ const RENDERER_CONTEXT_CONTRACT = {
     'addVisualPhotoBackdrop',
     'canvasHeight',
     'canvasWidth',
+    'colors',
     'copyFallback',
     'designForSlide',
     'fileExists',
@@ -197,7 +229,6 @@ const RENDERER_CONTEXT_CONTRACT = {
     'itemTitle',
     'lightCanvas',
     'masterDark',
-    'masterLight',
     'metaDisabled',
     'panelFill',
     'presentationSpec',
@@ -214,8 +245,24 @@ const RENDERER_CONTEXT_CONTRACT = {
     'compactEvidenceCaption'
   ],
   risk: [
+    'PageNumber',
     'addClockwiseLoopConnectors',
-    'compactEvidenceCaption'
+    'addDarkBreathingCircle',
+    'addHairline',
+    'addLabel',
+    'addNumber',
+    'addRect',
+    'addText',
+    'colors',
+    'compactEvidenceCaption',
+    'footerText',
+    'itemBody',
+    'itemTitle',
+    'lightCanvas',
+    'panelFill',
+    'sectionKicker',
+    'stageCanvas',
+    'variantOf'
   ],
   strategy: [
     'addArrowLine',
@@ -238,15 +285,60 @@ const RENDERER_CONTEXT_CONTRACT = {
     'variantOf'
   ],
   evidenceGallery: [
+    'PageNumber',
+    'addArrowBetweenRects',
+    'addArrowLine',
+    'addDarkBreathingCircle',
     'addEvidenceCaptionStack',
-    'chooseEvidenceImageLayout',
+    'addHairline',
+    'addLabel',
+    'addLightBreathingCircle',
+    'addNumber',
+    'addPhotoPanel',
+    'addPulseCurve',
+    'addRect',
+    'addSmartPhotoPanel',
+    'addText',
     'brandWorldBusinessProof',
+    'chooseEvidenceImageLayout',
+    'colors',
     'compactEvidenceCaption',
     'fileExists',
+    'footerText',
     'galleryImages',
     'genericShowcaseField',
-    'resolveAssetPath'
+    'itemBody',
+    'itemBodyNoEllipsis',
+    'itemTitle',
+    'lightCanvas',
+    'panelFill',
+    'resolveAssetPath',
+    'sectionKicker',
+    'stageCanvas',
+    'variantOf'
+  ],
+  financialScorecard: [
+    'addArrowLine',
+    'addHairline',
+    'addLabel',
+    'addNumber',
+    'addRect',
+    'addText',
+    'colors',
+    'footerText',
+    'formatMetricDelta',
+    'lightCanvas',
+    'panelFill',
+    'sectionKicker'
   ]
+};
+
+const RENDERER_COLOR_CONTRACT = {
+  closing: ['accent', 'body', 'captionOnImage', 'cyan', 'ink', 'ink2', 'line', 'muted', 'softBlue', 'text', 'violet', 'white'],
+  cover: ['accent', 'body', 'captionOnImage', 'cyan', 'ink', 'ink2', 'line', 'muted', 'panelAlt', 'softBlue', 'text', 'violet', 'white'],
+  evidenceGallery: ['accent', 'body', 'captionOnImage', 'cyan', 'ink', 'ink2', 'line', 'muted', 'panelAlt', 'softBlue', 'text', 'violet', 'white'],
+  financialScorecard: ['accent', 'body', 'captionOnImage', 'cyan', 'ink', 'line', 'muted', 'risk', 'softBlue', 'text', 'violet', 'white'],
+  risk: ['accent', 'body', 'captionOnImage', 'cyan', 'ink', 'ink2', 'line', 'muted', 'risk', 'text', 'violet', 'white']
 };
 
 function createRendererContext(api = {}) {
@@ -261,8 +353,31 @@ function missingRendererContextKeys(ctx = {}, groups = Object.keys(RENDERER_CONT
   return groups.flatMap(group => (RENDERER_CONTEXT_CONTRACT[group] || []).filter(key => ctx[key] == null));
 }
 
+function missingRendererColorTokens(ctx = {}, groups = Object.keys(RENDERER_COLOR_CONTRACT)) {
+  const colors = typeof ctx.colors === 'function' ? ctx.colors() : (ctx.colors || {});
+  return groups.flatMap(group => (RENDERER_COLOR_CONTRACT[group] || [])
+    .filter(token => colors[token] == null)
+    .map(token => `${group}.${token}`));
+}
+
+function assertRendererContext(ctx = {}, groups = [], opts = {}) {
+  const label = opts.label || 'renderer context';
+  const missingKeys = missingRendererContextKeys(ctx, groups);
+  const missingColors = opts.colors === false ? [] : missingRendererColorTokens(ctx, groups);
+  if (missingKeys.length || missingColors.length) {
+    const parts = [];
+    if (missingKeys.length) parts.push(`missing helpers: ${missingKeys.join(', ')}`);
+    if (missingColors.length) parts.push(`missing colors: ${missingColors.join(', ')}`);
+    throw new Error(`${label} contract failed (${groups.join(', ')}): ${parts.join('; ')}`);
+  }
+  return ctx;
+}
+
 module.exports = {
   RENDERER_CONTEXT_CONTRACT,
+  RENDERER_COLOR_CONTRACT,
+  assertRendererContext,
   createRendererContext,
+  missingRendererColorTokens,
   missingRendererContextKeys
 };

@@ -1,4 +1,9 @@
+const {
+  assertRendererContext
+} = require('../renderer-context');
+
 function createRiskBoardRenderers(ctx = {}) {
+  assertRendererContext(ctx, ['risk'], { label:'risk renderer context' });
   const C = ctx.colors();
   const {
     PageNumber,

@@ -3,7 +3,10 @@ const path = require('path');
 const { requirePptxGen } = require('./render/pptx-runtime');
 const {
   RENDERER_CONTEXT_CONTRACT,
+  RENDERER_COLOR_CONTRACT,
+  assertRendererContext,
   createRendererContext,
+  missingRendererColorTokens,
   missingRendererContextKeys
 } = require('./render/renderer-context');
 const {
@@ -248,6 +251,7 @@ const coverCtx = {
     ink2:'111827',
     line:'CBD5E1',
     muted:'64748B',
+    panelAlt:'F1F5F9',
     softBlue:'EFF6FF',
     text:'111111',
     violet:'7C3AED',
@@ -265,6 +269,7 @@ const coverCtx = {
   addHairline: (...args) => coverCalls.push(['hairline', args]),
   addLabel: (...args) => coverCalls.push(['label', args]),
   addLightBreathingCircle: (...args) => coverCalls.push(['lightCircle', args]),
+  addNumber: (...args) => coverCalls.push(['number', args]),
   addPhotoPanel: (...args) => coverCalls.push(['photo', args]),
   addPulseCurve: (...args) => coverCalls.push(['pulse', args]),
   addRect: (...args) => coverCalls.push(['rect', args]),
@@ -327,8 +332,15 @@ assert.equal(chartSlide.__codexChartConsumption.actualComponentId, 'bar-chart');
 const context = createRendererContext({ colors: () => ({ accent: '000000' }) });
 assert.equal(context.colors().accent, '000000');
 assert.ok(RENDERER_CONTEXT_CONTRACT.text.includes('addText'));
+assert.ok(RENDERER_COLOR_CONTRACT.cover.includes('accent'));
 assert.deepEqual(missingRendererContextKeys(context, ['colors']), ['presentationSpec', 'panelFill', 'surfaceFill']);
+assert.deepEqual(missingRendererColorTokens(context, ['cover']).slice(0, 2), ['cover.body', 'cover.captionOnImage']);
+assert.throws(
+  () => assertRendererContext({ colors: () => ({ accent:'000000' }) }, ['cover']),
+  /cover.*missing helpers.*addArrowLine.*missing colors/s
+);
 assert.ok(RENDERER_CONTEXT_CONTRACT.closing.includes('addVisualPhotoBackdrop'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.closing.includes('copyPolicyList'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.business.includes('reportBoardNeedsRightOverlayRail'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.chapter.includes('stageCanvas'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.general.includes('masterLight'));
@@ -337,12 +349,16 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.manifesto.includes('stageCanvas'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.profile.includes('EvidenceImageFrame'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.beauty.includes('genericShowcaseField'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.cover.includes('addDeckMeta'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.cover.includes('addNumber'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('renderChartSpec'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('componentRendererContext'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('variantOf'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.timeline.includes('addClockwiseLoopConnectors'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('compactEvidenceCaption'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('variantOf'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.strategy.includes('industryProfile'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.evidenceGallery.includes('brandWorldBusinessProof'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.financialScorecard.includes('formatMetricDelta'));
 ['financial', 'beauty', 'business', 'chapter', 'cover', 'general', 'toc', 'manifesto', 'profile', 'evidenceGallery', 'closing', 'architecture', 'timeline', 'risk', 'strategy'].forEach(key => {
   assert.ok(Array.isArray(PAGE_FAMILY_MODULES[key]), `${key} page-family module boundary should be declared`);
   assert.ok(PAGE_FAMILY_MODULES[key].length > 0, `${key} page-family module should list routed types`);

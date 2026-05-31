@@ -39,15 +39,15 @@
 
 ### P1: Strengthen Equivalence Fixtures
 
-- Extend renderer equivalence checks beyond slide count and routing metadata.
-- Compare extracted text, component consumption, render-meta key fields, and family renderer match data for split families.
-- Add focused fixtures for risk/governance, scorecard, gallery, cover, and closing variants.
+- Added `cover-family.json` and `cover-energy-family.json` renderer family fixtures.
+- Renderer family fixtures now compare extracted text hash/length, render-meta key fields, component consumption, and detailed rendererMatch data.
+- Existing focused fixtures cover risk/governance, scorecard, gallery, and closing variants.
 
 ### P1: Harden Renderer Context Contracts
 
-- Turn implicit helper dependencies into explicit per-family contract checks.
-- Fail fast when an extracted renderer expects a missing context helper or color token.
-- Keep public page-family APIs stable while making internal helper contracts auditable.
+- Added executable context and color-token contract checks through `assertRendererContext`.
+- Core renderer factories for closing, cover, evidence gallery, risk, and financial scorecards now fail fast on missing helpers or required color tokens.
+- Public page-family APIs remain stable while internal helper contracts are auditable.
 
 ### P2: Improve Delivery Evidence
 

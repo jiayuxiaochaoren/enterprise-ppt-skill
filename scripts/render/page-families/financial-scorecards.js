@@ -1,4 +1,9 @@
+const {
+  assertRendererContext
+} = require('../renderer-context');
+
 function createFinancialScorecardRenderers(ctx = {}) {
+  assertRendererContext(ctx, ['financialScorecard'], { label:'financial scorecard renderer context' });
   const C = ctx.colors();
   const {
     addArrowLine,

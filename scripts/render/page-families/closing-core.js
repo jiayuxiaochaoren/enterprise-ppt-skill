@@ -5,8 +5,12 @@ const {
 const {
   createClosingIndustryRenderers
 } = require('./closing-industry');
+const {
+  assertRendererContext
+} = require('../renderer-context');
 
 function createClosingCoreRenderers(ctx = {}) {
+  assertRendererContext(ctx, ['closing'], { label:'closing renderer context' });
   const C = ctx.colors();
   const W = typeof ctx.canvasWidth === 'function' ? ctx.canvasWidth() : 13.333;
   const H = typeof ctx.canvasHeight === 'function' ? ctx.canvasHeight() : 7.5;
