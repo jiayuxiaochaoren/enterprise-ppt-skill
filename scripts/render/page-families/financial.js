@@ -1,4 +1,13 @@
 const family = 'financial';
+const {
+  chartNumber,
+  chooseChannelLabelBox,
+  coerceChartItems,
+  computeChannelMatrixBubbles,
+  computeMonthlyTrendPoints,
+  computeWaterfallBars,
+  firstChartItems
+} = require('./financial-chart-utils');
 
 const types = [
   'metric-comparison',
@@ -585,40 +594,6 @@ function createFinancialRenderers(ctx = {}) {
     addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
   }
 
-  function coerceChartItems(value, fallback = []) {
-    if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? { title:v } : v);
-    if (value && Array.isArray(value.items)) return value.items.map(v => typeof v === 'string' ? { title:v } : v);
-    if (value && Array.isArray(value.rows)) return value.rows.map(v => Array.isArray(v) ? { title:v[0], value:v[1], body:v[2] } : v);
-    return fallback;
-  }
-
-  function chartNumber(value, fallback = 0) {
-    const n = Number(String(value == null ? '' : value).replace(/[^\d.-]/g, ''));
-    return Number.isFinite(n) ? n : fallback;
-  }
-
-  function chartClamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
-  }
-
-  function chartBoxesOverlap(a, b, pad = 0) {
-    return a.x < b.x + b.w + pad &&
-      a.x + a.w + pad > b.x &&
-      a.y < b.y + b.h + pad &&
-      a.y + a.h + pad > b.y;
-  }
-
-  function firstChartItems(s, keys = [], fallback = []) {
-    for (const key of keys) {
-      const value = s[key];
-      if (Array.isArray(value) || (value && (Array.isArray(value.items) || Array.isArray(value.rows)))) {
-        const items = coerceChartItems(value, []);
-        if (items.length) return items;
-      }
-    }
-    return coerceChartItems(null, fallback);
-  }
-
   function drawIndustryWaterfall(slide, board, s) {
     const items = firstChartItems(s, ['waterfallBridge', 'targetBridge', 'bridge'], [
       { label:'Q1净销', value:'1482w', kind:'start' },
@@ -628,30 +603,13 @@ function createFinancialRenderers(ctx = {}) {
       { label:'其他修复', value:'+55w', kind:'up' },
       { label:'Q2目标', value:'1850w', kind:'end' }
     ]).slice(0, 6);
-    const values = items.map((it, i) => chartNumber(it.value, i === 0 ? 100 : 18));
-    const start = Math.abs(values[0]) || 100;
     const baseY = board.y + 3.18;
     const topY = board.y + 0.76;
-    const maxH = baseY - topY;
     const barW = 0.54;
     const gap = (board.w - 1.22 - items.length * barW) / Math.max(1, items.length - 1);
     addLabel(slide, 'CONTRIBUTION BRIDGE', { x:board.x+0.30, y:board.y+0.30, w:1.62, h:0.10, fontSize:6.6, color:C.accent, charSpace:0.8 });
     addHairline(slide, board.x+0.42, baseY, board.w-0.84, C.line, 10, 0.48);
-    let cursor = start;
-    const bars = items.map((it, i) => {
-      const kind = it.kind || it.type || (i === 0 ? 'start' : (i === items.length - 1 ? 'end' : (values[i] < 0 ? 'down' : 'up')));
-      const raw = values[i];
-      if (kind === 'start') return { it, i, kind, raw, from:0, to:start };
-      if (kind === 'end') return { it, i, kind, raw, from:0, to:Math.abs(raw || cursor) };
-      const from = cursor;
-      const to = cursor + raw;
-      cursor = to;
-      return { it, i, kind, raw, from, to };
-    });
-    const minVal = Math.min(0, ...bars.map(bar => Math.min(bar.from, bar.to)));
-    const maxVal = Math.max(1, ...bars.map(bar => Math.max(bar.from, bar.to)));
-    const span = Math.max(1, maxVal - minVal);
-    const yFor = (value) => baseY - ((value - minVal) / span) * maxH;
+    const { bars, yForValue:yFor } = computeWaterfallBars(items, { baseY, topY });
     bars.forEach((bar) => {
       const { it, i, kind, raw, from, to } = bar;
       const x = board.x + 0.62 + i * (barW + gap);
@@ -675,23 +633,12 @@ function createFinancialRenderers(ctx = {}) {
       { label:'2月', value:'402.2w', note:'节后流量低谷' },
       { label:'3月', value:'618.4w', note:'女神节+防晒预热' }
     ])).slice(0, 5);
-    const values = items.map((it, i) => chartNumber(it.value, [456.2, 402.2, 618.4, 520, 560][i] || 100));
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const span = Math.max(1, max - min);
     const chart = { x:board.x+0.56, y:board.y+0.70, w:board.w-1.06, h:2.60 };
     addLabel(slide, 'MONTHLY NET SALES TREND', { x:board.x+0.30, y:board.y+0.30, w:1.90, h:0.10, fontSize:6.6, color:C.accent, charSpace:0.8 });
     addHairline(slide, chart.x, chart.y+chart.h, chart.w, C.line, 10, 0.50);
     slide.addShape('line', { x:chart.x, y:chart.y, w:0, h:chart.h, line:{color:C.line, transparency:24, width:0.34} });
-    const plotX = chart.x + 0.42;
-    const plotW = chart.w - 0.84;
-    const step = items.length > 1 ? plotW / (items.length - 1) : 0;
-    const points = items.map((it, i) => {
-      const x = items.length > 1 ? plotX + i * step : chart.x + chart.w / 2;
-      const y = chart.y + chart.h - ((values[i] - min) / span) * (chart.h - 0.38) - 0.18;
-      return { x, y, item:it, value:values[i] };
-    });
-    const baselineY = chart.y + chart.h;
+    const trend = computeMonthlyTrendPoints(items, chart, [456.2, 402.2, 618.4, 520, 560]);
+    const { values, max, points, baselineY } = trend;
     points.forEach((p, i) => {
       const color = i === values.indexOf(max) ? C.accent : (i === values.indexOf(min) ? C.cyan : C.violet);
       slide.addShape('line', { x:p.x, y:p.y, w:0, h:Math.max(0.04, baselineY - p.y), line:{color, transparency:18, width:0.44} });
@@ -720,62 +667,14 @@ function createFinancialRenderers(ctx = {}) {
     addText(slide, '花费', { x:chart.x+chart.w-0.40, y:chart.y+chart.h+0.16, w:0.40, h:0.11, fontSize:6.8, bold:true, color:C.muted, fit:'shrink', align:'right' });
     addText(slide, '高效触点', { x:chart.x+0.18, y:chart.y+0.12, w:0.78, h:0.11, fontSize:6.4, color:C.accent, fit:'shrink' });
     addText(slide, '规模触点', { x:chart.x+chart.w-0.88, y:chart.y+0.12, w:0.76, h:0.11, fontSize:6.4, color:C.muted, fit:'shrink', align:'right' });
-    const bubbles = items.map((it, i) => {
-      const xVal = chartNumber(it.x || it.spend || it.cost || it.share, 18 + i * 14);
-      const yVal = chartNumber(it.y || it.roas || it.efficiency || it.score || it.value, 72 - i * 8);
-      const sizeVal = chartNumber(it.size || it.budget || it.weight, 42 - i * 3);
-      const r = Math.max(0.18, Math.min(0.42, sizeVal / 160));
-      const x = chart.x + chartClamp(xVal / 100, 0.06, 0.96) * chart.w;
-      const y = chart.y + chart.h - chartClamp(yVal / 100, 0.06, 0.96) * chart.h;
-      const color = [C.accent, C.cyan, C.violet, C.risk, '94A3B8', C.muted][i] || C.accent;
-      return {
-        item: it,
-        i,
-        x,
-        y,
-        r,
-        color,
-        bubbleBox: { x:x-r, y:y-r, w:r*2, h:r*2 }
-      };
-    });
+    const bubbles = computeChannelMatrixBubbles(items, chart, [C.accent, C.cyan, C.violet, C.risk, '94A3B8', C.muted]);
     bubbles.forEach(p => {
       slide.addShape('ellipse', { x:p.x-p.r, y:p.y-p.r, w:p.r*2, h:p.r*2, fill:{color:p.color, transparency:8}, line:{color:p.color, transparency:100} });
       addText(slide, p.item.value || p.item.roas || '', { x:p.x-p.r, y:p.y-0.06, w:p.r*2, h:0.12, fontSize:6.8, bold:true, color:C.onAccent || C.white, align:'center', fit:'shrink', allowTiny:true });
     });
     const occupiedLabels = [];
-    const chooseLabelBox = (p) => {
-      const label = p.item.label || p.item.title || p.item.name || `渠道 ${p.i+1}`;
-      const w = chartClamp(0.78 + String(label).length * 0.045, 0.90, 1.22);
-      const h = 0.20;
-      const pad = 0.08;
-      const raw = [
-        { x:p.x+p.r+0.12, y:p.y-h/2, side:'right', rank:0 },
-        { x:p.x-p.r-w-0.12, y:p.y-h/2, side:'left', rank:1 },
-        { x:p.x-w/2, y:p.y-p.r-h-0.10, side:'above', rank:2 },
-        { x:p.x-w/2, y:p.y+p.r+0.10, side:'below', rank:3 },
-        { x:p.x+p.r+0.12, y:p.y-p.r-h-0.04, side:'upperRight', rank:4 },
-        { x:p.x+p.r+0.12, y:p.y+p.r+0.04, side:'lowerRight', rank:5 },
-        { x:p.x-p.r-w-0.12, y:p.y-p.r-h-0.04, side:'upperLeft', rank:6 },
-        { x:p.x-p.r-w-0.12, y:p.y+p.r+0.04, side:'lowerLeft', rank:7 }
-      ];
-      const candidates = raw.map(candidate => {
-        const box = {
-          x: chartClamp(candidate.x, chart.x + pad, chart.x + chart.w - w - pad),
-          y: chartClamp(candidate.y, chart.y + pad, chart.y + chart.h - h - pad),
-          w,
-          h,
-          side: candidate.side
-        };
-        const labelHits = occupiedLabels.filter(other => chartBoxesOverlap(box, other, 0.05)).length;
-        const bubbleHits = bubbles.filter(other => chartBoxesOverlap(box, other.bubbleBox, other === p ? 0.09 : 0.05)).length;
-        const shift = Math.abs(box.x - candidate.x) + Math.abs(box.y - candidate.y);
-        const sidePreference = (p.x > chart.x + chart.w * 0.74 && /right/i.test(candidate.side)) ? 1.6 : 0;
-        return { box, score:candidate.rank + sidePreference + shift * 7 + labelHits * 70 + bubbleHits * 48 };
-      }).sort((a, b) => a.score - b.score);
-      return Object.assign({ label }, candidates[0].box);
-    };
     bubbles.forEach(p => {
-      const labelBox = chooseLabelBox(p);
+      const labelBox = chooseChannelLabelBox(p, { chart, bubbles, occupiedLabels });
       occupiedLabels.push(labelBox);
       const labelMidY = labelBox.y + labelBox.h / 2;
       if (labelBox.x > p.x + p.r && Math.abs(labelMidY - p.y) < 0.18) {
