@@ -34,6 +34,9 @@ const {
   createCompositionPlanningHelpers
 } = require('./design/composition-planning');
 const {
+  createNarrativeHelpers
+} = require('./design/narrative');
+const {
   INDUSTRY_EXPRESSION_RULES,
   INDUSTRY_KNOWLEDGE_BASE,
   SEMANTIC_RELATION_PATTERNS,
@@ -191,5 +194,40 @@ const tags = runtime.copyPolicyList('aliasOnly', 'tags');
 tags.push('mutated');
 assert.deepEqual(runtime.copyPolicyList('aliasOnly', 'tags'), ['target']);
 assert.deepEqual(runtime.industryBenchmarksFor('aliasTarget'), [{ label:'benchmark' }]);
+
+const narrativeHelpers = createNarrativeHelpers({
+  contentSignals: () => ({}),
+  semanticFrame: (plan, slide) => ({
+    primaryIntent: slide.type === 'case-gallery' ? 'caseEvidence' : 'narrative',
+    confidence: 0.7,
+    proofObject: slide.type === 'case-gallery' ? 'evidence-gallery' : 'narrative-block',
+    semanticMeaning: {
+      materialPurpose: slide.type === 'case-gallery' ? 'evidence' : 'narrative',
+      relations: { evidence: slide.type === 'case-gallery' },
+      entities: ['asset'],
+      scores: { industryFit: 0.8 },
+      proofCandidates: [{ id:'gallery', route:'case-gallery', score:4 }]
+    }
+  }),
+  semanticMeaning: () => ({
+    materialPurpose: 'evidence',
+    relations: { evidence:true },
+    entities: ['asset'],
+    scores: { industryFit:0.8 },
+    proofCandidates: [{ id:'gallery', route:'case-gallery', score:4 }]
+  }),
+  highValuePageFamilies: new Set(['case-gallery']),
+  layoutVariantCompatibleWithType: () => true
+});
+assert.equal(narrativeHelpers.routeKey({ type:'case-gallery', layoutVariant:'case-gallery' }), 'case-gallery:case-gallery');
+assert.equal(narrativeHelpers.routeMatches('case-gallery:case-gallery', 'case-gallery'), true);
+const annotatedNarrative = narrativeHelpers.applyNarrativeMetadata({}, [
+  { type:'cover' },
+  { type:'case-gallery', layoutVariant:'case-gallery' },
+  { type:'closing' }
+]);
+assert.equal(annotatedNarrative[1].narrativeRole, 'evidence');
+assert.equal(annotatedNarrative[1].proofObject, 'case-gallery');
+assert.equal(narrativeHelpers.deckNarrativeSummary({}, annotatedNarrative).roleCounts.evidence, 1);
 
 console.log('design system modules ok');
