@@ -69,6 +69,13 @@ function stableMeta(meta = {}) {
   const metaB = JSON.parse(fs.readFileSync(`${pptxB}.render-meta.json`, 'utf8'));
   assert.deepEqual(stableMeta(metaA), stableMeta(metaB), `${fixture} render-meta should be stable`);
   assert.ok((metaA.slides || []).every(slide => slide.rendererMatch && slide.rendererMatch.source === expectedSource), `${fixture} should route through ${expectedSource}`);
+  if (fixture === 'financial-family.json') {
+    const industrySlides = (metaA.slides || []).filter(slide => slide.type === 'industry-chart');
+    assert.ok(industrySlides.length >= 5, 'financial-family should cover industry-chart variants');
+    assert.ok(industrySlides.every(slide => slide.rendererMatch && slide.rendererMatch.rendererId === 'industry-chart'), 'financial industry-chart fixtures should keep rendererMatch stable');
+    const consumedIds = industrySlides.flatMap(slide => (slide.consumedComponents || []).map(component => component.id || component));
+    assert.ok(consumedIds.includes('bar-chart'), 'financial industry-chart chartSpec fixture should consume the native bar-chart component');
+  }
   const planJson = JSON.parse(fs.readFileSync(plan, 'utf8'));
   const text = pptxText(pptxA);
   (planJson.slides || []).forEach(slide => {

@@ -123,6 +123,91 @@
         { "label": "激活率", "value": "64%", "note": "关键动作完成" },
         { "label": "集成深度", "value": "3.2", "note": "系统嵌入提升" }
       ]
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "waterfall-bridge",
+      "title": "目标桥接展示贡献路径",
+      "coreTitle": "TARGET BRIDGE",
+      "coreBody": "用贡献桥把起点、增量和目标拆成可复盘对象。",
+      "waterfallBridge": [
+        { "label": "Q1净销", "value": "1482", "kind": "start" },
+        { "label": "防晒新品", "value": "+252", "kind": "up" },
+        { "label": "私域复购", "value": "+39", "kind": "up" },
+        { "label": "渠道修复", "value": "+22", "kind": "up" },
+        { "label": "Q2目标", "value": "1850", "kind": "end" }
+      ],
+      "businessLogic": {
+        "currentState": "目标差距已拆成贡献项。",
+        "cause": "新品、私域和渠道修复分别贡献增量。",
+        "action": "按贡献项建立周复盘。"
+      }
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "monthly-pulse-trend",
+      "title": "月度脉冲趋势解释波峰波谷",
+      "coreTitle": "MONTHLY PULSE",
+      "coreBody": "用月度趋势识别活动节点和自然低谷。",
+      "monthlyPulse": [
+        { "label": "1月", "value": "456.2", "note": "春节前稳定" },
+        { "label": "2月", "value": "402.2", "note": "节后低谷" },
+        { "label": "3月", "value": "618.4", "note": "活动拉动" },
+        { "label": "4月", "value": "538.0", "note": "回归常态" }
+      ]
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "channel-efficiency-matrix",
+      "title": "渠道效率矩阵定位投放动作",
+      "coreTitle": "CHANNEL EFFICIENCY",
+      "coreBody": "把 ROAS、花费和触点质量放进同一个决策矩阵。",
+      "channelEfficiency": [
+        { "label": "私域CRM", "value": "8x", "x": 22, "y": 82, "size": 64, "body": "高效低花费" },
+        { "label": "天猫搜索", "value": "4.1x", "x": 56, "y": 44, "size": 48, "body": "承接品牌词" },
+        { "label": "抖音", "value": "4.1x", "x": 84, "y": 44, "size": 46, "body": "内容转化" },
+        { "label": "小红书KOL", "value": "3.3x", "x": 66, "y": 34, "size": 42, "body": "种草承接" }
+      ]
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "adoption-funnel",
+      "title": "采用漏斗暴露扩展瓶颈",
+      "coreTitle": "ADOPTION FUNNEL",
+      "coreBody": "把注册、激活、集成和扩展转成同一条漏斗。",
+      "adoptionFunnel": [
+        { "title": "注册", "value": 100 },
+        { "title": "激活", "value": 64 },
+        { "title": "集成", "value": 46 },
+        { "title": "扩展", "value": 28 }
+      ]
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "evidence-readout",
+      "title": "原生图表规格进入行业读数",
+      "coreTitle": "NATIVE CHART SPEC",
+      "coreBody": "显式 chartSpec 应由 financial family 内部直接消费。",
+      "chartSpec": {
+        "version": "chartSpec/v1",
+        "kind": "bar",
+        "componentId": "bar-chart",
+        "title": "收入构成",
+        "insight": "直营渠道和私域渠道贡献主要增长。",
+        "categories": ["直营", "私域", "经销", "其他"],
+        "series": [
+          {
+            "name": "收入",
+            "values": [
+              { "category": "直营", "value": 48, "rawValue": "48%" },
+              { "category": "私域", "value": 31, "rawValue": "31%" },
+              { "category": "经销", "value": 16, "rawValue": "16%" },
+              { "category": "其他", "value": 5, "rawValue": "5%" }
+            ]
+          }
+        ],
+        "unit": "%"
+      }
     }
   ]
 }
