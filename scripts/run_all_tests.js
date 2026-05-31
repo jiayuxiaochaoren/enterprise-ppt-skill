@@ -6,7 +6,7 @@ const cp = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const TEST_GROUPS = {
   unit: [
-    /^test_(chart_spec|closing_routing|composition_strategy|content_signals|deck_rhythm_helpers|density_strategy|design_proof_profile|design_system_modules|design_text_utils|evidence_brand_story_renderers|evidence_gallery_routing|evidence_industry_renderers|evidence_proof_board_renderers|financial_chart_utils|financial_industry_renderers|financial_investment_renderers|financial_results_renderers|image_layout_strategy|metadata_policy|quality_mode|render_content_helpers|render_geometry|render_meta_audits|render_meta_schema|renderer_modularization|routing|semantic_model|slide_normalization_helpers|slide_routing_helpers|typography_system|visual_qa_utils)\.js$/
+    /^test_(chart_spec|closing_industry_renderers|closing_routing|composition_strategy|content_signals|deck_rhythm_helpers|density_strategy|design_proof_profile|design_system_modules|design_text_utils|evidence_brand_story_renderers|evidence_gallery_routing|evidence_industry_renderers|evidence_proof_board_renderers|financial_chart_utils|financial_industry_renderers|financial_investment_renderers|financial_results_renderers|image_layout_strategy|metadata_policy|quality_mode|render_content_helpers|render_geometry|render_meta_audits|render_meta_schema|renderer_modularization|routing|semantic_model|slide_normalization_helpers|slide_routing_helpers|typography_system|visual_qa_utils)\.js$/
   ],
   pipeline: [
     /^test_(acceptance_briefs|asset_decision_gate|composition_planner|connector_pages|industry_pack_depth|intelligence_layers|material_modules|material_pipeline|model_orchestration|orchestration_contract|reference_recipe_system|rhythm_planner)\.js$/
