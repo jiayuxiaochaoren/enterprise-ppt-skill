@@ -17,6 +17,9 @@ const {
   createAcceptanceAuditHelpers
 } = require('./design/acceptance-audit');
 const {
+  createAssetGenerationHelpers
+} = require('./design/asset-generation');
+const {
   BASE_COLORS,
   createStyleProfileHelpers,
   paletteToColors
@@ -494,5 +497,43 @@ assert.equal(referenceRecipeHelpers.selectReferenceRecipe(
   { type:'metric-comparison', proofObject:'financial-kpi-snapshot', title:'Q1 financial KPI' }
 ).id, 'finance-kpi');
 assert.equal(referenceRecipeHelpers.recipeCompatibleWithSlideType(referenceCandidates[0], 'metric-comparison'), true);
+
+const assetGenerationHelpers = createAssetGenerationHelpers({
+  factualGeneratedAssetRisk: /客户现场|真实客户/i,
+  flattenText: value => JSON.stringify(value),
+  industryVisualPolicy: () => ({ label:'Finance', visualMode:'case-gallery' }),
+  mediaForRole: () => '',
+  referenceLayoutLibrary: {
+    generatedAssetPromptPatterns: {
+      evidence:'{industryLabel} evidence: {visualBrief} in {paletteName}',
+      abstract:'{industryLabel} abstract: {visualBrief} in {paletteName}'
+    }
+  },
+  resolveVisualMode: () => 'hybrid',
+  selectPaletteName: () => 'boardroom-ink',
+  slideDesign: () => ({ imageRole:'evidence', wantsImage:true }),
+  slideRole: () => 'content'
+});
+assert.equal(assetGenerationHelpers.normalizeAssetRole('product showcase'), 'showcase');
+assert.equal(assetGenerationHelpers.assetRoleNeedsImage('diagram'), false);
+assert.equal(assetGenerationHelpers.recipeGenerationRule({ generatedAsset:'optional generated asset' }), 'optional');
+assert.equal(
+  assetGenerationHelpers.generatedAssetPrompt({}, { title:'Risk dashboard', visual:{ role:'evidence' } }, null),
+  'Finance evidence: Risk dashboard in boardroom-ink'
+);
+const requestedRiskPolicy = assetGenerationHelpers.generatedAssetPolicy(
+  {},
+  { title:'真实客户现场证据', visual:{ mode:'generated', role:'evidence' } },
+  { assetRole:'evidence', generatedAsset:'optional generated asset' },
+  { wantsImage:true }
+);
+assert.equal(requestedRiskPolicy.status, 'blocked');
+const optionalPolicy = assetGenerationHelpers.generatedAssetPolicy(
+  {},
+  { title:'Conceptual workflow', visual:{ role:'showcase' } },
+  { assetRole:'showcase', generatedAsset:'optional generated asset', mainVisualMethod:'showcase' },
+  { wantsImage:true }
+);
+assert.equal(optionalPolicy.status, 'optional');
 
 console.log('design system modules ok');
