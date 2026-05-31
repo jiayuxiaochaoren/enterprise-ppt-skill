@@ -3,6 +3,9 @@ const assert = require('assert');
 const {
   createFinancialRenderers
 } = require('./render/page-families/financial');
+const {
+  createFinancialIndustryRenderers
+} = require('./render/page-families/financial-industry');
 
 function createSlide(ops) {
   return {
@@ -57,8 +60,11 @@ function createFakeCtx(ops) {
 
 function main() {
   const ops = [];
-  const renderers = createFinancialRenderers(createFakeCtx(ops));
+  const ctx = createFakeCtx(ops);
+  const renderers = createFinancialIndustryRenderers(ctx);
+  const integratedRenderers = createFinancialRenderers(ctx);
   assert.strictEqual(typeof renderers.industryChartSlide, 'function');
+  assert.strictEqual(typeof integratedRenderers.industryChartSlide, 'function');
 
   renderers.industryChartSlide(createSlide(ops), { slides:[{}] }, {
     variant: 'monthly-pulse-trend',
