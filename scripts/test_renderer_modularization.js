@@ -37,6 +37,9 @@ const {
 const {
   createOverlayRenderer
 } = require('./render/overlay-renderer');
+const {
+  createEnergyIndustryRenderers
+} = require('./render/industry/energy');
 
 assert.equal(typeof requirePptxGen(), 'function');
 assert.equal(stableStringify({ b:2, a:1 }), '{"a":1,"b":2}');
@@ -184,6 +187,53 @@ const nativeEvidence = overlayRenderer.renderOverlayComponent({}, {}, { type:'ar
 }, []);
 assert.equal(nativeEvidence.mode, 'native-renderer');
 assert.equal(nativeEvidence.rendererModule, 'fixture/native');
+const energyCalls = [];
+const energyCtx = {
+  colors: () => ({
+    accent:'0066FF',
+    body:'222222',
+    captionOnImage:'FFFFFF',
+    cyan:'00FFFF',
+    ink:'0F172A',
+    ink2:'111827',
+    muted:'64748B',
+    text:'111111',
+    violet:'7C3AED',
+    white:'FFFFFF'
+  }),
+  canvasWidth: () => 13.333,
+  canvasHeight: () => 7.5,
+  addDarkBreathingCircle: (...args) => energyCalls.push(['darkCircle', args]),
+  addEnergyLens: (...args) => energyCalls.push(['energyLens', args]),
+  addHairline: (...args) => energyCalls.push(['hairline', args]),
+  addLabel: (...args) => energyCalls.push(['label', args]),
+  addNumber: (...args) => energyCalls.push(['number', args]),
+  addPulseCurve: (...args) => energyCalls.push(['pulse', args]),
+  addRect: (...args) => energyCalls.push(['rect', args]),
+  addText: (...args) => energyCalls.push(['text', args]),
+  addVisualPhotoPanel: () => false,
+  footerText: () => 'Footer',
+  glassPanel: (...args) => energyCalls.push(['glass', args]),
+  hasEnergyCurveSemantics: () => true,
+  lightCanvas: (...args) => energyCalls.push(['lightCanvas', args]),
+  panelFill: () => 'F8FAFC',
+  sectionKicker: (...args) => energyCalls.push(['sectionKicker', args]),
+  slideWantsImage: () => false,
+  stageCanvas: (...args) => energyCalls.push(['stageCanvas', args])
+};
+const energyRenderers = createEnergyIndustryRenderers(energyCtx);
+[
+  'energyDeploymentRadius',
+  'energyCapabilityLoop',
+  'energyProblemSplit',
+  'energySituationEditorial',
+  'energyToc',
+  'energyValueSignal'
+].forEach(name => assert.equal(typeof energyRenderers[name], 'function', `${name} should be exported by energy industry renderers`));
+const energySlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };
+energyRenderers.energyToc(energySlide, {}, { title:'运行路径', items:['A', 'B'] }, 2);
+assert.ok(energyCalls.some(([kind, args]) => kind === 'label' && args[1] === 'OPERATING SEQUENCE'));
+assert.ok(energySlide.shapes.length > 0);
 const renderMetaHelpers = createRenderMetaHelpers({
   chartConsumedFields: spec => Object.keys(spec).filter(key => key !== 'visualChecks'),
   chartSpecToComponentId: spec => `${spec.kind || 'unknown'}-component`,
