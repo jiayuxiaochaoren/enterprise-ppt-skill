@@ -110,6 +110,27 @@ const RENDERER_CONTEXT_CONTRACT = {
     'routeChartSpec',
     'sustainabilityProofSpread'
   ],
+  beauty: [
+    'PageNumber',
+    'addHairline',
+    'addLabel',
+    'addNumber',
+    'addRect',
+    'addSmartPhotoPanel',
+    'addText',
+    'chooseFourImageLayout',
+    'designForSlide',
+    'fileExists',
+    'footerText',
+    'genericShowcaseField',
+    'imagePathFromItem',
+    'itemBody',
+    'itemTitle',
+    'lightCanvas',
+    'panelFill',
+    'sectionKicker',
+    'variantOf'
+  ],
   closing: [
     'ContactBlock',
     'activePlan',
