@@ -14,6 +14,9 @@ const {
   createArtDirectionHelpers
 } = require('./design/art-direction');
 const {
+  createAcceptanceAuditHelpers
+} = require('./design/acceptance-audit');
+const {
   BASE_COLORS,
   createStyleProfileHelpers,
   paletteToColors
@@ -345,5 +348,30 @@ const industryFitAudit = industryFitHelpers.industryFitAudit({}, {
 });
 assert.ok(industryFitAudit.findings.some(f => f.type === 'industryForbiddenPattern'));
 assert.ok(industryFitAudit.findings.some(f => f.type === 'industryFitProofObjectsThin'));
+
+const acceptanceHelpers = createAcceptanceAuditHelpers({
+  assetAuthorizationGate: () => ({ status:'clear', findings:[] }),
+  auditDeckPlan: () => [{ level:'review', type:'templateRhythm', message:'repeat' }],
+  chartAcceptanceGate: () => ({ status:'pass' }),
+  chartEvidenceQA: () => ({ findings:[] }),
+  chartSemanticQA: () => ({ findings:[] }),
+  chartVisualQA: () => ({ findings:[{ level:'review', type:'chartLabelReview' }] }),
+  componentPlanAudit: () => ({ findings:[] }),
+  compositionAudit: () => [],
+  evidenceAudit: () => ({ findings:[] }),
+  industryFitAudit: () => ({ findings:[] }),
+  industryKnowledgeAudit: () => ({ findings:[] }),
+  normalizeDeckPlan: plan => plan,
+  pageCountAudit: () => ({ findings:[] }),
+  pageLevelChartScores: () => [],
+  reportDepthAudit: () => ({ findings:[] }),
+  sourceTraceAudit: () => ({ status:'pass', findings:[] }),
+  visualAestheticModel: () => ({ findings:[] })
+});
+const acceptanceAudit = acceptanceHelpers.acceptanceAudit({}, { slides:[{ type:'cover' }, { type:'closing' }] });
+assert.equal(acceptanceAudit.status, 'review');
+assert.ok(acceptanceAudit.checks.some(check => check.id === 'layout-repetition' && check.status === 'review'));
+const commercialReady = acceptanceHelpers.commercialReadinessAudit({}, { slides:[] });
+assert.equal(commercialReady.level, 'client-review');
 
 console.log('design system modules ok');
