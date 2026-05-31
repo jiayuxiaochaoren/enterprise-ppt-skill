@@ -65,7 +65,8 @@ Use this map before opening large implementation files.
 - `scripts/render/page-families/**`: page-family route ownership and extracted high-value renderer implementations.
   - `financial.js`: financial family wrapper; delegates investment, results, scorecard, and industry renderers.
   - `risk.js`: risk family wrapper; delegates governance/risk board renderers to `risk-boards.js`.
-  - `closing.js`, `evidence-gallery.js`, and `cover.js`: current larger remaining page-family modules targeted for continued decomposition.
+  - `closing.js`: closing family wrapper; delegates generic/adaptive closing renderers to `closing-core.js` and industry-specific endings to `closing-industry.js`.
+  - `evidence-gallery.js` and `cover.js`: current larger remaining page-family modules targeted for continued decomposition.
 - `examples/renderer-family-fixtures/**`: focused renderer family regression plans.
 - `scripts/components/**`: reusable chart, table, scorecard, gallery, and proof components.
 
