@@ -25,6 +25,8 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.manifesto.includes('stageCanvas'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.profile.includes('EvidenceImageFrame'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.beauty.includes('genericShowcaseField'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('renderChartSpec'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('componentRendererContext'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('variantOf'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.timeline.includes('addClockwiseLoopConnectors'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('compactEvidenceCaption'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.strategy.includes('industryProfile'));
