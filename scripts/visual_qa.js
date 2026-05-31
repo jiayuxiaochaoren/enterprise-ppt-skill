@@ -39,6 +39,22 @@ const {
   pngInfo
 } = require('./qa/png-analysis');
 const {
+  applyQualitySeverityPolicy
+} = require('./qa/quality-severity-policy');
+const {
+  intersectionArea,
+  lineIntersectsText,
+  lineMidpoint,
+  rectArea,
+  rectContainsPoint,
+  xmlImageShapes,
+  xmlLineShapes,
+  xmlRectShapes,
+  xmlTextRuns,
+  xmlTextShapes,
+  xmlTextValues
+} = require('./qa/pptx-xml');
+const {
   componentConsumptionAuditFromRender,
   contentCoverageAuditFromRender,
   overlayContractAuditFromRender,
@@ -80,53 +96,6 @@ for (let i=0; i<args.length; i++) {
 if (!fileArg) usage();
 const file = path.resolve(fileArg);
 
-const FORMAL_PROMOTIONS = {
-  renderMetaMissing: 'formal review requires render-meta so contract QA cannot be skipped',
-  textLineCollision: 'formal review treats visible text/rule collisions as blocking layout defects',
-  smallChineseText: 'formal review treats dense small Chinese text as a readability defect',
-  duplicateOverlayComponent: 'formal review blocks duplicate overlays that may indicate stale fallback rendering',
-  weakImageAsset: 'formal review requires weak image assets to be reviewed before delivery review'
-};
-const DELIVERY_PROMOTIONS = {
-  previewMissing: 'delivery validation requires preview evidence for screenshot-level review',
-  previewCount: 'delivery validation requires preview count to match slide count',
-  previewUnreadable: 'delivery validation cannot use unreadable preview images',
-  possiblyBlankPreview: 'delivery validation blocks possibly blank preview images',
-  lowVisualVariance: 'delivery validation blocks previews that appear blank or overly plain',
-  slideSimilarity: 'delivery validation blocks likely duplicated adjacent slides',
-  contactSheetRhythmRepeat: 'delivery validation blocks repeated contact-sheet rhythm',
-  textDensity: 'delivery validation treats excessive text density as blocking',
-  typographyScaleTooFragmented: 'delivery validation treats fragmented type scale as blocking',
-  typographyFontFamilyDrift: 'delivery validation treats font-family drift as blocking'
-};
-function severityPromotionsForMode(mode) {
-  if (mode === 'delivery') return { ...FORMAL_PROMOTIONS, ...DELIVERY_PROMOTIONS };
-  if (mode === 'formal') return { ...FORMAL_PROMOTIONS };
-  return {};
-}
-function applyQualitySeverityPolicy(findings = [], mode = 'draft') {
-  const promotions = severityPromotionsForMode(mode);
-  const applied = findings.map(finding => {
-    const reason = promotions[finding.type];
-    if (!reason || finding.level === 'fail') return finding;
-    return {
-      ...finding,
-      originalLevel: finding.level || 'review',
-      level: 'fail',
-      fatalBecauseOfQualityMode: mode,
-      severityPolicyReason: reason
-    };
-  });
-  return {
-    findings: applied,
-    policy: {
-      version: 'quality-severity-policy/v1',
-      mode,
-      promotedTypes: Object.keys(promotions).sort()
-    }
-  };
-}
-
 function run(cmd, argv) {
   return cp.execFileSync(cmd, argv, { encoding:'utf8' });
 }
@@ -135,129 +104,6 @@ function unzipText(entry) {
   try { return run('unzip', ['-p', file, entry]); } catch (_) { return ''; }
 }
 
-function xmlTextValues(xml) {
-  return [...xml.matchAll(/<a:t>(.*?)<\/a:t>/g)].map(m => m[1]
-    .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&apos;/g,"'"));
-}
-function xmlTextRuns(xml) {
-  return [...xml.matchAll(/<a:r>([\s\S]*?)<\/a:r>/g)].map(m => {
-    const run = m[1];
-    const size = ((run.match(/<a:rPr\b[^>]*\bsz="(\d+)"/) || [])[1]);
-    const fonts = [...run.matchAll(/typeface="([^"]+)"/g)].map(match => match[1]);
-    const text = xmlTextValues(run).join('');
-    return { text, size: size ? Number(size) / 100 : null, fonts };
-  }).filter(r => r.text);
-}
-function xmlTextShapes(xml) {
-  const emuPerInch = 914400;
-  return [...xml.matchAll(/<p:sp\b[\s\S]*?<\/p:sp>/g)].map(m => {
-    const block = m[0];
-    const text = xmlTextValues(block).join('');
-    if (!text.trim()) return null;
-    const off = block.match(/<a:off\b[^>]*\bx="(-?\d+)"[^>]*\by="(-?\d+)"/);
-    const ext = block.match(/<a:ext\b[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"/);
-    const runs = xmlTextRuns(block);
-    const sizes = runs.map(r => r.size).filter(v => v != null);
-    return {
-      text,
-      x: off ? Number(off[1]) / emuPerInch : null,
-      y: off ? Number(off[2]) / emuPerInch : null,
-      w: ext ? Number(ext[1]) / emuPerInch : null,
-      h: ext ? Number(ext[2]) / emuPerInch : null,
-      minSize: sizes.length ? Math.min(...sizes) : null,
-      order: m.index || 0
-    };
-  }).filter(Boolean);
-}
-function xmlLineShapes(xml) {
-  const emuPerInch = 914400;
-  const blocks = [
-    ...String(xml).matchAll(/<p:cxnSp\b[\s\S]*?<\/p:cxnSp>/g),
-    ...String(xml).matchAll(/<p:sp\b[\s\S]*?<a:prstGeom\b[^>]*prst="line"[\s\S]*?<\/p:sp>/g)
-  ].map(m => ({ block:m[0], order:m.index || 0 }));
-  return blocks.map(block => {
-    const off = block.block.match(/<a:off\b[^>]*\bx="(-?\d+)"[^>]*\by="(-?\d+)"/);
-    const ext = block.block.match(/<a:ext\b[^>]*\bcx="(-?\d+)"[^>]*\bcy="(-?\d+)"/);
-    if (!off || !ext) return null;
-    const x = Number(off[1]) / emuPerInch;
-    const y = Number(off[2]) / emuPerInch;
-    const w = Number(ext[1]) / emuPerInch;
-    const h = Number(ext[2]) / emuPerInch;
-    return {
-      x: Math.min(x, x + w),
-      y: Math.min(y, y + h),
-      w: Math.abs(w),
-      h: Math.abs(h),
-      order: block.order,
-      arrow: /<a:(?:headEnd|tailEnd)\b[^>]*\btype="(?:triangle|stealth|arrow|oval|diamond)"/i.test(block.block)
-    };
-  }).filter(Boolean);
-}
-function xmlRectShapes(xml) {
-  const emuPerInch = 914400;
-  return [...String(xml).matchAll(/<p:sp\b[\s\S]*?<a:prstGeom\b[^>]*prst="rect"[\s\S]*?<\/p:sp>/g)].map(m => {
-    const block = m[0];
-    const off = block.match(/<a:off\b[^>]*\bx="(-?\d+)"[^>]*\by="(-?\d+)"/);
-    const ext = block.match(/<a:ext\b[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"/);
-    if (!off || !ext) return null;
-    const x = Number(off[1]) / emuPerInch;
-    const y = Number(off[2]) / emuPerInch;
-    const w = Number(ext[1]) / emuPerInch;
-    const h = Number(ext[2]) / emuPerInch;
-    const hasText = Boolean(xmlTextValues(block).join('').trim());
-    const spPr = (block.match(/<p:spPr\b[\s\S]*?<\/p:spPr>/) || [''])[0];
-    const fillRegion = String(spPr || block).split(/<a:ln\b/)[0];
-    const noFill = /<a:noFill\b[^>]*\/>/.test(fillRegion);
-    const hasSolidFill = /<a:solidFill\b[\s\S]*?<\/a:solidFill>|<a:solidFill\b[^>]*\/>/.test(fillRegion);
-    const alphaValues = [...fillRegion.matchAll(/<a:alpha\b[^>]*\bval="(\d+)"/g)]
-      .map(match => Number(match[1]))
-      .filter(Number.isFinite);
-    const fillOpacity = noFill
-      ? 0
-      : (hasSolidFill ? (alphaValues.length ? Math.min(...alphaValues) / 100000 : 1) : 0);
-    return { x, y, w, h, order:m.index || 0, hasText, hasSolidFill, fillOpacity };
-  }).filter(Boolean);
-}
-function xmlImageShapes(xml) {
-  const emuPerInch = 914400;
-  return [...String(xml).matchAll(/<p:pic\b[\s\S]*?<\/p:pic>/g)].map(m => {
-    const block = m[0];
-    const off = block.match(/<a:off\b[^>]*\bx="(-?\d+)"[^>]*\by="(-?\d+)"/);
-    const ext = block.match(/<a:ext\b[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"/);
-    if (!off || !ext) return null;
-    const x = Number(off[1]) / emuPerInch;
-    const y = Number(off[2]) / emuPerInch;
-    const w = Number(ext[1]) / emuPerInch;
-    const h = Number(ext[2]) / emuPerInch;
-    return { x, y, w, h, order:m.index || 0 };
-  }).filter(Boolean);
-}
-function rectContainsPoint(rect, x, y, pad = 0.02) {
-  return x > rect.x + pad && x < rect.x + rect.w - pad && y > rect.y + pad && y < rect.y + rect.h - pad;
-}
-function intersectionArea(a = {}, b = {}) {
-  if ([a.x, a.y, a.w, a.h, b.x, b.y, b.w, b.h].some(v => v == null)) return 0;
-  const w = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-  const h = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-  return w * h;
-}
-function rectArea(rect = {}) {
-  return Math.max(0, Number(rect.w || 0)) * Math.max(0, Number(rect.h || 0));
-}
-function lineMidpoint(line = {}) {
-  return { x:line.x + line.w / 2, y:line.y + line.h / 2 };
-}
-function lineIntersectsText(line, shape) {
-  if (!line || !shape || line.w == null || shape.w == null || shape.h == null) return false;
-  if (line.w < 0.22 || line.h > 0.05) return false;
-  if (shape.y == null || shape.x == null) return false;
-  const text = String(shape.text || '').trim();
-  if (text.length < 2) return false;
-  if (shape.y >= 6.62) return false;
-  const yInside = line.y > shape.y + 0.018 && line.y < shape.y + shape.h - 0.018;
-  const xOverlap = Math.max(line.x, shape.x) < Math.min(line.x + line.w, shape.x + shape.w) - 0.04;
-  return yInside && xOverlap;
-}
 function hasCjk(text) {
   return /[\u3400-\u9fff]/.test(String(text || ''));
 }
