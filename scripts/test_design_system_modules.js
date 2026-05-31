@@ -11,6 +11,11 @@ const {
   createIndustryRuntime
 } = require('./design/industry-runtime');
 const {
+  BASE_COLORS,
+  createStyleProfileHelpers,
+  paletteToColors
+} = require('./design/style-profile');
+const {
   INDUSTRY_EXPRESSION_RULES,
   INDUSTRY_KNOWLEDGE_BASE,
   SEMANTIC_RELATION_PATTERNS,
@@ -24,6 +29,12 @@ assert.ok(INDUSTRY_EXPRESSION_RULES['brand-retail'].requiredRoutes.includes('ind
 assert.ok(INDUSTRY_KNOWLEDGE_BASE['saas-technology'].proofObjects.some(item => item.id === 'adoption-funnel'));
 assert.ok(SEMANTIC_RELATION_PATTERNS.cause.test('因为响应慢导致流失'));
 assert.ok(VISIBLE_PRODUCTION_COPY_BANS.some(pattern => pattern.test('材料显示增长来自渠道修复')));
+assert.equal(designSystem.BASE_COLORS, BASE_COLORS);
+const styleHelpers = createStyleProfileHelpers({ fontStack: { zh:'ZH', latin:'LATIN', number:'NUM' } });
+assert.equal(styleHelpers.resolveStyleProfile('premium-commercial-keynote').font, 'ZH');
+assert.equal(styleHelpers.resolveStyleProfile('premium-consulting-keynote').density, 'consulting');
+assert.equal(paletteToColors({ accent:'123456', secondary:'ABCDEF' }).accent, '123456');
+assert.equal(designSystem.paletteToColors({ accent:'123456', secondary:'ABCDEF' }).cyan, 'ABCDEF');
 assert.equal(copyPolicyText('__missing__', '__missing_key__', 'fallback text'), 'fallback text');
 assert.deepEqual(copyPolicyList('__missing__', '__missing_list__', ['a', 'b']), ['a', 'b']);
 assert.deepEqual(industryBenchmarksFor('__missing__'), []);
