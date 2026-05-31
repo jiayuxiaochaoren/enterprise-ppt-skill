@@ -22,6 +22,9 @@ const {
   createVisualMediaHelpers
 } = require('./design/visual-media');
 const {
+  createAestheticModelHelpers
+} = require('./design/aesthetic-model');
+const {
   addComponent,
   componentIdFromHint,
   createComponentPlanHelpers,
@@ -229,5 +232,31 @@ const annotatedNarrative = narrativeHelpers.applyNarrativeMetadata({}, [
 assert.equal(annotatedNarrative[1].narrativeRole, 'evidence');
 assert.equal(annotatedNarrative[1].proofObject, 'case-gallery');
 assert.equal(narrativeHelpers.deckNarrativeSummary({}, annotatedNarrative).roleCounts.evidence, 1);
+
+const aestheticHelpers = createAestheticModelHelpers({
+  contentSignals: () => ({ isDenseText:true, cardCount:6, itemCount:0, imageCount:3 }),
+  flattenText: value => JSON.stringify(value),
+  normalizeDeckPlan: plan => plan,
+  routeKey: slide => slide.layoutVariant ? `${slide.type}:${slide.layoutVariant}` : slide.type,
+  semanticMeaning: () => ({ materialPurpose:'evidence', scores:{ evidenceStrength:0.2, industryFit:0.1 } }),
+  slideRole: slide => slide.narrativeRole || slide.type || 'content'
+});
+assert.equal(aestheticHelpers.hasCommercialLogicChain({
+  businessLogic: { currentState:'slow response', action:'routing change' }
+}), true);
+const aestheticScore = aestheticHelpers.aestheticSlideScore({ industry:'demo' }, {
+  type:'executive-blocks',
+  layoutRationale:'default commercial split',
+  images: ['1', '2', '3']
+}, 0, 1);
+assert.ok(aestheticScore.flags.includes('denseTextOnLooseLayout'));
+assert.ok(aestheticScore.flags.includes('imageEvidenceWithoutLabels'));
+const aestheticModel = aestheticHelpers.visualAestheticModel({
+  slides: [
+    { type:'cover' },
+    { type:'executive-blocks', layoutRationale:'default commercial split', images:['1', '2', '3'] }
+  ]
+});
+assert.equal(aestheticModel.routeCounts['executive-blocks'], 1);
 
 console.log('design system modules ok');
