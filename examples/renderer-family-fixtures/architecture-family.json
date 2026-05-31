@@ -47,6 +47,18 @@
     },
     {
       "type": "architecture",
+      "layoutVariant": "energy-topology",
+      "title": "能源拓扑把设备数据调度和管理连起来",
+      "subtitle": "保持 industry override 的架构图实现可回归",
+      "layers": [
+        { "title": "设备侧", "items": ["逆变器", "PCS", "BMS", "电表"] },
+        { "title": "数据侧", "items": ["协议适配", "指标口径", "历史曲线"] },
+        { "title": "调度侧", "items": ["告警分级", "工单处置", "SOC 策略"] },
+        { "title": "管理侧", "items": ["多站点态势", "收益波动", "区域协同"] }
+      ]
+    },
+    {
+      "type": "architecture",
       "layoutVariant": "production-topology",
       "title": "产线拓扑把产品对象和交付资料对齐",
       "layers": [
