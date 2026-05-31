@@ -1,18 +1,22 @@
 const RENDERER_CONTEXT_CONTRACT = {
   colors: ['colors', 'presentationSpec', 'panelFill', 'surfaceFill'],
-  text: ['addText', 'addLabel', 'addNumber', 'sectionKicker', 'footerText', 'publicSlideNote', 'copyFallback', 'copyPolicyList', 'typeSize', 'profileFont', 'itemTitle', 'itemBody'],
-  shapes: ['addRect', 'addHairline', 'addArrowLine', 'addClockwiseLoopConnectors', 'PageNumber', 'lightCanvas', 'stageCanvas', 'addPhotoPanel', 'addDarkBreathingCircle', 'addLightBreathingCircle', 'addPulseCurve'],
+  text: ['addText', 'addLabel', 'addNumber', 'sectionKicker', 'footerText', 'publicSlideNote', 'copyFallback', 'copyPolicyList', 'typeSize', 'profileFont', 'itemTitle', 'itemBody', 'itemBodyNoEllipsis'],
+  shapes: ['addRect', 'addHairline', 'addArrowLine', 'addArrowBetweenRects', 'addClockwiseLoopConnectors', 'PageNumber', 'lightCanvas', 'stageCanvas', 'addPhotoPanel', 'addSmartPhotoPanel', 'addDarkBreathingCircle', 'addLightBreathingCircle', 'addPulseCurve'],
   components: ['componentRendererContext', 'renderChartSpec', 'recordChartConsumption'],
   assets: ['fileExists', 'designForSlide', 'galleryImages', 'mediaForRole', 'resolveAssetPath', 'smartPhotoFit'],
   variants: ['variantOf'],
   financial: [
+    'brandWorldBusinessProof',
     'chartSpecToComponentId',
     'compactEvidenceCaption',
+    'consumerProofPhotoGrid',
     'formatMetricDelta',
+    'productEvidenceStory',
     'publicSlideNote',
     'recordChartConsumption',
     'renderChartSpec',
-    'routeChartSpec'
+    'routeChartSpec',
+    'sustainabilityProofSpread'
   ],
   closing: [
     'ContactBlock',
@@ -36,21 +40,14 @@ const RENDERER_CONTEXT_CONTRACT = {
     'compactEvidenceCaption'
   ],
   evidenceGallery: [
+    'addEvidenceCaptionStack',
+    'chooseEvidenceImageLayout',
     'brandWorldBusinessProof',
-    'caseComparisonSlide',
-    'caseEvidenceBoard',
-    'caseEvidenceHero',
-    'consumerProofPhotoGrid',
-    'energySiteComparisonSlide',
-    'energySiteEvidenceGallery',
-    'executiveProofBoard',
-    'financePortfolioEvidenceGallery',
-    'healthcareTouchpointEvidenceGallery',
-    'peopleProofMosaic',
-    'productEvidenceStory',
-    'retailLookbookStory',
-    'saasPrototypeFlowGallery',
-    'sustainabilityProofSpread'
+    'compactEvidenceCaption',
+    'fileExists',
+    'galleryImages',
+    'genericShowcaseField',
+    'resolveAssetPath'
   ]
 };
 

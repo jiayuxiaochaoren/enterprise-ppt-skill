@@ -73,4 +73,41 @@ assert.ok(owned.includes('proof-gallery'), 'product evidence story should own it
 assert.equal(owned.includes('risk-register'), false, 'product evidence story must not blanket-own unrelated risk register overlays');
 assert.equal(owned.includes('value-chain'), false, 'product evidence story must not blanket-own unrelated value-chain overlays');
 
+const crossFamilyPlan = writePlan('financial-evidence-cross-family', {
+  title: '跨页面族 renderer 复用验证',
+  industry: 'beauty-consumer',
+  allowDraftRender: true,
+  slides: [
+    {
+      type: 'metric-comparison',
+      layoutVariant: 'product-evidence-story',
+      proofObject: 'product-evidence-story',
+      title: '产品证据故事复用',
+      cards: [{ title: '明星单品', body: '解释购买理由。' }]
+    },
+    {
+      type: 'metric-comparison',
+      layoutVariant: 'consumer-proof-photo-grid',
+      proofObject: 'consumer-proof-photo-grid',
+      title: '消费者证据格复用',
+      cards: [{ title: '触点', body: '说明场景。' }]
+    },
+    {
+      type: 'metric-comparison',
+      layoutVariant: 'sustainability-proof-spread',
+      proofObject: 'sustainability-proof-spread',
+      title: '可持续证据展开复用',
+      cards: [{ title: '行动证明', body: '绑定指标来源。' }]
+    }
+  ]
+});
+const crossFamilyPptx = path.join(OUT, 'financial-evidence-cross-family.pptx');
+const crossFamilyResult = cp.spawnSync(process.execPath, ['scripts/generate_pptx.js', crossFamilyPlan, crossFamilyPptx], {
+  cwd: ROOT,
+  encoding: 'utf8'
+});
+assert.equal(crossFamilyResult.status, 0, crossFamilyResult.stderr || crossFamilyResult.stdout);
+const crossFamilyMeta = JSON.parse(fs.readFileSync(`${crossFamilyPptx}.render-meta.json`, 'utf8'));
+assert.ok((crossFamilyMeta.slides || []).every(slide => slide.rendererMatch && slide.rendererMatch.source === 'page-family:financial'), 'metric-comparison should keep financial ownership while reusing evidence renderers');
+
 console.log('render contract gates ok');

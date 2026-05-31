@@ -6,8 +6,8 @@
   "slides": [
     {
       "type": "case-gallery",
-      "title": "案例证据围绕现场、产品和结果展开",
-      "subtitle": "没有图片时仍保持证据叙事结构",
+      "title": "案例证据围绕现场产品和结果展开",
+      "subtitle": "默认图库在无图片时仍保持证据叙事结构",
       "items": [
         { "title": "现场线索", "body": "说明客户场景和部署边界" },
         { "title": "产品线索", "body": "说明能力和使用方式" },
@@ -16,12 +16,141 @@
     },
     {
       "type": "gallery",
+      "layoutVariant": "case-hero",
+      "title": "单案例证据页保留主证据和事实",
+      "facts": [
+        { "title": "场景", "body": "部署边界清楚" },
+        { "title": "动作", "body": "责任对象明确" },
+        { "title": "结果", "body": "复盘口径可查" }
+      ]
+    },
+    {
+      "type": "gallery",
       "layoutVariant": "evidence-board",
       "title": "证据板把材料来源和行动建议放在一起",
       "cards": [
-        { "title": "来源", "body": "用户材料、截图和访谈摘要" },
+        { "title": "来源", "body": "用户材料截图和访谈摘要" },
         { "title": "判断", "body": "优先确认可外发证据" },
         { "title": "动作", "body": "补齐授权后进入正式版本" }
+      ]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "case-comparison",
+      "title": "案例前后对比必须保持同构",
+      "before": { "title": "改造前", "body": "流程分散且复盘口径不一致" },
+      "after": { "title": "改造后", "body": "动作结果和责任对象统一" },
+      "metrics": [
+        { "value": "32%", "label": "响应提升" },
+        { "value": "18h", "label": "周期缩短" }
+      ]
+    },
+    {
+      "type": "gallery",
+      "layoutVariant": "people-proof-mosaic",
+      "title": "团队证据墙说明角色场景和产出",
+      "cards": [
+        { "title": "顾问", "body": "梳理业务问题" },
+        { "title": "交付", "body": "沉淀项目机制" },
+        { "title": "运营", "body": "跟踪结果反馈" }
+      ]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "sustainability-proof-spread",
+      "title": "可持续证据必须连接指标和来源",
+      "metrics": [
+        { "label": "回收材料", "value": "42%", "note": "来自材料清单" },
+        { "label": "包装减量", "value": "18%", "note": "来自项目复盘" },
+        { "label": "复用周期", "value": "3x", "note": "来自运营记录" }
+      ],
+      "businessLogic": {
+        "currentState": "可持续主张需要材料证据",
+        "cause": "包装和供应链数据分散",
+        "action": "把指标放回产品证据链"
+      }
+    },
+    {
+      "type": "gallery",
+      "layoutVariant": "consumer-proof-photo-grid",
+      "title": "消费者证据格说明场景理由和边界",
+      "cards": [
+        { "title": "触点", "body": "门店场景与内容触达绑定" },
+        { "title": "理由", "body": "购买理由来自材料证据" },
+        { "title": "渠道", "body": "社媒内容进入复盘口径" },
+        { "title": "边界", "body": "声明保持来源约束" }
+      ]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "product-evidence-story",
+      "title": "产品证据故事解释质地功效和场景",
+      "productStory": [
+        { "title": "明星单品", "body": "产品图解释购买理由" },
+        { "title": "质地证据", "body": "说明核心体验" },
+        { "title": "功效主张", "body": "声明来源保持清楚" },
+        { "title": "使用场景", "body": "连接业务作用" }
+      ]
+    },
+    {
+      "type": "gallery",
+      "layoutVariant": "executive-proof-board",
+      "title": "管理层证据板必须导向决策",
+      "facts": [
+        { "title": "案例", "body": "证明已落地" },
+        { "title": "指标", "body": "证明结果可查" },
+        { "title": "风险", "body": "说明外发边界" },
+        { "title": "决策", "body": "建议进入下一阶段" }
+      ]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "lookbook-story",
+      "title": "产品故事把空间搭配和触达连起来",
+      "lookbook": [
+        { "title": "核心产品故事", "body": "主图建立品牌语境" },
+        { "title": "搭配细节", "body": "说明购买理由" },
+        { "title": "空间触点", "body": "连接会员触达" }
+      ]
+    },
+    {
+      "type": "gallery",
+      "layoutVariant": "portfolio-evidence",
+      "title": "组合项目证据图册服务投委判断",
+      "cards": [
+        { "title": "经营快照", "body": "说明执行质量" },
+        { "title": "商业证明", "body": "判断商业化进展" },
+        { "title": "治理证明", "body": "沉淀投后动作" }
+      ]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "service-touchpoint",
+      "title": "服务触点证据图册串起患者旅程",
+      "items": [
+        { "title": "预约导诊", "body": "入口体验可视化" },
+        { "title": "检查协同", "body": "资源等待可追踪" },
+        { "title": "反馈处置", "body": "问题进入闭环" }
+      ]
+    },
+    {
+      "type": "gallery",
+      "layoutVariant": "site-evidence",
+      "title": "站端现场证据说明资产状态和调度",
+      "items": [
+        { "title": "站端资产", "body": "确认资产对象和运行边界" },
+        { "title": "设备细节", "body": "检查设备状态对象" },
+        { "title": "区域视角", "body": "进入区域化复盘" }
+      ]
+    },
+    {
+      "type": "case-gallery",
+      "layoutVariant": "prototype-flow",
+      "title": "产品原型工作流展示界面和采用信号",
+      "cards": [
+        { "title": "工作台", "body": "进入团队空间" },
+        { "title": "自动化", "body": "触发流程动作" },
+        { "title": "分析视图", "body": "看见价值信号" }
       ]
     }
   ]

@@ -7,25 +7,858 @@ const types = [
 ];
 
 function createEvidenceGalleryRenderers(ctx = {}) {
+  const {
+    PageNumber,
+    addArrowBetweenRects,
+    addArrowLine,
+    addDarkBreathingCircle,
+    addEvidenceCaptionStack,
+    addHairline,
+    addLabel,
+    addLightBreathingCircle,
+    addNumber,
+    addPhotoPanel,
+    addPulseCurve,
+    addRect,
+    addSmartPhotoPanel,
+    addText,
+    chooseEvidenceImageLayout,
+    compactEvidenceCaption,
+    fileExists,
+    footerText,
+    galleryImages,
+    genericShowcaseField,
+    itemBody,
+    itemBodyNoEllipsis,
+    itemTitle,
+    lightCanvas,
+    panelFill,
+    resolveAssetPath,
+    sectionKicker,
+    stageCanvas,
+    variantOf
+  } = ctx;
+  const C = ctx.colors();
+
+  function caseEvidenceHero(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'CASE PROOF', 0.86, 0.72, false);
+    addText(slide, s.title || '案例证据', { x:0.84, y:1.05, w:5.8, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    if (s.subtitle || s.intro) addText(slide, s.subtitle || s.intro, { x:0.86, y:1.52, w:6.0, h:0.20, fontSize:9.2, color:C.muted, fit:'shrink' });
+    addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
+    const images = galleryImages(plan, s);
+    const items = s.items || s.cards || [];
+    const hero = images[0];
+    if (hero) addPhotoPanel(slide, hero, 0.92, 2.02, 6.38, 3.98, { tone:'dark', transparency:100, stroke:C.line, strokeTransparency:20 });
+    else genericShowcaseField(slide, 0.92, 2.02, 6.38, 3.98, 'CASE EVIDENCE');
+    addRect(slide, 0.92, 5.06, 6.38, 0.94, C.ink, C.ink, { fill:{color:C.ink, transparency:10}, line:{color:C.ink, transparency:100} });
+    const lead = items[0] || { title:s.case || '核心案例', body:s.claim || '以真实项目、现场或客户材料作为证据。' };
+    addLabel(slide, 'PRIMARY CASE', { x:1.24, y:5.34, w:1.18, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addText(slide, itemTitle(lead, '核心案例'), { x:2.70, y:5.30, w:2.00, h:0.14, fontSize:9.2, bold:true, color:C.white, fit:'shrink' });
+    addText(slide, itemBody(lead), { x:4.82, y:5.30, w:1.70, h:0.13, fontSize:6.6, color:'CBD5E1', fit:'shrink' });
+    const facts = (s.facts || items.slice(1)).slice(0,4);
+    facts.forEach((f,i)=>{
+      const y = 2.14 + i*0.90;
+      const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : C.muted));
+      addRect(slide, 7.86, y, 3.54, 0.62, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?accent:C.line, transparency:i===0?22:16, width:0.42} });
+      addEvidenceCaptionStack(slide, f, `证据 ${i+1}`, { x:8.12, y:y+0.10, w:2.84, h:0.42 }, {
+        number:i+1,
+        accent,
+        titleSize:8.8,
+        bodySize:7.8,
+        titleH:0.12,
+        bodyY:0.24,
+        bodyH:0.12,
+        maxBodyChars:22
+      });
+    });
+    addText(slide, s.note || '单案例页保留主证据与少量可验证事实，便于客户快速判断落地质量。', { x:7.88, y:5.88, w:3.30, h:0.14, fontSize:7.4, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+  }
+
+  function caseEvidenceBoard(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'EVIDENCE BOARD', 0.86, 0.72, false);
+    addText(slide, s.title || '案例证据板', { x:0.84, y:1.05, w:5.8, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    if (s.subtitle || s.intro) addText(slide, s.subtitle || s.intro, { x:0.86, y:1.52, w:6.0, h:0.20, fontSize:9.2, color:C.muted, fit:'shrink' });
+    addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
+    const images = galleryImages(plan, s);
+    const items = s.items || s.cards || [];
+      if (images.length === 4 && items.length <= 4) {
+        const layout = chooseEvidenceImageLayout(images, {
+          role:'evidence',
+          layout:s.galleryLayout || s.imageLayout,
+          featured: !!s.heroImage
+        });
+        if (layout === 'vertical-strip' || layout === 'screenshot-board') {
+          const photoW = layout === 'vertical-strip' ? 1.38 : 2.14;
+          const slots = [
+            { x:0.92, y:2.04, w:2.42, h:3.94 },
+            { x:3.64, y:2.04, w:2.42, h:3.94 },
+            { x:6.36, y:2.04, w:2.42, h:3.94 },
+            { x:9.08, y:2.04, w:2.42, h:3.94 }
+          ];
+          slots.forEach((slot,i)=>{
+            const item = items[i] || {};
+            const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : C.muted));
+            addRect(slide, slot.x, slot.y, slot.w, slot.h, panelFill(), i===0 ? accent : C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?accent:C.line, transparency:i===0?18:16, width:0.44} });
+            const px = slot.x + (slot.w - photoW) / 2;
+            addSmartPhotoPanel(slide, images[i], px, slot.y+0.18, photoW, 2.34, { role:'evidence', tone:'light', transparency:100, stroke:C.line, strokeTransparency:24 });
+            addNumber(slide, String(i+1).padStart(2,'0'), { x:slot.x+0.24, y:slot.y+2.82, w:0.30, h:0.10, fontSize:6.6, color:accent });
+            addText(slide, itemTitle(item, `证据 ${i+1}`), { x:slot.x+0.62, y:slot.y+2.76, w:1.14, h:0.14, fontSize:8.8, bold:true, color:C.text, fit:'shrink' });
+            addText(slide, itemBody(item), { x:slot.x+0.62, y:slot.y+3.20, w:1.24, h:0.20, fontSize:6.8, color:C.body, fit:'shrink', breakLine:true });
+          });
+          addText(slide, s.note || '不同画幅的现场素材统一进入稳定证据列，保留可读标题与 caption。', { x:0.92, y:6.50, w:8.4, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+          addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+          return;
+        }
+        if (layout === 'mosaic-1-3') {
+        const hero = { x:0.92, y:2.04, w:5.18, h:3.94 };
+        const lead = items[0] || {};
+        addRect(slide, hero.x, hero.y, hero.w, hero.h, panelFill(), C.accent, { fill:{color:panelFill(), transparency:0}, line:{color:C.accent, transparency:18, width:0.52} });
+        addSmartPhotoPanel(slide, images[0], hero.x+0.16, hero.y+0.16, hero.w-0.32, 2.68, { role:'evidence', tone:'light', transparency:100, stroke:C.line, strokeTransparency:24 });
+        addLabel(slide, 'PRIMARY EVIDENCE', { x:hero.x+0.28, y:hero.y+3.08, w:1.30, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+        addText(slide, itemTitle(lead, '核心证据'), { x:hero.x+0.28, y:hero.y+3.38, w:1.70, h:0.15, fontSize:10.6, bold:true, color:C.text, fit:'shrink' });
+        addText(slide, itemBody(lead), { x:hero.x+2.26, y:hero.y+3.34, w:2.34, h:0.18, fontSize:8.0, color:C.body, fit:'shrink' });
+
+        images.slice(1,4).forEach((img,i)=>{
+          const y = 2.04 + i*1.34;
+          const item = items[i+1] || {};
+          const accent = i===0 ? C.cyan : (i===1 ? C.violet : C.muted);
+          addRect(slide, 6.42, y, 5.16, 1.08, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?accent:C.line, transparency:i===0?22:16, width:0.42} });
+          addSmartPhotoPanel(slide, img, 6.58, y+0.14, 1.46, 0.80, { role:'evidence', tone:'light', transparency:100, stroke:C.line, strokeTransparency:28 });
+          addEvidenceCaptionStack(slide, item, `证据 ${i+2}`, { x:8.34, y:y+0.20, w:2.72, h:0.72 }, {
+            number:i+2,
+            accent,
+            titleSize:9.2,
+            bodySize:8.2,
+            bodyY:0.36,
+            maxBodyChars:28,
+            dropLongBody:true
+          });
+        });
+        addText(slide, s.note || '主证据与辅助证据分层呈现，避免把关键现场图平均摊平。', { x:0.92, y:6.50, w:8.4, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+        addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+        return;
+      }
+      const gridSlots = [
+        { x:0.92, y:2.04, w:5.08, h:1.78 },
+        { x:6.36, y:2.04, w:5.08, h:1.78 },
+        { x:0.92, y:4.14, w:5.08, h:1.78 },
+        { x:6.36, y:4.14, w:5.08, h:1.78 }
+      ];
+      gridSlots.forEach((slot,i)=>{
+        const item = items[i] || {};
+        const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : C.muted));
+        addRect(slide, slot.x, slot.y, slot.w, slot.h, panelFill(), i===0 ? accent : C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?accent:C.line, transparency:i===0?18:16, width:0.44} });
+        addSmartPhotoPanel(slide, images[i], slot.x+0.14, slot.y+0.14, 2.06, slot.h-0.28, { role:'evidence', tone:'light', transparency:100, stroke:C.line, strokeTransparency:26 });
+        addEvidenceCaptionStack(slide, item, `证据 ${i+1}`, { x:slot.x+2.48, y:slot.y+0.24, w:2.06, h:1.06 }, {
+          number:i+1,
+          accent,
+          titleSize:9.4,
+          bodySize:8.0,
+          bodyY:0.42,
+          maxBodyChars:28,
+          dropLongBody:true
+        });
+      });
+      addText(slide, s.note || '四组证据保持统一比例、标题和说明，形成稳定的现场判断板。', { x:0.92, y:6.50, w:8.4, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+      addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+      return;
+    }
+    const slots = [
+      { x:0.92, y:2.06, w:3.36, h:1.58 },
+      { x:4.62, y:2.06, w:3.36, h:1.58 },
+      { x:8.32, y:2.06, w:3.36, h:1.58 },
+      { x:0.92, y:4.42, w:3.36, h:1.58 },
+      { x:4.62, y:4.42, w:3.36, h:1.58 },
+      { x:8.32, y:4.42, w:3.36, h:1.58 }
+    ];
+    slots.slice(0, Math.min(6, Math.max(images.length, items.length))).forEach((slot,i)=>{
+      const item = items[i] || {};
+      const img = images[i];
+      if (img) addSmartPhotoPanel(slide, img, slot.x, slot.y, slot.w, 1.04, { role:'evidence', tone:'light', transparency:100, stroke:C.line, strokeTransparency:24 });
+      else addRect(slide, slot.x, slot.y, slot.w, 1.04, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:6}, line:{color:C.line, transparency:100} });
+      addRect(slide, slot.x, slot.y+1.04, slot.w, 0.54, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:18, width:0.36} });
+      const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.muted);
+      addEvidenceCaptionStack(slide, item, `证据 ${i+1}`, { x:slot.x+0.22, y:slot.y+1.14, w:2.80, h:0.36 }, {
+        number:i+1,
+        accent,
+        titleSize:8.8,
+        bodySize:7.8,
+        titleH:0.13,
+        bodyY:0.22,
+        bodyH:0.12,
+        maxBodyChars:20,
+        dropLongBody:true
+      });
+    });
+    addText(slide, s.note || '图片与案例统一裁切比例和 caption，形成可核验的现场证据板。', { x:0.92, y:6.50, w:8.4, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+  }
+
+  function caseComparisonSlide(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'CASE COMPARISON', 0.86, 0.72, false);
+    addText(slide, s.title || '案例前后对比', { x:0.84, y:1.05, w:5.8, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    if (s.subtitle || s.claim) addText(slide, s.subtitle || s.claim, { x:0.86, y:1.52, w:6.2, h:0.20, fontSize:9.4, color:C.muted, fit:'shrink' });
+    addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
+
+    const images = galleryImages(plan, s);
+    const before = typeof s.before === 'string' ? { title:'Before', image:s.before } : (s.before || {});
+    const after = typeof s.after === 'string' ? { title:'After', image:s.after } : (s.after || {});
+    const beforeImg = resolveAssetPath(before.image || before.img || images[0] || '');
+    const afterImg = resolveAssetPath(after.image || after.img || images[1] || '');
+    const panels = [
+      { label: before.label || 'BEFORE', title: before.title || '改造前', body: before.body || before.note || '问题、断点或改造前状态。', image:beforeImg, x:0.92, color:C.muted },
+      { label: after.label || 'AFTER', title: after.title || '改造后', body: after.body || after.note || '动作、结果或改造后状态。', image:afterImg, x:7.02, color:C.accent }
+    ];
+    panels.forEach((p,i)=>{
+      addRect(slide, p.x, 2.02, 4.82, 3.92, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===1?p.color:C.line, transparency:i===1?18:14, width:0.50} });
+      if (p.image && fileExists(p.image)) addPhotoPanel(slide, p.image, p.x+0.18, 2.20, 4.46, 2.48, { tone:'light', transparency:100, stroke:C.line, strokeTransparency:24, fit:'cover' });
+      else genericShowcaseField(slide, p.x+0.18, 2.20, 4.46, 2.48, p.label);
+      addLabel(slide, p.label, { x:p.x+0.28, y:4.94, w:0.90, h:0.10, fontSize:6.8, color:p.color, charSpace:0.8 });
+      addText(slide, p.title, { x:p.x+0.28, y:5.22, w:1.68, h:0.15, fontSize:10.4, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, p.body, { x:p.x+2.18, y:5.19, w:1.94, h:0.18, fontSize:7.0, color:C.body, fit:'shrink' });
+    });
+    const beforePanel = { x:panels[0].x, y:2.02, w:4.82, h:3.92 };
+    const afterPanel = { x:panels[1].x, y:2.02, w:4.82, h:3.92 };
+    const transitionY = 3.44;
+    addArrowBetweenRects(slide, beforePanel, afterPanel, 'right', C.accent, {
+      gap:0.30,
+      y:transitionY,
+      endY:transitionY,
+      transparency:8,
+      width:0.50
+    });
+    const midX = (beforePanel.x + beforePanel.w + afterPanel.x) / 2;
+    slide.addShape('ellipse', { x:midX - 0.06, y:transitionY - 0.06, w:0.12, h:0.12, fill:{color:C.accent}, line:{color:C.accent, transparency:100} });
+    addLabel(slide, 'CHANGE', { x:midX - 0.44, y:transitionY+0.52, w:0.88, h:0.10, fontSize:6.2, color:C.accent, charSpace:0.8, align:'center' });
+
+    const metrics = (s.metrics || s.facts || []).slice(0,3);
+    metrics.forEach((m,i)=>{
+      const x = 3.10 + i*2.04;
+      const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
+      addRect(slide, x, 6.18, 1.66, 0.46, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:16, width:0.34} });
+      addNumber(slide, m.value || m.title || String(i+1), { x:x+0.14, y:6.31, w:0.62, h:0.12, fontSize:9.0, color:accent, fit:'shrink' });
+      addText(slide, m.label || m.body || '', { x:x+0.86, y:6.29, w:0.60, h:0.12, fontSize:8.8, color:C.body, fit:'shrink' });
+    });
+    addText(slide, s.note || '对比页把改造前后的动作、体验和复盘口径保持同构。', { x:0.94, y:6.72, w:8.8, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+  }
+
+  function energySiteComparisonSlide(slide, plan, s, idx) {
+    stageCanvas(slide, { field:false });
+    addDarkBreathingCircle(slide, 8.28, 0.64, 4.14, 2.28, C.violet);
+    sectionKicker(slide, 'SITE BEFORE / AFTER', 0.84, 0.72, true);
+    addText(slide, s.title || '站端接入前后对比', { x:0.82, y:1.06, w:6.1, h:0.36, fontSize:23.5, bold:true, color:C.white, fit:'shrink' });
+    if (s.subtitle || s.claim) addText(slide, s.subtitle || s.claim, { x:0.84, y:1.50, w:6.3, h:0.20, fontSize:9.8, color:'94A3B8', fit:'shrink' });
+    addNumber(slide, String(idx).padStart(2,'0'), { x:11.66, y:0.72, w:0.62, h:0.18, fontSize:11.5, color:C.accent, align:'right' });
+
+    const images = galleryImages(plan, s);
+    const before = typeof s.before === 'string' ? { title:'接入前', image:s.before } : (s.before || {});
+    const after = typeof s.after === 'string' ? { title:'接入后', image:s.after } : (s.after || {});
+    const panels = [
+      { label:before.label || 'BEFORE', title:before.title || '接入前', body:before.body || before.note || '状态、告警和收益复盘分散。', image:resolveAssetPath(before.image || before.img || images[0] || ''), x:0.92, accent:'94A3B8' },
+      { label:after.label || 'AFTER', title:after.title || '接入后', body:after.body || after.note || '站端状态、工单和收益口径统一。', image:resolveAssetPath(after.image || after.img || images[1] || ''), x:7.10, accent:C.accent }
+    ];
+    panels.forEach((p,i)=>{
+      addRect(slide, p.x, 2.02, 4.50, 3.56, C.ink2, '334155', { fill:{color:C.ink2, transparency:i===0?12:4}, line:{color:i===1?C.accent:'334155', transparency:i===1?18:44, width:0.46} });
+      if (p.image && fileExists(p.image)) addPhotoPanel(slide, p.image, p.x+0.18, 2.22, 4.14, 2.14, { tone:'light', transparency:88, stroke:'334155', strokeTransparency:36, fit:'cover' });
+      else genericShowcaseField(slide, p.x+0.18, 2.22, 4.14, 2.14, p.label);
+      addLabel(slide, p.label, { x:p.x+0.26, y:4.66, w:0.84, h:0.10, fontSize:6.0, color:p.accent, charSpace:0.85 });
+      addText(slide, p.title, { x:p.x+0.26, y:4.94, w:1.22, h:0.15, fontSize:10.0, bold:true, color:C.white, fit:'shrink' });
+      addText(slide, p.body, { x:p.x+1.72, y:4.92, w:2.02, h:0.18, fontSize:7.0, color:'CBD5E1', fit:'shrink' });
+    });
+    const midX = 6.22;
+    addRect(slide, midX-0.36, 3.08, 0.72, 0.72, C.ink, C.accent, { fill:{color:C.ink, transparency:0}, line:{color:C.accent, transparency:26, width:0.42} });
+    addArrowLine(slide, midX-0.18, 3.44, 0.36, 0, C.accent, { transparency:8, width:0.46 });
+    addLabel(slide, 'DISPATCH', { x:midX-0.44, y:4.04, w:0.88, h:0.09, fontSize:5.6, color:C.cyan, charSpace:0.65, align:'center' });
+
+    const metrics = (s.metrics || s.facts || []).slice(0,3);
+    const metricStart = 2.38;
+    metrics.forEach((m,i)=>{
+      const x = metricStart + i*2.18;
+      const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
+      addText(slide, m.value || m.title || String(i+1), { x, y:6.10, w:0.76, h:0.16, fontSize:12.4, bold:true, color:accent, fit:'shrink' });
+      addText(slide, m.label || m.body || '', { x:x+0.96, y:6.12, w:0.88, h:0.12, fontSize:7.8, color:'CBD5E1', fit:'shrink' });
+    });
+    addText(slide, s.note || '前后对比用于说明站端接入如何把告警、巡检和收益复盘接入同一套调度证据。', { x:0.94, y:6.62, w:8.9, h:0.13, fontSize:7.6, color:'94A3B8', fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:'64748B' });
+  }
+
+  function retailLookbookStory(slide, plan, s, idx) {
+    lightCanvas(slide);
+    const variant = variantOf(s, 'lookbook-story');
+    if (variant === 'consumer-proof-photo-grid') {
+      sectionKicker(slide, 'CONSUMER PROOF GRID', 0.86, 0.72, false);
+      addText(slide, s.title || '消费者场景证据', { x:0.84, y:1.05, w:5.9, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+      const intro = s.subtitle || s.intro || s.claim || '把柜台、内容触点和会员反馈放进同一组证据栅格。';
+      addText(slide, intro, { x:0.86, y:1.52, w:6.6, h:0.20, fontSize:9.4, color:C.muted, fit:'shrink' });
+      addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
+
+      const images = galleryImages(plan, s);
+      const items = (s.lookbook || s.productStory || s.cards || s.items || []).slice(0,4).map(v => typeof v === 'string' ? { title:v } : v);
+      const insight = { x:0.92, y:2.06, w:3.20, h:3.86 };
+      addRect(slide, insight.x, insight.y, insight.w, insight.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+      addLabel(slide, 'SHOPPER SIGNAL', { x:insight.x+0.30, y:insight.y+0.34, w:1.34, h:0.10, fontSize:6.8, color:C.accent, charSpace:0.8 });
+      addText(slide, s.storyTitle || '场景推动复购', { x:insight.x+0.30, y:insight.y+0.84, w:1.78, h:0.28, fontSize:15.2, bold:true, color:C.white, fit:'shrink' });
+      addText(slide, s.storyBody || s.note || '消费者证据页要让图像承担证明作用：触点、理由、动作和复购信号彼此对应。', {
+        x:insight.x+0.30, y:insight.y+1.54, w:2.14, h:0.74, fontSize:8.2, color:C.captionOnImage, fit:'shrink', breakLine:true
+      });
+      addHairline(slide, insight.x+0.30, insight.y+2.72, 0.86, C.accent, 0, 0.62);
+      ['SCENE', 'REASON', 'REPEAT'].forEach((label,i)=>{
+        const color = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
+        addRect(slide, insight.x+0.30+i*0.70, insight.y+3.16, 0.38, 0.10, color, color, { line:{color, transparency:100} });
+        addText(slide, label, { x:insight.x+0.30+i*0.70, y:insight.y+3.34, w:0.48, h:0.10, fontSize:6.8, color:'94A3B8', align:'center', fit:'shrink' });
+      });
+
+      const slots = [
+        { x:4.58, y:2.06, w:2.08, h:3.86, color:C.accent, label:'触点' },
+        { x:6.96, y:2.06, w:2.08, h:3.86, color:C.cyan, label:'理由' },
+        { x:9.34, y:2.06, w:2.08, h:3.86, color:C.violet, label:'复购' }
+      ];
+      slots.forEach((slot,i)=>{
+        const item = items[i] || {};
+        addRect(slide, slot.x, slot.y, slot.w, slot.h, panelFill(), i===0 ? slot.color : C.line, {
+          fill:{color:panelFill(), transparency:0},
+          line:{color:i===0 ? slot.color : C.line, transparency:i===0 ? 18 : 16, width:0.44}
+        });
+        if (images[i]) addSmartPhotoPanel(slide, images[i], slot.x+0.14, slot.y+0.14, slot.w-0.28, 1.92, { role:'evidence', tone:'light', transparency:100, stroke:C.line, strokeTransparency:24 });
+        else genericShowcaseField(slide, slot.x+0.14, slot.y+0.14, slot.w-0.28, 1.92, slot.label);
+        addLabel(slide, slot.label, { x:slot.x+0.22, y:slot.y+2.34, w:0.54, h:0.09, fontSize:6.8, color:slot.color, charSpace:0 });
+        addNumber(slide, String(i+1).padStart(2,'0'), { x:slot.x+1.42, y:slot.y+2.28, w:0.30, h:0.10, fontSize:6.8, color:slot.color, align:'right' });
+        addText(slide, itemTitle(item, `消费者证据 ${i+1}`), { x:slot.x+0.22, y:slot.y+2.70, w:1.36, h:0.15, fontSize:9.0, bold:true, color:C.text, fit:'shrink' });
+        addText(slide, compactEvidenceCaption(itemBody(item), 24), { x:slot.x+0.22, y:slot.y+3.12, w:1.44, h:0.24, fontSize:7.3, color:C.body, fit:'shrink', breakLine:true });
+      });
+      addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:'738297' });
+      return;
+    }
+    sectionKicker(slide, 'LOOKBOOK STORY', 0.86, 0.72, false);
+    addText(slide, s.title || '产品故事与门店场景', { x:0.84, y:1.05, w:5.9, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    const intro = s.subtitle || s.intro || s.claim || '把产品、空间、搭配和会员触达组织成一组可阅读的品牌故事。';
+    addText(slide, intro, { x:0.86, y:1.52, w:6.4, h:0.20, fontSize:9.4, color:C.muted, fit:'shrink' });
+    addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
+
+    const images = galleryImages(plan, s);
+    const storyItems = (s.lookbook || s.productStory || s.cards || s.items || []).slice(0,3).map(v => typeof v === 'string' ? { title:v } : v);
+    const hero = { x:0.92, y:2.04, w:5.38, h:4.10 };
+    if (images[0]) {
+      addPhotoPanel(slide, images[0], hero.x, hero.y, hero.w, hero.h, { tone:'dark', transparency:100, stroke:'E8DED8', strokeTransparency:12, fit:'cover' });
+    } else {
+      addRect(slide, hero.x, hero.y, hero.w, hero.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+      addLightBreathingCircle(slide, hero.x+3.20, hero.y+0.40, 1.92, C.softBlue, 36);
+    }
+    addRect(slide, hero.x, hero.y+hero.h-1.02, hero.w, 1.02, C.ink, C.ink, { fill:{color:C.ink, transparency:10}, line:{color:C.ink, transparency:100} });
+    addLabel(slide, 'PRIMARY SCENE', { x:hero.x+0.30, y:hero.y+hero.h-0.70, w:1.16, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    const lead = storyItems[0] || { title:'核心产品故事', body:'用主图建立品牌语境，再用细节图和文案解释购买理由。' };
+    addText(slide, itemTitle(lead, '核心产品故事'), { x:hero.x+0.30, y:hero.y+hero.h-0.40, w:1.92, h:0.14, fontSize:9.6, bold:true, color:C.white, fit:'shrink' });
+    addText(slide, itemBody(lead), { x:hero.x+2.56, y:hero.y+hero.h-0.42, w:2.12, h:0.13, fontSize:6.8, color:'CBD5E1', fit:'shrink' });
+
+    const small = [
+      { x:6.70, y:2.04, w:2.12, h:1.66 },
+      { x:9.24, y:2.04, w:2.12, h:1.66 }
+    ];
+    small.forEach((slot,i)=>{
+      const item = storyItems[i+1] || {};
+      if (images[i+1]) addPhotoPanel(slide, images[i+1], slot.x, slot.y, slot.w, slot.h, { tone:'light', transparency:100, stroke:'E4ECF5', strokeTransparency:14, fit:'cover' });
+      else {
+        addRect(slide, slot.x, slot.y, slot.w, slot.h, C.panelAlt || C.softBlue, C.line, {
+          fill:{color:C.panelAlt || C.softBlue, transparency:10},
+          line:{color:C.line, transparency:18, width:0.40}
+        });
+        addNumber(slide, String(i+2).padStart(2,'0'), {
+          x:slot.x+0.22, y:slot.y+0.34, w:0.30, h:0.10,
+          fontSize:6.6, color:i===0?C.cyan:C.violet
+        });
+        addHairline(slide, slot.x+0.22, slot.y+0.76, slot.w-0.44, i===0?C.cyan:C.violet, 28, 0.34);
+        addText(slide, compactEvidenceCaption(itemTitle(item, i===0 ? '低压验证' : '退出条件'), 16), {
+          x:slot.x+0.22, y:slot.y+0.98, w:slot.w-0.44, h:0.18,
+          fontSize:7.4, bold:true, color:C.text, fit:'shrink', align:'center'
+        });
+        addText(slide, compactEvidenceCaption(itemBody(item), 22), {
+          x:slot.x+0.22, y:slot.y+1.24, w:slot.w-0.44, h:0.22,
+          fontSize:6.6, color:C.body, fit:'shrink', align:'center', breakLine:true
+        });
+      }
+      addText(slide, String(i+2).padStart(2,'0'), { x:slot.x, y:slot.y+slot.h+0.18, w:0.34, h:0.10, fontSize:6.4, bold:true, color:i===0?C.cyan:C.violet });
+      addText(slide, itemTitle(item, i===0 ? '搭配细节' : '空间触点'), { x:slot.x+0.44, y:slot.y+slot.h+0.12, w:1.24, h:0.16, fontSize:8.8, bold:true, color:C.text, fit:'shrink' });
+      if (itemBody(item)) addText(slide, itemBody(item), { x:slot.x+0.44, y:slot.y+slot.h+0.38, w:1.42, h:0.16, fontSize:8.8, color:C.body, fit:'shrink' });
+    });
+
+    const narrative = { x:6.70, y:4.36, w:4.66, h:1.78 };
+    addRect(slide, narrative.x, narrative.y, narrative.w, narrative.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    addLabel(slide, 'MERCHANDISING LOGIC', { x:narrative.x+0.30, y:narrative.y+0.34, w:1.68, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addText(slide, s.storyTitle || '从视觉偏好到复购理由', { x:narrative.x+0.30, y:narrative.y+0.72, w:1.96, h:0.18, fontSize:12.6, bold:true, color:C.white, fit:'shrink' });
+    addText(slide, s.storyBody || s.note || 'lookbook 页不是随机拼图，它要让顾客看到产品、搭配、空间和会员触达之间的关系。', { x:narrative.x+2.46, y:narrative.y+0.66, w:1.76, h:0.58, fontSize:8.8, color:C.captionOnImage, breakLine:true, fit:'shrink' });
+    ['COLOR', 'TEXTURE', 'SCENE'].forEach((label,i)=>{
+      const color = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
+      addRect(slide, narrative.x+0.30+i*0.70, narrative.y+1.34, 0.38, 0.10, color, color, { line:{color, transparency:100} });
+      addText(slide, label, { x:narrative.x+0.30+i*0.70, y:narrative.y+1.52, w:0.46, h:0.10, fontSize:5.6, color:'94A3B8', align:'center', fit:'shrink' });
+    });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:'738297' });
+  }
+
+  function peopleProofMosaic(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'PEOPLE PROOF MOSAIC', 0.86, 0.72, false);
+    addText(slide, s.title || '团队证据墙', { x:0.84, y:1.05, w:6.0, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    addText(slide, s.subtitle || s.claim || '每个成员场景都需要角色、场景和产出 caption。', { x:0.86, y:1.52, w:7.0, h:0.20, fontSize:9.6, color:C.muted, fit:'shrink' });
+    PageNumber(slide, idx);
+    const images = galleryImages(plan, s);
+    const items = (s.cards || s.items || []).slice(0, 4);
+    const hero = { x:0.92, y:2.04, w:4.86, h:3.92 };
+    addRect(slide, hero.x, hero.y, hero.w, hero.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    if (images[0]) addSmartPhotoPanel(slide, images[0], hero.x+0.18, hero.y+0.18, hero.w-0.36, 2.62, { role:'evidence', tone:'light', transparency:100, stroke:'334155', strokeTransparency:44 });
+    else genericShowcaseField(slide, hero.x+0.18, hero.y+0.18, hero.w-0.36, 2.62, 'PEOPLE SCENE');
+    const lead = items[0] || { title:'团队角色', body:'用场景图证明协作方式和产出。' };
+    addLabel(slide, 'ROLE / SCENE / OUTPUT', { x:hero.x+0.30, y:hero.y+3.06, w:1.58, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.7 });
+    addText(slide, itemTitle(lead, '团队角色'), { x:hero.x+0.30, y:hero.y+3.36, w:1.42, h:0.15, fontSize:10.2, bold:true, color:C.white, fit:'shrink' });
+    addText(slide, itemBody(lead, '证明协作方式和产出。'), { x:hero.x+2.08, y:hero.y+3.32, w:2.16, h:0.16, fontSize:7.0, color:C.captionOnImage, fit:'shrink' });
+
+    const slots = [
+      { x:6.24, y:2.04, w:2.36, h:1.72, color:C.cyan },
+      { x:9.04, y:2.04, w:2.36, h:1.72, color:C.violet },
+      { x:6.24, y:4.24, w:5.16, h:1.72, color:C.accent }
+    ];
+    slots.forEach((slot, i) => {
+      const item = items[i + 1] || {};
+      addRect(slide, slot.x, slot.y, slot.w, slot.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?slot.color:C.line, transparency:i===0?20:16, width:0.38} });
+      const imgW = i === 2 ? 1.72 : slot.w - 0.28;
+      if (images[i + 1]) addSmartPhotoPanel(slide, images[i + 1], slot.x+0.14, slot.y+0.14, imgW, 0.96, { role:'evidence', tone:'light', transparency:100, stroke:C.line, strokeTransparency:28 });
+      else genericShowcaseField(slide, slot.x+0.14, slot.y+0.14, imgW, 0.96, 'TEAM PROOF');
+      const textX = i === 2 ? slot.x + 2.12 : slot.x + 0.20;
+      const textY = i === 2 ? slot.y + 0.28 : slot.y + 1.24;
+      addNumber(slide, String(i + 2).padStart(2, '0'), { x:textX, y:textY+0.02, w:0.28, h:0.09, fontSize:6.0, color:slot.color });
+      addText(slide, itemTitle(item, `团队证据 ${i+2}`), { x:textX+0.40, y:textY, w:i===2?1.18:1.24, h:0.13, fontSize:8.2, bold:true, color:C.text, fit:'shrink' });
+      if (i === 2) addText(slide, compactEvidenceCaption(itemBody(item), 22), { x:textX+1.76, y:textY, w:1.00, h:0.12, fontSize:6.6, color:C.body, fit:'shrink' });
+      else addText(slide, compactEvidenceCaption(itemBody(item), 22), { x:slot.x+0.20, y:slot.y+1.48, w:1.64, h:0.10, fontSize:6.3, color:C.body, fit:'shrink' });
+    });
+    addText(slide, s.note || '人物图片必须证明角色、协作场景和产出，不做单纯氛围拼贴。', { x:0.94, y:6.42, w:8.8, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+  }
+
+  function sustainabilityProofSpread(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'SUSTAINABILITY PROOF SPREAD', 0.86, 0.72, false);
+    addText(slide, s.title || '可持续证据展开页', { x:0.84, y:1.05, w:6.1, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    addText(slide, s.subtitle || s.claim || '证据图像、影响指标、项目说明和来源必须成对出现。', { x:0.86, y:1.52, w:7.2, h:0.20, fontSize:9.6, color:C.muted, fit:'shrink' });
+    PageNumber(slide, idx);
+    const metrics = (s.metrics || []).slice(0, 3);
+    if (metrics.length >= 2) {
+      const logic = s.businessLogic || {};
+      const board = { x:0.92, y:2.08, w:10.72, h:3.78 };
+      addRect(slide, board.x, board.y, board.w, board.h, panelFill(), C.line, {
+        fill:{color:panelFill(), transparency:0},
+        line:{color:C.line, transparency:14, width:0.48}
+      });
+      addRect(slide, board.x, board.y, 0.07, board.h, C.accent, C.accent, { line:{color:C.accent, transparency:100} });
+      const gap = 0.18;
+      const cardW = (board.w - 0.74 - gap * 2) / 3;
+      metrics.forEach((m, i) => {
+        const x = board.x + 0.38 + i * (cardW + gap);
+        const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : C.violet);
+        addRect(slide, x, board.y+0.48, cardW, 2.72, i === 0 ? C.ink : C.panelAlt || C.softBlue, i === 0 ? accent : C.line, {
+          fill:{color:i === 0 ? C.ink : (C.panelAlt || C.softBlue), transparency:i === 0 ? 0 : 10},
+          line:{color:i === 0 ? accent : C.line, transparency:i === 0 ? 22 : 100, width:0.42}
+        });
+        addLabel(slide, i === 0 ? 'PRIMARY KPI' : `SUPPORT 0${i}`, {
+          x:x+0.22, y:board.y+0.78, w:1.12, h:0.10, fontSize:5.8, color:accent, charSpace:0.8
+        });
+        addText(slide, m.label || `指标 ${i + 1}`, {
+          x:x+0.22, y:board.y+1.14, w:cardW-0.44, h:0.16, fontSize:9.4, bold:true, color:i === 0 ? C.white : C.text, fit:'shrink'
+        });
+        addNumber(slide, m.value || '—', {
+          x:x+0.20, y:board.y+1.62, w:cardW-0.40, h:0.54, fontSize:i === 0 ? 38 : 30, color:accent, fit:'shrink'
+        });
+        addText(slide, m.note || '', {
+          x:x+0.24, y:board.y+2.58, w:cardW-0.50, h:0.16, fontSize:8.0, color:i === 0 ? C.captionOnImage : C.body, fit:'shrink'
+        });
+      });
+      const readout = [
+        ['现状', logic.currentState || 'Product sustainability claims need concrete evidence.'],
+        ['原因', logic.cause || 'Refill and container specifications are attached to the ULTIMUNE lineup.'],
+        ['动作', logic.action || 'Keep sustainability proof inside the product evidence system.']
+      ];
+      addHairline(slide, 0.94, 6.08, 10.84, C.line, 14, 0.44);
+      readout.forEach((row, i) => {
+        const x = 1.00 + i * 3.38;
+        const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : C.violet);
+        addText(slide, row[0], { x, y:6.24, w:0.64, h:0.15, fontSize:8.8, bold:true, color:accent, fit:false });
+        addText(slide, row[1], {
+          x:x+0.74, y:6.22, w:2.36, h:0.36,
+          fontSize:7.6, color:C.body, fit:false, breakLine:true, valign:'top'
+        });
+      });
+      addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+      return;
+    }
+    const images = galleryImages(plan, s);
+    const items = (s.cards || s.items || []).slice(0, 4);
+    const panels = [
+      { x:0.92, y:2.04, w:5.18, h:3.88, color:C.accent },
+      { x:6.42, y:2.04, w:5.18, h:3.88, color:C.cyan }
+    ];
+    panels.forEach((panel, i) => {
+      const item = items[i] || {};
+      addRect(slide, panel.x, panel.y, panel.w, panel.h, panelFill(), i===0 ? panel.color : C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?panel.color:C.line, transparency:i===0?20:16, width:0.46} });
+      if (images[i]) addSmartPhotoPanel(slide, images[i], panel.x+0.18, panel.y+0.18, panel.w-0.36, 2.18, { role:'evidence', tone:'light', transparency:100, stroke:C.line, strokeTransparency:26 });
+      else genericShowcaseField(slide, panel.x+0.18, panel.y+0.18, panel.w-0.36, 2.18, 'IMPACT EVIDENCE');
+      addLabel(slide, i === 0 ? 'INITIATIVE / METRIC' : 'SOURCE / IMPACT', { x:panel.x+0.28, y:panel.y+2.62, w:1.38, h:0.09, fontSize:5.8, color:panel.color, charSpace:0.65 });
+      addText(slide, itemTitle(item, i===0 ? '行动证明' : '影响证明'), { x:panel.x+0.28, y:panel.y+2.92, w:1.42, h:0.14, fontSize:9.2, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, itemBody(item, '把图片、指标和来源绑定到同一项可持续行动。'), { x:panel.x+2.08, y:panel.y+2.86, w:2.42, h:0.22, fontSize:7.2, color:C.body, fit:'shrink', breakLine:true });
+    });
+    items.slice(2, 4).forEach((item, i) => {
+      const x = 1.16 + i * 5.50;
+      const accent = i === 0 ? C.violet : C.accent;
+      addRect(slide, x, 6.16, 4.76, 0.44, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:12}, line:{color:C.line, transparency:100} });
+      addNumber(slide, String(i + 3).padStart(2, '0'), { x:x+0.20, y:6.30, w:0.28, h:0.09, fontSize:6.0, color:accent });
+      addText(slide, itemTitle(item, `补充证据 ${i+3}`), { x:x+0.62, y:6.27, w:1.28, h:0.11, fontSize:7.6, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, compactEvidenceCaption(itemBody(item), 34), { x:x+2.10, y:6.27, w:1.92, h:0.11, fontSize:6.6, color:C.body, fit:'shrink' });
+    });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+  }
+
+  function consumerProofPhotoGrid(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'CONSUMER PROOF PHOTO GRID', 0.86, 0.72, false);
+    addText(slide, s.title || '消费者场景证据', { x:0.84, y:1.05, w:6.1, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    addText(slide, s.subtitle || s.claim || '每个场景都需要一句 caption 说明它证明什么。', { x:0.86, y:1.52, w:7.0, h:0.20, fontSize:9.6, color:C.muted, fit:'shrink' });
+    PageNumber(slide, idx);
+    const images = galleryImages(plan, s);
+    const items = (s.cards || s.items || s.lookbook || []).slice(0, 4);
+    const slots = [
+      { x:0.92, y:2.04, w:2.54, h:3.94, label:'SCENE', color:C.accent, title:'Official campaign image', body:'Source-bound visual proof.' },
+      { x:3.74, y:2.04, w:2.54, h:3.94, label:'REASON', color:C.cyan, title:'Next-generation engagement', body:'Campaign logic and audience role.' },
+      { x:6.56, y:2.04, w:2.54, h:3.94, label:'CHANNEL', color:C.violet, title:'Instagram / TikTok films', body:'Social-format launch evidence.' },
+      { x:9.38, y:2.04, w:2.54, h:3.94, label:'BOUNDARY', color:C.accent, title:'Official source wording', body:'Claims remain source-bound.' }
+    ];
+    slots.forEach((slot, i) => {
+      const item = items[i] || {};
+      const slotImage = images[i] || images[0];
+      addRect(slide, slot.x, slot.y, slot.w, slot.h, panelFill(), i===0 ? slot.color : C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?slot.color:C.line, transparency:i===0?20:16, width:0.42} });
+      if (slotImage) addSmartPhotoPanel(slide, slotImage, slot.x+0.14, slot.y+0.14, slot.w-0.28, 2.22, { role:'evidence', tone:'light', transparency:100, stroke:C.line, strokeTransparency:26 });
+      else {
+        addRect(slide, slot.x+0.14, slot.y+0.14, slot.w-0.28, 2.22, C.panelAlt || C.softBlue, C.line, {
+          fill:{color:C.panelAlt || C.softBlue, transparency:10},
+          line:{color:C.line, transparency:28, width:0.36}
+        });
+        addNumber(slide, String(i + 1).padStart(2, '0'), {
+          x:slot.x+0.36, y:slot.y+0.54, w:0.34, h:0.12,
+          fontSize:7.0, color:slot.color, fit:'shrink'
+        });
+        addLabel(slide, slot.label, {
+          x:slot.x+0.82, y:slot.y+0.56, w:0.88, h:0.09,
+          fontSize:5.6, color:slot.color, charSpace:0.7
+        });
+        addHairline(slide, slot.x+0.36, slot.y+1.08, slot.w-0.72, slot.color, 22, 0.46);
+        addText(slide, compactEvidenceCaption(itemTitle(item, slot.title), 18), {
+          x:slot.x+0.36, y:slot.y+1.34, w:slot.w-0.72, h:0.24,
+          fontSize:8.0, bold:true, color:C.text, fit:'shrink', align:'center', breakLine:true
+        });
+      }
+      addLabel(slide, slot.label, { x:slot.x+0.20, y:slot.y+2.62, w:0.84, h:0.09, fontSize:5.8, color:slot.color, charSpace:0.7 });
+      addText(slide, itemTitle(item, slot.title), {
+        x:slot.x+0.20, y:slot.y+2.88, w:1.86, h:0.28,
+        fontSize:8.8, bold:true, color:C.text, fit:false, breakLine:true
+      });
+      addText(slide, itemBodyNoEllipsis(item, slot.body), {
+        x:slot.x+0.20, y:slot.y+3.34, w:1.86, h:0.34,
+        fontSize:7.6, color:C.body, fit:false, breakLine:true, valign:'top'
+      });
+    });
+    addText(slide, s.note || '消费者图像必须绑定场景、理由、购买或复购信号。', { x:0.94, y:6.42, w:8.8, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+  }
+
+  function productEvidenceStory(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'PRODUCT EVIDENCE STORY', 0.86, 0.72, false);
+    addText(slide, s.title || '产品证据故事', { x:0.84, y:1.05, w:6.0, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    addText(slide, s.subtitle || s.claim || '产品页要同时证明质地、功效和使用场景。', { x:0.86, y:1.52, w:7.0, h:0.20, fontSize:9.6, color:C.muted, fit:'shrink' });
+    PageNumber(slide, idx);
+    const images = galleryImages(plan, s);
+    const items = (s.cards || s.items || s.productStory || []).slice(0, 4);
+    const hero = { x:0.92, y:2.04, w:5.44, h:4.02 };
+    const heroCaptionH = 0.90;
+    const heroImageH = hero.h - heroCaptionH - 0.22;
+    addRect(slide, hero.x, hero.y, hero.w, hero.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    if (images[0]) addPhotoPanel(slide, images[0], hero.x+0.18, hero.y+0.18, hero.w-0.36, heroImageH, { tone:'light', transparency:96, stroke:'FFFFFF', strokeTransparency:70, fit:'cover' });
+    else genericShowcaseField(slide, hero.x+0.18, hero.y+0.18, hero.w-0.36, heroImageH, 'HERO PRODUCT');
+    addRect(slide, hero.x, hero.y+hero.h-0.90, hero.w, 0.90, C.ink, C.ink, { fill:{color:C.ink, transparency:12}, line:{color:C.ink, transparency:100} });
+    const lead = items[0] || { title:'明星单品', body:'产品图必须解释购买理由。' };
+    addLabel(slide, 'HERO PRODUCT PROOF', { x:hero.x+0.30, y:hero.y+hero.h-0.60, w:1.42, h:0.09, fontSize:5.8, color:C.accent, charSpace:0.7 });
+    addText(slide, itemTitle(lead, '明星单品'), { x:hero.x+0.30, y:hero.y+hero.h-0.34, w:1.64, h:0.14, fontSize:9.6, bold:true, color:C.white, fit:'shrink' });
+    addText(slide, itemBodyNoEllipsis(lead, '产品图解释购买理由和功效边界。'), {
+      x:hero.x+2.34, y:hero.y+hero.h-0.42, w:2.42, h:0.26,
+      fontSize:7.8, color:C.captionOnImage, fit:false, breakLine:true
+    });
+
+    const proof = { x:6.86, y:2.04, w:4.72, h:4.02 };
+    addRect(slide, proof.x, proof.y, proof.w, proof.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.46} });
+    ['TEXTURE', 'CLAIM', 'SCENE'].forEach((label, i) => {
+      const item = items[i + 1] || {};
+      const y = proof.y + 0.48 + i * 1.02;
+      const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : C.violet);
+      addLabel(slide, label, { x:proof.x+0.28, y, w:0.82, h:0.09, fontSize:5.8, color:accent, charSpace:0.7 });
+      addText(slide, itemTitle(item, i===0 ? '质地证据' : (i===1 ? '功效主张' : '使用场景')), {
+        x:proof.x+1.18, y:y-0.04, w:1.42, h:0.22,
+        fontSize:8.8, bold:true, color:C.text, fit:false, breakLine:true, valign:'mid'
+      });
+      addText(slide, itemBodyNoEllipsis(item, i===0 ? '发酵山茶成分主张' : (i===1 ? '长期研发背书' : '建议零售价与税费口径需注明来源')), {
+        x:proof.x+2.76, y:y-0.06, w:1.58, h:0.30,
+        fontSize:7.4, color:C.body, fit:false, breakLine:true, valign:'top'
+      });
+      addHairline(slide, proof.x+0.28, y+0.50, 3.86, C.line, 18, 0.30);
+    });
+    addText(slide, s.note || '产品证据页不能只有漂亮图片，必须解释购买理由和业务作用。', { x:0.94, y:6.42, w:8.8, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+  }
+
+  function executiveProofBoard(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'EXECUTIVE PROOF BOARD', 0.86, 0.72, false);
+    addText(slide, s.title || '管理层证据板', { x:0.84, y:1.05, w:6.1, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    addText(slide, s.subtitle || s.claim || '证据集合必须连接到管理层要确认的决策。', { x:0.86, y:1.52, w:7.0, h:0.20, fontSize:9.6, color:C.muted, fit:'shrink' });
+    PageNumber(slide, idx);
+    const items = (s.cards || s.items || s.facts || []).slice(0, 4);
+    const decision = { x:0.92, y:2.04, w:3.22, h:3.98 };
+    addRect(slide, decision.x, decision.y, decision.w, decision.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    addLabel(slide, 'DECISION IMPLICATION', { x:decision.x+0.30, y:decision.y+0.36, w:1.52, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    const decisionItem = items[3] || { title:'决策含义', body:s.note || '建议进入下一阶段。' };
+    addText(slide, itemTitle(decisionItem, '决策含义'), { x:decision.x+0.30, y:decision.y+0.88, w:1.66, h:0.22, fontSize:13.4, bold:true, color:C.white, fit:'shrink' });
+    addText(slide, itemBody(decisionItem, s.note || '证据必须导向明确的管理动作。'), { x:decision.x+0.30, y:decision.y+1.54, w:1.98, h:0.54, fontSize:8.4, color:C.captionOnImage, fit:'shrink', breakLine:true });
+    addHairline(slide, decision.x+0.30, decision.y+2.58, 0.82, C.accent, 0, 0.62);
+    addLabel(slide, 'METRIC · CASE · RISK', { x:decision.x+0.30, y:decision.y+3.16, w:1.42, h:0.10, fontSize:5.8, color:'64748B', charSpace:0.7 });
+
+    const board = { x:4.72, y:2.04, w:6.74, h:3.98 };
+    const slots = [
+      { x:board.x, y:board.y, color:C.accent },
+      { x:board.x+3.48, y:board.y, color:C.cyan },
+      { x:board.x, y:board.y+2.08, color:C.risk },
+      { x:board.x+3.48, y:board.y+2.08, color:C.violet }
+    ];
+    slots.forEach((slot, i) => {
+      const item = items[i] || {};
+      addRect(slide, slot.x, slot.y, 3.02, 1.56, panelFill(), i===0 ? slot.color : C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?slot.color:C.line, transparency:i===0?20:16, width:0.42} });
+      addNumber(slide, String(i + 1).padStart(2, '0'), { x:slot.x+0.24, y:slot.y+0.30, w:0.30, h:0.09, fontSize:6.2, color:slot.color });
+      addText(slide, itemTitle(item, `证据 ${i+1}`), { x:slot.x+0.70, y:slot.y+0.24, w:1.18, h:0.14, fontSize:8.8, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, compactEvidenceCaption(itemBody(item), 38), { x:slot.x+0.24, y:slot.y+0.78, w:2.26, h:0.18, fontSize:7.2, color:C.body, fit:'shrink', breakLine:true });
+    });
+    addText(slide, s.note || '管理层证据板必须让证据连接到一个决策含义。', { x:0.94, y:6.42, w:8.8, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+  }
+
+  function energySiteEvidenceGallery(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'SITE EVIDENCE', 0.86, 0.72, false);
+    addText(slide, s.title || '站端现场证据', { x:0.84, y:1.05, w:5.9, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    const intro = s.subtitle || s.intro || s.claim || '把站端资产、设备状态和区域调度证据放在同一页，而不是只做图片拼贴。';
+    addText(slide, intro, { x:0.86, y:1.52, w:6.6, h:0.20, fontSize:9.4, color:C.muted, fit:'shrink' });
+    addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
+
+    const images = galleryImages(plan, s);
+    const items = (s.items || s.cards || []).map(v => typeof v === 'string' ? { title:v } : v);
+    const hero = { x:0.92, y:2.02, w:6.36, h:2.52 };
+    if (images[0]) addPhotoPanel(slide, images[0], hero.x, hero.y, hero.w, hero.h, { tone:'light', transparency:84, stroke:C.line, strokeTransparency:20, fit:'cover' });
+    else genericShowcaseField(slide, hero.x, hero.y, hero.w, hero.h, 'SITE EVIDENCE');
+    addRect(slide, hero.x, hero.y+hero.h-0.72, hero.w, 0.72, C.ink, C.ink, { fill:{color:C.ink, transparency:14}, line:{color:C.ink, transparency:100} });
+    const lead = items[0] || { title:'站端资产', body:'以现场图片确认资产对象和运行边界。' };
+    addLabel(slide, 'PRIMARY SITE', { x:hero.x+0.28, y:hero.y+hero.h-0.48, w:1.08, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addText(slide, itemTitle(lead, '站端资产'), { x:hero.x+1.56, y:hero.y+hero.h-0.54, w:1.74, h:0.15, fontSize:10.2, bold:true, color:C.white, fit:'shrink' });
+    addText(slide, itemBody(lead), { x:hero.x+3.54, y:hero.y+hero.h-0.52, w:2.04, h:0.14, fontSize:7.0, color:'CBD5E1', fit:'shrink' });
+
+    const readout = { x:7.70, y:2.02, w:3.80, h:2.52 };
+    addRect(slide, readout.x, readout.y, readout.w, readout.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    addLabel(slide, 'ASSET READOUT', { x:readout.x+0.26, y:readout.y+0.28, w:1.24, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    [
+      ['01', '站端资产', '可见边界'],
+      ['02', '设备状态', '可查对象'],
+      ['03', '区域调度', '可复盘动作']
+    ].forEach((row,i)=>{
+      const y = readout.y + 0.78 + i*0.48;
+      const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
+      addNumber(slide, row[0], { x:readout.x+0.28, y:y+0.02, w:0.28, h:0.10, typeRole:'number', fontSize:7.0, color:accent });
+      addText(slide, row[1], { x:readout.x+0.78, y:y, w:0.88, h:0.13, fontSize:8.8, bold:true, color:C.white, fit:'shrink' });
+      addText(slide, row[2], { x:readout.x+2.20, y:y, w:0.90, h:0.12, fontSize:7.4, color:'A8B3C3', fit:'shrink', align:'right' });
+      addHairline(slide, readout.x+0.28, y+0.28, 3.02, '334155', 44, 0.30);
+    });
+
+    const detailSlots = [
+      { x:0.92, y:4.86, w:5.18, h:1.10, image:images[1], item:items[1], color:C.cyan, fallback:'设备细节' },
+      { x:6.34, y:4.86, w:5.16, h:1.10, image:images[2], item:items[2], color:C.violet, fallback:'区域视角' }
+    ];
+    detailSlots.forEach((slot,i)=>{
+      addRect(slide, slot.x, slot.y, slot.w, slot.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.42} });
+      if (slot.image) addPhotoPanel(slide, slot.image, slot.x+0.14, slot.y+0.14, 1.54, slot.h-0.28, { tone:'light', transparency:82, stroke:C.line, strokeTransparency:28, fit:'cover' });
+      else genericShowcaseField(slide, slot.x+0.14, slot.y+0.14, 1.54, slot.h-0.28, slot.fallback);
+      const item = slot.item || { title:slot.fallback, body:i===0 ? '检查设备状态对象。' : '进入区域化复盘。' };
+      addNumber(slide, String(i+2).padStart(2,'0'), { x:slot.x+1.96, y:slot.y+0.30, w:0.28, h:0.10, typeRole:'number', fontSize:7.0, color:slot.color });
+      addText(slide, itemTitle(item, slot.fallback), { x:slot.x+2.36, y:slot.y+0.26, w:1.18, h:0.15, fontSize:9.2, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, itemBody(item), { x:slot.x+3.70, y:slot.y+0.25, w:0.94, h:0.20, fontSize:7.4, color:C.body, fit:'shrink', breakLine:true });
+    });
+    addText(slide, s.note || '站端照片、设备细节和调度信息共同构成能源现场证据。', { x:0.94, y:6.38, w:8.9, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:'738297' });
+  }
+
+  function financePortfolioEvidenceGallery(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'PORTFOLIO EVIDENCE', 0.86, 0.72, false);
+    addText(slide, s.title || '组合项目证据图册', { x:0.84, y:1.05, w:5.9, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    const intro = s.subtitle || s.intro || s.claim || '把项目材料、经营快照和投后动作放入投委会可判断的证据语法。';
+    addText(slide, intro, { x:0.86, y:1.52, w:6.8, h:0.20, fontSize:9.4, color:C.muted, fit:'shrink' });
+    addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
+
+    const images = galleryImages(plan, s);
+    const items = (s.items || s.cards || []).map(v => typeof v === 'string' ? { title:v } : v);
+    const hero = { x:0.92, y:2.02, w:4.96, h:3.86 };
+    addRect(slide, hero.x, hero.y, hero.w, hero.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    if (images[0]) addPhotoPanel(slide, images[0], hero.x+0.20, hero.y+0.22, hero.w-0.40, 2.56, { tone:'light', transparency:100, stroke:'334155', strokeTransparency:44, fit:'cover' });
+    else genericShowcaseField(slide, hero.x+0.20, hero.y+0.22, hero.w-0.40, 2.56, 'DEAL EVIDENCE');
+    const lead = items[0] || { title:'经营快照示意', body:'用项目材料说明执行质量、风险信号和下一步配置动作。' };
+    addLabel(slide, 'PRIMARY DEAL MATERIAL', { x:hero.x+0.30, y:hero.y+3.06, w:1.58, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.7 });
+    addText(slide, itemTitle(lead, '经营快照示意'), { x:hero.x+0.30, y:hero.y+3.36, w:1.60, h:0.15, fontSize:10.0, bold:true, color:C.white, fit:'shrink' });
+    addText(slide, itemBody(lead), { x:hero.x+2.22, y:hero.y+3.32, w:2.16, h:0.18, fontSize:8.8, color:'CBD5E1', fit:'shrink' });
+
+    const smallSlots = [
+      { x:6.28, y:2.02, image:images[1], item:items[1], label:'COMMERCIAL PROOF', fallback:'产品材料示意', color:C.cyan },
+      { x:9.00, y:2.02, image:images[2], item:items[2], label:'GOVERNANCE PROOF', fallback:'治理材料示意', color:C.violet }
+    ];
+    smallSlots.forEach((slot,i)=>{
+      addRect(slide, slot.x, slot.y, 2.42, 1.74, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:16, width:0.38} });
+      if (slot.image) addPhotoPanel(slide, slot.image, slot.x+0.12, slot.y+0.12, 2.18, 1.08, { tone:'light', transparency:100, stroke:C.line, strokeTransparency:30, fit:'cover' });
+      else genericShowcaseField(slide, slot.x+0.12, slot.y+0.12, 2.18, 1.08, slot.fallback);
+      const item = slot.item || { title:slot.fallback, body:i===0 ? '判断商业化进展。' : '沉淀投后动作。' };
+      addLabel(slide, slot.label, { x:slot.x+0.18, y:slot.y+1.38, w:1.16, h:0.08, fontSize:5.4, color:slot.color, charSpace:0.5 });
+      addText(slide, itemTitle(item, slot.fallback), { x:slot.x+1.28, y:slot.y+1.32, w:0.86, h:0.13, fontSize:8.8, bold:true, color:C.text, fit:'shrink', align:'right' });
+    });
+
+    const readout = { x:6.28, y:4.26, w:5.14, h:1.62 };
+    addRect(slide, readout.x, readout.y, readout.w, readout.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    addLabel(slide, 'IC READOUT', { x:readout.x+0.28, y:readout.y+0.30, w:0.94, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    [
+      ['01', '项目质量', '能否继续配置资源'],
+      ['02', '风险信号', '是否需要处置节奏'],
+      ['03', '资本动作', '加仓、维持或退出']
+    ].forEach((row,i)=>{
+      const y = readout.y + 0.72 + i*0.34;
+      const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
+      addNumber(slide, row[0], { x:readout.x+0.30, y:y+0.02, w:0.28, h:0.09, fontSize:6.4, color:accent });
+      addText(slide, row[1], { x:readout.x+0.74, y:y, w:0.86, h:0.12, fontSize:8.8, bold:true, color:C.white, fit:'shrink' });
+      addText(slide, row[2], { x:readout.x+2.16, y:y, w:2.10, h:0.12, fontSize:8.8, color:'CBD5E1', fit:'shrink', align:'right' });
+    });
+    addText(slide, s.note || '图片材料转化为投委会判断对象，不停留在普通图册。', { x:0.94, y:6.38, w:8.9, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:'738297' });
+  }
+
+  function healthcareTouchpointEvidenceGallery(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'SERVICE TOUCHPOINTS', 0.86, 0.72, false);
+    addText(slide, s.title || '服务触点证据图册', { x:0.84, y:1.05, w:5.9, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    const intro = s.subtitle || s.intro || s.claim || '把患者旅程、前台动作、后台资源和质量证据放到同一条服务链。';
+    addText(slide, intro, { x:0.86, y:1.52, w:6.8, h:0.20, fontSize:9.4, color:C.muted, fit:'shrink' });
+    addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
+
+    const images = galleryImages(plan, s);
+    const items = (s.items || s.cards || []).map(v => typeof v === 'string' ? { title:v } : v);
+    const band = { x:0.92, y:2.04, w:10.72, h:3.96 };
+    addRect(slide, band.x, band.y, band.w, band.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.44} });
+    addLabel(slide, 'PATIENT JOURNEY READOUT', { x:band.x+0.30, y:band.y+0.28, w:1.74, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+
+    const slots = [
+      { x:1.22, title:'预约导诊', fallback:'入口体验', color:C.accent },
+      { x:4.54, title:'检查协同', fallback:'资源等待', color:C.cyan },
+      { x:7.86, title:'反馈处置', fallback:'问题闭环', color:C.violet }
+    ];
+    slots.forEach((slot,i)=>{
+      const item = items[i] || { title:slot.title, body:i===0 ? '入口体验可视化。' : (i===1 ? '资源等待可追踪。' : '问题进入闭环。') };
+      const y = 2.68;
+      addRect(slide, slot.x, y, 2.68, 2.72, 'FFFFFF', C.line, { fill:{color:'FFFFFF', transparency:0}, line:{color:i===0?slot.color:C.line, transparency:i===0?20:16, width:0.38} });
+      if (images[i]) addPhotoPanel(slide, images[i], slot.x+0.14, y+0.14, 2.40, 1.30, { tone:'light', transparency:100, stroke:C.line, strokeTransparency:28, fit:'cover' });
+      else genericShowcaseField(slide, slot.x+0.14, y+0.14, 2.40, 1.30, slot.fallback);
+      addNumber(slide, String(i+1).padStart(2,'0'), { x:slot.x+0.22, y:y+1.76, w:0.28, h:0.10, fontSize:6.4, color:slot.color });
+      addText(slide, itemTitle(item, slot.title), { x:slot.x+0.66, y:y+1.70, w:1.08, h:0.14, fontSize:8.9, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, itemBody(item), { x:slot.x+0.66, y:y+2.12, w:1.58, h:0.18, fontSize:8.8, color:C.body, fit:'shrink' });
+      if (i < slots.length - 1) addArrowLine(slide, slot.x+2.78, y+1.36, 0.34, 0, slot.color, { transparency:22, width:0.34 });
+    });
+
+    const serviceLine = { x:1.22, y:5.58, w:9.32, h:0.26 };
+    addRect(slide, serviceLine.x, serviceLine.y, serviceLine.w, serviceLine.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    addText(slide, '预约 · 到院 · 检查 · 随访 · 反馈', { x:serviceLine.x+0.28, y:serviceLine.y+0.07, w:3.40, h:0.09, fontSize:8.8, color:C.white, fit:'shrink' });
+    addText(slide, '前台体验、后台排程和质量证据需要同屏复盘。', { x:serviceLine.x+5.16, y:serviceLine.y+0.07, w:3.38, h:0.09, fontSize:8.8, color:'CBD5E1', fit:'shrink', align:'right' });
+    addText(slide, s.note || '图片承载服务情境，蓝图语言解释责任、触点和证据链。', { x:0.94, y:6.38, w:8.9, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:'738297' });
+  }
+
+  function saasPrototypeFlowGallery(slide, plan, s, idx) {
+    lightCanvas(slide);
+    sectionKicker(slide, 'PRODUCT WORKFLOW', 0.86, 0.72, false);
+    addText(slide, s.title || '产品原型工作流', { x:0.84, y:1.05, w:5.9, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
+    const intro = s.subtitle || s.intro || s.claim || 'SaaS 原型页要先说明用户工作流，再展示界面状态和采用信号。';
+    addText(slide, intro, { x:0.86, y:1.52, w:6.7, h:0.20, fontSize:9.4, color:C.muted, fit:'shrink' });
+    addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
+
+    const images = galleryImages(plan, s);
+    const items = (s.items || s.cards || []).map(v => typeof v === 'string' ? { title:v } : v);
+    const hero = { x:0.92, y:2.00, w:5.52, h:3.72 };
+    addRect(slide, hero.x, hero.y, hero.w, hero.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    if (images[0]) addPhotoPanel(slide, images[0], hero.x+0.20, hero.y+0.22, hero.w-0.40, 2.70, { tone:'light', transparency:100, stroke:'334155', strokeTransparency:44, fit:'cover' });
+    else genericShowcaseField(slide, hero.x+0.20, hero.y+0.22, hero.w-0.40, 2.70, 'PRIMARY SCREEN');
+    const lead = items[0] || { title:'核心工作台', body:'让核心对象、入口和下一步动作在同一屏成立。' };
+    addLabel(slide, 'PRIMARY SCREEN', { x:hero.x+0.30, y:hero.y+3.18, w:1.24, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addText(slide, itemTitle(lead, '核心工作台'), { x:hero.x+1.78, y:hero.y+3.12, w:1.56, h:0.15, fontSize:10.2, bold:true, color:C.white, fit:'shrink' });
+    addText(slide, itemBody(lead), { x:hero.x+3.50, y:hero.y+3.10, w:1.52, h:0.16, fontSize:7.0, color:'CBD5E1', fit:'shrink' });
+
+    const flow = { x:6.86, y:2.00, w:4.72, h:2.14 };
+    addLabel(slide, 'WORKFLOW PATH', { x:flow.x, y:flow.y+0.02, w:1.22, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    const steps = [
+      items[0] || { title:'工作台', body:'进入团队空间。' },
+      items[1] || { title:'自动化', body:'触发流程动作。' },
+      items[2] || { title:'分析视图', body:'看见价值信号。' }
+    ];
+    steps.forEach((it,i)=>{
+      const y = flow.y + 0.42 + i*0.54;
+      const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
+      addRect(slide, flow.x, y, flow.w, 0.40, panelFill(), C.line, { fill:{color:panelFill(), transparency:i===0?0:4}, line:{color:i===0?accent:C.line, transparency:i===0?18:18, width:0.38} });
+      addNumber(slide, String(i+1).padStart(2,'0'), { x:flow.x+0.18, y:y+0.13, w:0.28, h:0.09, fontSize:6.2, color:accent });
+      addText(slide, itemTitle(it, `步骤 ${i+1}`), { x:flow.x+0.64, y:y+0.10, w:1.08, h:0.12, fontSize:8.4, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, itemBody(it), { x:flow.x+2.14, y:y+0.09, w:1.70, h:0.13, fontSize:7.2, color:C.body, fit:'shrink' });
+    });
+
+    const screenSlots = [
+      { x:6.86, y:4.54, w:2.16, h:1.18, image:images[1], title:'STATE 02', color:C.cyan },
+      { x:9.42, y:4.54, w:2.16, h:1.18, image:images[2], title:'STATE 03', color:C.violet }
+    ];
+    screenSlots.forEach((slot,i)=>{
+      if (slot.image) addPhotoPanel(slide, slot.image, slot.x, slot.y, slot.w, slot.h, { tone:'light', transparency:100, stroke:C.line, strokeTransparency:24, fit:'cover' });
+      else genericShowcaseField(slide, slot.x, slot.y, slot.w, slot.h, slot.title);
+      addLabel(slide, slot.title, { x:slot.x, y:slot.y+slot.h+0.18, w:0.82, h:0.09, fontSize:5.4, color:slot.color, charSpace:0.7 });
+      addText(slide, itemTitle(steps[i+1], i===0 ? '自动化状态' : '分析状态'), { x:slot.x+0.92, y:slot.y+slot.h+0.14, w:0.98, h:0.12, fontSize:7.8, bold:true, color:C.text, fit:'shrink' });
+    });
+    addRect(slide, 0.92, 6.18, 10.66, 0.34, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:10}, line:{color:C.line, transparency:100} });
+    addText(slide, s.note || '界面、核心动作、自动化路径和采用信号放在同一条工作流里。', { x:1.14, y:6.25, w:9.78, h:0.12, fontSize:8.2, color:C.body, fit:'shrink' });
+    addText(slide, footerText(plan), { x:0.82, y:7.05, w:7.8, h:0.16, fontSize:7.8, color:C.muted });
+  }
+
   function caseGallery(slide, plan, s, idx) {
     const C = ctx.colors();
     const variant = ctx.variantOf(s, 'triptych-gallery');
-    if (variant === 'case-hero') return ctx.caseEvidenceHero(slide, plan, s, idx);
+    if (variant === 'case-hero') return caseEvidenceHero(slide, plan, s, idx);
     if (variant === 'case-comparison') return plan.industry === 'energy-utility'
-      ? ctx.energySiteComparisonSlide(slide, plan, s, idx)
-      : ctx.caseComparisonSlide(slide, plan, s, idx);
-    if (variant === 'people-proof-mosaic') return ctx.peopleProofMosaic(slide, plan, s, idx);
-    if (variant === 'sustainability-proof-spread') return ctx.sustainabilityProofSpread(slide, plan, s, idx);
-    if (variant === 'consumer-proof-photo-grid') return ctx.consumerProofPhotoGrid(slide, plan, s, idx);
-    if (variant === 'product-evidence-story') return ctx.productEvidenceStory(slide, plan, s, idx);
-    if (variant === 'executive-proof-board') return ctx.executiveProofBoard(slide, plan, s, idx);
+      ? energySiteComparisonSlide(slide, plan, s, idx)
+      : caseComparisonSlide(slide, plan, s, idx);
+    if (variant === 'people-proof-mosaic') return peopleProofMosaic(slide, plan, s, idx);
+    if (variant === 'sustainability-proof-spread') return sustainabilityProofSpread(slide, plan, s, idx);
+    if (variant === 'consumer-proof-photo-grid') return consumerProofPhotoGrid(slide, plan, s, idx);
+    if (variant === 'product-evidence-story') return productEvidenceStory(slide, plan, s, idx);
+    if (variant === 'executive-proof-board') return executiveProofBoard(slide, plan, s, idx);
     if (variant === 'brand-world-and-business-proof') return ctx.brandWorldBusinessProof(slide, plan, s, idx);
-    if (variant === 'evidence-board') return ctx.caseEvidenceBoard(slide, plan, s, idx);
-    if (variant === 'lookbook-story') return ctx.retailLookbookStory(slide, plan, s, idx);
-    if (variant === 'portfolio-evidence') return ctx.financePortfolioEvidenceGallery(slide, plan, s, idx);
-    if (variant === 'service-touchpoint') return ctx.healthcareTouchpointEvidenceGallery(slide, plan, s, idx);
-    if (variant === 'site-evidence') return ctx.energySiteEvidenceGallery(slide, plan, s, idx);
-    if (variant === 'prototype-flow') return ctx.saasPrototypeFlowGallery(slide, plan, s, idx);
+    if (variant === 'evidence-board') return caseEvidenceBoard(slide, plan, s, idx);
+    if (variant === 'lookbook-story') return retailLookbookStory(slide, plan, s, idx);
+    if (variant === 'portfolio-evidence') return financePortfolioEvidenceGallery(slide, plan, s, idx);
+    if (variant === 'service-touchpoint') return healthcareTouchpointEvidenceGallery(slide, plan, s, idx);
+    if (variant === 'site-evidence') return energySiteEvidenceGallery(slide, plan, s, idx);
+    if (variant === 'prototype-flow') return saasPrototypeFlowGallery(slide, plan, s, idx);
     ctx.lightCanvas(slide);
     ctx.sectionKicker(slide, 'CASE EVIDENCE', 0.86, 0.72, false);
     ctx.addText(slide, s.title || '案例与素材证据', { x:0.84, y:1.05, w:5.8, h:0.35, fontSize:23.5, bold:true, color:C.text, fit:'shrink' });
@@ -93,7 +926,21 @@ function createEvidenceGalleryRenderers(ctx = {}) {
   }
 
   return {
-    caseGallery
+    caseGallery,
+    caseComparisonSlide,
+    caseEvidenceBoard,
+    caseEvidenceHero,
+    consumerProofPhotoGrid,
+    energySiteComparisonSlide,
+    energySiteEvidenceGallery,
+    executiveProofBoard,
+    financePortfolioEvidenceGallery,
+    healthcareTouchpointEvidenceGallery,
+    peopleProofMosaic,
+    productEvidenceStory,
+    retailLookbookStory,
+    saasPrototypeFlowGallery,
+    sustainabilityProofSpread
   };
 }
 
