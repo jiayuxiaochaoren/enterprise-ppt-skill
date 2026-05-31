@@ -1,0 +1,25 @@
+{
+  "title": "General Renderer Family Fixture",
+  "organization": "Renderer QA",
+  "industry": "general-operations",
+  "pptType": "internal-analysis",
+  "qualityMode": "draft",
+  "slides": [
+    {
+      "type": "two-column-clean",
+      "title": "业务背景与升级诉求",
+      "leftTitle": "管理现状",
+      "left": [
+        "业务对象分散在不同表格和系统中。",
+        "管理层缺少统一的运行事实。",
+        "跨部门协同依赖人工追踪。"
+      ],
+      "rightTitle": "升级诉求",
+      "cards": [
+        { "title": "统一事实", "body": "把客户、事项和运营数据放入同一底座。" },
+        { "title": "闭环处置", "body": "让问题从发现到复盘有明确责任链。" },
+        { "title": "决策支撑", "body": "用稳定指标支撑资源配置。" }
+      ]
+    }
+  ]
+}

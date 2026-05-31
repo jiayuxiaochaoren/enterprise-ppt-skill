@@ -6,6 +6,7 @@ const chapter = require('./page-families/chapter');
 const closing = require('./page-families/closing');
 const evidenceGallery = require('./page-families/evidence-gallery');
 const financial = require('./page-families/financial');
+const general = require('./page-families/general');
 const manifesto = require('./page-families/manifesto');
 const profile = require('./page-families/profile');
 const risk = require('./page-families/risk');
@@ -21,6 +22,7 @@ const PAGE_FAMILY_MODULES = {
   [closing.family]: closing.types,
   [evidenceGallery.family]: evidenceGallery.types,
   [financial.family]: financial.types,
+  [general.family]: general.types,
   [manifesto.family]: manifesto.types,
   [profile.family]: profile.types,
   [risk.family]: risk.types,
@@ -38,7 +40,7 @@ function createSlideRenderRegistry(renderers = {}) {
     ...toc.entries(renderers),
     ...businessEntries.filter(entry => entry.types.includes('comparison')),
     ...profile.entries(renderers),
-    { types:['two-column', 'two-column-clean'], render:renderers.twoColumnClean },
+    ...general.entries(renderers),
     ...businessEntries.filter(entry => entry.types.includes('report-board')),
     { types:['cards', 'executive-blocks'], render:renderers.executiveBlocks },
     ...beauty.entries(renderers).filter(entry => entry.types.includes('product-showcase')),

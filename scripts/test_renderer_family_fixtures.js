@@ -50,6 +50,7 @@ function stableMeta(meta = {}) {
   ['toc-family.json', 'page-family:toc'],
   ['manifesto-family.json', 'page-family:manifesto'],
   ['beauty-family.json', 'page-family:beauty'],
+  ['general-family.json', 'page-family:general'],
   ['profile-family.json', 'page-family:profile'],
   ['profile-finance-family.json', 'page-family:profile'],
   ['closing-family.json', 'page-family:closing'],

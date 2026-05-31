@@ -43,6 +43,15 @@ const RENDERER_CONTEXT_CONTRACT = {
     'stageCanvas',
     'variantOf'
   ],
+  general: [
+    'addHairline',
+    'addLabel',
+    'addRect',
+    'addText',
+    'addVisualPhotoPanel',
+    'masterLight',
+    'profileFont'
+  ],
   toc: [
     'PageNumber',
     'addHairline',

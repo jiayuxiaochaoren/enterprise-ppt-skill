@@ -19,6 +19,7 @@ assert.deepEqual(missingRendererContextKeys(context, ['colors']), ['presentation
 assert.ok(RENDERER_CONTEXT_CONTRACT.closing.includes('addVisualPhotoBackdrop'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.business.includes('reportBoardNeedsRightOverlayRail'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.chapter.includes('stageCanvas'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.general.includes('masterLight'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.toc.includes('glassPanel'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.manifesto.includes('stageCanvas'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.profile.includes('EvidenceImageFrame'));
@@ -27,7 +28,7 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('renderChartSpec'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.timeline.includes('addClockwiseLoopConnectors'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('compactEvidenceCaption'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.strategy.includes('industryProfile'));
-['financial', 'beauty', 'business', 'chapter', 'toc', 'manifesto', 'profile', 'evidenceGallery', 'closing', 'architecture', 'timeline', 'risk', 'strategy'].forEach(key => {
+['financial', 'beauty', 'business', 'chapter', 'general', 'toc', 'manifesto', 'profile', 'evidenceGallery', 'closing', 'architecture', 'timeline', 'risk', 'strategy'].forEach(key => {
   assert.ok(Array.isArray(PAGE_FAMILY_MODULES[key]), `${key} page-family module boundary should be declared`);
   assert.ok(PAGE_FAMILY_MODULES[key].length > 0, `${key} page-family module should list routed types`);
 });
@@ -36,6 +37,7 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.strategy.includes('industryProfile'));
   'beauty',
   'business',
   'chapter',
+  'general',
   'toc',
   'manifesto',
   'profile',
@@ -94,6 +96,7 @@ assert.equal(registry.matchFor('company-profile-spread').source, 'page-family:pr
 assert.equal(registry.matchFor('profile-proof').source, 'page-family:profile');
 assert.equal(registry.matchFor('quote-proof').source, 'page-family:profile');
 assert.equal(registry.matchFor('product-showcase').source, 'page-family:beauty');
+assert.equal(registry.matchFor('two-column-clean').source, 'page-family:general');
 assert.equal(registry.matchFor('architecture').rendererId, 'architecture');
 assert.equal(registry.matchFor('architecture').source, 'page-family:architecture');
 assert.equal(registry.matchFor('timeline').rendererId, 'timeline');
