@@ -68,6 +68,7 @@ Use this map before opening large implementation files.
   - `closing.js`: closing family wrapper; delegates generic/adaptive closing renderers to `closing-core.js` and industry-specific endings to `closing-industry.js`.
   - `evidence-gallery.js`: evidence gallery family wrapper; delegates generic gallery implementation to `evidence-gallery-core.js` and specialized proof/industry modules.
   - `cover.js`: cover family wrapper; delegates cover implementation to `cover-core.js`.
+  - `architecture.js`: architecture family wrapper; delegates generic architecture renderers to `architecture-core.js` and specialized energy/industry modules.
   - Remaining decomposition work should target renderer equivalence fixtures and context-contract hardening before moving more families.
 - `examples/renderer-family-fixtures/**`: focused renderer family regression plans; run `scripts/test_renderer_family_fixtures.js --family <name>` or `--fixture <file>` for scoped smoke checks.
 - `scripts/components/**`: reusable chart, table, scorecard, gallery, and proof components.

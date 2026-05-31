@@ -8,8 +8,10 @@
 - Extracted closing core renderers from the closing family entry module.
 - Extracted evidence gallery core renderers from the evidence gallery family entry module.
 - Extracted cover core renderers from the cover family entry module.
+- Extracted architecture core renderers from the architecture family entry module.
 - Added focused unit coverage for the new financial scorecard and risk board renderer modules.
 - Added focused unit coverage for closing, evidence gallery, and cover core renderers.
+- Added focused unit coverage for architecture core renderers.
 - Kept deck plan schema, render-meta schema, page types, and renderer family public interfaces compatible.
 
 ## Structural Baseline
@@ -21,19 +23,21 @@
 - `scripts/render/page-families/closing.js`: 25 lines; delegates generic/adaptive closing implementation to `closing-core.js`.
 - `scripts/render/page-families/evidence-gallery.js`: 26 lines; delegates evidence gallery implementation to `evidence-gallery-core.js`.
 - `scripts/render/page-families/cover.js`: 26 lines; delegates cover implementation to `cover-core.js`.
+- `scripts/render/page-families/architecture.js`: 66 lines; delegates generic architecture implementation to `architecture-core.js` and specialized energy/industry modules.
+- `scripts/render/page-families/architecture-core.js`: 157 lines; owns generic dark, blueprint, and hub-spoke architecture renderers.
 
 ## Verification Baseline
 
-- `npm run test:unit`: 39/39 passed.
+- `npm run test:unit`: 40/40 passed.
 - `npm run test:render`: 6/6 passed.
-- `npm test`: 71/71 passed.
+- `npm test`: 72/72 passed.
 - `npm run verify:delivery`: passed with Keynote preview provider.
 
-## Remaining Optimization Plan
+## Optimization Progress
 
 ### P0: Continue Renderer Decomposition
 
-- Completed for `closing.js`, `evidence-gallery.js`, and `cover.js`.
+- Completed for `closing.js`, `evidence-gallery.js`, `cover.js`, and `architecture.js`.
 - Keep `generate_pptx.js` focused on orchestration, shared helper creation, render-meta, and compatibility routing in subsequent work.
 - For any future page-family extraction, keep the wrapper-plus-focused-test pattern.
 
@@ -46,7 +50,7 @@
 ### P1: Harden Renderer Context Contracts
 
 - Added executable context and color-token contract checks through `assertRendererContext`.
-- Core renderer factories for closing, cover, evidence gallery, risk, and financial scorecards now fail fast on missing helpers or required color tokens.
+- Core renderer factories for closing, cover, architecture, evidence gallery, risk, and financial scorecards now fail fast on missing helpers or required color tokens.
 - Public page-family APIs remain stable while internal helper contracts are auditable.
 
 ### P2: Improve Delivery Evidence

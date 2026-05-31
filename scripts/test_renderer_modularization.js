@@ -354,6 +354,8 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('renderChartSpec'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('componentRendererContext'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('variantOf'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.timeline.includes('addClockwiseLoopConnectors'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.architectureCore.includes('stageCanvas'));
+assert.ok(RENDERER_COLOR_CONTRACT.architectureCore.includes('darkMuted'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('compactEvidenceCaption'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('variantOf'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.strategy.includes('industryProfile'));
