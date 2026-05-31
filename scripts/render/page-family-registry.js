@@ -2,6 +2,7 @@ const { createRenderRegistry } = require('./registry');
 const architecture = require('./page-families/architecture');
 const beauty = require('./page-families/beauty');
 const business = require('./page-families/business');
+const chapter = require('./page-families/chapter');
 const closing = require('./page-families/closing');
 const evidenceGallery = require('./page-families/evidence-gallery');
 const financial = require('./page-families/financial');
@@ -12,6 +13,7 @@ const PAGE_FAMILY_MODULES = {
   [architecture.family]: architecture.types,
   [beauty.family]: beauty.types,
   [business.family]: business.types,
+  [chapter.family]: chapter.types,
   [closing.family]: closing.types,
   [evidenceGallery.family]: evidenceGallery.types,
   [financial.family]: financial.types,
@@ -24,7 +26,7 @@ function createSlideRenderRegistry(renderers = {}) {
   return createRenderRegistry([
     ...beauty.entries(renderers).filter(entry => entry.types.includes('cover')),
     ...closing.entries(renderers),
-    { types:['chapter-divider'], render:renderers.chapterDivider },
+    ...chapter.entries(renderers),
     { types:['toc', 'toc-clean'], render:renderers.tocClean },
     ...businessEntries.filter(entry => entry.types.includes('comparison')),
     { types:['company-profile-spread'], render:renderers.companyProfileSpread },
