@@ -11,6 +11,9 @@ const {
   createIndustryRuntime
 } = require('./design/industry-runtime');
 const {
+  createArtDirectionHelpers
+} = require('./design/art-direction');
+const {
   BASE_COLORS,
   createStyleProfileHelpers,
   paletteToColors
@@ -35,6 +38,19 @@ assert.equal(styleHelpers.resolveStyleProfile('premium-commercial-keynote').font
 assert.equal(styleHelpers.resolveStyleProfile('premium-consulting-keynote').density, 'consulting');
 assert.equal(paletteToColors({ accent:'123456', secondary:'ABCDEF' }).accent, '123456');
 assert.equal(designSystem.paletteToColors({ accent:'123456', secondary:'ABCDEF' }).cyan, 'ABCDEF');
+const artHelpers = createArtDirectionHelpers({
+  compactUnique: values => Array.from(new Set(values.filter(Boolean))),
+  contentSignals: () => ({ hasMetrics:false, isNumberHeavy:false, imageCount:0 }),
+  flattenText: value => JSON.stringify(value),
+  industryDesignDialect: () => ({ defaultPalette:'dialect-palette' }),
+  industryVisualPolicy: () => ({ defaultPalette:'policy-palette' }),
+  slideRole: () => 'content',
+  visualSystem: { semanticColorRoles: { roles: { evidence: { token:'success', carriers:['caption'] } } } }
+});
+assert.equal(artHelpers.selectPaletteName({}), 'dialect-palette');
+assert.equal(artHelpers.themeIntentFor({}, { type:'metric-comparison' }, 1, 3), 'value-signal');
+assert.equal(artHelpers.accentRoleFor({}, { type:'metric-comparison' }, 1, 3, 'value-signal'), 'data');
+assert.deepEqual(artHelpers.semanticColorRolesFor({}, 'evidence').carrierGuidance, ['caption']);
 assert.equal(copyPolicyText('__missing__', '__missing_key__', 'fallback text'), 'fallback text');
 assert.deepEqual(copyPolicyList('__missing__', '__missing_list__', ['a', 'b']), ['a', 'b']);
 assert.deepEqual(industryBenchmarksFor('__missing__'), []);
