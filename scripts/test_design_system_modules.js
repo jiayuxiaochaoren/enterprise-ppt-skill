@@ -30,6 +30,9 @@ const {
   normalizeComponentId
 } = require('./design/component-planning');
 const {
+  createCompositionPlanningHelpers
+} = require('./design/composition-planning');
+const {
   INDUSTRY_EXPRESSION_RULES,
   INDUSTRY_KNOWLEDGE_BASE,
   SEMANTIC_RELATION_PATTERNS,
@@ -75,6 +78,36 @@ assert.deepEqual(plannedComponents.map(item => item.id), ['kpi-strip']);
 assert.equal(isSystemPlannedComponent({ source:'metric-signal' }), true);
 assert.equal(isSystemPlannedComponent({ source:'explicit-plan' }), false);
 assert.equal(hasContactBlockData({ contact: { email:'hello@example.com' } }, {}), true);
+const compositionHelpers = createCompositionPlanningHelpers({
+  accentRoleFor: () => 'data',
+  backgroundToneFor: () => 'light',
+  compactUnique: values => Array.from(new Set(values.filter(Boolean))),
+  compositionNameFor: () => 'metric-comparison/value-signal',
+  contentSignals: () => ({ isDenseText:false }),
+  dialectComponentsFor: () => ['kpi-strip'],
+  imageTreatmentFor: () => ({ mode:'fit' }),
+  industryDesignDialect: () => ({ name:'test', motif:'rail', principle:'tight', primaryColorLogic:'accent' }),
+  layoutEnergyFor: () => 'steady',
+  microComponentsFor: () => ['kpi-strip'],
+  primaryColorUseFor: () => 'accent',
+  rhythmRoleFor: () => 'body',
+  rhythmTransitionFor: () => 'build',
+  semanticColorRolesFor: () => ({ token:'success' }),
+  slideDesign: () => ({ wantsImage:true }),
+  slideRole: () => 'content',
+  themeCoverageFor: () => 'medium',
+  themeIntentFor: () => 'value-signal',
+  visualDensityFor: () => 'balanced'
+});
+assert.deepEqual(
+  compositionHelpers.zonePlanFor({}, { type:'case-gallery', layoutVariant:'evidence-board' }, {}, {}),
+  { primaryZone:'evidence-grid', secondaryZone:'caption-system', proofZone:'source-note' }
+);
+const fixtureComposition = compositionHelpers.compositionPlan({}, { type:'metric-comparison' }, 0, 1, { isDenseText:false }, { id:'recipe-1', componentHints:['caption-bar'] }, { wantsImage:true });
+assert.equal(fixtureComposition.version, 'composition-plan/v1');
+assert.equal(fixtureComposition.layoutPlan.primaryZone, 'metric-readout');
+assert.deepEqual(fixtureComposition.microComponents, ['kpi-strip', 'caption-bar']);
+assert.equal(fixtureComposition.referenceRecipeId, 'recipe-1');
 const visualHelpers = createVisualMediaHelpers({
   assetDir: '/tmp/assets',
   assetRoleNeedsImage: role => /photo/.test(String(role || '')),
