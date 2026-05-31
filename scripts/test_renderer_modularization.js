@@ -21,10 +21,11 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.business.includes('reportBoardNeedsRightOver
 assert.ok(RENDERER_CONTEXT_CONTRACT.chapter.includes('stageCanvas'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.toc.includes('glassPanel'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.manifesto.includes('stageCanvas'));
+assert.ok(RENDERER_CONTEXT_CONTRACT.profile.includes('EvidenceImageFrame'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.financial.includes('renderChartSpec'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.timeline.includes('addClockwiseLoopConnectors'));
 assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('compactEvidenceCaption'));
-['financial', 'beauty', 'business', 'chapter', 'toc', 'manifesto', 'evidenceGallery', 'closing', 'architecture', 'timeline', 'risk'].forEach(key => {
+['financial', 'beauty', 'business', 'chapter', 'toc', 'manifesto', 'profile', 'evidenceGallery', 'closing', 'architecture', 'timeline', 'risk'].forEach(key => {
   assert.ok(Array.isArray(PAGE_FAMILY_MODULES[key]), `${key} page-family module boundary should be declared`);
   assert.ok(PAGE_FAMILY_MODULES[key].length > 0, `${key} page-family module should list routed types`);
 });
@@ -35,6 +36,7 @@ assert.ok(RENDERER_CONTEXT_CONTRACT.risk.includes('compactEvidenceCaption'));
   'chapter',
   'toc',
   'manifesto',
+  'profile',
   'evidence-gallery',
   'closing',
   'architecture',
@@ -85,6 +87,9 @@ assert.equal(registry.matchFor('chapter-divider').source, 'page-family:chapter')
 assert.equal(registry.matchFor('toc').source, 'page-family:toc');
 assert.equal(registry.matchFor('toc-clean').source, 'page-family:toc');
 assert.equal(registry.matchFor('manifesto').source, 'page-family:manifesto');
+assert.equal(registry.matchFor('company-profile-spread').source, 'page-family:profile');
+assert.equal(registry.matchFor('profile-proof').source, 'page-family:profile');
+assert.equal(registry.matchFor('quote-proof').source, 'page-family:profile');
 assert.equal(registry.matchFor('architecture').rendererId, 'architecture');
 assert.equal(registry.matchFor('architecture').source, 'page-family:architecture');
 assert.equal(registry.matchFor('timeline').rendererId, 'timeline');

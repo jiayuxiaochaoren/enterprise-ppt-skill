@@ -49,6 +49,8 @@ function stableMeta(meta = {}) {
   ['chapter-family.json', 'page-family:chapter'],
   ['toc-family.json', 'page-family:toc'],
   ['manifesto-family.json', 'page-family:manifesto'],
+  ['profile-family.json', 'page-family:profile'],
+  ['profile-finance-family.json', 'page-family:profile'],
   ['closing-family.json', 'page-family:closing'],
   ['architecture-family.json', 'page-family:architecture'],
   ['evidence-gallery-family.json', 'page-family:evidence-gallery'],
