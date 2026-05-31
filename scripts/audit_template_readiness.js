@@ -200,7 +200,10 @@ function buildObserved(row, context) {
 
 function summarize(matrix) {
   const recipeLibraryText = readText('assets/reference-recipe-library.json');
-  const designText = readText('scripts/design-system.js');
+  const designText = [
+    readText('scripts/design-system.js'),
+    readText('scripts/design/page-family-routing.js')
+  ].join('\n');
   const generateText = readText('scripts/generate_pptx.js');
   const orchestrationText = [
     readText('scripts/material_orchestration_prompt.js'),
@@ -213,7 +216,7 @@ function summarize(matrix) {
     readText('scripts/industry_acceptance_matrix.js')
   ].join('\n');
   const qaText = [
-    readText('scripts/design-system.js'),
+    designText,
     readText('scripts/visual_qa.js'),
     ...listFiles(path.join(ROOT, 'scripts'), file => /^test_.*\.js$/.test(path.basename(file))).map(file => fs.readFileSync(file, 'utf8'))
   ].join('\n');

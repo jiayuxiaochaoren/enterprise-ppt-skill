@@ -82,6 +82,12 @@ const cases = [
     expected:{ type:'architecture', variant:'production-topology' }
   },
   {
+    name:'explicit energy topology stays architecture',
+    plan:{ industry:'energy-utility' },
+    slide:{ type:'architecture', layoutVariant:'energy-topology', title:'能源拓扑', layers:[{ title:'设备侧', items:['逆变器'] }] },
+    expected:{ type:'architecture', variant:'energy-topology' }
+  },
+  {
     name:'service blueprint',
     plan:{ industry:'healthcare-operations' },
     slide:{ title:'患者旅程服务蓝图', serviceBlueprint:[{ title:'预约', patient:'线上预约', frontstage:'客服确认', backstage:'排班', evidence:'等待时长' }] },
