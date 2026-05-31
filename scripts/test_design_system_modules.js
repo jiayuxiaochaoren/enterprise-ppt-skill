@@ -34,6 +34,9 @@ const {
   normalizeComponentId
 } = require('./design/component-planning');
 const {
+  createComponentPlanAuditHelpers
+} = require('./design/component-plan-audit');
+const {
   createCompositionPlanningHelpers
 } = require('./design/composition-planning');
 const {
@@ -258,5 +261,21 @@ const aestheticModel = aestheticHelpers.visualAestheticModel({
   ]
 });
 assert.equal(aestheticModel.routeCounts['executive-blocks'], 1);
+
+const componentAuditHelpers = createComponentPlanAuditHelpers({
+  flattenText: value => JSON.stringify(value),
+  hasComponentCapability: id => id === 'risk-register',
+  normalizeDeckPlan: plan => plan
+});
+const componentAudit = componentAuditHelpers.componentPlanAudit({}, {
+  slides: [{
+    type:'executive-blocks',
+    componentPlan: {
+      version:'component-plan/v1',
+      components:[{ id:'risk-register', required:true }]
+    }
+  }]
+});
+assert.ok(componentAudit.findings.some(f => f.type === 'riskRegisterWithoutRows'));
 
 console.log('design system modules ok');
