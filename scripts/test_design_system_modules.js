@@ -58,6 +58,9 @@ const {
   createCompositionAuditHelpers
 } = require('./design/composition-audit');
 const {
+  createReferenceRecipeHelpers
+} = require('./design/reference-recipes');
+const {
   createNarrativeHelpers
 } = require('./design/narrative');
 const {
@@ -454,5 +457,42 @@ const compositionAuditFindings = compositionAuditHelpersForModule.compositionAud
 assert.ok(compositionAuditFindings.some(f => f.type === 'semanticColorMismatch'));
 assert.ok(compositionAuditFindings.some(f => f.type === 'weakImageTreatment'));
 assert.ok(compositionAuditFindings.some(f => f.type === 'closingLacksWeight'));
+
+const referenceRecipeHelpers = createReferenceRecipeHelpers({
+  compactUnique: values => Array.from(new Set(values.filter(Boolean))),
+  contentSignals: () => ({ hasMetrics:true, hasGallery:false, hasRisk:false, hasArchitecture:false, hasTimeline:false }),
+  flattenText: value => JSON.stringify(value),
+  highValuePageFamilies: new Set(['financial-kpi-snapshot']),
+  industryMatchIds: value => [value],
+  priorityPageFamilyRecipes: [],
+  referenceLayoutLibrary: {
+    recipes:[{
+      id:'finance-kpi',
+      layoutVariant:'financial-kpi-snapshot',
+      proofObject:'financial-kpi-snapshot',
+      renderType:'metric-comparison',
+      slideType:'metric-comparison',
+      industryFit:['finance-investment'],
+      roles:['content'],
+      signals:['financial-results'],
+      scores:{ overall:90 }
+    }]
+  },
+  referenceRecipeLibrary: { recipes:[] },
+  slideRole: () => 'content',
+  textKeywords: text => String(text).toLowerCase().split(/[^a-z0-9\u4e00-\u9fff%％+-]+/).filter(Boolean),
+  themeIntentFor: () => 'value-signal'
+});
+const referenceCandidates = referenceRecipeHelpers.referenceRecipeCandidates(
+  { industry:'finance-investment', documentType:'financial-results' },
+  { type:'metric-comparison', proofObject:'financial-kpi-snapshot', title:'Q1 financial KPI' },
+  { limit:1 }
+);
+assert.equal(referenceCandidates[0].id, 'finance-kpi');
+assert.equal(referenceRecipeHelpers.selectReferenceRecipe(
+  { industry:'finance-investment', documentType:'financial-results' },
+  { type:'metric-comparison', proofObject:'financial-kpi-snapshot', title:'Q1 financial KPI' }
+).id, 'finance-kpi');
+assert.equal(referenceRecipeHelpers.recipeCompatibleWithSlideType(referenceCandidates[0], 'metric-comparison'), true);
 
 console.log('design system modules ok');
