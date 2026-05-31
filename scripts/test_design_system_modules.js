@@ -43,6 +43,9 @@ const {
   createDeckStructureAuditHelpers
 } = require('./design/deck-structure-audit');
 const {
+  createDeckPlanAuditHelpers
+} = require('./design/deck-plan-audit');
+const {
   createEvidenceAuditHelpers
 } = require('./design/evidence-audit');
 const {
@@ -373,5 +376,35 @@ assert.equal(acceptanceAudit.status, 'review');
 assert.ok(acceptanceAudit.checks.some(check => check.id === 'layout-repetition' && check.status === 'review'));
 const commercialReady = acceptanceHelpers.commercialReadinessAudit({}, { slides:[] });
 assert.equal(commercialReady.level, 'client-review');
+
+const deckPlanAuditHelpers = createDeckPlanAuditHelpers({
+  compositionAudit: () => [],
+  contentOverlapAudit: () => [],
+  contentSignals: () => ({ imageCount:0 }),
+  flattenText: value => JSON.stringify(value),
+  hasCommercialLogicChain: () => false,
+  industryExpressionRules: { demo:{ requiredRoutes:['industry-chart'], proofObjects:['industry-chart'] } },
+  industryKnowledgeAudit: () => ({ findings:[] }),
+  normalizeDeckPlan: plan => plan,
+  productionCopyBans: [/production note/i],
+  routeKey: slide => slide.layoutVariant ? `${slide.type}:${slide.layoutVariant}` : slide.type,
+  routeMatches: (key, expected) => key === expected || key.startsWith(`${expected}:`),
+  visualAestheticModel: () => ({ findings:[] }),
+  visualIndustryId: value => value
+});
+assert.deepEqual(deckPlanAuditHelpers.visibleProductionCopyIssues('production note'), ['production note']);
+const deckPlanFindings = deckPlanAuditHelpers.auditDeckPlan({}, {
+  industry:'demo',
+  slides:[
+    { type:'cover' },
+    { type:'executive-blocks', title:'production note' },
+    { type:'executive-blocks' },
+    { type:'executive-blocks' },
+    { type:'executive-blocks' },
+    { type:'closing' }
+  ]
+});
+assert.ok(deckPlanFindings.some(f => f.type === 'industryWeakExpression'));
+assert.ok(deckPlanFindings.some(f => f.type === 'productionNoteLeak'));
 
 console.log('design system modules ok');
