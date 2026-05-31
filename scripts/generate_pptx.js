@@ -34,6 +34,11 @@ const {
   variantOf
 } = require('./render/content-helpers');
 const {
+  zone,
+  zoneBounds,
+  zonesIntersect
+} = require('./render/geometry');
+const {
   containsCjk,
   createTextRenderHelpers
 } = require('./render/text-meta');
@@ -192,23 +197,6 @@ const {
   canvasHeight: () => H
 });
 
-function zone(id, x, y, w, h, role = 'native') {
-  return { id, x:Number(x), y:Number(y), w:Number(w), h:Number(h), role };
-}
-function zoneBounds(z = {}) {
-  return {
-    x:Number(z.x || 0),
-    y:Number(z.y || 0),
-    w:Number(z.w || 0),
-    h:Number(z.h || 0)
-  };
-}
-function zonesIntersect(a = {}, b = {}, pad = 0.015) {
-  const ra = zoneBounds(a);
-  const rb = zoneBounds(b);
-  return Math.max(ra.x, rb.x) < Math.min(ra.x + ra.w, rb.x + rb.w) - pad &&
-    Math.max(ra.y, rb.y) < Math.min(ra.y + ra.h, rb.y + rb.h) - pad;
-}
 function hasEnergyCurveSemantics(s = {}) {
   if (s.loadCurve || s.loadCurveBand || s.curve || s.trend || s.monthlyTrend || s.monthlyPulse) return true;
   return /曲线|趋势|负荷|SOC|load|curve|trend|pulse/i.test(slideSemanticText(s));
@@ -785,9 +773,6 @@ function addArrowLine(slide, x, y, w, h, color=C.accent, opts={}) {
     x, y, w, h,
     line
   });
-}
-function rectCenter(rect) {
-  return { x:rect.x + rect.w / 2, y:rect.y + rect.h / 2 };
 }
 function addArrowBetweenRects(slide, from, to, direction='right', color=C.accent, opts={}) {
   const gap = opts.gap ?? 0.16;
