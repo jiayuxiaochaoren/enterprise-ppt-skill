@@ -24,6 +24,13 @@ const {
   containsCjk,
   createTextRenderHelpers
 } = require('./render/text-meta');
+const {
+  CHART_COMPONENT_IDS,
+  createOverlayContractHelpers,
+  nativeVariantSuppressesChartMeta,
+  plannedComponentsForSlide,
+  reportBoardNeedsRightOverlayRail
+} = require('./render/overlay-contract');
 
 assert.equal(typeof requirePptxGen(), 'function');
 assert.equal(stableStringify({ b:2, a:1 }), '{"a":1,"b":2}');
@@ -68,6 +75,34 @@ assert.equal(textHelpers.addText(folioSlide, '03', { x:11.7, y:0.8, fontSize:12,
 assert.equal(textHelpers.addText(folioSlide, '04', { x:11.7, y:0.8, fontSize:12, align:'right' }), false);
 assert.equal(folioSlide.added.length, 1);
 assert.equal(textRects.length, 1);
+assert.equal(CHART_COMPONENT_IDS.has('bar-chart'), true);
+assert.deepEqual(plannedComponentsForSlide({
+  componentPlan: { components:['proof-gallery', { id:'risk-register', required:false }] }
+}).map(component => component.id), ['proof-gallery', 'risk-register']);
+assert.equal(reportBoardNeedsRightOverlayRail({
+  type:'report-board',
+  componentPlan: { components:[{ id:'proof-gallery', required:true }] }
+}), true);
+assert.equal(nativeVariantSuppressesChartMeta({ layoutVariant:'product-evidence-story' }), true);
+assert.equal(nativeVariantSuppressesChartMeta({ layoutVariant:'product-evidence-story', chartSpec:{ version:'chartSpec/v1' } }), false);
+const overlayHelpers = createOverlayContractHelpers({
+  canvasWidth: () => 13.333,
+  canvasHeight: () => 7.5
+});
+const reportContract = overlayHelpers.nativeRendererContractFor({}, {
+  type:'report-board',
+  componentPlan: { components:[{ id:'proof-gallery', required:true }] }
+}, 'reportBoard');
+assert.equal(reportContract.safeOverlayZones['proof-gallery'].id, 'proof-gallery-right-rail');
+assert.equal(overlayHelpers.overlaySlotForComponent(reportContract, 'metric-strip').id, 'kpi-strip-bottom-band');
+assert.equal(overlayHelpers.componentBlockedByContract({ ownedComponents:[], safeOverlayZones:{} }, 'proof-gallery'), true);
+assert.equal(overlayHelpers.componentSlotConflicts({
+  occupiedZones:[{ x:0, y:0, w:1, h:1, role:'native' }]
+}, { x:0.2, y:0.2, w:0.2, h:0.2 }), true);
+assert.equal(overlayHelpers.overlaySlotConflicts([{ id:'a', x:0, y:0, w:1, h:1 }], { x:0.2, y:0.2, w:0.2, h:0.2 }).id, 'a');
+const energyContract = overlayHelpers.nativeRendererContractFor({ industry:'energy-utility' }, { type:'architecture' }, 'energyArchitecture');
+assert.ok(energyContract.ownedComponents.includes('load-curve-band'));
+assert.ok(energyContract.occupiedZones.some(item => item.id === 'topology-board'));
 const context = createRendererContext({ colors: () => ({ accent: '000000' }) });
 assert.equal(context.colors().accent, '000000');
 assert.ok(RENDERER_CONTEXT_CONTRACT.text.includes('addText'));
