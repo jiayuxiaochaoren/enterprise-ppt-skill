@@ -20,6 +20,10 @@ const {
   shortHash,
   stableStringify
 } = require('./render/route-metadata');
+const {
+  containsCjk,
+  createTextRenderHelpers
+} = require('./render/text-meta');
 
 assert.equal(typeof requirePptxGen(), 'function');
 assert.equal(stableStringify({ b:2, a:1 }), '{"a":1,"b":2}');
@@ -40,6 +44,30 @@ assert.deepEqual(routeSensitiveDiffs(
   changed: true,
   changes: [{ field:'layoutVariant', before:'old', after:'new' }]
 }]);
+assert.equal(containsCjk('业务增长'), true);
+const textRects = [];
+const textHelpers = createTextRenderHelpers({
+  activePlan: () => ({ industry:'general-operations' }),
+  addRect: (slide, x, y, w, h, color, lineColor, extra) => textRects.push({ x, y, w, h, color, lineColor, extra }),
+  canvasWidth: () => 13.333,
+  colors: () => ({ body:'111111', cyan:'00FFFF' }),
+  compactText: (text, max) => String(text || '').slice(0, max),
+  localizeMicrocopy: (plan, text) => text === 'KPI' ? '指标' : text,
+  normalizeTypographyOptions: (plan, text, opts) => Object.assign({}, opts),
+  profile: () => ({ font:'Fixture Font' }),
+  typeSize: (name, fallback) => fallback,
+  visualSystem: () => ({ visualQA:{ preferredBodyMin:8.8, preferredCaptionMin:7.2 } })
+});
+assert.equal(textHelpers.isPageFolioText('03', { x:11.7, y:0.8, fontSize:12, align:'right' }), true);
+const textSlide = { added:[], addText(text, opts) { this.added.push({ text, opts }); } };
+assert.equal(textHelpers.addText(textSlide, '业务增长', { x:1, y:1, w:1.2, h:0.10, fontSize:6, typeRole:'body' }), true);
+assert.equal(textSlide.added[0].opts.fontSize, 8.8);
+assert.equal(textSlide.__codexTextBoxes[0].cjkChars, 4);
+const folioSlide = { added:[], addText(text, opts) { this.added.push({ text, opts }); } };
+assert.equal(textHelpers.addText(folioSlide, '03', { x:11.7, y:0.8, fontSize:12, align:'right', marker:true }), true);
+assert.equal(textHelpers.addText(folioSlide, '04', { x:11.7, y:0.8, fontSize:12, align:'right' }), false);
+assert.equal(folioSlide.added.length, 1);
+assert.equal(textRects.length, 1);
 const context = createRendererContext({ colors: () => ({ accent: '000000' }) });
 assert.equal(context.colors().accent, '000000');
 assert.ok(RENDERER_CONTEXT_CONTRACT.text.includes('addText'));
