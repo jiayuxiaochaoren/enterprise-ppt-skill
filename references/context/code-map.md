@@ -66,7 +66,9 @@ Use this map before opening large implementation files.
   - `financial.js`: financial family wrapper; delegates investment, results, scorecard, and industry renderers.
   - `risk.js`: risk family wrapper; delegates governance/risk board renderers to `risk-boards.js`.
   - `closing.js`: closing family wrapper; delegates generic/adaptive closing renderers to `closing-core.js` and industry-specific endings to `closing-industry.js`.
-  - `evidence-gallery.js` and `cover.js`: current larger remaining page-family modules targeted for continued decomposition.
+  - `evidence-gallery.js`: evidence gallery family wrapper; delegates generic gallery implementation to `evidence-gallery-core.js` and specialized proof/industry modules.
+  - `cover.js`: cover family wrapper; delegates cover implementation to `cover-core.js`.
+  - Remaining decomposition work should target renderer equivalence fixtures and context-contract hardening before moving more families.
 - `examples/renderer-family-fixtures/**`: focused renderer family regression plans.
 - `scripts/components/**`: reusable chart, table, scorecard, gallery, and proof components.
 

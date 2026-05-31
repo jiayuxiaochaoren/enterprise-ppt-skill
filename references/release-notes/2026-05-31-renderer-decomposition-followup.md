@@ -6,8 +6,10 @@
 - Extracted financial scorecard renderers from the financial family entry module.
 - Extracted risk/governance board renderers from the risk family entry module.
 - Extracted closing core renderers from the closing family entry module.
+- Extracted evidence gallery core renderers from the evidence gallery family entry module.
+- Extracted cover core renderers from the cover family entry module.
 - Added focused unit coverage for the new financial scorecard and risk board renderer modules.
-- Added focused unit coverage for closing core renderers.
+- Added focused unit coverage for closing, evidence gallery, and cover core renderers.
 - Kept deck plan schema, render-meta schema, page types, and renderer family public interfaces compatible.
 
 ## Structural Baseline
@@ -17,23 +19,23 @@
 - `scripts/render/page-families/financial.js`: 158 lines; delegates scorecard, industry, investment, and results renderers.
 - `scripts/render/page-families/risk.js`: 23 lines; delegates risk board implementation to `risk-boards.js`.
 - `scripts/render/page-families/closing.js`: 25 lines; delegates generic/adaptive closing implementation to `closing-core.js`.
+- `scripts/render/page-families/evidence-gallery.js`: 26 lines; delegates evidence gallery implementation to `evidence-gallery-core.js`.
+- `scripts/render/page-families/cover.js`: 26 lines; delegates cover implementation to `cover-core.js`.
 
 ## Verification Baseline
 
-- `npm run test:unit`: 37/37 passed.
+- `npm run test:unit`: 39/39 passed.
 - `npm run test:render`: 6/6 passed.
-- `npm test`: 69/69 passed.
+- `npm test`: 71/71 passed.
 - `npm run verify:delivery`: passed with Keynote preview provider.
 
 ## Remaining Optimization Plan
 
 ### P0: Continue Renderer Decomposition
 
-- Split the remaining large page-family modules with the same wrapper-plus-focused-test pattern:
-  - `scripts/render/page-families/evidence-gallery.js`
-  - `scripts/render/page-families/cover.js`
-- Keep `generate_pptx.js` focused on orchestration, shared helper creation, render-meta, and compatibility routing.
-- Add one focused unit test per extracted module so family-level regressions do not rely only on fixture decks.
+- Completed for `closing.js`, `evidence-gallery.js`, and `cover.js`.
+- Keep `generate_pptx.js` focused on orchestration, shared helper creation, render-meta, and compatibility routing in subsequent work.
+- For any future page-family extraction, keep the wrapper-plus-focused-test pattern.
 
 ### P1: Strengthen Equivalence Fixtures
 
