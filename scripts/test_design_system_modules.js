@@ -55,6 +55,9 @@ const {
   createCompositionPlanningHelpers
 } = require('./design/composition-planning');
 const {
+  createCompositionAuditHelpers
+} = require('./design/composition-audit');
+const {
   createNarrativeHelpers
 } = require('./design/narrative');
 const {
@@ -406,5 +409,50 @@ const deckPlanFindings = deckPlanAuditHelpers.auditDeckPlan({}, {
 });
 assert.ok(deckPlanFindings.some(f => f.type === 'industryWeakExpression'));
 assert.ok(deckPlanFindings.some(f => f.type === 'productionNoteLeak'));
+
+const compositionAuditHelpersForModule = createCompositionAuditHelpers({
+  contentSignals: () => ({ imageCount:1 }),
+  normalizeDeckPlan: plan => plan
+});
+const compositionAuditFindings = compositionAuditHelpersForModule.compositionAudit({}, {
+  slides:[
+    {
+      type:'cover',
+      compositionPlan:{
+        version:'composition-plan/v1',
+        themeCoverage:'high',
+        backgroundTone:'dark-stage',
+        primaryColorUse:['dark-anchor'],
+        microComponents:['rhythm-anchor']
+      }
+    },
+    {
+      type:'executive-blocks',
+      compositionPlan:{
+        version:'composition-plan/v1',
+        composition:'executive-insight-board',
+        backgroundTone:'paper',
+        themeCoverage:'low',
+        themeIntent:'value-signal',
+        accentRole:'brand',
+        primaryColorUse:['accent-rail'],
+        microComponents:[]
+      }
+    },
+    {
+      type:'closing',
+      compositionPlan:{
+        version:'composition-plan/v1',
+        themeCoverage:'low',
+        backgroundTone:'paper',
+        primaryColorUse:[],
+        microComponents:[]
+      }
+    }
+  ]
+});
+assert.ok(compositionAuditFindings.some(f => f.type === 'semanticColorMismatch'));
+assert.ok(compositionAuditFindings.some(f => f.type === 'weakImageTreatment'));
+assert.ok(compositionAuditFindings.some(f => f.type === 'closingLacksWeight'));
 
 console.log('design system modules ok');
