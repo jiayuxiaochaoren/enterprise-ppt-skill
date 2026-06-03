@@ -91,7 +91,7 @@ function main() {
   const previewCapability = detectPreviewProviders();
 
   const steps = [];
-  steps.push(runStep('skill metadata', 'npm', ['run', 'validate:skill', '--silent']));
+  steps.push(runStep('skill metadata', process.execPath, ['scripts/validate_skill_metadata.js']));
   steps.push(runStep('hardening readiness', process.execPath, ['scripts/audit_hardening_readiness.js', '--json']));
   steps.push(runStep('template readiness', process.execPath, ['scripts/audit_template_readiness.js', '--json']));
   steps.push(runStep('sample generation', process.execPath, ['scripts/generate_pptx.js', samplePlan, sampleOut]));

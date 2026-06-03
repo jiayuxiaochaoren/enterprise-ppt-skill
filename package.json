@@ -78,7 +78,7 @@
     "stress:demos": "node scripts/generate_industry_stress_demos.js",
     "charts:regression": "node scripts/build_chart_regression_samples.js",
     "benchmark:beauty": "node scripts/run_beauty_chart_benchmark.js",
-    "validate:skill": "node -e \"const fs=require('fs'); const s=fs.readFileSync('SKILL.md','utf8'); if(!s.startsWith('---')) throw new Error('SKILL.md must start with frontmatter'); const end=s.indexOf('\\n---\\n',3); if(end<0) throw new Error('frontmatter close not found'); if(!/\\nname:\\s*premium-commercial-ppt/.test(s)) throw new Error('name missing'); if(!/\\ndescription:\\s+/.test(s)) throw new Error('description missing'); console.log('SKILL.md basic validation ok')\"",
+    "validate:skill": "node scripts/validate_skill_metadata.js",
     "test:fast": "node scripts/run_all_tests.js --profile fast",
     "test:slow": "node scripts/run_all_tests.js --profile slow",
     "verify:nightly": "npm test && npm run verify:delivery"
