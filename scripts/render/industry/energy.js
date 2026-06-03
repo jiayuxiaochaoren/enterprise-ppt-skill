@@ -1,3 +1,13 @@
+const {
+  createEnergyNavigationRenderers
+} = require('./energy-navigation-renderers');
+const {
+  createEnergyDeploymentRenderers
+} = require('./energy-deployment-renderers');
+const {
+  createEnergySituationRenderers
+} = require('./energy-situation-renderers');
+
 function createEnergyIndustryRenderers(ctx = {}) {
   const {
     addDarkBreathingCircle,
@@ -28,101 +38,30 @@ function createEnergyIndustryRenderers(ctx = {}) {
     });
   }
 
-  function energyToc(slide, plan, s, idx) {
-    const C = colors();
-    const W = canvasWidth();
-    stageCanvas(slide, { field:false });
-    const useImage = slideWantsImage(plan, s, 'navigation');
-    if (useImage) {
-      addVisualPhotoPanel(slide, plan, s, 'navigation', 0, 5.58, W, 1.28, { transparency:44 });
-    } else {
-      addRect(slide, 0, 5.58, W, 1.28, C.ink2, C.ink2, { fill:{color:C.ink2, transparency:28}, line:{color:C.ink2, transparency:100} });
-      if (hasEnergyCurveSemantics(s)) ctx.addPulseCurve(slide, 1.02, 5.90, 5.36, 0.36, C.cyan, true, { transparency:66, width:0.36, nodes:false });
-    }
-    addDarkBreathingCircle(slide, 10.36, 0.36, 2.48, 1.22, C.accent);
-    addLabel(slide, 'OPERATING SEQUENCE', { x:0.84, y:0.72, w:1.72, h:0.14, fontSize:7.0, color:'64748B', charSpace:1.15 });
-    addText(slide, s.title || '电站运行路径', { x:0.82, y:1.14, w:3.35, h:0.36, fontSize:24, bold:true, color:C.white });
-    addText(slide, '不是目录清单，而是一条从站点接入到区域复盘的运营路径。', { x:0.84, y:1.68, w:4.92, h:0.18, fontSize:9.0, color:'94A3B8', fit:'shrink' });
-    addText(slide, String(idx).padStart(2,'0'), { x:11.62, y:0.70, w:0.58, h:0.18, fontSize:10.5, bold:true, color:'64748B', align:'right' });
+  const {
+    energyToc
+  } = createEnergyNavigationRenderers(ctx, {
+    addEnergyFooter,
+    canvasWidth,
+    colors
+  });
 
-    addText(slide, '02', { x:0.72, y:2.12, w:1.52, h:0.58, fontSize:42, bold:true, color:'13213A', fit:'shrink' });
-    const items = (s.items || []).slice(0,5);
-    const chapterLabels = ['多站资产背景', '集中运维升级', '架构与数据流转', '试点区域推广', '价值与保障'];
-    const stages = [
-      ['01', '接入', '资产与设备'],
-      ['02', '监测', '运行与告警'],
-      ['03', '闭环', '工单与策略'],
-      ['04', '推广', '区域化运维'],
-      ['05', '复盘', '价值与保障']
-    ];
-    const startX = 1.02;
-    const y = 3.03;
-    const gap = 0.17;
-    const cardW = 2.16;
-    addHairline(slide, startX+0.18, y+1.08, 9.90, '334155', 34, 0.58);
-    stages.forEach((st,i)=>{
-      const x = startX + i*(cardW+gap);
-      const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : '94A3B8'));
-      const active = i === 0;
-      addRect(slide, x, y, cardW, 1.44, active ? C.ink : C.ink2, active ? C.accent : '334155', {
-        fill:{ color:active ? C.ink : C.ink2, transparency:active ? 4 : 36 },
-        line:{ color:active ? C.accent : '334155', transparency:active ? 24 : 62, width:0.44 }
-      });
-      slide.addShape('ellipse', { x:x+0.22, y:y+0.22, w:0.10, h:0.10, fill:{color:accent}, line:{color:accent, transparency:100} });
-      addNumber(slide, st[0], { x:x+0.42, y:y+0.17, w:0.36, h:0.10, typeRole:'number', fontSize:7.0, color:accent });
-      addText(slide, st[1], { x:x+0.22, y:y+0.54, w:0.86, h:0.18, typeRole:'cardTitle', fontSize:11.4, bold:true, color:C.white, fit:'shrink' });
-      addText(slide, st[2], { x:x+0.22, y:y+0.86, w:1.20, h:0.13, typeRole:'caption', fontSize:7.8, color:'7C8BA3', fit:'shrink' });
-      addText(slide, chapterLabels[i] || items[i] || '', { x:x+0.22, y:y+1.08, w:1.58, h:0.16, typeRole:'bodySmall', fontSize:8.8, bold:active, color:active?C.white:'CBD5E1', fit:'shrink' });
-      if (i < stages.length - 1) {
-        slide.addShape('line', { x:x+cardW+0.03, y:y+0.72, w:gap+0.10, h:0, line:{color:'334155', transparency:30, width:0.40, endArrowType:'triangle'} });
-      }
-    });
-    addLabel(slide, 'SITE · DATA · ALARM · DISPATCH · VALUE', { x:7.94, y:6.18, w:3.28, h:0.12, typeRole:'microLabel', fontSize:6.8, color:'94A3B8', charSpace:0.8, align:'right' });
-    addEnergyFooter(slide, plan, true);
-  }
+  const {
+    energySituationEditorial
+  } = createEnergySituationRenderers(ctx, {
+    addEnergyFooter,
+    canvasHeight,
+    canvasWidth,
+    colors
+  });
 
-  function energySituationEditorial(slide, plan, s, idx) {
-    const C = colors();
-    const H = canvasHeight();
-    slide.background = { color:'F7FAFD' };
-    addRect(slide, 0, 0, canvasWidth(), H, 'F7FAFD', 'F7FAFD');
-    const useImage = slideWantsImage(plan, s, 'situation');
-    if (useImage) {
-      addVisualPhotoPanel(slide, plan, s, 'situation', 0, 0, 4.82, H, { transparency:36, stroke:'334155', strokeTransparency:78 });
-    }
-    addRect(slide, 0, 0, 4.82, H, C.ink, C.ink, { fill:{color:C.ink, transparency:18}, line:{color:C.ink, transparency:100} });
-    addLabel(slide, 'SITE READOUT', { x:0.78, y:0.76, w:1.36, h:0.12, fontSize:6.8, color:'94A3B8', charSpace:1.1 });
-    addText(slide, s.title || '多站点能源资产运营背景', { x:0.76, y:1.18, w:3.18, h:0.62, typeRole:'pageTitle', fontSize:22.5, bold:true, color:C.white, fit:'shrink', breakLine:true });
-    addText(slide, s.leftTitle || '管理现状', { x:0.82, y:2.28, w:1.36, h:0.18, fontSize:10.6, bold:true, color:'CBD5E1' });
-    (s.left || []).slice(0,3).forEach((it,i)=>{
-      const y = 2.78 + i*0.78;
-      const accent = i===1 ? C.cyan : C.accent;
-      slide.addShape('ellipse', { x:0.86, y:y+0.07, w:0.07, h:0.07, fill:{color:accent}, line:{color:accent, transparency:100} });
-      addText(slide, it, { x:1.08, y, w:2.80, h:0.34, typeRole:'bodySmall', fontSize:8.8, color:'CBD5E1', fit:'shrink', breakLine:true, valign:'mid' });
-    });
-    addHairline(slide, 0.82, 5.62, 1.06, C.accent, 0, 0.65);
-    addLabel(slide, 'BESS · PV · MICROGRID', { x:0.82, y:5.92, w:2.18, h:0.12, typeRole:'microLabel', fontSize:6.8, color:'7C8BA3', charSpace:0.7 });
-
-    addLabel(slide, 'UPGRADE DEMANDS', { x:5.62, y:0.72, w:1.48, h:0.12, typeRole:'kicker', fontSize:6.8, color:C.muted, charSpace:1.0 });
-    addText(slide, s.rightTitle || '升级诉求', { x:5.58, y:1.10, w:3.0, h:0.30, fontSize:22.0, bold:true, color:C.text });
-    addText(slide, '把设备数据、运行状态和策略复盘收束成同一套管理视图。', { x:5.60, y:1.56, w:4.80, h:0.18, typeRole:'bodySmall', fontSize:8.8, color:C.muted, fit:'shrink' });
-    addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.68, w:0.72, h:0.20, fontSize:12.6, color:C.accent, align:'right' });
-
-    (s.cards || []).slice(0,3).forEach((card,i)=>{
-      const y = 2.20 + i*1.22;
-      const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
-      addRect(slide, 5.58, y, 5.86, 0.94, C.white, 'E4ECF5', { line:{color:'E4ECF5', transparency:4, width:0.54} });
-      addRect(slide, 5.58, y, 0.05, 0.94, accent, accent, { line:{color:accent, transparency:100} });
-      addText(slide, String(i+1).padStart(2,'0'), { x:5.90, y:y+0.35, w:0.34, h:0.12, typeRole:'number', fontSize:7.0, bold:true, color:accent, valign:'mid' });
-      addText(slide, card.title, { x:6.46, y:y+0.22, w:1.72, h:0.17, typeRole:'cardTitle', fontSize:12.0, bold:true, color:C.text, fit:'shrink', valign:'mid' });
-      addText(slide, card.body, { x:8.24, y:y+0.18, w:2.70, h:0.36, typeRole:'bodySmall', fontSize:8.8, color:C.body, fit:'shrink', valign:'mid' });
-    });
-
-    addRect(slide, 5.58, 6.03, 5.86, 0.42, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-    addLabel(slide, 'DESIGN PRINCIPLE', { x:5.88, y:6.16, w:1.20, h:0.12, typeRole:'microLabel', fontSize:6.8, color:C.accent, charSpace:0.7 });
-    addText(slide, '先统一运行事实，再设计调度闭环。', { x:7.22, y:6.12, w:2.72, h:0.16, typeRole:'caption', fontSize:8.4, bold:true, color:'CBD5E1', fit:'shrink' });
-    addEnergyFooter(slide, plan, false);
-  }
+  const {
+    energyDeploymentRadius
+  } = createEnergyDeploymentRenderers(ctx, {
+    addEnergyFooter,
+    canvasWidth,
+    colors
+  });
 
   function energyProblemSplit(slide, plan, s, idx) {
     const C = colors();
@@ -260,59 +199,6 @@ function createEnergyIndustryRenderers(ctx = {}) {
       breakLine:true
     });
     addEnergyFooter(slide, plan, false);
-  }
-
-  function energyDeploymentRadius(slide, plan, s, idx) {
-    const C = colors();
-    const W = canvasWidth();
-    stageCanvas(slide, { field:false });
-    const useImage = slideWantsImage(plan, s, 'timeline');
-    if (useImage) {
-      addVisualPhotoPanel(slide, plan, s, 'timeline', 0, 5.72, W, 1.00, { transparency:52 });
-    } else {
-      addRect(slide, 0, 5.72, W, 1.00, C.ink2, C.ink2, { fill:{color:C.ink2, transparency:36}, line:{color:C.ink2, transparency:100} });
-    }
-    addDarkBreathingCircle(slide, 8.42, 0.72, 4.08, 2.22, C.accent);
-    addLabel(slide, 'DEPLOYMENT RADIUS', { x:0.84, y:0.72, w:1.62, h:0.12, fontSize:6.8, color:'64748B', charSpace:1.05 });
-    addText(slide, s.title || '先选重点站点试点，再扩展区域集中运维', { x:0.82, y:1.08, w:7.20, h:0.36, fontSize:22.8, bold:true, color:C.white, fit:'shrink' });
-    addText(slide, String(idx).padStart(2,'0'), { x:11.62, y:0.70, w:0.58, h:0.18, fontSize:10.5, bold:true, color:'64748B', align:'right' });
-
-    const phases = (s.phases || []).slice(0,4);
-    const y0 = 2.10;
-    phases.forEach((phase,i)=>{
-      const y = y0 + i*0.76;
-      const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : '94A3B8'));
-      addRect(slide, 0.92, y, 5.38, 0.56, C.ink2, '334155', { fill:{color:C.ink2, transparency:i===0?18:44}, line:{color:accent, transparency:i===0?30:70, width:0.38} });
-      addNumber(slide, String(i+1).padStart(2,'0'), { x:1.18, y:y+0.20, w:0.28, h:0.10, typeRole:'number', fontSize:7.0, color:accent });
-      addText(slide, phase.title, { x:1.66, y:y+0.13, w:1.12, h:0.12, fontSize:8.8, bold:true, color:C.white, fit:'shrink' });
-      addText(slide, phase.body, { x:2.92, y:y+0.09, w:2.72, h:0.24, fontSize:8.8, color:'A8B3C3', fit:'shrink', valign:'mid' });
-    });
-
-    const panel = { x:7.05, y:1.78, w:4.72, h:3.70 };
-    addRect(slide, panel.x, panel.y, panel.w, panel.h, C.ink2, '334155', { fill:{color:C.ink2, transparency:70}, line:{color:'334155', transparency:74, width:0.36} });
-    addLabel(slide, 'PILOT TO REGION', { x:panel.x+0.34, y:panel.y+0.32, w:1.28, h:0.10, fontSize:5.8, color:'64748B', charSpace:0.8 });
-    const cx = panel.x + 2.42;
-    const cy = panel.y + 2.08;
-    [0.62,1.18,1.76].forEach((r,i)=>{
-      slide.addShape('ellipse', { x:cx-r, y:cy-r, w:r*2, h:r*2, fill:{color:C.ink, transparency:100}, line:{color:i===0?C.accent:(i===1?C.cyan:'334155'), transparency:i===0?34:62, width:i===0?0.62:0.40} });
-    });
-    slide.addShape('ellipse', { x:cx-0.10, y:cy-0.10, w:0.20, h:0.20, fill:{color:C.accent}, line:{color:C.accent, transparency:100} });
-    [
-      [cx-1.18, cy-0.42, C.cyan, '重点站点'],
-      [cx+1.32, cy-0.18, C.violet, '储能场景'],
-      [cx+0.58, cy+1.16, '94A3B8', '区域中心']
-    ].forEach(([x,y,color,label])=>{
-      slide.addShape('ellipse', { x:x-0.055, y:y-0.055, w:0.11, h:0.11, fill:{color}, line:{color, transparency:100} });
-      addText(slide, label, { x:x+0.16, y:y-0.08, w:0.82, h:0.13, fontSize:8.8, color:'A8B3C3', fit:'shrink' });
-    });
-    addText(slide, '3-5', { x:cx-0.38, y:cy-0.38, w:0.74, h:0.30, fontSize:20.0, bold:true, color:C.white, align:'center' });
-    addLabel(slide, 'PILOT SITES', { x:cx-0.46, y:cy+0.10, w:0.90, h:0.10, fontSize:5.6, color:'64748B', charSpace:0.7, align:'center' });
-
-    if (s.note) {
-      addText(slide, s.note, { x:0.92, y:5.20, w:5.70, h:0.18, fontSize:8.8, bold:true, color:'CBD5E1', fit:'shrink' });
-    }
-    addLabel(slide, 'START SMALL · PROVE LOOP · SCALE REGIONALLY', { x:7.56, y:6.18, w:3.52, h:0.10, fontSize:5.8, color:'94A3B8', charSpace:0.7, align:'right' });
-    addEnergyFooter(slide, plan, true);
   }
 
   return {

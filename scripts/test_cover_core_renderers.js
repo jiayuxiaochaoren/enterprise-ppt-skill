@@ -65,8 +65,12 @@ function createFakeCtx(ops, specRef) {
       white: 'FFFFFF'
     }),
     copyFallback: (_plan, key, fallbackText) => fallbackText || fallback[key] || key,
-    designForSlide: () => ({ wantsImage:false, imagePath:'', imageRole:'' }),
-    fileExists: () => false,
+    designForSlide: plan => ({
+      wantsImage:Boolean(plan && plan.coverImagePath),
+      imagePath:(plan && plan.coverImagePath) || '',
+      imageRole:(plan && plan.imageRole) || ''
+    }),
+    fileExists: file => Boolean(file && String(file).includes('/exists/')),
     footerText: () => 'Footer',
     genericShowcaseField: (...args) => record('genericShowcaseField', args),
     industryProfile: plan => ({
@@ -100,6 +104,129 @@ function hasOp(ops, name, value) {
   return ops.some(op => op.name === name && op.args.includes(value));
 }
 
+function assertNear(actual, expected, label) {
+  assert(Math.abs(actual - expected) < 0.001, `${label}: expected ${expected}, got ${actual}`);
+}
+
+function assertFooterShape(op, expected) {
+  const box = op.args[2] || {};
+  assertNear(box.x, 0.82, 'footer x');
+  assertNear(box.y, 7.05, 'footer y');
+  assertNear(box.w, 7.8, 'footer width');
+  assertNear(box.h, 0.16, 'footer height');
+  assertNear(box.fontSize, expected.fontSize, `footer font ${expected.fontSize}`);
+  assert.strictEqual(box.color, '64748B', `footer color ${expected.fontSize}`);
+}
+
+function assertCoverFooters(ops) {
+  const footers = ops.filter(op => op.name === 'addText' && op.args[1] === 'Footer');
+  assert.strictEqual(footers.length, 4, 'expected cover footer evidence for showcase, light, beauty, and airy branches');
+  assert.strictEqual(footers.filter(op => (op.args[2] || {}).fontSize === 7.6).length, 2, 'expected specialty cover footers');
+  [7.5, 7.4, 7.6, 7.6].forEach(fontSize => {
+    const op = footers.find(candidate => (candidate.args[2] || {}).fontSize === fontSize);
+    assert(op, `expected cover footer font size ${fontSize}`);
+    assertFooterShape(op, { fontSize });
+  });
+}
+
+function assertShowcaseStageShell(ops) {
+  const stage = ops.find(op => op.name === 'stageCanvas');
+  assert(stage, 'expected showcase cover to draw a stage shell');
+  assert.deepStrictEqual(stage.args[1], { field:false }, 'expected showcase cover stage without field overlay');
+  const circle = ops.find(op => op.name === 'addDarkBreathingCircle'
+    && op.args[1] === 8.72
+    && op.args[2] === 0.62
+    && op.args[3] === 3.72
+    && op.args[4] === 2.04);
+  assert(circle, 'expected showcase cover breathing circle geometry');
+  assert.strictEqual(circle.args[5], '2563EB', 'expected showcase cover breathing circle accent');
+}
+
+function assertSpecialtyLightCanvasShells(ops) {
+  assert.strictEqual(
+    ops.filter(op => op.name === 'lightCanvas').length,
+    2,
+    'expected two specialty cover light canvas shells'
+  );
+}
+
+function hasRect(ops, expected) {
+  return ops.some(op => op.name === 'addRect'
+    && Math.abs(op.args[1] - expected.x) < 0.001
+    && Math.abs(op.args[2] - expected.y) < 0.001
+    && Math.abs(op.args[3] - expected.w) < 0.001
+    && Math.abs(op.args[4] - expected.h) < 0.001);
+}
+
+function assertLightEditorialShell(ops) {
+  assert(hasRect(ops, { x:0, y:0, w:13.333, h:7.5 }), 'expected light editorial full background');
+  assert(hasRect(ops, { x:8.98, y:1.28, w:2.74, h:3.96 }), 'expected light editorial proof panel');
+  const circle = ops.find(op => op.name === 'addLightBreathingCircle'
+    && op.args[1] === 8.92
+    && op.args[2] === 0.62
+    && op.args[3] === 3.76
+    && op.args[4] === 'EFF6FF'
+    && op.args[5] === 34);
+  assert(circle, 'expected calm-field light editorial breathing circle');
+  [
+    ['01', { x:9.28, y:1.64, w:0.44, h:0.18, fontSize:10, color:'2563EB' }],
+    ['Proof title', { x:9.28, y:2.20, w:1.78, h:0.18, fontSize:11.2, color:'111827' }],
+    ['Industry insight', { x:9.28, y:2.80, w:1.74, h:0.52, fontSize:7.6, color:'334155' }]
+  ].forEach(([text, expected]) => {
+    const op = ops.find(candidate => {
+      if (candidate.name !== 'addText' || candidate.args[1] !== text) return false;
+      const opts = candidate.args[2] || {};
+      return Object.entries(expected).every(([key, value]) => opts[key] === value);
+    });
+    assert(op, `expected light editorial proof text ${text}`);
+  });
+}
+
+function assertTextBox(ops, text, expected) {
+  const op = ops.find(candidate => {
+    if (candidate.name !== 'addText' || candidate.args[1] !== text) return false;
+    const opts = candidate.args[2] || {};
+    return Object.entries(expected).every(([key, value]) => opts[key] === value);
+  });
+  assert(op, `expected cover text ${text}`);
+}
+
+function assertDarkStandardCoverShell(ops) {
+  assertTextBox(ops, 'Operations Platform', {
+    x:0.88, y:2.05, w:6.55, h:1.08, fontSize:31, bold:true, color:'FFFFFF', breakLine:true, fit:'shrink'
+  });
+  assertTextBox(ops, 'Industry insight', {
+    x:0.92, y:3.36, w:5.7, h:0.20, fontSize:11.5, color:'CBD5E1', fit:'shrink'
+  });
+  const accentRule = ops.find(op => op.name === 'addHairline'
+    && op.args[1] === 0.92
+    && op.args[2] === 3.78
+    && op.args[3] === 0.82
+    && op.args[4] === '2563EB');
+  assert(accentRule, 'expected standard dark cover accent rule');
+  const meta = ops.find(op => op.name === 'addDeckMeta'
+    && (op.args[2] || {}).x === 0.92
+    && (op.args[2] || {}).y === 6.30
+    && (op.args[2] || {}).fontSize === 8.2);
+  assert(meta, 'expected standard dark cover deck meta');
+}
+
+function assertEnergyCoverShell(ops) {
+  assertTextBox(ops, 'Energy Smart Platform', {
+    x:0.84, y:2.30, w:7.25, h:0.62, fontSize:33, bold:true, color:'FFFFFF', fit:'shrink', breakLine:false
+  });
+  assertTextBox(ops, 'Industry insight', {
+    x:0.88, y:3.48, w:5.85, h:0.22, fontSize:11.2, color:'CBD5E1', fit:'shrink'
+  });
+  assert(hasRect(ops, { x:0.88, y:3.92, w:0.82, h:0.035 }), 'expected energy cover accent rule');
+  assert(hasRect(ops, { x:1.82, y:3.92, w:0.34, h:0.035 }), 'expected energy cover cyan rule');
+  const meta = ops.find(op => op.name === 'addDeckMeta'
+    && (op.args[2] || {}).x === 0.88
+    && (op.args[2] || {}).y === 6.24
+    && (op.args[2] || {}).fontSize === 7.8);
+  assert(meta, 'expected energy cover deck meta');
+}
+
 function main() {
   const ops = [];
   const specRef = { current:{ coverTone:'dark', coverMotif:'editorial-rule' } };
@@ -110,6 +237,12 @@ function main() {
   assert.strictEqual(typeof integrated.coverDark, 'function');
 
   renderWith({ title:'Operations Platform', date:'2026' }, { title:'Operations Platform', subtitle:'Insight' }, specRef, direct, ops);
+  renderWith({
+    title:'Showcase Cover',
+    industry:'finance-investment',
+    visualIntent:'case-led',
+    coverImagePath:'/exists/showcase.jpg'
+  }, { title:'Showcase Cover', subtitle:'Insight' }, specRef, direct, ops);
   specRef.current = { coverTone:'light', coverMotif:'calm-field' };
   renderWith({ title:'Light Cover', date:'2026' }, { title:'Light Cover', subtitle:'Insight' }, specRef, integrated, ops);
   specRef.current = { coverTone:'dark', coverMotif:'editorial-rule' };
@@ -135,6 +268,12 @@ function main() {
   assert(hasOp(ops, 'addLabel', 'BEAUTY BRAND WORLD'), 'expected beauty cover branch');
   assert(hasOp(ops, 'addLabel', 'CONCEPT OPENING'), 'expected airy cover branch');
   assert(hasOp(ops, 'addLabel', 'MANUFACTURING PROOF'), 'expected manufacturing cover branch');
+  assertShowcaseStageShell(ops);
+  assertDarkStandardCoverShell(ops);
+  assertEnergyCoverShell(ops);
+  assertSpecialtyLightCanvasShells(ops);
+  assertLightEditorialShell(ops);
+  assertCoverFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 30, 'expected cover text output');
 
   console.log('cover core renderers ok');

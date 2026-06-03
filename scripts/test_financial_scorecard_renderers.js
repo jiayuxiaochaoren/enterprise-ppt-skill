@@ -3,6 +3,10 @@ const assert = require('assert');
 const {
   createFinancialScorecardRenderers
 } = require('./render/page-families/financial-scorecards');
+const {
+  findMetric,
+  metricPctWidth
+} = require('./render/page-families/financial-scorecard-primitives');
 
 function createSlide(ops) {
   return {
@@ -69,6 +73,138 @@ function assertKicker(ops, text) {
   );
 }
 
+function assertNear(actual, expected, label) {
+  assert(Math.abs(actual - expected) < 0.001, `${label}: expected ${expected}, got ${actual}`);
+}
+
+function assertHeaderText(ops, text, expected) {
+  const op = ops.find(candidate => candidate.name === 'addText' && candidate.args[1] === text);
+  assert(op, `expected scorecard header text ${text}`);
+  const box = op.args[2] || {};
+  assertNear(box.x, expected.x, `${text} x`);
+  assertNear(box.y, expected.y, `${text} y`);
+  assertNear(box.w, expected.w, `${text} width`);
+  assertNear(box.h, expected.h, `${text} height`);
+  assertNear(box.fontSize, expected.fontSize, `${text} font`);
+  assert.strictEqual(box.color, expected.color, `${text} color`);
+  assert.strictEqual(box.fit, 'shrink', `${text} fit`);
+  if (expected.bold != null) assert.strictEqual(box.bold, expected.bold, `${text} bold`);
+}
+
+function assertScorecardHeaders(ops) {
+  [
+    ['Manufacturing Scorecard', 'Manufacturing scorecard subtitle', { titleW:5.9, subtitleW:7.0, subtitleSize:10.2 }],
+    ['Healthcare Scorecard', 'Healthcare scorecard subtitle', { titleW:5.9, subtitleW:7.0, subtitleSize:10.0 }],
+    ['Retail Scorecard', 'Retail scorecard subtitle', { titleW:5.8, subtitleW:6.8, subtitleSize:10.0 }],
+    ['SaaS Scorecard', 'SaaS scorecard subtitle', { titleW:5.9, subtitleW:7.0, subtitleSize:10.0 }]
+  ].forEach(([title, subtitle, expected]) => {
+    assertHeaderText(ops, title, {
+      x:0.84,
+      y:1.06,
+      w:expected.titleW,
+      h:0.36,
+      fontSize:24,
+      color:'111827',
+      bold:true
+    });
+    assertHeaderText(ops, subtitle, {
+      x:0.86,
+      y:1.54,
+      w:expected.subtitleW,
+      h:0.20,
+      fontSize:expected.subtitleSize,
+      color:'64748B'
+    });
+  });
+
+  const pageNumbers = ops.filter(op => {
+    const box = op.name === 'addNumber' ? (op.args[2] || {}) : {};
+    return box.x === 11.70 && box.y === 0.66 && box.w === 0.72 && box.h === 0.22;
+  });
+  assert.strictEqual(pageNumbers.length, 4, 'expected one header page number per scorecard renderer');
+  ['01', '02', '03', '04'].forEach((label, i) => {
+    assert.strictEqual(pageNumbers[i].args[1], label, `expected scorecard page number ${label}`);
+    const box = pageNumbers[i].args[2] || {};
+    assertNear(box.fontSize, 13, `${label} page number font`);
+    assert.strictEqual(box.color, '2563EB', `${label} page number color`);
+    assert.strictEqual(box.align, 'right', `${label} page number align`);
+  });
+}
+
+function assertScorecardPrimitiveHelpers() {
+  const metrics = [
+    { label:'收入', value:'+12%' },
+    { title:'等待时长', value:'18min', note:'响应改善' }
+  ];
+  assert.strictEqual(findMetric(metrics, /响应/).title, '等待时长');
+  assert.strictEqual(findMetric(metrics, /不存在/, 0).label, '收入');
+  assert.deepStrictEqual(findMetric([], /none/), {});
+  assertNear(metricPctWidth('50%', 2), 1, 'metric pct width');
+  assertNear(metricPctWidth('not-number', 2, 0.4), 0.8, 'metric pct fallback width');
+  assertNear(metricPctWidth('300%', 2), 2, 'metric pct max clamp');
+  assertNear(metricPctWidth('1%', 2), 0.22, 'metric pct min clamp');
+}
+
+function assertRetailScorecardShell(ops) {
+  const band = ops.find(op => op.name === 'addRect'
+    && op.args[1] === 0.92
+    && op.args[2] === 2.16
+    && op.args[3] === 10.42
+    && op.args[4] === 3.62);
+  assert(band, 'expected retail scorecard band');
+  const hero = ops.find(op => op.name === 'addRect'
+    && op.args[1] === 1.18
+    && op.args[2] === 2.50
+    && op.args[3] === 2.42
+    && op.args[4] === 2.94);
+  assert(hero, 'expected retail loyalty hero panel');
+  ['LOYALTY SIGNAL', 'COHORT / PRODUCT STORY', 'BASKET', 'STORE CONVERSION'].forEach(label => {
+    assert(
+      ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `expected retail scorecard label ${label}`
+    );
+  });
+  ['复购率', '活跃会员', '满意度', '41%'].forEach(text => {
+    assert(
+      ops.some(op => op.args.includes(text)),
+      `expected retail scorecard content ${text}`
+    );
+  });
+}
+
+function assertHealthcareScorecardShell(ops) {
+  const stage = ops.find(op => op.name === 'addRect'
+    && op.args[1] === 0.92
+    && op.args[2] === 2.10
+    && op.args[3] === 10.90
+    && op.args[4] === 3.92);
+  assert(stage, 'expected healthcare service stage panel');
+  const hero = ops.find(op => op.name === 'addRect'
+    && op.args[1] === 1.22
+    && op.args[2] === 2.44
+    && op.args[3] === 2.28
+    && op.args[4] === 2.98);
+  assert(hero, 'expected healthcare primary experience hero panel');
+  const queue = ops.find(op => op.name === 'addRect'
+    && op.args[1] === 4.02
+    && op.args[2] === 4.64
+    && op.args[3] === 6.70
+    && op.args[4] === 0.62);
+  assert(queue, 'expected healthcare service queue panel');
+  ['PRIMARY EXPERIENCE', 'JOURNEY READOUT', 'WAIT', 'SATISFACTION', 'CLOSURE'].forEach(label => {
+    assert(
+      ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `expected healthcare scorecard label ${label}`
+    );
+  });
+  ['预约', '到院', '反馈', '满意度', '响应效率', '93%', '18min'].forEach(text => {
+    assert(
+      ops.some(op => op.args.includes(text)),
+      `expected healthcare scorecard content ${text}`
+    );
+  });
+}
+
 function main() {
   const ops = [];
   const slide = createSlide(ops);
@@ -81,10 +217,22 @@ function main() {
   ];
   names.forEach(name => assert.strictEqual(typeof renderers[name], 'function', `${name} should be exported`));
 
-  renderers.manufacturingOeeBoard(slide, { industry:'manufacturing-operations' }, section(), 1);
-  renderers.healthcareServiceScorecard(slide, { industry:'healthcare-operations' }, section(), 2);
-  renderers.retailMemberGrowthBoard(slide, { industry:'brand-retail' }, section(), 3);
-  renderers.saasAdoptionRevenueBoard(slide, { industry:'saas-technology' }, section(), 4);
+  renderers.manufacturingOeeBoard(slide, { industry:'manufacturing-operations' }, section({
+    title:'Manufacturing Scorecard',
+    subtitle:'Manufacturing scorecard subtitle'
+  }), 1);
+  renderers.healthcareServiceScorecard(slide, { industry:'healthcare-operations' }, section({
+    title:'Healthcare Scorecard',
+    subtitle:'Healthcare scorecard subtitle'
+  }), 2);
+  renderers.retailMemberGrowthBoard(slide, { industry:'brand-retail' }, section({
+    title:'Retail Scorecard',
+    subtitle:'Retail scorecard subtitle'
+  }), 3);
+  renderers.saasAdoptionRevenueBoard(slide, { industry:'saas-technology' }, section({
+    title:'SaaS Scorecard',
+    subtitle:'SaaS scorecard subtitle'
+  }), 4);
 
   assertKicker(ops, 'OEE / LINE READOUT');
   assertKicker(ops, 'PATIENT SERVICE SCORECARD');
@@ -92,7 +240,20 @@ function main() {
   assertKicker(ops, 'ADOPTION / REVENUE BOARD');
   assert(ops.some(op => op.name === 'addArrowLine'), 'expected flow arrows');
   assert(ops.some(op => op.name === 'addShape'), 'expected native shapes');
+  assertScorecardHeaders(ops);
+  assertScorecardPrimitiveHelpers();
+  assertHealthcareScorecardShell(ops);
+  assertRetailScorecardShell(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 50, 'expected scorecard text output');
+  const footerOps = ops.filter(op => op.name === 'addText' && op.args[1] === 'Footer');
+  assert.strictEqual(footerOps.length, 4, 'expected each scorecard renderer to use the shared footer primitive');
+  footerOps.forEach(op => {
+    assert.strictEqual(op.args[2].x, 0.82);
+    assert.strictEqual(op.args[2].y, 7.05);
+    assert.strictEqual(op.args[2].w, 7.8);
+    assert.strictEqual(op.args[2].h, 0.16);
+    assert.strictEqual(op.args[2].fontSize, 7.8);
+  });
 
   console.log('financial scorecard renderers ok');
 }

@@ -38,9 +38,10 @@ function createFakeCtx(ops) {
   };
 }
 
-function section() {
+function section(overrides = {}) {
   return {
     title: 'Financial Result',
+    subtitle: 'Financial result subtitle',
     period: 'Q1',
     metrics: [
       { label:'Revenue', value:'128m', delta:'+12%', note:'growth quality' },
@@ -52,7 +53,8 @@ function section() {
       currentState: 'Ahead of plan',
       cause: 'Better mix',
       action: 'Hold spend discipline'
-    }
+    },
+    ...overrides
   };
 }
 
@@ -61,6 +63,155 @@ function assertKicker(ops, text) {
     ops.some(op => op.name === 'sectionKicker' && op.args[1] === text),
     `expected section kicker ${text}`
   );
+}
+
+function assertNear(actual, expected, label) {
+  assert(Math.abs(actual - expected) < 0.001, `${label}: expected ${expected}, got ${actual}`);
+}
+
+function assertHeaderText(ops, text, expected) {
+  const op = ops.find(candidate => candidate.name === 'addText' && candidate.args[1] === text);
+  assert(op, `expected financial results header text ${text}`);
+  const box = op.args[2] || {};
+  assertNear(box.x, expected.x, `${text} x`);
+  assertNear(box.y, expected.y, `${text} y`);
+  assertNear(box.w, expected.w, `${text} width`);
+  assertNear(box.h, expected.h, `${text} height`);
+  assertNear(box.fontSize, expected.fontSize, `${text} font`);
+  assert.strictEqual(box.color, expected.color, `${text} color`);
+  assert.strictEqual(box.fit, 'shrink', `${text} fit`);
+  if (expected.bold != null) assert.strictEqual(box.bold, expected.bold, `${text} bold`);
+}
+
+function assertFinancialHeaders(ops) {
+  [
+    ['Portfolio Result', 'Portfolio result subtitle', { titleY:1.06, titleW:5.9, titleH:0.36, titleSize:24, subtitleY:1.54, subtitleSize:10.2 }],
+    ['KPI Snapshot Result', 'KPI snapshot subtitle', { titleY:1.05, titleW:6.2, titleH:0.34, titleSize:24, subtitleY:1.50, subtitleSize:10.0 }],
+    ['Chart Commentary Result', 'Chart commentary subtitle', { titleY:1.05, titleW:6.2, titleH:0.34, titleSize:24, subtitleY:1.50, subtitleSize:10.0 }],
+    ['Quarterly Result', 'Quarterly result subtitle', { titleY:1.05, titleW:6.5, titleH:0.34, titleSize:23.0, subtitleY:1.50, subtitleSize:10.0 }]
+  ].forEach(([title, subtitle, expected]) => {
+    assertHeaderText(ops, title, {
+      x:0.84,
+      y:expected.titleY,
+      w:expected.titleW,
+      h:expected.titleH,
+      fontSize:expected.titleSize,
+      color:'111827',
+      bold:true
+    });
+    assertHeaderText(ops, subtitle, {
+      x:0.86,
+      y:expected.subtitleY,
+      w:7.0,
+      h:0.20,
+      fontSize:expected.subtitleSize,
+      color:'64748B'
+    });
+  });
+
+  const pageNumbers = ops.filter(op => op.name === 'PageNumber');
+  assert.strictEqual(pageNumbers.length, 4, 'expected one PageNumber per financial results renderer');
+  [1, 2, 3, 4].forEach((idx, i) => {
+    assert.strictEqual(pageNumbers[i].args[1], idx, `expected financial results page number ${idx}`);
+  });
+}
+
+function assertFinancialFooters(ops) {
+  const footerOps = ops.filter(op => op.name === 'addText' && op.args[1] === 'Footer');
+  assert.strictEqual(footerOps.length, 4, 'expected one primitive footer per financial results renderer');
+  footerOps.forEach((op, i) => {
+    const box = op.args[2] || {};
+    assertNear(box.x, 0.82, `footer ${i + 1} x`);
+    assertNear(box.y, 7.05, `footer ${i + 1} y`);
+    assertNear(box.w, 7.8, `footer ${i + 1} width`);
+    assertNear(box.h, 0.16, `footer ${i + 1} height`);
+    assertNear(box.fontSize, 7.8, `footer ${i + 1} font`);
+    assert.strictEqual(box.color, '64748B', `footer ${i + 1} color`);
+  });
+}
+
+function assertChartGridShell(ops) {
+  [
+    [0.92, 2.08, 2.78, 1.58],
+    [4.02, 2.08, 2.78, 1.58],
+    [0.92, 4.18, 5.88, 1.68],
+    [7.18, 2.08, 4.34, 3.78]
+  ].forEach(([x, y, w, h]) => {
+    const op = ops.find(candidate => candidate.name === 'addRect'
+      && candidate.args[1] === x
+      && candidate.args[2] === y
+      && candidate.args[3] === w
+      && candidate.args[4] === h);
+    assert(op, `expected chart grid panel ${x}/${y}`);
+  });
+  ['CHART 01', 'CHART 02', 'CHART 03', 'COMMENTARY RAIL'].forEach(label => {
+    assert(
+      ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `expected chart grid label ${label}`
+    );
+  });
+  ['Revenue', 'Ahead of plan', 'Better mix', 'Hold spend discipline'].forEach(text => {
+    assert(
+      ops.some(op => op.args.includes(text)),
+      `expected chart grid content ${text}`
+    );
+  });
+}
+
+function assertPortfolioDashboardShell(ops) {
+  [
+    [0.92, 2.08, 3.10, 3.94],
+    [4.46, 2.10, 3.16, 3.86],
+    [8.08, 2.10, 3.64, 3.86]
+  ].forEach(([x, y, w, h]) => {
+    const op = ops.find(candidate => candidate.name === 'addRect'
+      && candidate.args[1] === x
+      && candidate.args[2] === y
+      && candidate.args[3] === w
+      && candidate.args[4] === h);
+    assert(op, `expected portfolio dashboard panel ${x}/${y}`);
+  });
+  ['PRIMARY RETURN', 'IC VIEW', 'RETURN / CASH / RISK', 'MANAGEMENT READOUT'].forEach(label => {
+    assert(
+      ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `expected portfolio dashboard label ${label}`
+    );
+  });
+  ['Revenue', '128m', '+12%', 'Cash', 'Risk', 'growth quality', 'collection', 'exposure'].forEach(text => {
+    assert(
+      ops.some(op => op.args.includes(text)),
+      `expected portfolio dashboard content ${text}`
+    );
+  });
+}
+
+function assertQuarterlyResultsShell(ops) {
+  [
+    [0.92, 2.06, 2.46, 3.86],
+    [3.82, 2.06, 4.22, 3.86],
+    [8.46, 2.06, 2.96, 3.86]
+  ].forEach(([x, y, w, h]) => {
+    const op = ops.find(candidate => candidate.name === 'addRect'
+      && candidate.args[1] === x
+      && candidate.args[2] === y
+      && candidate.args[3] === w
+      && candidate.args[4] === h);
+    assert(op, `expected quarterly results panel ${x}/${y}`);
+  });
+
+  ['REPORTING PERIOD', 'SOURCE', 'REPORTED METRICS', 'VARIANCE / ACTION'].forEach(label => {
+    assert(
+      ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `expected quarterly results label ${label}`
+    );
+  });
+
+  ['Q1', 'Ahead of plan', 'Management reporting', 'Revenue', '128m', 'growth quality', 'Better mix', 'Hold spend discipline'].forEach(text => {
+    assert(
+      ops.some(op => op.args.includes(text)),
+      `expected quarterly results content ${text}`
+    );
+  });
 }
 
 function main() {
@@ -74,17 +225,33 @@ function main() {
   ];
   names.forEach(name => assert.strictEqual(typeof renderers[name], 'function', `${name} should be exported`));
 
-  renderers.financeMetricDashboard({}, {}, section(), 1);
-  renderers.financialKpiSnapshot({}, {}, section(), 2);
-  renderers.chartGridWithCommentary({}, {}, section(), 3);
-  renderers.quarterlyResultsSummary({}, {}, section(), 4);
+  renderers.financeMetricDashboard({}, {}, section({
+    title:'Portfolio Result',
+    subtitle:'Portfolio result subtitle'
+  }), 1);
+  renderers.financialKpiSnapshot({}, {}, section({
+    title:'KPI Snapshot Result',
+    subtitle:'KPI snapshot subtitle'
+  }), 2);
+  renderers.chartGridWithCommentary({}, {}, section({
+    title:'Chart Commentary Result',
+    subtitle:'Chart commentary subtitle'
+  }), 3);
+  renderers.quarterlyResultsSummary({}, {}, section({
+    title:'Quarterly Result',
+    subtitle:'Quarterly result subtitle'
+  }), 4);
 
   assertKicker(ops, 'PORTFOLIO DASHBOARD');
   assertKicker(ops, 'FINANCIAL KPI SNAPSHOT');
   assertKicker(ops, 'CHART GRID WITH COMMENTARY');
   assertKicker(ops, 'QUARTERLY RESULTS SUMMARY');
-  assert(ops.filter(op => op.name === 'PageNumber').length >= 4, 'expected page numbering');
+  assertFinancialHeaders(ops);
+  assertPortfolioDashboardShell(ops);
+  assertChartGridShell(ops);
+  assertQuarterlyResultsShell(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 40, 'expected text output');
+  assertFinancialFooters(ops);
 
   console.log('financial results renderers ok');
 }

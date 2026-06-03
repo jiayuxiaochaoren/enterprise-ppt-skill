@@ -1,0 +1,59 @@
+function createClosingManufacturingRolloutRenderer(ctx = {}, helpers = {}) {
+  const C = ctx.colors();
+  const {
+    closingActions,
+    closingMeta,
+    drawClosingHeader,
+    drawFooter
+  } = helpers;
+  const {
+    addArrowLine,
+    addHairline,
+    addLabel,
+    addNumber,
+    addRect,
+    addText,
+    copyFallback,
+    panelFill,
+    profileFont
+  } = ctx;
+
+  return function closingManufacturingPilotRollout(slide, plan, s, idx) {
+    drawClosingHeader(slide, plan, s, idx, { kicker:'PILOT ROLLOUT', titleW:6.90, titleSize:29.0, subtitleY:2.06, subtitleW:6.40 });
+
+    const core = { x:8.36, y:0.88, w:2.98, h:5.68 };
+    addRect(slide, core.x, core.y, core.w, core.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
+    addLabel(slide, 'LINE 01', { x:core.x+0.32, y:1.28, w:0.86, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addText(slide, 'PILOT', { x:core.x+0.32, y:1.72, w:1.78, h:0.36, fontFace:profileFont('latin'), fontSize:23.5, bold:true, color:C.white, fit:'shrink' });
+    addHairline(slide, core.x+0.34, 2.66, 1.16, C.accent, 0, 0.58);
+    addText(slide, s.decision || s.note || copyFallback(plan, 'closingNote'), {
+      x:core.x+0.34, y:3.10, w:1.94, h:0.58, fontSize:8.6, bold:true, color:C.captionOnImage, fit:'shrink', breakLine:true
+    });
+    ['设备对象', '工单闭环', 'OEE复盘'].forEach((label,i)=>{
+      const y = 4.42 + i*0.42;
+      addNumber(slide, String(i+1).padStart(2,'0'), { x:core.x+0.34, y, w:0.28, h:0.09, fontSize:5.8, color:i===0?C.accent:(i===1?C.cyan:C.violet) });
+      addText(slide, label, { x:core.x+0.76, y:y-0.02, w:0.92, h:0.11, fontSize:7.2, color:'CBD5E1', fit:'shrink' });
+    });
+
+    const actions = closingActions(s);
+    const y = 4.30;
+    actions.forEach((a,i)=>{
+      const x = 0.92 + i*2.34;
+      const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
+      addRect(slide, x, y, 2.06, 1.20, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?accent:C.line, transparency:i===0?18:14, width:0.44} });
+      addRect(slide, x, y, 2.06, 0.04, accent, accent, { line:{color:accent, transparency:100} });
+      addNumber(slide, String(i+1).padStart(2,'0'), { x:x+0.22, y:y+0.36, w:0.32, h:0.10, fontSize:6.8, color:accent });
+      addText(slide, a.title || '', { x:x+0.66, y:y+0.30, w:0.90, h:0.15, fontSize:9.2, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, a.body || '', { x:x+0.22, y:y+0.72, w:1.46, h:0.16, fontSize:7.2, color:C.body, fit:'shrink' });
+      if (i < actions.length - 1) addArrowLine(slide, x+2.18, y+0.60, 0.28, 0, accent, { transparency:32, width:0.38 });
+    });
+    addRect(slide, 0.92, 3.24, 6.94, 0.32, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:8}, line:{color:C.line, transparency:100} });
+    addText(slide, copyFallback(plan, 'closingDecisionOutcome'), { x:1.14, y:3.31, w:6.46, h:0.12, fontSize:8.0, color:C.body, fit:'shrink' });
+    addText(slide, closingMeta(plan), { x:0.86, y:6.68, w:7.50, h:0.15, fontSize:7.4, color:C.muted, fit:'shrink' });
+    drawFooter(slide, plan, { x:0.86, y:6.98, w:7.80, h:0.13, fontSize:7.2, color:C.muted, fit:'shrink' });
+  };
+}
+
+module.exports = {
+  createClosingManufacturingRolloutRenderer
+};

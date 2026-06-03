@@ -97,9 +97,24 @@ function createTextRenderHelpers(deps = {}) {
     const w = Number(textOpts.w || inputOpts.w || 0);
     const h = Number(textOpts.h || inputOpts.h || 0);
     const fontSize = Number(textOpts.fontSize || inputOpts.fontSize || 0);
+    const x = Number(textOpts.x || inputOpts.x || 0);
+    const y = Number(textOpts.y || inputOpts.y || 0);
     const fitStrategy = textOpts.__finalFitStrategy || (textOpts.fit === false || textOpts.noFit === true
       ? 'none'
       : (textOpts.fit || inputOpts.fit || ''));
+    const charsPerInch = w > 0 ? Number((cjkChars / w).toFixed(2)) : 0;
+    const boxArea = w > 0 && h > 0 ? Number((w * h).toFixed(4)) : 0;
+    const areaDensity = boxArea > 0 ? Number((text.length / boxArea).toFixed(2)) : 0;
+    const qa = (currentVisualSystem().visualQA || {});
+    const preferredBodyMin = Number(qa.preferredBodyMin || 8.8);
+    const minRenderedCjkSize = Number(qa.minRenderedCjkSize || 7.2);
+    const shrink = /shrink/i.test(String(fitStrategy || ''));
+    const dense = charsPerInch > 18 || areaDensity > 95 || (h > 0 && h < 0.18 && cjkChars >= 10);
+    const failRisk = cjkChars > 0 && shrink && (fontSize < minRenderedCjkSize || areaDensity > 130 || charsPerInch > 32);
+    const reviewRisk = cjkChars > 0 && shrink && (fontSize < preferredBodyMin || dense);
+    const region = y >= 6.62
+      ? 'footer'
+      : (x >= 7.8 ? 'rightEvidence' : (y >= 1.18 && y <= 6.7 ? 'mainBody' : 'chrome'));
     slide.__codexTextBoxes = slide.__codexTextBoxes || [];
     slide.__codexTextBoxes.push({
       role: role || textOpts.__typeRole || inputOpts.typeRole || inputOpts.textRole || '',
@@ -108,14 +123,21 @@ function createTextRenderHelpers(deps = {}) {
       fitStrategy: fitStrategy ? String(fitStrategy) : '',
       textLength: text.length,
       cjkChars,
+      region,
+      boxArea,
       box: {
-        x: Number(textOpts.x || inputOpts.x || 0),
-        y: Number(textOpts.y || inputOpts.y || 0),
+        x,
+        y,
         w,
         h
       },
-      charsPerInch: w > 0 ? Number((cjkChars / w).toFixed(2)) : 0,
-      areaDensity: w > 0 && h > 0 ? Number((text.length / (w * h)).toFixed(2)) : 0,
+      charsPerInch,
+      areaDensity,
+      shrinkRisk: Boolean(failRisk || reviewRisk),
+      readabilityRiskLevel: failRisk ? 'fail' : (reviewRisk ? 'review' : ''),
+      readabilityRiskReason: failRisk || reviewRisk
+        ? 'shrink fit with dense or undersized CJK text'
+        : '',
       sample: typeof compactText === 'function' ? compactText(text, 64) : text.slice(0, 64)
     });
   }

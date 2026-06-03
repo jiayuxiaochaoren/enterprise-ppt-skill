@@ -1,4 +1,5 @@
 const path = require('path');
+const { enrichAssetDecision } = require('./asset-decision-meta');
 
 function createRenderMetaHelpers(deps = {}) {
   const {
@@ -52,38 +53,60 @@ function createRenderMetaHelpers(deps = {}) {
     let mode = 'none';
     if (status === 'blocked') mode = 'blocked';
     else if (refs.length) mode = 'bound';
+    else if (status === 'none') mode = 'structure-only';
     else if (s.generatedAssetPrompt) mode = 'pending-generation';
     else if (status === 'required' || generation.mustBind) mode = 'needs-generation';
     else if (status === 'optional') mode = 'optional-generation';
-    else if (status === 'none') mode = 'structure-only';
     const proofEligibility = [...new Set(provenance.map(item => item.proofEligibility || '').filter(Boolean))];
     const provenanceClasses = [...new Set(provenance.map(item => item.provenanceClass || item.provenance || '').filter(Boolean))];
     const authorizationStatuses = [...new Set([
       trace.assetAuthorizationStatus,
       ...provenance.map(item => item.authorizationStatus)
     ].filter(Boolean))];
+    const enriched = enrichAssetDecision({ generation, provenance, refs, role, slide:s, status, mode, trace });
+    const proofEligibilityValues = enriched.action === 'skip_image' && !refs.length
+      ? [enriched.proofEligibilitySummary || 'none']
+      : proofEligibility.length
+      ? proofEligibility
+      : [enriched.proofEligibilitySummary || 'none'].filter(Boolean);
+    const provenanceClass = enriched.provenanceClass || provenanceClasses[0] || 'none';
+    const reason = generation.reason ||
+      (enriched.action === 'skip_image' ? 'image skipped by asset decision' : '') ||
+      (refs.length ? 'asset bound from slide media' : '') ||
+      (s.generatedAssetPrompt ? 'generated asset prompt pending binding' : '') ||
+      (status === 'blocked' ? 'asset generation blocked for proof safety' : '') ||
+      'no image required for resolved slide route';
     return {
       version: 'asset-decision/v1',
       status,
       mode,
+      action: enriched.action,
       role,
+      originalRole: enriched.originalRole || role || 'none',
+      resolvedRole: enriched.resolvedRole || role || 'none',
       visualMode: (s.visual && s.visual.mode) || s.visualMode || '',
       mustBind: generation.mustBind === true,
       syntheticOnly: generation.syntheticOnly === true,
       staleForRoute: generation.staleForRoute === true,
-      reason: generation.reason || '',
+      riskLevel: enriched.riskLevel,
+      reason,
+      source: enriched.source,
       generatedAssetPrompt: Boolean(s.generatedAssetPrompt),
       generatedAssetPromptHash: s.generatedAssetPrompt ? hash(String(s.generatedAssetPrompt)) : '',
       boundAssetCount: refs.length,
       boundAssetRefs: refs,
       hasBoundAsset: refs.length > 0,
       authorizationStatus: authorizationStatuses[0] || '',
+      provenanceClass,
       provenanceClasses,
-      proofEligibility,
+      proofEligibility: proofEligibilityValues,
+      proofEligibilitySummary: enriched.proofEligibilitySummary || proofEligibilityValues[0] || 'none',
       imageProvenanceCount: provenance.length,
-      proofUse: proofEligibility.includes('factual-proof')
+      skippedCriticalVisual: enriched.skippedCriticalVisual,
+      reviewRequired: enriched.reviewRequired,
+      proofUse: proofEligibilityValues.includes('factual-proof')
         ? 'factual-proof'
-        : (proofEligibility.includes('synthetic-only') || generation.syntheticOnly ? 'synthetic-only' : '')
+        : (proofEligibilityValues.includes('synthetic-only') || generation.syntheticOnly ? 'synthetic-only' : '')
     };
   }
 

@@ -35,14 +35,43 @@ const {
   reportBoardNeedsRightOverlayRail
 } = require('./render/overlay-contract');
 const {
+  plannedComponentsForSlide: plannedComponentsForSlideDirect,
+  reportBoardNeedsRightOverlayRail: reportBoardNeedsRightOverlayRailDirect
+} = require('./render/overlay-component-planning');
+const {
+  createNativeComponentIdHelpers,
+  energyNativeOwnedComponentIds: energyNativeOwnedComponentIdsDirect,
+  isEnergyNativeRenderer: isEnergyNativeRendererDirect,
+  nativeOwnedComponentIdsFor: nativeOwnedComponentIdsForDirect,
+  nativeVariantSuppressesChartMeta: nativeVariantSuppressesChartMetaDirect
+} = require('./render/overlay-native-ownership');
+const {
   createRenderMetaHelpers
 } = require('./render/render-meta');
 const {
   createOverlayRenderer
 } = require('./render/overlay-renderer');
 const {
+  createOverlayComponentRenderer
+} = require('./render/overlay-component-renderer');
+const {
+  createOverlayRenderGuardHelpers
+} = require('./render/overlay-renderer-guards');
+const {
+  createOverlayNativeEvidence
+} = require('./render/overlay-native-evidence');
+const {
   createEnergyIndustryRenderers
 } = require('./render/industry/energy');
+const {
+  createEnergyDeploymentRenderers
+} = require('./render/industry/energy-deployment-renderers');
+const {
+  createEnergyNavigationRenderers
+} = require('./render/industry/energy-navigation-renderers');
+const {
+  createEnergySituationRenderers
+} = require('./render/industry/energy-situation-renderers');
 const {
   createCoverRenderers
 } = require('./render/page-families/cover');
@@ -85,6 +114,20 @@ const textSlide = { added:[], addText(text, opts) { this.added.push({ text, opts
 assert.equal(textHelpers.addText(textSlide, '业务增长', { x:1, y:1, w:1.2, h:0.10, fontSize:6, typeRole:'body' }), true);
 assert.equal(textSlide.added[0].opts.fontSize, 8.8);
 assert.equal(textSlide.__codexTextBoxes[0].cjkChars, 4);
+assert.equal(textSlide.__codexTextBoxes[0].region, 'chrome');
+assert.equal(textSlide.__codexTextBoxes[0].shrinkRisk, false);
+const riskTextSlide = { added:[], addText(text, opts) { this.added.push({ text, opts }); } };
+textHelpers.recordTextBoxMeta(
+  riskTextSlide,
+  '这是一段会被压缩到不可读的小字号中文正文，需要被元数据记录为风险。',
+  '这是一段会被压缩到不可读的小字号中文正文，需要被元数据记录为风险。',
+  { x:1.2, y:2.0, w:1.05, h:0.12, fontSize:7.4, fit:'shrink', typeRole:'body' },
+  { x:1.2, y:2.0, w:1.05, h:0.12, fontSize:7.4, fit:'shrink', __finalFitStrategy:'shrink' },
+  'body'
+);
+assert.equal(riskTextSlide.__codexTextBoxes[0].region, 'mainBody');
+assert.equal(riskTextSlide.__codexTextBoxes[0].shrinkRisk, true);
+assert.equal(riskTextSlide.__codexTextBoxes[0].readabilityRiskLevel, 'fail');
 const folioSlide = { added:[], addText(text, opts) { this.added.push({ text, opts }); } };
 assert.equal(textHelpers.addText(folioSlide, '03', { x:11.7, y:0.8, fontSize:12, align:'right', marker:true }), true);
 assert.equal(textHelpers.addText(folioSlide, '04', { x:11.7, y:0.8, fontSize:12, align:'right' }), false);
@@ -94,12 +137,34 @@ assert.equal(CHART_COMPONENT_IDS.has('bar-chart'), true);
 assert.deepEqual(plannedComponentsForSlide({
   componentPlan: { components:['proof-gallery', { id:'risk-register', required:false }] }
 }).map(component => component.id), ['proof-gallery', 'risk-register']);
+assert.deepEqual(plannedComponentsForSlide({
+  componentPlan: { components:['gallery-grid', { id:'hero-kpis', required:false }] }
+}).map(component => component.id), ['proof-gallery', 'kpi-strip']);
+assert.deepEqual(plannedComponentsForSlideDirect({
+  componentPlan: { components:['gallery-grid', { id:'hero-kpis', required:false }] }
+}).map(component => component.id), ['proof-gallery', 'kpi-strip']);
 assert.equal(reportBoardNeedsRightOverlayRail({
   type:'report-board',
-  componentPlan: { components:[{ id:'proof-gallery', required:true }] }
+  componentPlan: { components:[{ id:'gallery-grid', required:true }] }
 }), true);
+assert.equal(reportBoardNeedsRightOverlayRailDirect({
+  type:'report-board',
+  componentPlan: { components:[{ id:'gallery-grid', required:true }] }
+}), true);
+assert.equal(reportBoardNeedsRightOverlayRailDirect({
+  type:'report-board',
+  componentPlan: { components:[{ id:'gallery-grid', required:false }] }
+}), false);
 assert.equal(nativeVariantSuppressesChartMeta({ layoutVariant:'product-evidence-story' }), true);
 assert.equal(nativeVariantSuppressesChartMeta({ layoutVariant:'product-evidence-story', chartSpec:{ version:'chartSpec/v1' } }), false);
+assert.equal(nativeVariantSuppressesChartMetaDirect({ layoutVariant:'product-evidence-story' }), nativeVariantSuppressesChartMeta({ layoutVariant:'product-evidence-story' }));
+assert.equal(isEnergyNativeRendererDirect({ industry:'energy-utility' }, 'energyArchitecture'), true);
+assert.equal(energyNativeOwnedComponentIdsDirect().has('load-curve-band'), true);
+assert.equal(nativeOwnedComponentIdsForDirect('closing', '').has('value-chain'), true);
+const nativeComponentIdHelpers = createNativeComponentIdHelpers({ chartComponentIds: CHART_COMPONENT_IDS });
+assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'metric-comparison' }).has('bar-chart'), true);
+assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'product-showcase' }).has('product-matrix'), true);
+assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'closing' }).has('decision-panel'), true);
 const overlayHelpers = createOverlayContractHelpers({
   canvasWidth: () => 13.333,
   canvasHeight: () => 7.5
@@ -115,11 +180,45 @@ assert.equal(overlayHelpers.componentSlotConflicts({
   occupiedZones:[{ x:0, y:0, w:1, h:1, role:'native' }]
 }, { x:0.2, y:0.2, w:0.2, h:0.2 }), true);
 assert.equal(overlayHelpers.overlaySlotConflicts([{ id:'a', x:0, y:0, w:1, h:1 }], { x:0.2, y:0.2, w:0.2, h:0.2 }).id, 'a');
+const overlayGuardHelpers = createOverlayRenderGuardHelpers({
+  overlaySlotForComponent: overlayHelpers.overlaySlotForComponent,
+  componentBlockedByContract: overlayHelpers.componentBlockedByContract,
+  componentSlotConflicts: overlayHelpers.componentSlotConflicts,
+  overlaySlotConflicts: overlayHelpers.overlaySlotConflicts
+});
+assert.equal(
+  overlayGuardHelpers.guardOverlayRender('proof-gallery', new Set(), { ownedComponents:[], safeOverlayZones:{}, occupiedZones:[] }, []).blocked.mode,
+  'blocked-unsafe-overlay'
+);
+assert.equal(
+  overlayGuardHelpers.guardOverlayRender('proof-gallery', new Set(), {
+    ownedComponents:[],
+    occupiedZones:[{ id:'native', x:0, y:0, w:1, h:1, role:'native' }],
+    safeOverlayZones:{ 'proof-gallery':{ id:'slot', x:0.2, y:0.2, w:0.2, h:0.2, role:'safe-overlay' } }
+  }, []).blocked.mode,
+  'blocked-native-zone-conflict'
+);
+assert.equal(
+  overlayGuardHelpers.guardOverlayRender('proof-gallery', new Set(), {
+    ownedComponents:[],
+    occupiedZones:[],
+    safeOverlayZones:{ 'proof-gallery':{ id:'slot', x:0.2, y:0.2, w:0.2, h:0.2, role:'safe-overlay' } }
+  }, [{ id:'existing', x:0, y:0, w:1, h:1 }]).blocked.mode,
+  'blocked-overlay-zone-conflict'
+);
+assert.equal(
+  overlayGuardHelpers.guardOverlayRender('proof-gallery', new Set(['proof-gallery']), {
+    ownedComponents:['proof-gallery'],
+    occupiedZones:[{ id:'native', x:0, y:0, w:1, h:1, role:'native' }],
+    safeOverlayZones:{ 'proof-gallery':{ id:'slot', x:0.2, y:0.2, w:0.2, h:0.2, role:'safe-overlay' } }
+  }, [{ id:'existing', x:0, y:0, w:1, h:1 }]).blocked,
+  null
+);
 const energyContract = overlayHelpers.nativeRendererContractFor({ industry:'energy-utility' }, { type:'architecture' }, 'energyArchitecture');
 assert.ok(energyContract.ownedComponents.includes('load-curve-band'));
 assert.ok(energyContract.occupiedZones.some(item => item.id === 'topology-board'));
 const overlayRendererCalls = [];
-const overlayRenderer = createOverlayRenderer({
+const overlayRendererDeps = {
   chartComponentIds: new Set(['bar-chart']),
   colors: () => ({
     accent:'0066FF',
@@ -163,7 +262,8 @@ const overlayRenderer = createOverlayRenderer({
   zone: (id, x, y, w, h, role = 'native') => ({ id, x, y, w, h, role }),
   canvasWidth: () => 13.333,
   canvasHeight: () => 7.5
-});
+};
+const overlayRenderer = createOverlayRenderer(overlayRendererDeps);
 assert.equal(overlayRenderer.componentSourceNoteText({}, { source_note:'Source A' }), 'Source A');
 assert.equal(overlayRenderer.overlayMetricsForSlide({}, { title:'Revenue +12% YoY' })[0].value, '+12%');
 assert.deepEqual(overlayRenderer.overlayPointsForSlide({ phases:[{ title:'A' }, { title:'B' }] }).map(item => item.title), ['A', 'B']);
@@ -178,6 +278,23 @@ const kpiOverlay = overlayRenderer.renderOverlayComponent({}, {}, { metrics:[{ l
 assert.equal(kpiOverlay.rendered, true);
 assert.equal(kpiOverlay.mode, 'overlay');
 assert.equal(kpiOverlay.itemCount, 1);
+const directOverlayComponentRenderer = createOverlayComponentRenderer(Object.assign({}, overlayRendererDeps, {
+  nativeRendererModule: 'fixture/native',
+  componentSourceNoteText: overlayRenderer.componentSourceNoteText,
+  overlayMetricsForSlide: overlayRenderer.overlayMetricsForSlide,
+  overlayPointsForSlide: overlayRenderer.overlayPointsForSlide,
+  overlayProofItemsForSlide: overlayRenderer.overlayProofItemsForSlide,
+  guardOverlayRender: overlayGuardHelpers.guardOverlayRender,
+  nativeDrawnEvidenceFor: overlayRenderer.nativeDrawnEvidenceFor
+}));
+const directKpiOverlay = directOverlayComponentRenderer.renderOverlayComponent({}, {}, { metrics:[{ label:'ARR', value:'42%' }] }, 1, 'metric-strip', new Set(), {
+  ownedComponents:[],
+  occupiedZones:[],
+  safeOverlayZones:{ 'metric-strip':{ id:'metric-strip-bottom-band', x:1, y:6, w:4, h:0.5, role:'safe-overlay' } }
+}, []);
+assert.equal(directKpiOverlay.rendered, true);
+assert.equal(directKpiOverlay.mode, 'overlay');
+assert.equal(directKpiOverlay.itemCount, kpiOverlay.itemCount);
 const chartSlideFixture = {};
 const chartOverlay = overlayRenderer.renderOverlayComponent(chartSlideFixture, { slides:[{}] }, { chartSpec:{ kind:'bar' } }, 1, 'bar-chart', new Set(), {
   ownedComponents:[],
@@ -193,6 +310,30 @@ const nativeEvidence = overlayRenderer.renderOverlayComponent({}, {}, { type:'ar
 }, []);
 assert.equal(nativeEvidence.mode, 'native-renderer');
 assert.equal(nativeEvidence.rendererModule, 'fixture/native');
+const nativeEvidenceHelpers = createOverlayNativeEvidence({
+  chartComponentIds: new Set(['bar-chart']),
+  nativeRendererModule: 'fixture/native-helper',
+  canvasWidth: () => 13.333,
+  canvasHeight: () => 7.5,
+  zone: (id, x, y, w, h, role = 'native') => ({ id, x, y, w, h, role }),
+  slideHasChartSpecIntent: slide => Boolean(slide.chartSpec),
+  componentSourceNoteText: () => 'Source A'
+});
+assert.equal(
+  nativeEvidenceHelpers.evidenceZone({ occupiedZones:[{ id:'stage-native', x:0, y:0, w:13.333, h:7.5, role:'native' }] }, [/stage/]).id,
+  'stage-native'
+);
+const chartNativeEvidence = nativeEvidenceHelpers.nativeDrawnEvidenceFor({}, {
+  type:'metric-comparison',
+  chartSpec:{ kind:'bar' },
+  metrics:[{ label:'ARR', value:'42%' }]
+}, 'bar-chart', {
+  occupiedZones:[{ id:'chart-board', x:4, y:2, w:7, h:3, role:'native chart' }]
+}, {});
+assert.equal(chartNativeEvidence.rendererMethod, 'nativeDrawnEvidenceFor');
+assert.equal(chartNativeEvidence.nativeSlot, 'chart-board');
+assert.equal(chartNativeEvidence.drawnCount, 1);
+assert.equal(chartNativeEvidence.rendererModule, 'fixture/native-helper');
 const energyCalls = [];
 const energyCtx = {
   colors: () => ({
@@ -236,10 +377,80 @@ const energyRenderers = createEnergyIndustryRenderers(energyCtx);
   'energyToc',
   'energyValueSignal'
 ].forEach(name => assert.equal(typeof energyRenderers[name], 'function', `${name} should be exported by energy industry renderers`));
+const deploymentSlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };
+energyRenderers.energyDeploymentRadius(deploymentSlide, {}, {
+  title:'区域推广',
+  phases:[
+    { title:'试点', body:'选择重点站点' },
+    { title:'闭环', body:'验证告警处置' }
+  ],
+  note:'先验证再扩展'
+}, 5);
+assert.ok(energyCalls.some(([kind, args]) => kind === 'label' && args[1] === 'DEPLOYMENT RADIUS'));
+assert.ok(deploymentSlide.shapes.some(shape => shape.type === 'ellipse'));
+let directDeploymentFooterDark = null;
+const directDeployment = createEnergyDeploymentRenderers(energyCtx, {
+  addEnergyFooter: (_slide, _plan, dark) => {
+    directDeploymentFooterDark = dark;
+  }
+});
+const directDeploymentSlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };
+const deploymentLabelBefore = energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === 'DEPLOYMENT RADIUS').length;
+directDeployment.energyDeploymentRadius(directDeploymentSlide, {}, {
+  phases:[{ title:'试点', body:'选择重点站点' }]
+}, 6);
+assert.equal(directDeploymentFooterDark, true);
+assert.ok(
+  energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === 'DEPLOYMENT RADIUS').length > deploymentLabelBefore
+);
+assert.ok(directDeploymentSlide.shapes.some(shape => shape.type === 'ellipse'));
 const energySlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };
 energyRenderers.energyToc(energySlide, {}, { title:'运行路径', items:['A', 'B'] }, 2);
 assert.ok(energyCalls.some(([kind, args]) => kind === 'label' && args[1] === 'OPERATING SEQUENCE'));
 assert.ok(energySlide.shapes.length > 0);
+let directNavigationFooterDark = null;
+const directNavigation = createEnergyNavigationRenderers(energyCtx, {
+  addEnergyFooter: (_slide, _plan, dark) => {
+    directNavigationFooterDark = dark;
+  }
+});
+const directEnergySlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };
+const directLabelCountBefore = energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === 'OPERATING SEQUENCE').length;
+directNavigation.energyToc(directEnergySlide, {}, { title:'运行路径', items:['A', 'B'] }, 2);
+assert.equal(directNavigationFooterDark, true);
+assert.ok(
+  energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === 'OPERATING SEQUENCE').length > directLabelCountBefore
+);
+assert.ok(directEnergySlide.shapes.length > 0);
+const situationSlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };
+energyRenderers.energySituationEditorial(situationSlide, {}, {
+  title:'站点现状',
+  left:['A', 'B'],
+  cards:[
+    { title:'设备', body:'统一接入' },
+    { title:'告警', body:'闭环处置' }
+  ]
+}, 3);
+assert.ok(energyCalls.some(([kind, args]) => kind === 'label' && args[1] === 'SITE READOUT'));
+assert.equal(situationSlide.background.color, 'F7FAFD');
+let directSituationFooterDark = null;
+const directSituation = createEnergySituationRenderers(energyCtx, {
+  addEnergyFooter: (_slide, _plan, dark) => {
+    directSituationFooterDark = dark;
+  }
+});
+const directSituationSlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };
+const siteReadoutBefore = energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === 'SITE READOUT').length;
+directSituation.energySituationEditorial(directSituationSlide, {}, {
+  title:'站点现状',
+  left:['A'],
+  cards:[{ title:'设备', body:'统一接入' }]
+}, 4);
+assert.equal(directSituationFooterDark, false);
+assert.equal(directSituationSlide.background.color, 'F7FAFD');
+assert.ok(
+  energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === 'SITE READOUT').length > siteReadoutBefore
+);
 const coverCalls = [];
 const coverCtx = {
   colors: () => ({

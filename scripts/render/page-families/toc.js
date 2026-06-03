@@ -1,19 +1,21 @@
 const family = 'toc';
+const {
+  createPageFamilyPrimitives
+} = require('./primitives');
 
 const types = ['toc', 'toc-clean'];
 
 function createTocRenderers(ctx = {}) {
   const C = ctx.colors();
+  const { drawChromePageNumber, drawFooter } = createPageFamilyPrimitives(ctx);
   const W = ctx.canvasWidth();
   const H = ctx.canvasHeight();
   const {
-    PageNumber,
     addHairline,
     addRect,
     addText,
     copyFallback,
     copyPolicyList,
-    footerText,
     glassPanel,
     isCompanyIntroPlan
   } = ctx;
@@ -30,7 +32,7 @@ function createTocRenderers(ctx = {}) {
     addText(slide, s.title || copyFallback(plan, 'tocTitle', '目录'), { x:0.78, y:2.08, w:2.6, h:0.48, fontSize:28, bold:true, color:C.white });
     addHairline(slide, 0.82, 2.86, 0.86, C.accent, 0, 0.75);
     addText(slide, s.subtitle || copyFallback(plan, companyIntro ? 'tocCompanyIntroSubtitle' : 'tocSubtitle'), { x:0.80, y:3.42, w:3.05, h:0.38, fontSize:10.2, color:C.darkMuted || 'D8CDD0', breakLine:true });
-    addText(slide, footerText(plan), { x:0.80, y:6.82, w:2.75, h:0.14, fontSize:7.5, color:C.darkMuted || 'D8CDD0' });
+    drawFooter(slide, plan, { x:0.80, y:6.82, w:2.75, h:0.14, fontSize:7.5, color:C.darkMuted || 'D8CDD0' });
 
     const items = (s.items && s.items.length ? s.items : copyPolicyList(plan, 'tocItems', [])).slice(0, 5);
     glassPanel(slide, 4.82, 1.44, 6.18, 4.72, true);
@@ -46,7 +48,7 @@ function createTocRenderers(ctx = {}) {
       if (i<4) addHairline(slide, 6.30, y+0.34, 3.88, '334155', 72, 0.32);
     });
     addText(slide, '01—05', { x:9.82, y:5.36, w:0.58, h:0.14, fontSize:7.6, color:C.darkMuted || 'D8CDD0', align:'right' });
-    PageNumber(slide, idx, { color:C.darkMuted || 'D8CDD0', fontSize:11.5 });
+    drawChromePageNumber(slide, idx, { color:C.darkMuted || 'D8CDD0', fontSize:11.5 });
   }
 
   return {
