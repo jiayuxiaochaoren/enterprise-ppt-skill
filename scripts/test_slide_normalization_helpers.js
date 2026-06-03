@@ -2,6 +2,10 @@ const assert = require('assert/strict');
 const {
   createSlideNormalizationHelpers
 } = require('./design/slide-normalization');
+const {
+  CHART_ROUTE_TYPES,
+  createRouteSanitizationHelpers
+} = require('./design/slide-route-sanitization');
 
 const helpers = createSlideNormalizationHelpers({
   applyPlanAuthoredSourceTrace: (plan, slide, index) => Object.assign({}, slide, { sourceTraceApplied:index + 1 }),
@@ -64,6 +68,34 @@ assert.deepEqual(
     { label:'交付', value:'3 ', note:'减少 3 天' }
   ]
 );
+assert.equal(CHART_ROUTE_TYPES.has('metric-comparison'), true);
+const routeSanitizationHelpers = createRouteSanitizationHelpers({
+  highValuePageFamilies: new Set(['bad-proof']),
+  layoutVariantCompatibleWithType: (type, variant) => type !== 'report-board' || !['bad-variant', 'bad-proof'].includes(variant)
+});
+const sanitizedRouteInput = routeSanitizationHelpers.sanitizeRouteInput({ finalized:true }, {
+  type:'industry-chart',
+  layoutVariant:'bad-variant',
+  variant:'bad-variant',
+  proofObject:'bad-proof',
+  chartSpec:{ version:'chartSpec/v1', kind:'bar' },
+  dataComponent:'bar',
+  componentPlan:{ version:'component-plan/v1' },
+  compositionPlan:{ version:'composition-plan/v1' },
+  assetGeneration:{ status:'required' },
+  generatedAssetPrompt:'OLD PROMPT'
+}, { type:'report-board' });
+assert.deepEqual(
+  sanitizedRouteInput.routeSanitization.removed.map(item => item.field),
+  ['layoutVariant', 'variant', 'proofObject', 'chartSpec', 'dataComponent', 'generatedAssetPrompt']
+);
+assert.deepEqual(
+  sanitizedRouteInput.routeSanitization.suppressed.map(item => item.field),
+  ['componentPlan', 'compositionPlan', 'assetGeneration']
+);
+assert.ok(sanitizedRouteInput.routeSanitization.staleForRoute.some(item => item.field === 'componentPlan' && item.resolution === 'recomputed'));
+assert.equal(sanitizedRouteInput.routedInput.previousChartSpec.kind, 'bar');
+assert.equal(sanitizedRouteInput.routedInput.componentPlan, undefined);
 
 const sanitized = helpers.normalizeSlide({ finalized:true }, {
   forceType:'report-board',
@@ -73,6 +105,8 @@ const sanitized = helpers.normalizeSlide({ finalized:true }, {
   chartSpec:{ version:'chartSpec/v1', kind:'bar' },
   chartSpecInferred:true,
   dataComponent:'waterfall',
+  componentPlan:{ version:'component-plan/v1', components:[{ id:'stale-widget' }], staleMarker:true },
+  compositionPlan:{ version:'composition-plan/v1', microComponents:['stale-widget'], staleMarker:true },
   assetGeneration:{ status:'required' },
   generatedAssetPrompt:'OLD PROMPT',
   assetStatus:'required',
@@ -89,8 +123,19 @@ assert.deepEqual(
   ['layoutVariant', 'variant', 'proofObject', 'chartSpec', 'dataComponent', 'generatedAssetPrompt']
 );
 assert.ok(sanitized.routeSanitization.recomputed.some(item => item.field === 'componentPlan'));
+assert.ok(sanitized.routeSanitization.recomputed.some(item => item.field === 'compositionPlan'));
 assert.ok(sanitized.routeSanitization.recomputed.some(item => item.field === 'assetGeneration'));
+assert.deepEqual(
+  sanitized.routeSanitization.suppressed.map(item => item.field),
+  ['componentPlan', 'compositionPlan', 'assetGeneration']
+);
+assert.ok(sanitized.routeSanitization.staleForRoute.some(item => item.field === 'componentPlan' && item.resolution === 'recomputed'));
+assert.ok(sanitized.routeSanitization.staleForRoute.some(item => item.field === 'generatedAssetPrompt' && item.resolution === 'removed'));
+assert.equal(sanitized.routeSanitization.after.type, 'report-board');
 assert.equal(sanitized.componentPlan.componentIds[0], 'kpi-strip');
+assert.equal(sanitized.componentPlan.staleMarker, undefined);
+assert.equal(sanitized.previousComponentPlan.staleMarker, true);
+assert.equal(sanitized.previousCompositionPlan.staleMarker, true);
 assert.equal(sanitized.compositionPlan.microComponents.includes('kpi-strip'), true);
 assert.equal(sanitized.assetGeneration.previousDecisionStale, true);
 assert.equal(sanitized.generatedAssetPrompt, 'GENERATED PROMPT');

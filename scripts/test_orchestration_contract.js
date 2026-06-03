@@ -1,6 +1,4 @@
 const assert = require('assert/strict');
-const fs = require('fs');
-const path = require('path');
 
 const {
   compileDeckPlan,
@@ -8,6 +6,12 @@ const {
   referenceContextForPrompt
 } = require('./material_pipeline');
 const { industryAcceptanceBriefs } = require('./industry_acceptance_matrix');
+const {
+  extractionPrompt,
+  orchestrationOverview,
+  stagePrompt,
+  storyArchitecturePrompt
+} = require('./material/orchestration-prompts');
 
 const schema = extractionSchema();
 const claimSchema = schema.claim_spine[0];
@@ -39,7 +43,14 @@ for (const brief of industryAcceptanceBriefs()) {
   assert.ok(context.industryPack.clarificationQuestions && context.industryPack.clarificationQuestions.length, `${brief.industry} should expose missing-info questions`);
 }
 
-const promptText = fs.readFileSync(path.join(__dirname, 'material_orchestration_prompt.js'), 'utf8');
+const promptBundle = {
+  version: 'material-bundle/v1',
+  sourceCount: 0,
+  textSummary: { industryCandidates: [{ industry: 'finance-investment', score: 0.9 }] },
+  sources: [],
+  images: []
+};
+const promptText = extractionPrompt(promptBundle);
 [
   'themeIntent',
   'proof_object',
@@ -53,6 +64,9 @@ const promptText = fs.readFileSync(path.join(__dirname, 'material_orchestration_
   'visible_language_policy',
   'localize_non_essential_microcopy'
 ].forEach(term => assert.ok(promptText.includes(term), `orchestration prompt should require ${term}`));
+assert.equal(stagePrompt('extraction', promptBundle), promptText, 'stagePrompt should route extraction through the shared prompt builder');
+assert.ok(storyArchitecturePrompt(promptBundle).includes('deck_art_direction'), 'story prompt should require art direction');
+assert.ok(orchestrationOverview('out/model-orchestration').includes('deck_asset_decision_gate'), 'overview should retain asset decision gate step');
 
 const bundle = {
   version: 'material-bundle/v1',

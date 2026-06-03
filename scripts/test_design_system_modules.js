@@ -31,6 +31,59 @@ const {
   createAestheticModelHelpers
 } = require('./design/aesthetic-model');
 const {
+  createDeckContextHelpers
+} = require('./design/deck-context');
+const {
+  createDesignSystemAuditRuntime
+} = require('./design/design-system-audit-runtime');
+const {
+  createDesignSystemCoreRuntime
+} = require('./design/design-system-core-runtime');
+const {
+  createCorePlanningAssembly
+} = require('./design/design-system-core-planning-assembly');
+const {
+  createCoreRuntimeAssembly
+} = require('./design/design-system-core-runtime-assembly');
+const {
+  DESIGN_SYSTEM_EXPORT_NAMES,
+  buildDesignSystemExports
+} = require('./design/design-system-exports');
+const {
+  createDesignSystemFoundationRuntime
+} = require('./design/design-system-foundation-runtime');
+const {
+  createFoundationHelperSet,
+  createFoundationResourceSet,
+  createFoundationRuntimeParts
+} = require('./design/design-system-foundation-runtime-assembly');
+const {
+  createFoundationHelperSet: createFoundationHelperSetDirect
+} = require('./design/design-system-foundation-helpers');
+const {
+  createDesignSystemPlanningRuntime
+} = require('./design/design-system-planning-runtime');
+const {
+  createPlanningRuntimeAssembly
+} = require('./design/design-system-planning-runtime-assembly');
+const {
+  createPlanningAssetGenerationRuntime,
+  createPlanningSlideRoutingRuntime
+} = require('./design/design-system-planning-runtime-parts');
+const {
+  createDeckPlanNormalizationHelpers
+} = require('./design/deck-plan-normalization');
+const {
+  createIndustryKnowledgeAuditHelpers
+} = require('./design/industry-knowledge-audit');
+const {
+  createIndustryPolicyHelpers,
+  deepMerge
+} = require('./design/design-system-policy');
+const {
+  createProofObjectHelpers
+} = require('./design/proof-object');
+const {
   addComponent,
   componentIdFromHint,
   createComponentPlanHelpers,
@@ -39,6 +92,10 @@ const {
   normalizeComponentEntry,
   normalizeComponentId
 } = require('./design/component-planning');
+const {
+  createComponentPlanningInputHelpers
+} = require('./design/component-planning-inputs');
+const componentPlanningNormalization = require('./design/component-planning-normalization');
 const {
   createComponentPlanAuditHelpers
 } = require('./design/component-plan-audit');
@@ -55,6 +112,25 @@ const {
   createIndustryFitAuditHelpers
 } = require('./design/industry-fit-audit');
 const {
+  canonicalComponentId,
+  componentCapabilityFor,
+  componentManifestAudit
+} = require('./render/component-capability-manifest');
+const {
+  CAPABILITY_ROWS,
+  CHART_COMPONENT_ID_LIST,
+  COMPONENT_ALIASES,
+  COMPONENT_DATA_REQUIREMENTS
+} = require('./render/component-capability-data');
+const {
+  CAPABILITY_ROWS: CAPABILITY_ROW_SHARD
+} = require('./render/component-capability-rows');
+const {
+  CHART_COMPONENT_ID_LIST: CHART_COMPONENT_ID_LIST_SHARD,
+  COMPONENT_ALIASES: COMPONENT_ALIAS_SHARD,
+  COMPONENT_DATA_REQUIREMENTS: COMPONENT_DATA_REQUIREMENTS_SHARD
+} = require('./render/component-capability-contracts');
+const {
   createCompositionPlanningHelpers
 } = require('./design/composition-planning');
 const {
@@ -64,8 +140,20 @@ const {
   createReferenceRecipeHelpers
 } = require('./design/reference-recipes');
 const {
+  createReferenceRecipeScoringHelpers
+} = require('./design/reference-recipe-scoring');
+const {
   createNarrativeHelpers
 } = require('./design/narrative');
+const {
+  createSourceTraceAuditHelpers
+} = require('./design/source-trace-audit');
+const {
+  createSourceTraceAuditPrimitives
+} = require('./design/source-trace-audit-primitives');
+const {
+  createSourceTraceCoreHelpers
+} = require('./design/source-trace-core');
 const {
   INDUSTRY_EXPRESSION_RULES,
   INDUSTRY_KNOWLEDGE_BASE,
@@ -75,12 +163,365 @@ const {
 
 assert.equal(visualIndustryId('industrial-energy'), 'manufacturing-operations');
 assert.ok(industryMatchIds('brand-retail').includes('beauty-consumer'));
+assert.deepEqual(Object.keys(designSystem), DESIGN_SYSTEM_EXPORT_NAMES);
+assert.equal(buildDesignSystemExports({ constants:{ ASSET_DIR:'asset-dir' }, core:{ visualRole:'role' } }).ASSET_DIR, 'asset-dir');
+assert.equal(buildDesignSystemExports({ constants:{ ASSET_DIR:'asset-dir' }, core:{ visualRole:'role' } }).visualRole, 'role');
+const foundationRuntime = createDesignSystemFoundationRuntime({ normalizeDeckPlan: plan => plan });
+assert.equal(foundationRuntime.ASSET_DIR, designSystem.ASSET_DIR);
+assert.equal(foundationRuntime.FONT_STACK.zh, designSystem.FONT_STACK.zh);
+assert.equal(typeof foundationRuntime.contentSignals, 'function');
+assert.equal(typeof foundationRuntime.normalizeTypographyOptions, 'function');
+assert.equal(foundationRuntime.proofObjectIdForSlide({ proofObject:'proof-1' }), 'proof-1');
+const foundationResources = createFoundationResourceSet();
+assert.equal(foundationResources.MEDIA_ASSETS.energyStorageCover, foundationRuntime.MEDIA_ASSETS.energyStorageCover);
+const foundationHelpers = createFoundationHelperSet({
+  normalizeDeckPlan: plan => plan,
+  resources: foundationResources
+});
+assert.equal(foundationHelpers.proofObjectIdForSlide({ proofObject:'proof-direct' }), 'proof-direct');
+assert.equal(typeof foundationHelpers.contentSignals, 'function');
+const directFoundationHelpers = createFoundationHelperSetDirect({
+  normalizeDeckPlan: plan => plan,
+  resources: foundationResources
+});
+assert.equal(directFoundationHelpers.proofObjectIdForSlide({ proofObject:'proof-direct' }), foundationHelpers.proofObjectIdForSlide({ proofObject:'proof-direct' }));
+assert.equal(directFoundationHelpers.visualIndustryId('industrial-energy'), foundationHelpers.visualIndustryId('industrial-energy'));
+const foundationParts = createFoundationRuntimeParts({ normalizeDeckPlan: plan => plan });
+assert.equal(foundationParts.FONT_STACK.zh, foundationRuntime.FONT_STACK.zh);
+assert.equal(typeof foundationParts.sourceTraceAudit, 'function');
+const sourceTraceCore = createSourceTraceCoreHelpers({
+  clampText: (text, max = 999) => String(text || '').slice(0, max),
+  compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
+  flattenText: value => JSON.stringify(value),
+  proofObjectIdForSlide: slide => slide.proofObject || 'proof'
+});
+const planAuthoredSlide = sourceTraceCore.applyPlanAuthoredSourceTrace(
+  { title:'Fixture', sourceTracePolicy:{ mode:'plan-authored', authorizationStatus:'cleared' } },
+  { type:'metric-comparison', title:'Revenue lift', proofObject:'metric-proof' },
+  0
+);
+assert.equal(planAuthoredSlide.sourceTrace.version, 'source-trace/v2');
+assert.equal(planAuthoredSlide.proof.provenance, 'plan-authored-brief');
+assert.deepEqual(
+  sourceTraceCore.sourceTraceForSlide({
+    proof:{ sourceTrace:{ sourceIds:['src-a'], sources:[{ id:'src-a', page:'1' }] } },
+    sourceTrace:{ sourceIds:['src-b'], sources:[{ id:'src-b', page:'2' }] }
+  }).sourceIds,
+  ['src-a', 'src-b']
+);
+const sourceTraceAuditHelpers = createSourceTraceAuditHelpers(Object.assign({
+  compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
+  normalizeDeckPlan: plan => plan,
+  slideProofObject: slide => slide.proof || { factual:false, sourceIds:[] }
+}, sourceTraceCore));
+assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('not authorized'), 'blocked');
+assert.equal(
+  sourceTraceAuditHelpers.sourceTraceAudit({}, {
+    slides:[{
+      type:'metric-comparison',
+      proof:{ factual:true, sourceIds:['src-a'] },
+      sourceTrace:{ sourceIds:['src-a'], sources:[{ id:'src-a' }] }
+    }]
+  }).status,
+  'fail'
+);
+const sourceTraceAuditPrimitives = createSourceTraceAuditPrimitives({
+  compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
+  sourceTraceIsPlanAuthored: () => true
+});
+assert.equal(sourceTraceAuditPrimitives.sourceEntryHasPage({ pageRef:'deck-plan' }), true);
+assert.equal(sourceTraceAuditPrimitives.sourceEntryHasExcerpt({ source_excerpt:'claim text' }), true);
+assert.equal(sourceTraceAuditPrimitives.normalizeAuthorizationStatus('未授权'), 'blocked');
+assert.deepEqual(
+  sourceTraceAuditPrimitives.metricTraceEntries({}, {
+    sources:[{ id:'brief-slide', page:'deck-plan', excerpt:'Plan-authored claim' }]
+  }),
+  [{ id:'brief-slide', page:'deck-plan', excerpt:'Plan-authored claim' }]
+);
 assert.equal(designSystem.INDUSTRY_KNOWLEDGE_BASE, INDUSTRY_KNOWLEDGE_BASE);
 assert.ok(INDUSTRY_EXPRESSION_RULES['brand-retail'].requiredRoutes.includes('industry-chart:waterfall-bridge'));
 assert.ok(INDUSTRY_KNOWLEDGE_BASE['saas-technology'].proofObjects.some(item => item.id === 'adoption-funnel'));
 assert.ok(SEMANTIC_RELATION_PATTERNS.cause.test('因为响应慢导致流失'));
 assert.ok(VISIBLE_PRODUCTION_COPY_BANS.some(pattern => pattern.test('材料显示增长来自渠道修复')));
 assert.equal(designSystem.BASE_COLORS, BASE_COLORS);
+const mergedPolicy = deepMerge({ a:{ x:1 }, list:['a'] }, { a:{ y:2 } });
+assert.deepEqual(mergedPolicy, { a:{ x:1, y:2 }, list:['a'] });
+mergedPolicy.list.push('mutated');
+assert.deepEqual(deepMerge({ list:['a'] }).list, ['a']);
+const proofHelpers = createProofObjectHelpers({
+  compactUnique: values => Array.from(new Set(values.filter(Boolean))),
+  flattenText: value => JSON.stringify(value),
+  highValuePageFamilies: new Set(['case-gallery']),
+  layoutVariantCompatibleWithType: () => false
+});
+assert.equal(proofHelpers.proofObjectIdForSlide({ type:'cover', proofObject:'case-gallery', variant:'cover-safe' }), 'cover-safe');
+assert.equal(proofHelpers.slideProofObject({ sourceIds:['S1'], generatedAssetPrompt:'real photo' }).provenance, 'source-derived-evidence');
+const policyHelpers = createIndustryPolicyHelpers({
+  compactUnique: values => Array.from(new Set(values.filter(Boolean))),
+  flattenText: value => JSON.stringify(value),
+  getSlideRole: () => 'content',
+  industryDesignDialects: {
+    demo: {
+      defaultPalette:'demo',
+      components:{ common:['page-number'], content:['caption-bar'] },
+      colorCarriers:{ common:['accent-rail'] }
+    }
+  },
+  visualIndustryId: value => value,
+  visualRouter: { default:{ defaultImageRoles:{ cover:'hero' } }, industries:{ demo:{ visualMode:'solid', defaultImageRoles:{ proof:'evidence' } } } }
+});
+assert.equal(policyHelpers.industryVisualPolicy({ industry:'demo' }).defaultImageRoles.cover, 'hero');
+assert.deepEqual(policyHelpers.dialectComponentsFor({ industry:'demo' }, { type:'metric-comparison' }), ['page-number', 'caption-bar']);
+assert.deepEqual(policyHelpers.dialectColorCarriersFor({ industry:'demo' }, {}), ['accent-rail']);
+const coreRuntimeDeps = {
+  assetDir:'/tmp/assets',
+  assetRoleNeedsImage: () => false,
+  chartSpecToComponentId: () => '',
+  compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
+  componentCapabilityFor: id => ({ id, supportedModes:['native'], ownershipPolicy:'native', dataRequirements:[] }),
+  contentSignals: () => ({ imageCount:0, hasMetrics:false, isNumberHeavy:false }),
+  flattenText: value => JSON.stringify(value),
+  hasArrayField: () => false,
+  hasExplicitChartSignal: () => false,
+  hasValueField: () => false,
+  highValuePageFamilies: new Set(['case-gallery']),
+  industryDesignDialects: {
+    demo: {
+      defaultPalette:'demo',
+      components:{ common:['page-number'], value:['caption-bar'] },
+      colorCarriers:{ common:['accent-rail'] }
+    }
+  },
+  industryKnowledgeBase: {
+    demo: { label:'Demo', proofObjects:[], depthGates:{} }
+  },
+  industryPackFor: () => null,
+  layoutVariantCompatibleWithType: () => true,
+  matchKeywordList: () => [],
+  mediaAssets:{},
+  normalizeAssetRole: role => role || 'abstract',
+  normalizeDeckPlan: plan => plan,
+  normalizeIndustryId: value => value,
+  palettes:{ demo:{ accent:'111111' } },
+  proofObjectIdForSlide: slide => slide.proofObject || '',
+  profileFromIndustryPack: () => null,
+  routeChartSpec: () => null,
+  semanticRelationPatterns:{},
+  slideHasChartIntent: () => false,
+  visualIndustryId: value => value,
+  visualRouter:{ default:{}, industries:{ demo:{ visualMode:'solid' } } },
+  visualSystem:{ semanticColorRoles:{ roles:{} } }
+};
+const coreRuntime = createDesignSystemCoreRuntime(coreRuntimeDeps);
+assert.equal(coreRuntime.slideRole({ type:'cover' }), 'cover');
+assert.equal(coreRuntime.selectPaletteName({ industry:'demo' }), 'demo');
+assert.deepEqual(coreRuntime.dialectComponentsFor({ industry:'demo' }, { type:'metric-comparison' }), ['page-number', 'caption-bar']);
+const coreAssembly = createCoreRuntimeAssembly(Object.assign({}, coreRuntimeDeps, {
+  dialectColorCarriersFor: coreRuntime.dialectColorCarriersFor,
+  dialectComponentsFor: coreRuntime.dialectComponentsFor,
+  industryDesignDialect: coreRuntime.industryDesignDialect,
+  industryVisualPolicy: coreRuntime.industryVisualPolicy,
+  slideRole: coreRuntime.slideRole,
+  visualMedia: coreRuntime
+}));
+assert.equal(coreAssembly.selectPaletteName({ industry:'demo' }), coreRuntime.selectPaletteName({ industry:'demo' }));
+assert.equal(typeof coreAssembly.semantic.semanticFrame, 'function');
+assert.equal(typeof coreAssembly.narrative.routeKey, 'function');
+assert.deepEqual(coreAssembly.componentPlanFor({ industry:'demo' }, { type:'section' }).componentIds, ['page-number']);
+const corePlanningAssembly = createCorePlanningAssembly(Object.assign({}, coreRuntimeDeps, {
+  dialectColorCarriersFor: coreRuntime.dialectColorCarriersFor,
+  dialectComponentsFor: coreRuntime.dialectComponentsFor,
+  industryDesignDialect: coreRuntime.industryDesignDialect,
+  industryVisualPolicy: coreRuntime.industryVisualPolicy,
+  slideRole: coreRuntime.slideRole,
+  visualMedia: coreRuntime
+}));
+assert.equal(corePlanningAssembly.selectPaletteName({ industry:'demo' }), coreAssembly.selectPaletteName({ industry:'demo' }));
+assert.deepEqual(corePlanningAssembly.componentPlanFor({ industry:'demo' }, { type:'section' }).componentIds, ['page-number']);
+const industryAuditHelpers = createIndustryKnowledgeAuditHelpers({
+  contentSignals: () => ({}),
+  industryKnowledgeBase: {
+    demo: {
+      label:'Demo',
+      narrativeArchetype:'proof',
+      proofObjects:[{ id:'proof-1', route:'case-gallery', depth:'system-map' }],
+      depthGates:{ minProofObjects:1, requiredDomains:['system-map'] }
+    }
+  },
+  industryPackFor: () => null,
+  normalizeDeckPlan: plan => plan,
+  normalizeIndustryId: value => value,
+  profileFromIndustryPack: () => null,
+  routeKey: slide => slide.type || '',
+  routeMatches: (key, expected) => key === expected,
+  semanticMeaning: () => ({ proofCandidates:[{ id:'proof-1', route:'case-gallery', depth:'system-map', score:4 }] }),
+  visualIndustryId: value => value
+});
+assert.equal(industryAuditHelpers.industryKnowledgeProfile({ industry:'demo' }).label, 'Demo');
+assert.equal(industryAuditHelpers.industryKnowledgeAudit({}, { industry:'demo', slides:[{ type:'case-gallery' }] }).findings.length, 0);
+const normalizationHelpers = createDeckPlanNormalizationHelpers({
+  applyDataComponentDiversity: (plan, slides) => slides.map(slide => Object.assign({ diversified:true }, slide)),
+  applyDeckRhythm: (plan, slides) => slides.map(slide => Object.assign({ rhythmic:true }, slide)),
+  applyNarrativeMetadata: (plan, slides) => slides.map(slide => Object.assign({ narrated:true }, slide)),
+  claimSpineForSlides: () => [{ slide:1, claim:'Claim' }],
+  deckNarrativeSummary: () => ({ roleCounts:{ body:1 } }),
+  normalizeSlide: (plan, slide, index) => Object.assign({ normalized:index + 1 }, slide),
+  sequenceSlidesByNarrative: (plan, slides) => slides.slice().reverse()
+});
+const normalizedDeck = normalizationHelpers.normalizeDeckPlan({ autoSequence:true, slides:[{ title:'A' }, { title:'B' }] });
+assert.equal(normalizedDeck.slides[0].title, 'B');
+assert.equal(normalizedDeck.slides[0].rhythmic, true);
+assert.equal(normalizedDeck.claimSpine[0].claim, 'Claim');
+const deckContextHelpers = createDeckContextHelpers({
+  FONT_STACK:{ zh:'ZH' },
+  PALETTES:{ demo:{ accent:'111111' } },
+  VISUAL_ROUTER:{},
+  VISUAL_SYSTEM:{},
+  acceptanceAudit: () => 'acceptance',
+  auditDeckPlan: () => 'deck-audit',
+  compositionAudit: () => 'composition',
+  contentOverlapAudit: () => 'overlap',
+  contentSignals: () => ({ signal:true }),
+  copyPolicyFor: () => ({ policy:true }),
+  copyPolicyList: () => ['copy'],
+  copyPolicyText: () => 'copy',
+  generatedAssetPolicy: () => 'policy',
+  generatedAssetPrompt: () => 'prompt',
+  industryDesignDialect: () => ({ name:'dialect' }),
+  industryKnowledgeAudit: () => 'industry',
+  industryVisualPolicy: () => ({ visualMode:'hybrid' }),
+  languagePolicyFor: () => ({ lang:'zh' }),
+  localizeMicrocopy: text => text,
+  normalizeDeckPlan: () => ({ slides:[] }),
+  normalizeTypographyOptions: () => ({ fit:'shrink' }),
+  paletteToColors: palette => Object.assign({ text:'000000' }, palette),
+  recommendSlideType: () => 'metric-comparison',
+  resolveStyleProfile: () => ({ C:{}, font:'ZH' }),
+  resolveTypeToken: () => ({ fontSize:10 }),
+  scoreImageAsset: () => ({ verdict:'accept' }),
+  selectPaletteName: () => 'demo',
+  selectReferenceRecipe: () => ({ id:'recipe' }),
+  semanticFrame: () => ({ frame:true }),
+  semanticMeaning: () => ({ meaning:true }),
+  slideDesign: () => ({ wantsImage:true }),
+  typographyAudit: () => 'typography',
+  typographyFontSet: () => ({ zh:'ZH' }),
+  typographyProfileFor: () => ({ body:10 }),
+  visualAestheticModel: () => 'aesthetic'
+});
+const deckContext = deckContextHelpers.makeDeckContext({ style:'demo' });
+assert.equal(deckContext.paletteName, 'demo');
+assert.equal(deckContext.generatedAssetPrompt({}), 'prompt');
+assert.deepEqual(deckContext.contentSignals({}, 0, 1), { signal:true });
+const planningRuntime = createDesignSystemPlanningRuntime({
+  FONT_STACK:{ zh:'ZH' },
+  PALETTES:{ demo:{ accent:'111111' } },
+  REFERENCE_LAYOUT_LIBRARY:{ recipes:[], generatedAssetPromptPatterns:{} },
+  REFERENCE_RECIPE_LIBRARY:{ recipes:[] },
+  VISUAL_ROUTER:{},
+  VISUAL_SYSTEM:{},
+  acceptanceAudit: () => ({ status:'pass' }),
+  accentRoleFor: () => 'data',
+  applyNarrativeMetadata: (plan, slides) => slides,
+  applyPlanAuthoredSourceTrace: (plan, slide) => slide,
+  auditDeckPlan: () => [],
+  clampText: (text, max = 999) => String(text || '').slice(0, max),
+  compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
+  componentPlanFor: () => ({ version:'component-plan/v1', components:[], componentIds:[], rulesApplied:[] }),
+  compositionAudit: () => [],
+  compositionPlan: () => ({
+    version:'composition-plan/v1',
+    themeIntent:'value-signal',
+    accentRole:'data',
+    layoutEnergy:'steady',
+    visualDensity:'balanced',
+    rhythmTransition:'build',
+    microComponents:[]
+  }),
+  contentOverlapAudit: () => [],
+  contentSignals: () => ({ imageCount:0 }),
+  copyPolicyFor: () => ({}),
+  copyPolicyList: () => [],
+  copyPolicyText: () => '',
+  dataGrammarVariant: () => '',
+  deckNarrativeSummary: () => ({}),
+  flattenText: value => JSON.stringify(value),
+  generatedAssetPolicy: () => ({ status:'none', role:'abstract' }),
+  generatedAssetPrompt: () => 'prompt',
+  highValuePageFamilies: new Set(),
+  imageRefsForSlide: () => [],
+  industryChartVariant: () => '',
+  industryDesignDialect: () => ({}),
+  industryKnowledgeAudit: () => ({ findings:[] }),
+  industryMatchIds: value => [value],
+  industryVisualPolicy: () => ({ visualMode:'solid' }),
+  languagePolicyFor: () => ({}),
+  layoutEnergyFor: () => 'steady',
+  layoutVariantCompatibleWithType: () => true,
+  localizeMicrocopy: text => text,
+  mediaForRole: () => '',
+  normalizeTypographyOptions: () => ({}),
+  paletteToColors: palette => Object.assign({ text:'000000' }, palette),
+  pickLayoutVariant: () => 'fixture-variant',
+  preferredProofObjectIdForTrace: () => '',
+  priorityPageFamilyRecipes: [],
+  proofObjectIdForSlide: () => '',
+  recommendSlideType: () => ({ type:'metric-comparison', reason:'fixture route' }),
+  resolveStyleProfile: () => ({ C:{}, font:'ZH' }),
+  resolveTypeToken: () => ({ fontSize:10 }),
+  resolveVisualMode: () => 'solid',
+  rhythmTransitionFor: () => 'build',
+  routeChartSpec: () => null,
+  routeKey: slide => slide.type || '',
+  scoreImageAsset: () => ({ verdict:'accept' }),
+  selectPaletteName: () => 'demo',
+  selectReferenceRecipe: () => null,
+  semanticColorRolesFor: () => ({}),
+  semanticFrame: () => ({ primaryIntent:'narrative' }),
+  semanticMeaning: () => ({}),
+  sequenceSlidesByNarrative: (plan, slides) => slides,
+  slideDesign: () => ({ wantsImage:false }),
+  slideHasChartIntent: () => false,
+  slideRole: () => 'content',
+  staleIndustryChartRouteShouldYieldToProcess: () => false,
+  textKeywords: () => [],
+  themeIntentFor: () => 'value-signal',
+  typographyAudit: () => 'typography',
+  typographyFontSet: () => ({ zh:'ZH' }),
+  typographyProfileFor: () => ({ body:10 }),
+  visualAestheticModel: () => ({ findings:[] }),
+  visualDensityFor: () => 'balanced',
+  visualIndustryId: value => value
+});
+const runtimeNormalizedDeck = planningRuntime.normalizeDeckPlan({ slides:[{ title:'Metric 42%' }] });
+assert.equal(runtimeNormalizedDeck.slides[0].type, 'metric-comparison');
+assert.equal(runtimeNormalizedDeck.slides[0].componentPlan.version, 'component-plan/v1');
+assert.equal(planningRuntime.makeDeckContext({ style:'demo' }).paletteName, 'demo');
+const planningAssemblyOverride = createPlanningRuntimeAssembly({
+  generatedAssetPolicy: () => 'policy-assembly',
+  generatedAssetPrompt: () => 'prompt-assembly',
+  pickLayoutVariant: () => 'assembly-layout',
+  recipeAutoRouteAllowed: () => true,
+  recommendSlideType: () => ({ type:'assembly-route', reason:'override' })
+});
+assert.equal(planningAssemblyOverride.generatedAssetPrompt(), 'prompt-assembly');
+assert.equal(planningAssemblyOverride.pickLayoutVariant(), 'assembly-layout');
+assert.equal(planningAssemblyOverride.recommendSlideType().type, 'assembly-route');
+assert.equal(
+  createPlanningAssetGenerationRuntime({
+    generatedAssetPolicy: () => 'policy-override',
+    generatedAssetPrompt: () => 'prompt-override'
+  }).generatedAssetPolicy(),
+  'policy-override'
+);
+assert.equal(
+  createPlanningSlideRoutingRuntime({
+    recommendSlideType: () => ({ type:'fixture', reason:'override' }),
+    pickLayoutVariant: () => 'fixture-layout',
+    recipeAutoRouteAllowed: () => true
+  }).pickLayoutVariant(),
+  'fixture-layout'
+);
 const styleHelpers = createStyleProfileHelpers({ fontStack: { zh:'ZH', latin:'LATIN', number:'NUM' } });
 assert.equal(styleHelpers.resolveStyleProfile('premium-commercial-keynote').font, 'ZH');
 assert.equal(styleHelpers.resolveStyleProfile('premium-consulting-keynote').density, 'consulting');
@@ -101,6 +542,21 @@ assert.equal(artHelpers.accentRoleFor({}, { type:'metric-comparison' }, 1, 3, 'v
 assert.deepEqual(artHelpers.semanticColorRolesFor({}, 'evidence').carrierGuidance, ['caption']);
 assert.equal(normalizeComponentId('Hero KPI Strip'), 'hero-kpi-strip');
 assert.equal(componentIdFromHint('metric_strip'), 'kpi-strip');
+assert.equal(componentPlanningNormalization.normalizeComponentId, normalizeComponentId);
+assert.equal(componentPlanningNormalization.addComponent, addComponent);
+assert.equal(componentManifestAudit().status, 'pass');
+assert.equal(canonicalComponentId('hero_kpis', { preferAlias:true }), 'kpi-strip');
+assert.equal(componentCapabilityFor('gallery-grid').id, 'proof-gallery');
+assert.equal(CAPABILITY_ROWS, CAPABILITY_ROW_SHARD);
+assert.equal(COMPONENT_ALIASES, COMPONENT_ALIAS_SHARD);
+assert.equal(COMPONENT_DATA_REQUIREMENTS, COMPONENT_DATA_REQUIREMENTS_SHARD);
+assert.equal(CHART_COMPONENT_ID_LIST, CHART_COMPONENT_ID_LIST_SHARD);
+assert.ok(CAPABILITY_ROWS.some(row => row[0] === 'proof-gallery' && row[1].includes('overlay')));
+assert.deepEqual(COMPONENT_DATA_REQUIREMENTS['risk-register'], ['rows|risks|controls|riskRegister|riskMatrix']);
+assert.equal(
+  componentManifestAudit({ aliases:{ 'bad-alias':'missing-widget' } }).findings.some(f => f.type === 'componentAliasTargetMissing'),
+  true
+);
 assert.deepEqual(
   normalizeComponentEntry({ name:'source-caption', required:false }, 'fixture'),
   { id:'caption-bar', role:'', required:false, source:'fixture', renderer:'auto', name:'source-caption' }
@@ -112,6 +568,27 @@ assert.deepEqual(plannedComponents.map(item => item.id), ['kpi-strip']);
 assert.equal(isSystemPlannedComponent({ source:'metric-signal' }), true);
 assert.equal(isSystemPlannedComponent({ source:'explicit-plan' }), false);
 assert.equal(hasContactBlockData({ contact: { email:'hello@example.com' } }, {}), true);
+const componentPlanningInputs = createComponentPlanningInputHelpers({
+  compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
+  contentSignals: () => ({ hasMetrics:true, hasArchitecture:false }),
+  flattenText: value => JSON.stringify(value),
+  proofObjectIdForSlide: s => s.proofObject || ''
+});
+assert.deepEqual(
+  componentPlanningInputs.explicitComponentEntries({
+    componentPlan:{ components:[{ name:'source-caption', required:false }] },
+    componentHints:['hero-kpis', 'hero-kpis']
+  }).map(component => [component.id, component.source, component.required]),
+  [['caption-bar', 'explicit-plan', false], ['kpi-strip', 'component-hint', true]]
+);
+assert.equal(
+  componentPlanningInputs.nativeOnlyOptionalComponentAllowed({}, { type:'metric-comparison' }, { id:'kpi-primary-metric' }),
+  true
+);
+assert.equal(
+  componentPlanningInputs.nativeOnlyOptionalComponentAllowed({}, { type:'metric-comparison', proofObject:'photo-strip' }, { id:'asset-chip' }),
+  false
+);
 const componentPlanHelpers = createComponentPlanHelpers({
   chartSpecToComponentId: spec => spec.kind === 'bar' ? 'bar-chart' : '',
   compactUnique: values => Array.from(new Set(values.filter(Boolean))),
@@ -386,6 +863,39 @@ assert.ok(acceptanceAudit.checks.some(check => check.id === 'layout-repetition' 
 const commercialReady = acceptanceHelpers.commercialReadinessAudit({}, { slides:[] });
 assert.equal(commercialReady.level, 'client-review');
 
+const auditRuntime = createDesignSystemAuditRuntime({
+  assetAuthorizationGate: () => ({ status:'clear', findings:[] }),
+  chartAcceptanceGate: () => ({ status:'pass', findings:[] }),
+  chartEvidenceQA: () => ({ findings:[] }),
+  chartSemanticQA: () => ({ findings:[] }),
+  chartVisualQA: () => ({ findings:[] }),
+  contentOverlapAudit: () => [],
+  contentSignals: () => ({ imageCount:0 }),
+  flattenText: value => JSON.stringify(value),
+  hasCommercialLogicChain: () => true,
+  hasComponentCapability: () => true,
+  industryExpressionRules: {},
+  industryKnowledgeAudit: () => ({ findings:[] }),
+  industryPackFor: () => null,
+  normalizeDeckPlan: plan => plan,
+  pageLevelChartScores: () => [],
+  productionCopyBans: [/runtime leak/i],
+  proofObjectIdForSlide: slide => slide.proofObject || '',
+  routeKey: slide => slide.type || '',
+  routeMatches: (key, expected) => key === expected,
+  slideProofObject: slide => slide.proof || { id:slide.proofObject || 'unknown', factual:false },
+  sourceTraceAudit: () => ({ status:'pass', findings:[] }),
+  sourceTraceForSlide: () => ({}),
+  visualAestheticModel: () => ({ findings:[] }),
+  visualIndustryId: value => value
+});
+assert.equal(typeof auditRuntime.acceptanceAudit, 'function');
+assert.deepEqual(auditRuntime.visibleProductionCopyIssues('Runtime leak in presenter note'), ['runtime leak']);
+assert.equal(
+  auditRuntime.pageCountAudit({ targetSlides:{ requested:2 }, slides:[{ type:'cover' }, { type:'closing' }] }).status,
+  'pass'
+);
+
 const deckPlanAuditHelpers = createDeckPlanAuditHelpers({
   compositionAudit: () => [],
   contentOverlapAudit: () => [],
@@ -497,6 +1007,36 @@ assert.equal(referenceRecipeHelpers.selectReferenceRecipe(
   { type:'metric-comparison', proofObject:'financial-kpi-snapshot', title:'Q1 financial KPI' }
 ).id, 'finance-kpi');
 assert.equal(referenceRecipeHelpers.recipeCompatibleWithSlideType(referenceCandidates[0], 'metric-comparison'), true);
+const directReferenceScoring = createReferenceRecipeScoringHelpers({
+  compactUnique: values => Array.from(new Set(values.filter(Boolean))),
+  contentSignals: () => ({ hasMetrics:true }),
+  flattenText: value => JSON.stringify(value),
+  highValuePageFamilies: new Set(['financial-kpi-snapshot']),
+  industryMatchIds: value => [value],
+  referenceLayoutLibrary: {
+    recipes:[{
+      id:'finance-kpi',
+      layoutVariant:'financial-kpi-snapshot',
+      proofObject:'financial-kpi-snapshot',
+      renderType:'metric-comparison',
+      slideType:'metric-comparison',
+      industryFit:['finance-investment'],
+      roles:['content'],
+      signals:['financial-results'],
+      scores:{ overall:90 }
+    }]
+  },
+  slideRole: () => 'content',
+  textKeywords: text => String(text).toLowerCase().split(/[^a-z0-9\u4e00-\u9fff%％+-]+/).filter(Boolean),
+  themeIntentFor: () => 'value-signal'
+});
+const directReferenceCandidates = directReferenceScoring.referenceRecipeCandidates(
+  { industry:'finance-investment', documentType:'financial-results' },
+  { type:'metric-comparison', proofObject:'financial-kpi-snapshot', title:'Q1 financial KPI' },
+  { limit:1 }
+);
+assert.equal(directReferenceCandidates[0].id, referenceCandidates[0].id);
+assert.equal(directReferenceScoring.recipeCompatibleWithSlideType(directReferenceCandidates[0], 'metric-comparison'), true);
 
 const assetGenerationHelpers = createAssetGenerationHelpers({
   factualGeneratedAssetRisk: /客户现场|真实客户/i,

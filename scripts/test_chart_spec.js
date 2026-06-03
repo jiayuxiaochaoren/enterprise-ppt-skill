@@ -1,6 +1,7 @@
 const assert = require('assert/strict');
 const {
   chartAcceptanceGate,
+  issueCategoryForFinding,
   chartSemanticQA,
   chartSpecToComponentId,
   chartVisualQA,
@@ -108,6 +109,8 @@ const strictRepairGate = chartAcceptanceGate({ industry: 'general-operations' },
 }), { slides: [{ slide: 1, missingRequiredComponents: [] }] }, { strict: true });
 assert.equal(strictRepairGate.status, 'fail');
 assert.equal(strictRepairGate.findings.some(f => f.type === 'acceptanceChartSpecRepairInStrictMode'), true);
+assert.equal(issueCategoryForFinding({ type: 'acceptanceComponentNotConsumed' }), 'component_gap');
+assert.equal(issueCategoryForFinding({ type: 'monthlySeriesNotLine' }), 'routing_error');
 
 const waterfall = spec(beauty, {
   type: 'content',

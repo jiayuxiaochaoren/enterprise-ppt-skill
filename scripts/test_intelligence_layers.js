@@ -13,6 +13,19 @@ const {
   semanticMeaning,
   visualAestheticModel
 } = require('./design-system');
+const {
+  MICROCOPY_TRANSLATIONS_ZH
+} = require('./design/language-microcopy-translations');
+const {
+  MICROCOPY_CORE_TRANSLATIONS_ZH
+} = require('./design/language-microcopy-translations-core');
+const {
+  MICROCOPY_DOMAIN_TRANSLATIONS_ZH
+} = require('./design/language-microcopy-translations-domain');
+const {
+  MICROCOPY_ACRONYMS,
+  MICROCOPY_TOKEN_TRANSLATIONS_ZH
+} = require('./design/language-microcopy-tokens');
 
 const manufacturingPlan = { industry:'manufacturing-operations', title:'设备运维升级方案' };
 const rootCauseSlide = {
@@ -123,9 +136,21 @@ assert.equal(generatedCover.assetGeneration.status, 'required', 'explicit genera
 assert.ok(generatedCover.generatedAssetPrompt && /no text/i.test(generatedCover.generatedAssetPrompt), 'generated prompt should enforce no text');
 
 const zhLanguagePlan = { title:'中文方案汇报', slides:[{ title:'平台总体架构' }] };
+const microcopyShardEntryCount =
+  Object.keys(MICROCOPY_CORE_TRANSLATIONS_ZH).length +
+  Object.keys(MICROCOPY_DOMAIN_TRANSLATIONS_ZH).length;
+assert.equal(MICROCOPY_TRANSLATIONS_ZH.size, microcopyShardEntryCount, 'microcopy shards should merge without duplicate or missing keys');
+assert.equal(MICROCOPY_CORE_TRANSLATIONS_ZH['VALUE SIGNAL'], '价值信号');
+assert.equal(MICROCOPY_DOMAIN_TRANSLATIONS_ZH['SITE · DATA · ALARM · DISPATCH · VALUE'], '站点 · 数据 · 告警 · 调度 · 价值');
+assert.equal(MICROCOPY_TRANSLATIONS_ZH.get('SOLUTION BLUEPRINT'), '方案蓝图');
+assert.equal(MICROCOPY_TRANSLATIONS_ZH.get('VALUE SIGNAL'), MICROCOPY_CORE_TRANSLATIONS_ZH['VALUE SIGNAL']);
+assert.equal(MICROCOPY_TRANSLATIONS_ZH.get('CHART'), MICROCOPY_DOMAIN_TRANSLATIONS_ZH.CHART);
+assert.equal(MICROCOPY_TOKEN_TRANSLATIONS_ZH.EDGE, '边缘');
+assert.equal(MICROCOPY_ACRONYMS.has('OEE'), true);
 assert.equal(languagePolicyFor(zhLanguagePlan).localizeNonEssentialMicrocopy, true, 'Chinese decks should localize non-essential visible microcopy');
 assert.equal(localizeMicrocopy(zhLanguagePlan, 'SOLUTION BLUEPRINT'), '方案蓝图');
 assert.equal(localizeMicrocopy(zhLanguagePlan, 'EDGE  →  DATA  →  DISPATCH  →  MANAGEMENT'), '边缘 → 数据 → 调度 → 管理');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'SITE · DATA · ALARM · DISPATCH · VALUE'), '站点 · 数据 · 告警 · 调度 · 价值');
 assert.equal(localizeMicrocopy(zhLanguagePlan, 'OEE'), 'OEE', 'standard acronyms should be preserved');
 assert.equal(localizeMicrocopy({ language:'en', title:'English report' }, 'SOLUTION BLUEPRINT'), 'SOLUTION BLUEPRINT');
 

@@ -7,6 +7,10 @@ const CHART_SPEC_SUPPRESSED_NATIVE_VARIANTS = new Set([
   'product-evidence-story',
   'value-creation-process-map'
 ]);
+const {
+  CHART_ROUTE_TYPES,
+  createRouteSanitizationHelpers
+} = require('./slide-route-sanitization');
 
 function createSlideNormalizationHelpers(deps = {}) {
   const {
@@ -32,6 +36,12 @@ function createSlideNormalizationHelpers(deps = {}) {
     slideHasChartIntent,
     visualSystem
   } = deps;
+  const {
+    sanitizeRouteInput
+  } = createRouteSanitizationHelpers({
+    highValuePageFamilies,
+    layoutVariantCompatibleWithType
+  });
 
   function nativeVariantOwnsChartZone(s = {}) {
     const variant = String(s.layoutVariant || s.variant || '');
@@ -54,51 +64,14 @@ function createSlideNormalizationHelpers(deps = {}) {
 
   function normalizeSlide(plan = {}, s = {}, index = 0, total = 1) {
     const typePick = recommendSlideType(plan, s, index, total);
-    const routedInput = Object.assign({}, s);
-    const routeSanitization = {
-      version: 'route-sanitization/v1',
-      mode: plan.normalizationMode || plan.normalization_mode || (plan.finalized || plan.plannerFinalized ? 'finalized' : 'compat'),
-      removed: [],
-      recomputed: [],
-      active: []
-    };
-    const recordRemoval = (field, value, reason) => {
-      routeSanitization.removed.push({
-        field,
-        reason,
-        previousValueRef: `previous${field.charAt(0).toUpperCase()}${field.slice(1)}`,
-        previousKind: value && typeof value === 'object' ? (Array.isArray(value) ? 'array' : 'object') : typeof value
-      });
-    };
-    if (routedInput.layoutVariant && !layoutVariantCompatibleWithType(typePick.type, routedInput.layoutVariant)) {
-      recordRemoval('layoutVariant', routedInput.layoutVariant, `layoutVariant incompatible with normalized type ${typePick.type}`);
-      routedInput.previousLayoutVariant = routedInput.previousLayoutVariant || routedInput.layoutVariant;
-      delete routedInput.layoutVariant;
-    }
-    if (routedInput.variant && (!routedInput.layoutVariant || routedInput.variant !== routedInput.layoutVariant) && !layoutVariantCompatibleWithType(typePick.type, routedInput.variant)) {
-      recordRemoval('variant', routedInput.variant, `variant incompatible with normalized type ${typePick.type}`);
-      routedInput.previousVariant = routedInput.previousVariant || routedInput.variant;
-      delete routedInput.variant;
-    }
-    const proofObjectVariant = String(routedInput.proofObject || routedInput.proof_object || '').trim();
-    if (proofObjectVariant && highValuePageFamilies.has(proofObjectVariant) && !layoutVariantCompatibleWithType(typePick.type, proofObjectVariant)) {
-      recordRemoval('proofObject', proofObjectVariant, `proofObject incompatible with normalized type ${typePick.type}`);
-      routedInput.previousProofObject = routedInput.previousProofObject || proofObjectVariant;
-      delete routedInput.proofObject;
-      delete routedInput.proof_object;
-    }
-    if (!['metric-comparison', 'industry-chart', 'finance-bridge'].includes(typePick.type) && routedInput.chartSpec) {
-      recordRemoval('chartSpec', routedInput.chartSpec, `chartSpec not valid for normalized type ${typePick.type}`);
-      routedInput.previousChartSpec = routedInput.previousChartSpec || routedInput.chartSpec;
-      delete routedInput.chartSpec;
-      delete routedInput.chartSpecInferred;
-    }
-    if (!['metric-comparison', 'industry-chart', 'finance-bridge'].includes(typePick.type) && (routedInput.dataComponent || routedInput.data_component)) {
-      recordRemoval('dataComponent', routedInput.dataComponent || routedInput.data_component, `dataComponent not valid for normalized type ${typePick.type}`);
-      routedInput.previousDataComponent = routedInput.previousDataComponent || routedInput.dataComponent || routedInput.data_component;
-      delete routedInput.dataComponent;
-      delete routedInput.data_component;
-    }
+    const {
+      previousAssetGeneration,
+      previousComponentPlan,
+      previousCompositionPlan,
+      routedInput,
+      routeChanged,
+      routeSanitization
+    } = sanitizeRouteInput(plan, s, typePick);
     const signals = contentSignals(plan, s, index, total);
     const recipe = selectReferenceRecipe(plan, Object.assign({}, routedInput, { type:typePick.type }), signals);
     const out = Object.assign({}, routedInput, {
@@ -137,7 +110,7 @@ function createSlideNormalizationHelpers(deps = {}) {
     if (out.type === 'metric-comparison' && !Array.isArray(out.metrics)) {
       out.metrics = deriveMetricsFromSlide(out).slice(0, 4);
     }
-    const shouldPlanChartSpec = ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(out.type) && !nativeVariantOwnsChartZone(out) && slideHasChartIntent(out);
+    const shouldPlanChartSpec = CHART_ROUTE_TYPES.has(out.type) && !nativeVariantOwnsChartZone(out) && slideHasChartIntent(out);
     if (shouldPlanChartSpec && (!out.chartSpec || out.chartSpec.version !== 'chartSpec/v1')) {
       const chartSpec = routeChartSpec(plan, out, { index:index + 1, total });
       if (chartSpec) {
@@ -154,8 +127,14 @@ function createSlideNormalizationHelpers(deps = {}) {
     }
     const design = slideDesign(plan, out);
     out.compositionPlan = out.compositionPlan || compositionPlan(plan, out, index, total, contentSignals(plan, out, index, total), recipe, design);
+    if (previousCompositionPlan) {
+      routeSanitization.recomputed.push({
+        field: 'compositionPlan',
+        reason: 'composition plan recomputed after route-sensitive metadata normalization'
+      });
+    }
     const plannedComponents = componentPlanFor(plan, out, index, total, contentSignals(plan, out, index, total), out.compositionPlan);
-    if (routeSanitization.removed.length) {
+    if (routeChanged || previousComponentPlan) {
       routeSanitization.recomputed.push({
         field: 'componentPlan',
         reason: 'component plan recomputed after route-sensitive metadata normalization'
@@ -178,32 +157,28 @@ function createSlideNormalizationHelpers(deps = {}) {
     out.visualDensity = out.visualDensity || out.compositionPlan.visualDensity || out.compositionPlan.density;
     out.rhythmTransition = out.rhythmTransition || out.compositionPlan.rhythmTransition;
     const assetGeneration = generatedAssetPolicy(plan, out, recipe, design);
-    if (routeSanitization.removed.length && out.assetGeneration) {
-      out.previousAssetGeneration = out.previousAssetGeneration || out.assetGeneration;
+    if (routeChanged || previousAssetGeneration) {
+      if (previousAssetGeneration) out.previousAssetGeneration = out.previousAssetGeneration || previousAssetGeneration;
       routeSanitization.recomputed.push({
         field: 'assetGeneration',
         reason: 'asset-generation decision recomputed after route-sensitive metadata normalization'
       });
       out.assetGeneration = Object.assign({}, assetGeneration, {
-        previousDecisionStale: true,
+        previousDecisionStale: Boolean(previousAssetGeneration),
         staleForRoute: false
       });
     } else {
       out.assetGeneration = out.assetGeneration || assetGeneration;
     }
-    if (routeSanitization.removed.length && out.generatedAssetPrompt) {
-      out.previousGeneratedAssetPrompt = out.previousGeneratedAssetPrompt || out.generatedAssetPrompt;
-      delete out.generatedAssetPrompt;
-      routeSanitization.removed.push({
-        field: 'generatedAssetPrompt',
-        reason: 'generated asset prompt removed because route-sensitive metadata changed',
-        previousValueRef: 'previousGeneratedAssetPrompt',
-        previousKind: 'string'
-      });
-    }
     if (assetGeneration.status === 'required' && !(out.image || (out.visual && out.visual.image))) {
       out.generatedAssetPrompt = out.generatedAssetPrompt || generatedAssetPrompt(plan, out, recipe);
     }
+    routeSanitization.after = {
+      type: out.type || '',
+      layoutVariant: out.layoutVariant || '',
+      variant: out.variant || '',
+      proofObject: out.proofObject || out.proof_object || ''
+    };
     routeSanitization.active = [
       'type',
       out.layoutVariant ? 'layoutVariant' : '',
@@ -212,7 +187,7 @@ function createSlideNormalizationHelpers(deps = {}) {
       out.assetGeneration ? 'assetGeneration' : '',
       out.componentPlan ? 'componentPlan' : ''
     ].filter(Boolean);
-    if (routeSanitization.removed.length || routeSanitization.recomputed.length) {
+    if (routeSanitization.removed.length || routeSanitization.suppressed.length || routeSanitization.recomputed.length) {
       out.routeSanitization = routeSanitization;
     }
     return applyPlanAuthoredSourceTrace(plan, out, index);

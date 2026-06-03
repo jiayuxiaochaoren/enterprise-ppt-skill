@@ -1,11 +1,21 @@
 const assert = require('assert/strict');
 const {
+  FONT_STACK,
+  VISUAL_SYSTEM,
+  industryMatchIds,
   normalizeTypographyOptions,
   resolveTypeToken,
   typographyAudit,
   typographyFontSet,
-  typographyProfileFor
+  typographyProfileFor,
+  visualIndustryId
 } = require('./design-system');
+const {
+  deepMerge
+} = require('./design/design-system-policy');
+const {
+  createTypographyTokenHelpers
+} = require('./design/typography-tokens');
 
 const beauty = { industry: 'beauty-consumer' };
 const finance = { industry: 'finance-investment' };
@@ -16,6 +26,16 @@ assert.equal(beautyProfile.fonts.editorial, 'Songti SC');
 const beautyCover = resolveTypeToken(beauty, 'coverTitle');
 assert.equal(beautyCover.fontFace, 'Songti SC');
 assert.ok(beautyCover.size >= 33);
+
+const tokenHelpers = createTypographyTokenHelpers({
+  visualSystem: VISUAL_SYSTEM,
+  fontStack: FONT_STACK,
+  deepMerge,
+  compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
+  industryMatchIds,
+  visualIndustryId
+});
+assert.deepEqual(tokenHelpers.resolveTypeToken(beauty, 'coverTitle'), beautyCover);
 
 const beautyBody = resolveTypeToken(beauty, 'body');
 assert.ok(beautyBody.size >= 10);
@@ -34,6 +54,16 @@ const cjkBody = normalizeTypographyOptions(beauty, '消费者画像必须绑定�
 });
 assert.equal(cjkBody.fontFace, 'PingFang SC');
 assert.ok(cjkBody.fontSize >= 9);
+assert.deepEqual(
+  tokenHelpers.normalizeTypographyOptions(beauty, '消费者画像必须绑定场景、理由、购买或复购信号。', {
+    fontSize: 6.8,
+    x: 1,
+    y: 2,
+    w: 4,
+    h: 0.18
+  }),
+  cjkBody
+);
 
 const latinLabel = normalizeTypographyOptions(beauty, 'CONSUMER PROOF PHOTO GRID', {
   typeRole: 'kicker',

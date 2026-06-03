@@ -2,6 +2,9 @@ const assert = require('assert/strict');
 const {
   createSlideRoutingHelpers
 } = require('./design/slide-routing');
+const {
+  createLayoutVariantPicker
+} = require('./design/slide-layout-variant-routing');
 
 const defaultSignals = {
   first: false,
@@ -29,7 +32,7 @@ const defaultSignals = {
   flywheelCount: 0
 };
 
-const helpers = createSlideRoutingHelpers({
+const routingDeps = {
   contentSignals: (plan, slide, index, total) => Object.assign({}, defaultSignals, {
     first: index === 0,
     last: index === total - 1
@@ -47,7 +50,9 @@ const helpers = createSlideRoutingHelpers({
   staleIndustryChartRouteShouldYieldToProcess: slide => slide.staleProcess === true,
   themeIntentFor: (plan, slide) => slide.themeIntent || '',
   visualIndustryId: industry => industry === 'beauty-consumer' ? 'brand-retail' : industry
-});
+};
+const helpers = createSlideRoutingHelpers(routingDeps);
+const layoutVariantPicker = createLayoutVariantPicker(routingDeps);
 
 assert.equal(
   helpers.recipeAutoRouteAllowed({ renderType:'timeline' }, {}, defaultSignals),
@@ -90,6 +95,10 @@ assert.equal(
 assert.equal(
   helpers.pickLayoutVariant({ industry:'brand-retail' }, { lookbook:true, signals:{ imageCount:2 } }, 'case-gallery'),
   'lookbook-story'
+);
+assert.equal(
+  layoutVariantPicker.pickLayoutVariant({ industry:'brand-retail' }, { lookbook:true, signals:{ imageCount:2 } }, 'case-gallery'),
+  helpers.pickLayoutVariant({ industry:'brand-retail' }, { lookbook:true, signals:{ imageCount:2 } }, 'case-gallery')
 );
 assert.equal(
   helpers.pickLayoutVariant({ industry:'finance-investment' }, {}, 'closing'),

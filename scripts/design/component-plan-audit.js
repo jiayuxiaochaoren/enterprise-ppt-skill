@@ -1,3 +1,8 @@
+const {
+  componentAliasTargetFor,
+  isComponentAlias
+} = require('../render/component-capability-manifest');
+
 function createComponentPlanAuditHelpers({
   flattenText = value => String(value || ''),
   hasComponentCapability = () => false,
@@ -30,6 +35,14 @@ function createComponentPlanAuditHelpers({
         return;
       }
       components.forEach(component => {
+        if (isComponentAlias(component.id)) {
+          findings.push({
+            slide: i + 1,
+            level: 'fail',
+            type: 'componentAliasNotCanonical',
+            message: `component alias ${component.id} must be normalized to ${componentAliasTargetFor(component.id)}`
+          });
+        }
         if (!hasComponentCapability(component.id)) {
           findings.push({
             slide: i + 1,

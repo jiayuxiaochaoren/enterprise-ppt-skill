@@ -3,8 +3,14 @@ const {
   createContentSignalHelpers
 } = require('./design/content-signals');
 const {
+  createSemanticChartVariantHelpers
+} = require('./design/semantic-chart-variants');
+const {
   createSemanticModelHelpers
 } = require('./design/semantic-model');
+const {
+  createSemanticProofCandidateHelpers
+} = require('./design/semantic-proof-candidates');
 const {
   flattenText,
   keywordHit,
@@ -53,7 +59,7 @@ const profile = {
   ]
 };
 
-const semantic = createSemanticModelHelpers({
+const semanticDeps = {
   contentSignals: content.contentSignals,
   flattenText,
   hasArrayField: content.hasArrayField,
@@ -68,7 +74,13 @@ const semantic = createSemanticModelHelpers({
     ownership: /负责人|责任/
   },
   visualIndustryId: id => id
-});
+};
+
+const semantic = createSemanticModelHelpers(semanticDeps);
+const chartVariantHelpers = createSemanticChartVariantHelpers(Object.assign({}, semanticDeps, {
+  industryProofCandidates: (...args) => semantic.industryProofCandidates(...args)
+}));
+const proofHelpers = createSemanticProofCandidateHelpers(semanticDeps);
 
 const slide = {
   type: 'industry-chart',
@@ -88,9 +100,15 @@ assert.equal(candidates[0].id, 'downtime-pareto');
 assert.ok(candidates[0].score >= 4);
 assert.ok(candidates[0].keywordHits.includes('停机'));
 
+const directCandidates = proofHelpers.industryProofCandidates({ industry:'manufacturing-operations' }, slide, signals);
+assert.deepEqual(directCandidates, candidates);
+assert.equal(proofHelpers.fieldHitScore(slide, ['downtimePareto', 'missing']), 4);
+
 const relations = semantic.semanticRelationProfile(flattenText(slide));
 assert.equal(relations.cause, true);
 assert.equal(relations.ownership, true);
+
+assert.deepEqual(proofHelpers.semanticRelationProfile(flattenText(slide)), relations);
 
 const meaning = semantic.semanticMeaning({ industry:'manufacturing-operations' }, slide, signals);
 assert.equal(meaning.bestProofObject, 'downtime-pareto');
@@ -103,10 +121,24 @@ assert.equal(semantic.dataGrammarVariant({ industry:'brand-retail' }, {
   title:'渠道投放 ROAS 和花费效率',
   items:[]
 }), 'channel-efficiency-matrix');
+assert.equal(chartVariantHelpers.dataGrammarVariant({ industry:'brand-retail' }, {
+  title:'渠道投放 ROAS 和花费效率',
+  items:[]
+}), semantic.dataGrammarVariant({ industry:'brand-retail' }, {
+  title:'渠道投放 ROAS 和花费效率',
+  items:[]
+}));
 assert.equal(semantic.industryChartVariant({ industry:'energy-utility' }, {
   title:'站点储能告警调度',
   siteDispatch:[{ title:'A站' }]
 }), 'dispatch-map');
+assert.equal(chartVariantHelpers.industryChartVariant({ industry:'energy-utility' }, {
+  title:'站点储能告警调度',
+  siteDispatch:[{ title:'A站' }]
+}), semantic.industryChartVariant({ industry:'energy-utility' }, {
+  title:'站点储能告警调度',
+  siteDispatch:[{ title:'A站' }]
+}));
 
 const frame = semantic.semanticFrame({ industry:'manufacturing-operations' }, slide, signals);
 assert.equal(frame.primaryIntent, 'industryChart');

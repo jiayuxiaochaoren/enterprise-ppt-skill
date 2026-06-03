@@ -252,6 +252,13 @@ assert.ok(
   componentPlanAudit({ slides:[unknownComponentPlan] }, { slides:[unknownComponentPlan] }).findings.some(f => f.type === 'unknownComponentId'),
   'unknown component ids should be surfaced as audit findings'
 );
+assert.ok(
+  componentPlanAudit(
+    { slides:[{ type:'content', title:'alias plan' }] },
+    { slides:[{ type:'content', title:'alias plan', componentPlan:{ version:'component-plan/v1', components:[{ id:'gallery-grid', required:true }] } }] }
+  ).findings.some(f => f.type === 'componentAliasNotCanonical'),
+  'component aliases should be normalized before they enter executable plans'
+);
 
 const energySample = normalizeDeckPlan(require('../examples/sample-deck-plan.json'));
 const energyComponentsBySlide = energySample.slides.map(s => new Set(s.componentPlan.componentIds));
