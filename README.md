@@ -64,7 +64,8 @@ npm run verify:delivery
 │   ├── material_to_deck_plan.js
 │   ├── generate_pptx.js             # 根据 deck plan 生成可编辑 PPTX
 │   ├── validate_pptx.js             # PPTX 结构和文本验证
-│   └── visual_qa.js                 # 预览图和视觉 QA
+│   ├── visual_qa.js                 # 预览图和视觉 QA 编排
+│   └── qa/                          # visual/render-meta QA 子模块
 ├── assets/
 │   ├── visual-system.json           # 视觉系统配置
 │   ├── copy-policy.json             # 可见文案和 fallback 策略
@@ -150,15 +151,59 @@ npm run clean:outputs
 npm run test:intelligence
 npm run test:orchestration-contract
 npm run test:materials
+node scripts/audit_hardening_readiness.js --summary-md out/hardening-dashboard.md
 ```
 
 Renderer family smoke tests can be scoped with `--family` or the npm shortcuts for `architecture`、`closing`、`cover`、`evidence-gallery`、`financial`、`risk`，用于单个页面族迁移后的快速回归。
 
+Changed-file 最小门禁可用：
+
+```bash
+node scripts/run_all_tests.js --changed-files scripts/render/text-meta.js --explain
+node scripts/run_all_tests.js --changed-files scripts/render/text-meta.js --explain --json
+node scripts/run_all_tests.js --changed-files scripts/render/text-meta.js
+node scripts/run_all_tests.js --changed-files scripts/render/text-meta.js --profile fast
+node scripts/run_all_tests.js --group visual --profile fast --list --json
+node scripts/run_all_tests.js --group visual --profile slow --list
+node scripts/run_all_tests.js --changed-file scripts/render/text-meta.js --changed-file scripts/test_timeline_renderers.js --explain
+node scripts/run_all_tests.js --changed-files scripts/render/chrome/canvas-motifs.js --explain
+node scripts/run_all_tests.js --changed-files scripts/render/overlay-component-renderer.js --explain
+node scripts/run_all_tests.js --changed-files scripts/render/industry/energy-deployment-renderers.js --explain
+node scripts/run_all_tests.js --changed-files scripts/design/semantic-proof-candidates.js --explain
+node scripts/run_all_tests.js --changed-files scripts/design/design-system-foundation-helpers.js --explain
+node scripts/run_all_tests.js --changed-files scripts/design/language-microcopy-translations.js --explain
+node scripts/run_all_tests.js --changed-files scripts/qa/visual-slide-audit-primitives.js --explain
+node scripts/run_all_tests.js --changed-files scripts/qa/hardening-readiness-summary.js --explain
+node scripts/run_all_tests.js --changed-files scripts/reports/hardening-readiness-format.js --explain
+node scripts/run_all_tests.js --changed-files scripts/deck_asset_decision_gate.js
+node scripts/run_all_tests.js --changed-files scripts/material_to_delivery.js
+```
+
+默认最小门禁映射为：
+
+- renderer-only/runtime/layout/page-family/renderer fixture 改动：`unit + render + visual`，包括 `scripts/render/overlay-*`、`scripts/render/industry/*-renderers.js`、page-family primitives/splits
+- asset-only/provenance/asset-generation/attribution 改动：`unit + pipeline + delivery`
+- material-only/ingest/orchestration/model-results/material fixture 改动：`pipeline + delivery`
+- design planning/chart/routing/language helper 改动：`unit + pipeline + visual`，包括 design-system foundation/planning helpers、microcopy、semantic/source-trace/typography splits
+- visual QA/baseline/QA audit 改动：`unit + visual + delivery`，包括 `scripts/qa/visual-*`、render-meta schema、route metadata、component consumption audits
+- delivery verification/hardening dashboard/report 改动：`unit + delivery + audit:hardening`
+- test runner/profile mapping 改动：`unit`
+- docs/skill/reference 改动：`validate:skill + unit`
+
+`--changed-files` 接受逗号分隔列表；`--changed-file` 可重复传入，适合从 git hook 或本地脚本逐项追加路径。`--explain` 只输出匹配规则和建议命令，不运行测试；`--explain --json` 可给本地脚本或 CI 读取。无法识别的路径会回退到全量 group 并建议 `npm test`。
+
+本地内循环可以在 changed-file gate 后追加 `--profile fast`，会保留匹配到的 test group，但跳过慢速 fixture、截图和 delivery 回归；交付或 handoff 前以 `--explain` 输出的 `MINIMUM GATES` 为准，不加 `--profile fast`。`npm run test:slow` 只跑慢速集合，适合在 fast 通过后补跑 fixture/render/visual 的重项。`--list` 只列出当前 group/profile/changed-file 组合会运行的测试，不执行测试，可用于审计 fast/slow profile 是否覆盖了预期门禁。
+
 预览验证优先使用 macOS Keynote；无 Keynote 时会尝试 LibreOffice/soffice + pdftoppm，仍不可用时进入 render-meta/metadata fallback，并在 summary 中标记 preview provider。
+
+截图基线回归可用 `node scripts/visual_qa.js deck.pptx --preview-dir out/preview --baseline path/to/baseline-manifest.json --quality-mode formal --json`。区域级 manifest 示例见 [visual-baseline-region-manifest.example.json](examples/visual-baseline-region-manifest.example.json)，生成、更新和负例说明见 [Screenshot Baseline QA](references/screenshot-baseline-qa.md)。
+
+Hardening dashboard 可用 `node scripts/audit_hardening_readiness.js --json --summary-md out/hardening-dashboard.md` 同时输出机器可读摘要和 Markdown 任务表，逐项标记 code path、render-meta、automated QA、rendered proof 证据状态，并汇总 required objective coverage、P0/P1/P2 objective coverage、P2 热点 facade、大型 layout 模块、dashboard 依赖模块的行数预算、headroom、usage 和 changed-file test profile gates。
 
 当前工程基线见 [2026-05-29 Delivery Baseline](references/release-notes/2026-05-29-delivery-baseline.md)。
 本轮材料/renderer/CI 基线见 [2026-05-30 Material And Renderer Hardening](references/release-notes/2026-05-30-material-renderer-hardening.md)。
 后续 renderer 拆分基线见 [2026-05-31 Renderer Decomposition Follow-up](references/release-notes/2026-05-31-renderer-decomposition-followup.md)。
+Renderer 主文件减重基线见 [2026-06-01 Renderer Runtime Slimdown](references/release-notes/2026-06-01-renderer-runtime-slimdown.md)。
 
 ## 参考文档
 

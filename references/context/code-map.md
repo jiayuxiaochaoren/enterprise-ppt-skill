@@ -35,43 +35,63 @@ Use this map before opening large implementation files.
 - `assets/reference-recipe-library.json`: lightweight manifest for reference recipes.
 - `assets/reference-recipes/index.json`: compact searchable recipe index. Do not open directly unless debugging recipe retrieval.
 - `assets/reference-recipes/shards/**`: full recipe details split by render type.
-- `scripts/design-system.js`: main design decision layer.
+- `scripts/design-system.js`: thin facade for the design decision layer.
   - `makeDeckContext`: deck-level visual context.
   - `normalizeDeckPlan`: prepares a deck plan for rendering.
   - `applyDeckRhythm`: infers cross-slide rhythm.
   - `languagePolicyFor`: visible language policy.
   - `localizeMicrocopy`: localizes non-essential labels and renderer microcopy.
   - `resolveSlideVisual`: slide-level visual mode, image role, and treatment.
+  - `scripts/design/design-system-foundation-runtime.js`: asset/config/library loading plus source/content/typography foundation helpers.
+  - `scripts/design/design-system-core-runtime.js`: industry policy, visual media, art direction, composition, semantic, narrative, and aesthetic helper assembly.
+  - `scripts/design/design-system-audit-runtime.js`: design/audit gate assembly.
+  - `scripts/design/design-system-planning-runtime.js`: reference recipe, asset generation, routing, normalization, rhythm, and deck context assembly.
+  - `scripts/design/design-system-exports.js`: explicit public export contract for the facade.
+  - `scripts/design/proof-object.js`: proof object id normalization and synthetic-vs-real evidence classification.
+  - `scripts/design/industry-knowledge-audit.js`: industry proof-object coverage profile and audit.
+  - `scripts/design/deck-plan-normalization.js`: normalize/rhythm/claim-spine deck plan pipeline.
+  - `scripts/design/deck-context.js`: deck context factory used by renderers.
+  - `scripts/design/design-system-policy.js`: deep merge plus industry visual policy and design dialect helpers.
 - `scripts/design/config.js`: configuration loaders for assets.
 - `scripts/design/language-policy.js`: visible-language inference and microcopy localization.
+  - `scripts/design/language-microcopy-translations.js`: direct English-to-Chinese microcopy dictionary.
+  - `scripts/design/language-microcopy-tokens.js`: token-level translations plus acronym preservation list.
+- `scripts/design/source-trace.js`: source trace facade.
+  - `scripts/design/source-trace-core.js`: source trace merging, plan-authored trace, proof id preference, and image-ref helpers.
+  - `scripts/design/source-trace-audit.js`: explainability, metric source, generated-only evidence, and asset authorization audits.
 - `scripts/design/reference-recipes.js`: recipe manifest, compact index, and shard adapter.
 
 ## Rendering
 
-- `scripts/generate_pptx.js`: deterministic PPTX renderer and shared drawing helper host.
-  - `addLabel`: shared visible label renderer. It must pass through language localization.
-  - `sectionKicker`: small section labels.
-  - `renderCover`: cover pages.
-  - `renderAgenda` / `renderToc`: navigation pages.
-  - `renderArchitecture`: architecture and blueprint pages.
-  - `renderTimeline`: pathway and loop pages.
-  - `renderCaseGallery`: gallery/evidence pages.
-  - `renderMetricComparison`: metrics and KPI pages.
-  - `renderRiskTable`: risk/governance pages.
-  - `renderClosing`: closing pages.
-  - `RENDER_META`: output metadata for validation and debugging.
+- `scripts/generate_pptx.js`: deterministic PPTX renderer entrypoint. It now owns CLI parsing, deck normalization, PPTX initialization, render session state, per-slide dispatch, component consumption, and render-meta output.
+- `scripts/render/render-runtime.js`: internal runtime assembler for renderer context, page-family renderer factories, industry overrides, fallback renderer wiring, and registry creation from the complete family renderer map.
+- `scripts/render/renderer-api.js`: internal renderer API factory that combines chrome helper groups with content, component, chart, and design-system adapters before runtime assembly.
+- `scripts/render/chrome-helpers.js`: thin facade over shared chrome helper groups.
+- `scripts/render/chrome/**`: internal helper groups for theme/deck meta, shape and line primitives, media/photo panels, and canvas/page chrome.
+- `scripts/render/fallback-renderer.js`: internal unknown-slide fallback renderer used only when strict rendering does not block fallback.
 - `scripts/render/registry.js`: renderer registry used by `generate_pptx.js`.
-- `scripts/render/renderer-context.js`: stable context passed to extracted page-family renderers, including executable helper and color-token contracts.
+- `scripts/render/renderer-context.js`: thin facade for stable renderer context creation and compatible contract exports.
+- `scripts/render/context/contracts.js`: internal renderer helper/color contract definitions, flatten/missing-key checks, family grouping, and audited context proxy helpers.
 - `scripts/render/page-families/**`: page-family route ownership and extracted high-value renderer implementations.
+  - `primitives.js`: shared page-family drawing primitives for page headers, footers, metric cards, and evidence panels.
+  - `business.js`: business family wrapper; owns comparison, report board, value tiles, and executive blocks/cards.
+  - `strategy-evidence.js`: strategy/evidence proof variants reused by strategy, financial, and evidence-gallery routes.
   - `financial.js`: financial family wrapper; delegates investment, results, scorecard, and industry renderers.
-  - `risk.js`: risk family wrapper; delegates governance/risk board renderers to `risk-boards.js`.
-  - `closing.js`: closing family wrapper; delegates generic/adaptive closing renderers to `closing-core.js` and industry-specific endings to `closing-industry.js`.
-  - `evidence-gallery.js`: evidence gallery family wrapper; delegates generic gallery implementation to `evidence-gallery-core.js` and specialized proof/industry modules.
+  - `risk.js`: risk family wrapper; `risk-boards.js` is a thin facade over `risk-board-layouts.js`.
+  - `closing.js`: closing family wrapper; `closing-core.js` wires adaptive routing across standard and industry closing modules.
+  - `evidence-gallery.js`: evidence gallery family wrapper; `evidence-gallery-core.js` is a thin facade over gallery layouts plus specialized proof/industry modules.
   - `cover.js`: cover family wrapper; delegates cover implementation to `cover-core.js`.
   - `architecture.js`: architecture family wrapper; delegates generic architecture renderers to `architecture-core.js` and specialized energy/industry modules.
-  - Remaining decomposition work should target renderer equivalence fixtures and context-contract hardening before moving more families.
+  - Remaining decomposition work should target renderer equivalence fixtures, context-contract hardening, and smaller helper factories rather than expanding `generate_pptx.js`.
 - `examples/renderer-family-fixtures/**`: focused renderer family regression plans; run `scripts/test_renderer_family_fixtures.js --family <name>` or `--fixture <file>` for scoped smoke checks.
 - `scripts/components/**`: reusable chart, table, scorecard, gallery, and proof components.
+- `scripts/chart-spec.js`: compatibility facade for chart routing, data sufficiency, and chart QA contracts.
+  - `scripts/design/chart-spec-constants.js`: chart ids, field keys, and routing regex constants.
+  - `scripts/design/chart-data-utils.js`: generic data coercion, metric extraction, and source trace helpers.
+  - `scripts/design/chart-intent.js`: chart-intent detection and requested-kind routing.
+  - `scripts/design/chart-data-shape.js`: chart data shaping and sufficiency checks.
+  - `scripts/design/chart-spec-routing.js`: chartSpec normalization, downgrade, information-gap, and component mapping.
+  - `scripts/design/chart-spec-qa.js`: semantic, visual, evidence, page score, and acceptance-gate QA.
 
 ## QA
 
@@ -79,6 +99,11 @@ Use this map before opening large implementation files.
 - `scripts/preview/provider.js`: Keynote, LibreOffice, and metadata fallback preview provider adapter.
 - `scripts/reports/delivery-report.js`: shared JSON/Markdown summary formatting for validation, delivery, and verification runs, including the human-readable evidence snapshot.
 - `scripts/visual_qa.js`: visual/readability/composition checks from previews and deck plan metadata.
+  - `scripts/qa/visual-slide-audit.js`: per-slide XML readability, overlap, blank-region, and text-density checks.
+  - `scripts/qa/visual-preview-audit.js`: preview PNG readability and adjacent-slide similarity checks.
+  - `scripts/qa/screenshot-baseline-audit.js`: screenshot baseline manifest comparison and region coverage checks.
+  - `scripts/qa/visual-plan-audit.js`: plan-aware aesthetic, chart, component, asset, and delivery-readiness QA aggregation.
+  - `scripts/qa/render-meta-audits.js`: compatibility facade for render-meta schema, route, content coverage, overlay, and component consumption audits.
 - `scripts/run_all_tests.js`: grouped test runner for unit, pipeline, render, visual, and delivery layers, with fast/slow/full profiles for PR and nightly gates.
 - `scripts/test_intelligence_layers.js`: broad design intelligence regression.
 - `scripts/test_orchestration_contract.js`: staged orchestration schema/contract regression.

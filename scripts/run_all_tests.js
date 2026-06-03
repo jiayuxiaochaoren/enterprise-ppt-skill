@@ -2,11 +2,12 @@
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+const { profileSummaryForChangedFiles } = require('./test-profile-mapping');
 
 const ROOT = path.resolve(__dirname, '..');
 const TEST_GROUPS = {
   unit: [
-    /^test_(architecture_core_renderers|architecture_energy_renderers|architecture_industry_renderers|chart_spec|closing_core_renderers|closing_industry_renderers|closing_routing|composition_strategy|content_signals|cover_core_renderers|deck_rhythm_helpers|density_strategy|design_proof_profile|design_system_modules|design_text_utils|evidence_brand_story_renderers|evidence_gallery_core_renderers|evidence_gallery_routing|evidence_industry_renderers|evidence_proof_board_renderers|financial_chart_utils|financial_industry_renderers|financial_investment_renderers|financial_results_renderers|financial_scorecard_renderers|image_layout_strategy|metadata_policy|quality_mode|render_content_helpers|render_geometry|render_meta_audits|render_meta_schema|renderer_modularization|risk_board_renderers|routing|semantic_model|slide_normalization_helpers|slide_routing_helpers|typography_system|visual_qa_utils)\.js$/
+    /^test_(architecture_core_renderers|architecture_energy_renderers|architecture_industry_renderers|beauty_renderers|business_renderers|chapter_renderers|chart_spec|chrome_helpers|closing_core_renderers|closing_industry_renderers|closing_routing|composition_strategy|content_signals|cover_core_renderers|deck_rhythm_helpers|density_strategy|design_proof_profile|design_system_modules|design_text_utils|evidence_brand_story_renderers|evidence_gallery_core_renderers|evidence_gallery_routing|evidence_industry_renderers|evidence_proof_board_renderers|fallback_renderer|financial_chart_utils|financial_industry_renderers|financial_investment_renderers|financial_results_renderers|financial_scorecard_renderers|hardening_dashboard|hardening_matrix_contract|hardening_readiness_helpers|image_layout_strategy|manifesto_renderers|metadata_policy|page_family_splits|profile_mapping|profile_renderers|quality_mode|render_content_helpers|render_geometry|render_meta_audits|render_meta_schema|render_runtime|renderer_api|renderer_context_contract|renderer_modularization|risk_board_renderers|routing|semantic_model|skill_metadata|slide_normalization_helpers|slide_routing_helpers|strategy_renderers|timeline_renderers|toc_renderers|typography_system|visual_qa_utils)\.js$/
   ],
   pipeline: [
     /^test_(acceptance_briefs|asset_decision_gate|composition_planner|connector_pages|industry_pack_depth|intelligence_layers|material_modules|material_pipeline|model_orchestration|orchestration_contract|reference_recipe_system|rhythm_planner)\.js$/
@@ -39,6 +40,14 @@ function parseArgs(argv) {
     if (arg === '--pattern') opts.pattern = new RegExp(argv[++i] || '');
     else if (arg === '--group') opts.group = argv[++i];
     else if (arg === '--profile') opts.profile = argv[++i];
+    else if (arg === '--changed-files') opts.changedFiles = String(argv[++i] || '').split(',').map(file => file.trim()).filter(Boolean);
+    else if (arg === '--changed-file') {
+      opts.changedFiles = opts.changedFiles || [];
+      opts.changedFiles.push(String(argv[++i] || '').trim());
+    }
+    else if (arg === '--explain') opts.explain = true;
+    else if (arg === '--list') opts.list = true;
+    else if (arg === '--json') opts.json = true;
     else if (arg === '--help' || arg === '-h') opts.help = true;
     else throw new Error(`unknown argument: ${arg}`);
   }
@@ -46,14 +55,15 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  console.error(`Usage: node scripts/run_all_tests.js [--pattern regex] [--group ${Object.keys(TEST_GROUPS).join('|')}] [--profile fast|slow|full]`);
+  console.error(`Usage: node scripts/run_all_tests.js [--pattern regex] [--group ${Object.keys(TEST_GROUPS).join('|')}] [--profile fast|slow|full] [--changed-files file1,file2] [--explain] [--list] [--json]`);
 }
 
-function matchesGroup(file, group) {
-  if (!group) return true;
-  const patterns = TEST_GROUPS[group];
-  if (!patterns) throw new Error(`unknown test group: ${group}`);
-  return patterns.some(pattern => pattern.test(file));
+function matchesGroup(file, groups) {
+  if (!groups || !groups.length) return true;
+  groups.forEach(group => {
+    if (!TEST_GROUPS[group]) throw new Error(`unknown test group: ${group}`);
+  });
+  return groups.some(group => TEST_GROUPS[group].some(pattern => pattern.test(file)));
 }
 
 function matchesProfile(file, profile) {
@@ -69,13 +79,50 @@ function main() {
     usage();
     return;
   }
+  const changedFiles = opts.changedFiles || [];
+  const changedProfile = changedFiles.length ? profileSummaryForChangedFiles(changedFiles, { cwd: ROOT }) : null;
+  if (opts.explain) {
+    if (!changedProfile) throw new Error('--explain requires --changed-files or --changed-file');
+    if (opts.json) console.log(JSON.stringify(changedProfile, null, 2));
+    else {
+      console.log(`CHANGED-FILE PROFILE groups=${changedProfile.groups.join(',') || 'none'} rules=${changedProfile.matchedRules.map(rule => rule.id).join(',') || 'none'} fallbackToFull=${changedProfile.fallbackToFull}`);
+      if (changedProfile.unmatched.length) console.log(`UNMATCHED ${changedProfile.unmatched.join(',')}`);
+      if (changedProfile.commands.length) console.log(`MINIMUM GATES ${changedProfile.commands.join(' && ')}`);
+    }
+    return;
+  }
+  const selectedGroups = opts.group
+    ? [opts.group]
+    : (changedProfile ? changedProfile.groups : []);
   const tests = fs.readdirSync(path.join(ROOT, 'scripts'))
     .filter(file => opts.pattern.test(file))
-    .filter(file => matchesGroup(file, opts.group))
+    .filter(file => matchesGroup(file, selectedGroups))
     .filter(file => matchesProfile(file, opts.profile))
     .sort();
   if (!tests.length) {
     throw new Error('no test scripts matched');
+  }
+
+  if (opts.list) {
+    const payload = {
+      version: 'test-runner-selection/v1',
+      group: opts.group || null,
+      profile: opts.profile || 'full',
+      changedProfile,
+      tests
+    };
+    if (opts.json) console.log(JSON.stringify(payload, null, 2));
+    else {
+      if (changedProfile) console.log(`CHANGED-FILE PROFILE groups=${changedProfile.groups.join(',') || 'none'} rules=${changedProfile.matchedRules.map(rule => rule.id).join(',') || 'none'} fallbackToFull=${changedProfile.fallbackToFull}`);
+      console.log(`SELECTED TESTS ${tests.length}`);
+      tests.forEach(file => console.log(file));
+    }
+    return;
+  }
+
+  if (changedProfile) {
+    console.log(`CHANGED-FILE PROFILE groups=${changedProfile.groups.join(',') || 'none'} rules=${changedProfile.matchedRules.map(rule => rule.id).join(',') || 'none'} fallbackToFull=${changedProfile.fallbackToFull}`);
+    if (changedProfile.commands.length) console.log(`MINIMUM GATES ${changedProfile.commands.join(' && ')}`);
   }
 
   const results = [];
