@@ -11,7 +11,10 @@
       "description": "Formal review requires all P0 hardening families to be implemented and test-backed."
     },
     "delivery": {
-      "description": "Delivery additionally requires P1 hardening completion and template readiness proof."
+      "description": "Delivery additionally requires P1 hardening completion, quality severity matrix readiness, screenshot baseline QA readiness, text shrink/blank-page QA readiness, and template readiness proof."
+    },
+    "maintenance": {
+      "description": "Maintenance readiness requires P2 hardening completion, healthy module budgets, ready page-family primitives, and passing test profile gates."
     }
   },
   "deliveryGates": [
@@ -31,6 +34,269 @@
       "artifacts": [
         "outputs/hardening-smoke/sample.pptx",
         "outputs/hardening-smoke/sample.pptx.render-meta.json"
+      ]
+    }
+  ],
+  "testProfileGates": [
+    {
+      "id": "renderer-only",
+      "changedFiles": ["scripts/render/text-meta.js"],
+      "expectedRuleIds": ["renderer"],
+      "expectedGroups": ["unit", "render", "visual"],
+      "expectedCommands": ["npm run test:unit", "npm run test:render", "npm run test:visual"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "asset-only",
+      "changedFiles": ["scripts/deck_asset_decision_gate.js"],
+      "expectedRuleIds": ["asset"],
+      "expectedGroups": ["unit", "pipeline", "delivery"],
+      "expectedCommands": ["npm run test:unit", "npm run test:pipeline", "npm run test:delivery"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "material-only",
+      "changedFiles": ["scripts/material_to_delivery.js"],
+      "expectedRuleIds": ["material"],
+      "expectedGroups": ["pipeline", "delivery"],
+      "expectedCommands": ["npm run test:pipeline", "npm run test:delivery"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "design-planning",
+      "changedFiles": ["scripts/design/semantic-proof-candidates.js"],
+      "expectedRuleIds": ["design"],
+      "expectedGroups": ["unit", "pipeline", "visual"],
+      "expectedCommands": ["npm run test:unit", "npm run test:pipeline", "npm run test:visual"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "visual-qa",
+      "changedFiles": ["scripts/qa/visual-slide-audit-primitives.js"],
+      "expectedRuleIds": ["visual-qa"],
+      "expectedGroups": ["unit", "visual", "delivery"],
+      "expectedCommands": ["npm run test:unit", "npm run test:visual", "npm run test:delivery"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "delivery-readiness",
+      "changedFiles": ["scripts/qa/hardening-module-budgets.js", "scripts/qa/hardening-require-closure.js", "scripts/qa/hardening-page-family-primitives.js", "scripts/qa/hardening-quality-severity.js", "scripts/qa/hardening-screenshot-baseline.js", "scripts/qa/hardening-task-contract-shapes.js", "scripts/qa/hardening-task-summary.js", "scripts/qa/hardening-text-blank.js", "scripts/qa/hardening-readiness-modes.js", "scripts/qa/hardening-readiness-subsystems.js", "scripts/qa/hardening-readiness-summary.js", "scripts/reports/hardening-readiness-report.js", "scripts/reports/hardening-readiness-human.js", "scripts/reports/hardening-readiness-format.js"],
+      "expectedRuleIds": ["delivery-readiness"],
+      "expectedGroups": ["unit", "delivery"],
+      "expectedCommands": ["npm run test:unit", "npm run test:delivery", "npm run audit:hardening"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "runner-and-docs",
+      "changedFiles": ["scripts/run_all_tests.js", "README.md"],
+      "expectedRuleIds": ["test-profile", "docs-skill"],
+      "expectedGroups": ["unit"],
+      "expectedCommands": ["npm run test:unit", "npm run validate:skill"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "unknown-path-fallback",
+      "changedFiles": ["scripts/new-unknown-area.js"],
+      "expectedRuleIds": [],
+      "expectedGroups": ["unit", "pipeline", "render", "visual", "delivery"],
+      "expectedCommands": ["npm test"],
+      "expectedFallbackToFull": true
+    }
+  ],
+  "testProfileGateCoverage": {
+    "requiredGateIds": ["renderer-only", "asset-only", "material-only"]
+  },
+  "objectiveCoverage": [
+    {
+      "id": "P0-01",
+      "priority": "P0",
+      "title": "Component Drawn Evidence full coverage",
+      "evidenceTaskIds": ["P0-02", "P1-01", "P1-04"],
+      "requiredEvidence": ["codePath", "renderMeta", "automatedQa", "renderedProof"]
+    },
+    {
+      "id": "P0-02",
+      "priority": "P0",
+      "title": "Asset Decision and Provenance auditability",
+      "evidenceTaskIds": ["P0-07", "P1-07", "P1-08", "P1-11"],
+      "requiredEvidence": ["codePath", "renderMeta", "automatedQa"]
+    },
+    {
+      "id": "P0-03",
+      "priority": "P0",
+      "title": "Render-Meta Schema Gate",
+      "evidenceTaskIds": ["P1-10", "P0-02"],
+      "requiredEvidence": ["codePath", "renderMeta", "automatedQa"]
+    },
+    {
+      "id": "P0-04",
+      "priority": "P0",
+      "title": "Stale Route Metadata Audit",
+      "evidenceTaskIds": ["P0-08", "P0-09"],
+      "requiredEvidence": ["codePath", "renderMeta", "automatedQa"]
+    },
+    {
+      "id": "P1-01",
+      "priority": "P1",
+      "title": "Component Capability Manifest",
+      "evidenceTaskIds": ["P0-03", "P1-01", "P1-03"],
+      "requiredEvidence": ["codePath", "renderMeta", "automatedQa"]
+    },
+    {
+      "id": "P1-02",
+      "priority": "P1",
+      "title": "Formal Quality Severity Matrix",
+      "evidenceTaskIds": ["P1-06", "P1-09", "P1-10"],
+      "requiredEvidence": ["codePath", "renderMeta", "automatedQa"]
+    },
+    {
+      "id": "P1-03",
+      "priority": "P1",
+      "title": "Screenshot Baseline productization",
+      "evidenceTaskIds": ["P0-04", "P2-01"],
+      "requiredEvidence": ["codePath", "automatedQa", "renderedProof"]
+    },
+    {
+      "id": "P1-04",
+      "priority": "P1",
+      "title": "Text Shrink and Blank Page detection",
+      "evidenceTaskIds": ["P0-05", "P0-06"],
+      "requiredEvidence": ["codePath", "renderMeta", "automatedQa", "renderedProof"]
+    },
+    {
+      "id": "P2-01",
+      "priority": "P2",
+      "title": "Large Module Layering",
+      "evidenceTaskIds": ["P2-04"],
+      "moduleBudgetIds": ["p2-01-hotspot-facades"],
+      "requiredEvidence": ["codePath", "automatedQa"]
+    },
+    {
+      "id": "P2-02",
+      "priority": "P2",
+      "title": "Page-Family Primitives expanded coverage",
+      "evidenceTaskIds": ["P2-02"],
+      "moduleBudgetIds": ["p2-02-layout-modules"],
+      "requiredEvidence": ["codePath", "automatedQa"]
+    },
+    {
+      "id": "P2-03",
+      "priority": "P2",
+      "title": "Test Profile speed-up",
+      "evidenceTaskIds": ["P2-04"],
+      "testProfileGateIds": ["renderer-only", "asset-only", "material-only"],
+      "requiredEvidence": ["codePath", "automatedQa"]
+    },
+    {
+      "id": "P2-04",
+      "priority": "P2",
+      "title": "Hardening Dashboard",
+      "evidenceTaskIds": ["P2-04"],
+      "moduleBudgetIds": ["p2-01-hotspot-facades", "p2-02-layout-modules", "p2-04-hardening-dashboard-modules"],
+      "testProfileGateIds": ["renderer-only", "asset-only", "material-only", "design-planning", "visual-qa", "delivery-readiness", "runner-and-docs", "unknown-path-fallback"],
+      "deliveryGateIds": ["formal-validate-with-visual-qa", "hardening-smoke-visual-qa"],
+      "requiredEvidence": ["codePath", "automatedQa"]
+    }
+  ],
+  "objectiveCoverageContract": {
+    "requiredObjectiveIds": ["P0-01", "P0-02", "P0-03", "P0-04", "P1-01", "P1-02", "P1-03", "P1-04", "P2-01", "P2-02", "P2-03", "P2-04"]
+  },
+  "moduleBudgets": [
+    {
+      "id": "p2-01-hotspot-facades",
+      "title": "P2-01 hotspot facades and helper closure stay slim after decomposition",
+      "maxLines": 300,
+      "requireClosureRoots": [
+        "scripts/design-system.js",
+        "scripts/chart-spec.js",
+        "scripts/visual_qa.js",
+        "scripts/qa/render-meta-audits.js"
+      ],
+      "files": [
+        "scripts/design-system.js",
+        "scripts/chart-spec.js",
+        "scripts/visual_qa.js",
+        "scripts/qa/visual-qa-cli.js",
+        "scripts/qa/render-meta-audits.js"
+      ],
+      "directories": [
+        {
+          "path": "scripts/design",
+          "extension": ".js"
+        },
+        {
+          "path": "scripts/components",
+          "extension": ".js"
+        },
+        {
+          "path": "scripts/qa",
+          "extension": ".js"
+        },
+        {
+          "path": "scripts/render",
+          "extension": ".js"
+        }
+      ]
+    },
+    {
+      "id": "p2-02-layout-modules",
+      "title": "P2-02 page-family modules stay within the 300-line budget",
+      "maxLines": 300,
+      "directories": [
+        {
+          "path": "scripts/render/page-families",
+          "extension": ".js"
+        }
+      ]
+    },
+    {
+      "id": "p2-04-hardening-dashboard-modules",
+      "title": "P2-04 hardening dashboard modules stay slim and auditable",
+      "maxLines": 300,
+      "requireClosureRoots": [
+        "scripts/audit_hardening_readiness.js"
+      ],
+      "files": [
+        "scripts/audit_hardening_readiness.js",
+        "scripts/qa/hardening-delivery-gates.js",
+        "scripts/qa/hardening-evidence-state.js",
+        "scripts/qa/hardening-readiness-environment.js",
+        "scripts/qa/hardening-matrix-contract.js",
+        "scripts/qa/hardening-matrix-contract-shapes.js",
+        "scripts/qa/hardening-module-budgets.js",
+        "scripts/qa/hardening-require-closure.js",
+        "scripts/qa/hardening-objective-contract-shapes.js",
+        "scripts/qa/hardening-objective-coverage.js",
+        "scripts/qa/hardening-page-family-primitives.js",
+        "scripts/qa/hardening-quality-severity.js",
+        "scripts/qa/hardening-quality-modes.js",
+        "scripts/qa/hardening-readiness-cli.js",
+        "scripts/qa/hardening-readiness-modes.js",
+        "scripts/qa/hardening-readiness-subsystems.js",
+        "scripts/qa/hardening-readiness-summary.js",
+        "scripts/qa/hardening-screenshot-baseline.js",
+        "scripts/qa/hardening-task-contract-shapes.js",
+        "scripts/qa/hardening-text-blank.js",
+        "scripts/qa/hardening-template-summary.js",
+        "scripts/qa/hardening-test-profile-gates.js",
+        "scripts/qa/hardening-task-summary.js",
+        "scripts/qa/quality-severity-commercial.js",
+        "scripts/qa/quality-severity-matrix.js",
+        "scripts/qa/quality-severity-policy.js",
+        "scripts/render/page-families/primitive-chrome.js",
+        "scripts/render/page-families/primitive-content.js",
+        "scripts/render/page-families/primitive-contract.js",
+        "scripts/render/page-families/primitive-dark-header.js",
+        "scripts/render/page-families/primitive-evidence.js",
+        "scripts/render/page-families/primitive-headers.js",
+        "scripts/render/page-families/primitive-light-header.js",
+        "scripts/render/page-families/primitive-metrics.js",
+        "scripts/render/page-families/primitive-stage-shell.js",
+        "scripts/render/page-families/primitives.js",
+        "scripts/reports/hardening-readiness-format.js",
+        "scripts/reports/hardening-readiness-human.js",
+        "scripts/reports/hardening-readiness-report.js",
+        "scripts/test-profile-mapping.js"
       ]
     }
   ],
@@ -282,7 +548,7 @@
       "owner": "qa-fixtures",
       "status": "pass",
       "affectsVisualOutput": true,
-      "files": ["scripts/test_visual_layout_qa.js", "scripts/test_visual_qa_baseline.js", "scripts/test_visual_qa_content_coverage.js", "scripts/test_visual_qa_overlap.js", "scripts/test_visual_qa_render_counts.js", "scripts/test_typography_system.js"],
+      "files": ["scripts/visual_qa.js", "scripts/qa/visual-qa-cli.js", "scripts/qa/screenshot-baseline-audit.js", "scripts/qa/content-coverage-audit.js", "scripts/qa/visual-slide-audit.js", "scripts/test_visual_layout_qa.js", "scripts/test_visual_qa_baseline.js", "scripts/test_visual_qa_content_coverage.js", "scripts/test_visual_qa_overlap.js", "scripts/test_visual_qa_render_counts.js", "scripts/test_typography_system.js"],
       "tests": ["node scripts/test_visual_layout_qa.js"],
       "renderedProof": ["outputs/test-visual-qa-baseline/preview/slide1.png", "outputs/test-visual-qa-content-coverage/blank-body.pptx", "outputs/test-visual-qa-overlap/text-covered-by-shape.pptx", "outputs/test-visual-qa-render-counts/missing-card.pptx"],
       "remainingGaps": []
@@ -290,12 +556,12 @@
     {
       "id": "P2-02",
       "priority": "P2",
-      "title": "Asset Prompt Planner Execution Status",
-      "owner": "asset-pipeline",
+      "title": "Page-Family Primitive Reuse Contract",
+      "owner": "renderer-maintenance",
       "status": "pass",
       "affectsVisualOutput": false,
-      "files": ["scripts/asset_prompt_planner.js", "scripts/test_asset_decision_gate.js", "package.json"],
-      "tests": ["node scripts/test_asset_decision_gate.js"],
+      "files": ["scripts/render/page-families/primitives.js", "scripts/render/page-families/primitive-contract.js", "scripts/render/page-families/primitive-chrome.js", "scripts/render/page-families/primitive-content.js", "scripts/render/page-families/primitive-evidence.js", "scripts/render/page-families/primitive-headers.js", "scripts/render/page-families/primitive-metrics.js", "scripts/test_page_family_splits.js"],
+      "tests": ["node scripts/test_page_family_splits.js", "node scripts/test_risk_board_renderers.js", "node scripts/test_evidence_gallery_core_renderers.js"],
       "renderedProof": [],
       "remainingGaps": []
     },
@@ -318,8 +584,8 @@
       "owner": "fixture-readiness",
       "status": "pass",
       "affectsVisualOutput": false,
-      "files": ["assets/hardening-readiness-matrix.json", "scripts/audit_hardening_readiness.js", "package.json"],
-      "tests": ["node scripts/audit_hardening_readiness.js"],
+      "files": ["assets/hardening-readiness-matrix.json", "scripts/audit_hardening_readiness.js", "scripts/qa/hardening-delivery-gates.js", "scripts/qa/hardening-evidence-state.js", "scripts/qa/hardening-readiness-environment.js", "scripts/qa/hardening-matrix-contract.js", "scripts/qa/hardening-matrix-contract-shapes.js", "scripts/qa/hardening-module-budgets.js", "scripts/qa/hardening-require-closure.js", "scripts/qa/hardening-objective-contract-shapes.js", "scripts/qa/hardening-objective-coverage.js", "scripts/qa/hardening-quality-modes.js", "scripts/qa/hardening-readiness-cli.js", "scripts/qa/hardening-readiness-modes.js", "scripts/qa/hardening-readiness-subsystems.js", "scripts/qa/hardening-readiness-summary.js", "scripts/qa/hardening-task-contract-shapes.js", "scripts/qa/hardening-task-summary.js", "scripts/qa/hardening-template-summary.js", "scripts/qa/hardening-test-profile-gates.js", "scripts/reports/hardening-readiness-format.js", "scripts/reports/hardening-readiness-human.js", "scripts/reports/hardening-readiness-report.js", "scripts/run_all_tests.js", "scripts/test-profile-mapping.js", "scripts/test_hardening_dashboard.js", "scripts/test_hardening_matrix_contract.js", "scripts/test_hardening_readiness_helpers.js", "scripts/test_profile_mapping.js", "package.json"],
+      "tests": ["node scripts/audit_hardening_readiness.js", "node scripts/test_hardening_dashboard.js", "node scripts/test_hardening_matrix_contract.js", "node scripts/test_hardening_readiness_helpers.js", "node scripts/test_profile_mapping.js"],
       "renderedProof": [],
       "remainingGaps": []
     }

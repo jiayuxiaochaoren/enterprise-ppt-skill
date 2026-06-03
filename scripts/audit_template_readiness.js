@@ -1,95 +1,34 @@
 #!/usr/bin/env node
-const fs = require('fs');
 const path = require('path');
+const {
+  REQUIRED_PAGE_FAMILIES,
+  REQUIRED_STATUS_FIELDS,
+  STATUS_RANK,
+  STATUS_VALUES
+} = require('./qa/template-readiness-constants');
+const { runTemplateReadinessCli } = require('./qa/template-readiness-cli');
+const { createTemplateReadinessFiles } = require('./qa/template-readiness-files');
 
 const ROOT = path.resolve(__dirname, '..');
 const MATRIX_PATH = path.join(ROOT, 'assets', 'template-readiness-matrix.json');
-const STATUS_VALUES = ['missing', 'partial', 'pass'];
-const STATUS_RANK = { missing: 0, partial: 1, pass: 2 };
-const REQUIRED_STATUS_FIELDS = [
-  'recipe',
-  'visualGrammar',
-  'renderer',
-  'orchestration',
-  'qa',
-  'fixturePptx',
-  'previewPng',
-  'acceptanceDeck'
-];
-const REQUIRED_PAGE_FAMILIES = [
-  'financial-kpi-snapshot',
-  'chart-grid-with-commentary',
-  'quarterly-results-summary',
-  'guidance-and-risk-board',
-  'value-creation-process-map',
-  'materiality-matrix-board',
-  'sustainability-proof-spread',
-  'governance-table-editorial',
-  'culture-cover-with-soft-geometry',
-  'mission-statement-stage',
-  'people-proof-mosaic',
-  'value-principle-cards',
-  'beauty-brand-editorial-cover',
-  'brand-world-and-business-proof',
-  'consumer-proof-photo-grid',
-  'product-evidence-story',
-  'airy-concept-opening',
-  'single-object-concept-map',
-  'executive-proof-board',
-  'premium-closing-anchor'
-];
-
-function rel(p) {
-  return path.relative(ROOT, p).split(path.sep).join('/');
-}
-
-function absolute(p) {
-  if (!p) return '';
-  return path.isAbsolute(p) ? p : path.join(ROOT, p);
-}
-
-function readText(relPath) {
-  try {
-    return fs.readFileSync(path.join(ROOT, relPath), 'utf8');
-  } catch (_) {
-    return '';
-  }
-}
-
-function readJson(relPath, fallback) {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(ROOT, relPath), 'utf8'));
-  } catch (_) {
-    return fallback;
-  }
-}
-
-function listFiles(dir, predicate = () => true) {
-  try {
-    return fs.readdirSync(dir)
-      .map(name => path.join(dir, name))
-      .filter(file => fs.statSync(file).isFile())
-      .filter(predicate);
-  } catch (_) {
-    return [];
-  }
-}
-
-function countPngs(dir) {
-  try {
-    return fs.readdirSync(dir).filter(name => /\.png$/i.test(name)).length;
-  } catch (_) {
-    return 0;
-  }
-}
+const {
+  absolute,
+  countPngs,
+  fileExists,
+  listFiles,
+  readAbsoluteText,
+  readJson,
+  readText,
+  rel
+} = createTemplateReadinessFiles(ROOT);
 
 function evidenceStrengthForRow(row = {}) {
   const statuses = row.statuses || {};
   const fixtures = row.fixtures || {};
   const fixtureEvidence = [fixtures.plan, fixtures.pptx, fixtures.preview, fixtures.renderMeta]
     .filter(Boolean)
-    .every(file => fs.existsSync(absolute(file)));
-  const qaEvidence = row.qa && row.qa.evidence && fs.existsSync(absolute(row.qa.evidence));
+    .every(file => fileExists(file));
+  const qaEvidence = row.qa && row.qa.evidence && fileExists(row.qa.evidence);
   const acceptanceEvidence = Array.isArray(row.acceptanceEvidence) && row.acceptanceEvidence.length > 0;
   const statusAllPass = REQUIRED_STATUS_FIELDS.every(field => normalizeStatus(statuses[field]) === 'pass');
   if (statusAllPass && fixtureEvidence && qaEvidence && acceptanceEvidence) return 'strong';
@@ -120,7 +59,7 @@ function collectAcceptanceEvidence(matrix) {
   const decks = Array.isArray(manifest.decks) ? manifest.decks : [];
   const deckBySlug = new Map(decks.map(deck => [deck.slug, deck]));
   listFiles(planDir, file => /\.json$/i.test(file)).forEach(file => {
-    const text = fs.readFileSync(file, 'utf8');
+    const text = readAbsoluteText(file);
     const slug = path.basename(file, '.json');
     const deck = deckBySlug.get(slug) || {};
     REQUIRED_PAGE_FAMILIES.forEach(id => {
@@ -175,7 +114,7 @@ function qaStatus(row, qaText) {
 }
 
 function fixtureStatus(filePath) {
-  return filePath && fs.existsSync(absolute(filePath)) ? 'pass' : 'missing';
+  return fileExists(filePath) ? 'pass' : 'missing';
 }
 
 function acceptanceStatus(row, acceptanceEvidence) {
@@ -207,22 +146,25 @@ function summarize(matrix) {
   const generateText = [
     readText('scripts/generate_pptx.js'),
     ...listFiles(path.join(ROOT, 'scripts', 'render', 'page-families'), file => /\.js$/i.test(file))
-      .map(file => fs.readFileSync(file, 'utf8'))
+      .map(file => readAbsoluteText(file))
   ].join('\n');
   const orchestrationText = [
     readText('scripts/material_orchestration_prompt.js'),
     readText('scripts/material_pipeline.js'),
     readText('scripts/material/clarification.js'),
+    readText('scripts/material/claim-to-slide.js'),
     readText('scripts/material/deck-plan-compiler.js'),
     readText('scripts/material/extraction-schema.js'),
     readText('scripts/material/ingest.js'),
+    readText('scripts/material/orchestration-prompts.js'),
+    readText('scripts/material/orchestration-schemas.js'),
     readText('scripts/material_to_deck_plan.js'),
     readText('scripts/industry_acceptance_matrix.js')
   ].join('\n');
   const qaText = [
     designText,
     readText('scripts/visual_qa.js'),
-    ...listFiles(path.join(ROOT, 'scripts'), file => /^test_.*\.js$/.test(path.basename(file))).map(file => fs.readFileSync(file, 'utf8'))
+    ...listFiles(path.join(ROOT, 'scripts'), file => /^test_.*\.js$/.test(path.basename(file))).map(file => readAbsoluteText(file))
   ].join('\n');
   const acceptanceEvidence = collectAcceptanceEvidence(matrix);
   const context = { recipeLibraryText, designText, generateText, orchestrationText, qaText, acceptanceEvidence };
@@ -340,45 +282,9 @@ function summarize(matrix) {
   };
 }
 
-function printHuman(summary) {
-  console.log('Template readiness audit');
-  console.log(`Matrix: ${summary.matrix}`);
-  console.log(`Coverage: ${summary.pageFamilyCount}/${summary.requiredPageFamilyCount} priority page families`);
-  REQUIRED_STATUS_FIELDS.forEach(field => {
-    const t = summary.totals[field];
-    console.log(`${field.padEnd(15)} pass ${String(t.pass).padStart(2)}  partial ${String(t.partial).padStart(2)}  missing ${String(t.missing).padStart(2)}`);
-  });
-  console.log(`Evidence strength ${' '.padEnd(1)}strong ${String(summary.evidenceStrength.strong || 0).padStart(2)}  moderate ${String(summary.evidenceStrength.moderate || 0).padStart(2)}  partial ${String(summary.evidenceStrength.partial || 0).padStart(2)}  weak ${String(summary.evidenceStrength.weak || 0).padStart(2)}`);
-  console.log('');
-  const blockers = summary.issues.filter(issue =>
-    issue.type === 'missing-renderer' ||
-    issue.type === 'missing-rendered-preview' ||
-    issue.type === 'overstated-status'
-  );
-  if (blockers.length) {
-    console.log('Blocking gaps');
-    blockers.slice(0, 80).forEach(issue => {
-      console.log(`- ${issue.id}: ${issue.message}`);
-    });
-    if (blockers.length > 80) console.log(`- ... ${blockers.length - 80} more`);
-  } else {
-    console.log('No blocking gaps found.');
-  }
-}
-
-function main() {
-  const matrix = readJson(path.relative(ROOT, MATRIX_PATH), null);
-  if (!matrix) {
-    console.error(`Missing or invalid matrix: ${rel(MATRIX_PATH)}`);
-    process.exit(1);
-  }
-  const summary = summarize(matrix);
-  if (process.argv.includes('--json')) {
-    console.log(JSON.stringify(summary, null, 2));
-  } else {
-    printHuman(summary);
-  }
-  process.exit(summary.blockingCount === 0 && summary.allPass ? 0 : 1);
-}
-
-main();
+runTemplateReadinessCli({
+  matrixPath: MATRIX_PATH,
+  readJson,
+  rel,
+  summarize
+});
