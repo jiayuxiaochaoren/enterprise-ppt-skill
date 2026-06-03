@@ -8,6 +8,7 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-visual-qa-render-counts');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+let visualQaRunId = 0;
 
 function plannedComponent(overrides = {}) {
   return {
@@ -39,7 +40,15 @@ function baseRenderMeta({ title, drawnCount, mode = 'native-renderer', planned =
       assetDecision: {
         version: 'asset-decision/v1',
         status: 'none',
-        mode: 'structure-only'
+        mode: 'structure-only',
+        action: 'structure_only',
+        reason: 'no image required for resolved slide route',
+        riskLevel: 'low',
+        originalRole: 'none',
+        resolvedRole: 'none',
+        provenanceClass: 'none',
+        proofEligibility: ['none'],
+        boundAssetCount: 0
       },
       nativeRendererContract: {
         version: 'native-renderer-contract/v1',
@@ -57,7 +66,8 @@ function baseRenderMeta({ title, drawnCount, mode = 'native-renderer', planned =
         drawnCount,
         nativeSlot: 'cards',
         bbox: { x: 0.8, y: 1.5, w: 8, h: 3 },
-        rendererModule: 'test'
+        rendererModule: 'test',
+        rendererMethod: 'testCards'
       }],
       consumedComponents: [{
         id: 'content-card-grid',
@@ -66,7 +76,8 @@ function baseRenderMeta({ title, drawnCount, mode = 'native-renderer', planned =
         rendered: true,
         drawnCount,
         nativeSlot: mode === 'native-renderer' ? 'cards' : '',
-        bbox: { x: 0.8, y: 1.5, w: 8, h: 3 }
+        bbox: { x: 0.8, y: 1.5, w: 8, h: 3 },
+        rendererMethod: mode === 'native-renderer' ? 'testCards' : ''
       }],
       missingRequiredComponents: [],
       textBoxes: [{ text: title, x: 0.8, y: 0.65, w: 7.4, h: 0.36 }]
@@ -92,11 +103,17 @@ async function writeFixture(name, plan, renderMeta, labels) {
 }
 
 function runQa(pptxPath, planPath) {
-  const qa = cp.spawnSync(process.execPath, ['scripts/visual_qa.js', pptxPath, '--plan', planPath, '--json'], {
+  const args = ['scripts/visual_qa.js', pptxPath, '--plan', planPath, '--json'];
+  const stdoutPath = path.join(OUT, `visual-qa-${++visualQaRunId}.json`);
+  const stdoutFd = fs.openSync(stdoutPath, 'w');
+  const qa = cp.spawnSync(process.execPath, args, {
     cwd: ROOT,
-    encoding: 'utf8'
+    encoding: 'utf8',
+    stdio: ['ignore', stdoutFd, 'pipe']
   });
-  return { qa, result: JSON.parse(qa.stdout) };
+  fs.closeSync(stdoutFd);
+  const stdout = fs.readFileSync(stdoutPath, 'utf8');
+  return { qa: { status: qa.status == null ? 1 : qa.status, stdout, stderr: String(qa.stderr || '') }, result: JSON.parse(stdout) };
 }
 
 (async () => {

@@ -169,7 +169,9 @@ const validationSummary = {
     success: visualQa.success === true,
     fail_count: visualQa.fail_count || 0,
     review_count: visualQa.review_count || 0,
-    quality_mode: visualQa.quality_mode || qualityMode
+    quality_mode: visualQa.quality_mode || qualityMode,
+    severity_policy: visualQa.severity_policy || null,
+    severity_summary: visualQa.severity_summary || (visualQa.severity_policy && visualQa.severity_policy.summary) || null
   } : null,
   checks: {
     exists: true,

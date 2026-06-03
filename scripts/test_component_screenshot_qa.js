@@ -90,7 +90,7 @@ const plan = {
 
 fs.writeFileSync(PLAN, `${JSON.stringify(plan, null, 2)}\n`, 'utf8');
 cp.execFileSync(process.execPath, ['scripts/generate_pptx.js', PLAN, PPTX], { cwd: ROOT, stdio: 'pipe' });
-cp.execFileSync(process.execPath, [
+const validation = JSON.parse(cp.execFileSync(process.execPath, [
   'scripts/validate_pptx.js',
   PPTX,
   '--expect-slides',
@@ -98,8 +98,9 @@ cp.execFileSync(process.execPath, [
   '--require',
   '组件,证据,风险,完成',
   '--preview-dir',
-  PREVIEW
-], { cwd: ROOT, stdio: 'pipe', timeout: 120000 });
+  PREVIEW,
+  '--summary'
+], { cwd: ROOT, encoding: 'utf8', timeout: 120000 }));
 const qa = JSON.parse(cp.execFileSync(process.execPath, [
   'scripts/visual_qa.js',
   PPTX,
@@ -108,7 +109,7 @@ const qa = JSON.parse(cp.execFileSync(process.execPath, [
   '--plan',
   PLAN,
   '--json'
-], { cwd: ROOT, encoding: 'utf8', timeout: 120000 }));
+], { cwd: ROOT, encoding: 'utf8', timeout: 120000, maxBuffer: 20 * 1024 * 1024 }));
 
 const meta = JSON.parse(fs.readFileSync(META, 'utf8'));
 const consumed = meta.slides.flatMap(slide => slide.consumedComponents || []);
@@ -122,13 +123,21 @@ requiredComponents.forEach(id => {
   assert.ok(hit.bbox.y + hit.bbox.h <= 7.5, `${id} bbox should fit canvas height`);
 });
 
-const previews = fs.readdirSync(PREVIEW).filter(file => /\.png$/i.test(file));
-assert.equal(previews.length, plan.slides.length);
-previews.forEach(file => {
-  const stat = fs.statSync(path.join(PREVIEW, file));
-  assert.ok(stat.size > 10000, `${file} should be a non-empty component screenshot`);
-});
+const previews = fs.existsSync(PREVIEW) ? fs.readdirSync(PREVIEW).filter(file => /\.png$/i.test(file)) : [];
+if (validation.preview.status === 'available') {
+  assert.equal(validation.preview.count, plan.slides.length);
+  assert.equal(previews.length, plan.slides.length);
+  previews.forEach(file => {
+    const stat = fs.statSync(path.join(PREVIEW, file));
+    assert.ok(stat.size > 10000, `${file} should be a non-empty component screenshot`);
+  });
+} else {
+  assert.equal(previews.length, 0, 'preview directory should be empty when the provider reports unavailable');
+  assert.ok(['metadata_fallback', 'unavailable'].includes(validation.preview.status), `unexpected preview status ${validation.preview.status}`);
+  assert.equal(validation.preview.error, 'visual_preview_unavailable');
+  assert.ok(validation.preview.detail, 'preview fallback should explain the missing screenshot provider');
+}
 assert.equal(qa.component_consumption_qa.status, 'pass');
 assert.equal(qa.findings.some(f => f.level === 'fail' && /overlap|unreadable|blank/i.test(f.type || f.message || '')), false);
 
-console.log('component screenshot QA ok');
+console.log(validation.preview.status === 'available' ? 'component screenshot QA ok' : 'component screenshot QA metadata fallback ok');

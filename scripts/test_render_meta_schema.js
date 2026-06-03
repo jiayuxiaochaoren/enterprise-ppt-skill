@@ -36,7 +36,19 @@ fs.mkdirSync(OUT, { recursive: true });
         matchKind: 'exact',
         rendererId: 'content'
       },
-      assetDecision: { version: 'asset-decision/v1', status: 'none', mode: 'structure-only' },
+      assetDecision: {
+        version: 'asset-decision/v1',
+        status: 'none',
+        mode: 'structure-only',
+        action: 'structure_only',
+        reason: 'no image required for resolved slide route',
+        riskLevel: 'low',
+        originalRole: 'none',
+        resolvedRole: 'none',
+        provenanceClass: 'none',
+        proofEligibility: ['none'],
+        boundAssetCount: 0
+      },
       plannedComponents: [],
       unknownComponents: [],
       drawnComponents: [],

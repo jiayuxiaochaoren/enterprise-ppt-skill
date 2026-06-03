@@ -8,6 +8,7 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-visual-qa-overlap');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+let visualQaRunId = 0;
 
 async function writeFixture(name, covered) {
   const pptxPath = path.join(OUT, `${name}.pptx`);
@@ -49,11 +50,17 @@ async function writeFixture(name, covered) {
 }
 
 function runQa(pptxPath) {
-  const qa = cp.spawnSync(process.execPath, ['scripts/visual_qa.js', pptxPath, '--json'], {
+  const args = ['scripts/visual_qa.js', pptxPath, '--json'];
+  const stdoutPath = path.join(OUT, `visual-qa-${++visualQaRunId}.json`);
+  const stdoutFd = fs.openSync(stdoutPath, 'w');
+  const qa = cp.spawnSync(process.execPath, args, {
     cwd: ROOT,
-    encoding: 'utf8'
+    encoding: 'utf8',
+    stdio: ['ignore', stdoutFd, 'pipe']
   });
-  return { status: qa.status, stdout: qa.stdout, result: JSON.parse(qa.stdout) };
+  fs.closeSync(stdoutFd);
+  const stdout = fs.readFileSync(stdoutPath, 'utf8');
+  return { status: qa.status == null ? 1 : qa.status, stdout, result: JSON.parse(stdout) };
 }
 
 (async () => {

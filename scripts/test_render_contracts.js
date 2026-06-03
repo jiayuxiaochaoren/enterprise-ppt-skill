@@ -7,6 +7,7 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-render-contracts');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+let jsonCommandRunId = 0;
 
 function writePlan(name, plan) {
   const planPath = path.join(OUT, `${name}.json`);
@@ -19,6 +20,27 @@ function generate(planPath, outName) {
     cwd: ROOT,
     encoding: 'utf8'
   });
+}
+
+function runJsonCommand(args) {
+  const stdoutPath = path.join(OUT, `json-command-${++jsonCommandRunId}.json`);
+  const stdoutFd = fs.openSync(stdoutPath, 'w');
+  try {
+    const result = cp.spawnSync(process.execPath, args, {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', stdoutFd, 'pipe']
+    });
+    fs.closeSync(stdoutFd);
+    return {
+      status: result.status == null ? 1 : result.status,
+      stdout: fs.readFileSync(stdoutPath, 'utf8'),
+      stderr: String(result.stderr || '')
+    };
+  } catch (error) {
+    fs.closeSync(stdoutFd);
+    throw error;
+  }
 }
 
 const unknownType = writePlan('unknown-type-strict', {
@@ -48,6 +70,40 @@ const finalizedStale = writePlan('finalized-stale-route', {
 const finalizedResult = generate(finalizedStale, 'finalized-stale-route.pptx');
 assert.notEqual(finalizedResult.status, 0, 'finalized planner output should fail when normalization changes route-sensitive fields');
 assert.match(`${finalizedResult.stdout}\n${finalizedResult.stderr}`, /planner_output_mutated_during_render/);
+
+const formalAuditedStale = writePlan('formal-audited-stale-route', {
+  qualityMode: 'formal',
+  allowDraftRender: true,
+  industry: 'beauty-consumer',
+  title: 'formal route audit',
+  slides: [{
+    type: 'industry-chart',
+    layoutVariant: 'channel-efficiency-matrix',
+    proofObject: 'timeline',
+    title: '90天打法按阶段推进',
+    phases: [{ title: '验证样品' }, { title: '锁定脚本' }],
+    componentPlan: { version:'component-plan/v1', components:[{ id:'scorecard', required:true }], staleMarker:true },
+    assetGeneration: { status:'required', role:'evidence', reason:'old route expected chart visual' },
+    generatedAssetPrompt: 'OLD ROUTE PROMPT'
+  }]
+});
+const formalAuditedPptx = path.join(OUT, 'formal-audited-stale-route.pptx');
+const formalAuditedResult = cp.spawnSync(process.execPath, ['scripts/generate_pptx.js', formalAuditedStale, formalAuditedPptx], {
+  cwd: ROOT,
+  encoding: 'utf8'
+});
+assert.equal(formalAuditedResult.status, 0, formalAuditedResult.stderr || formalAuditedResult.stdout);
+const formalAuditedMeta = JSON.parse(fs.readFileSync(`${formalAuditedPptx}.render-meta.json`, 'utf8'));
+const routeAuditMeta = formalAuditedMeta.slides[0].routeSanitization;
+assert.ok(routeAuditMeta, 'formal stale route should record routeSanitization');
+assert.ok(routeAuditMeta.suppressed.some(item => item.field === 'componentPlan'));
+assert.ok(routeAuditMeta.suppressed.some(item => item.field === 'assetGeneration'));
+assert.ok(routeAuditMeta.staleForRoute.some(item => item.field === 'generatedAssetPrompt' && item.resolution === 'removed'));
+assert.equal(routeAuditMeta.active.includes('variant'), false);
+assert.equal(formalAuditedMeta.slides[0].assetDecision.staleForRoute, false);
+const formalAuditedQa = runJsonCommand(['scripts/visual_qa.js', formalAuditedPptx, '--plan', formalAuditedStale, '--quality-mode', 'formal', '--json']);
+const formalAuditedQaJson = JSON.parse(formalAuditedQa.stdout);
+assert.equal(formalAuditedQaJson.route_metadata_qa.status, 'pass');
 
 const nativeContractPlan = writePlan('native-contract-product-story', {
   title: '原生组件所有权验证',

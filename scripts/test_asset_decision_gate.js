@@ -56,6 +56,8 @@ const gate = JSON.parse(fs.readFileSync(gatePath, 'utf8'));
 assert.equal(gate.status, 'needs_user_input');
 assert.ok(gate.questions.length >= 2, 'image-led beauty plan should ask for missing visual decisions');
 assert.ok(gate.questions.every(q => q.options.some(o => o.action === 'provide_assets') && q.options.some(o => o.action === 'auto_generate') && q.options.some(o => o.action === 'skip_image')));
+assert.equal(gate.severityPolicy.matrixVersion, 'quality-severity-matrix/v1');
+assert.ok(gate.questions.every(q => q.severityPolicy && q.severityPolicy.formal === 'fail'));
 
 fs.writeFileSync(answersPath, JSON.stringify({
   decisions: {
@@ -72,6 +74,15 @@ assert.equal(resolvedPlan.slides[0].visual.mode, 'generated');
 assert.equal(resolvedPlan.slides[0].assetGeneration.status, 'required');
 assert.equal(resolvedPlan.slides[1].visual.mode, 'solid');
 assert.equal(resolvedPlan.slides[1].assetGeneration.status, 'none');
+const skipAuditPptxPath = path.join(OUT, 'skip-audit.pptx');
+cp.execFileSync(process.execPath, ['scripts/generate_pptx.js', resolvedPlanPath, skipAuditPptxPath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const skipAuditMeta = JSON.parse(fs.readFileSync(`${skipAuditPptxPath}.render-meta.json`, 'utf8'));
+assert.equal(skipAuditMeta.slides[1].assetDecision.action, 'skip_image');
+assert.equal(skipAuditMeta.slides[1].assetDecision.boundAssetCount, 0);
+assert.deepEqual(skipAuditMeta.slides[1].assetDecision.proofEligibility, ['none']);
 
 fs.writeFileSync(blockedPlanPath, JSON.stringify({
   industry: 'beauty-consumer',
@@ -101,6 +112,7 @@ assert.equal(blockedGate.questions.length, 1);
 assert.equal(blockedGate.questions[0].blocked, true);
 assert.equal(blockedGate.questions[0].options.some(o => o.action === 'auto_generate'), false);
 assert.deepEqual(blockedGate.questions[0].allowedActions, ['provide_assets', 'skip_image']);
+assert.equal(blockedGate.questions[0].severityFindingType, 'skippedCriticalAsset');
 
 fs.writeFileSync(blockedAnswersPath, JSON.stringify({
   decisions: {
@@ -202,6 +214,13 @@ cp.execFileSync(process.execPath, ['scripts/generate_pptx.js', bindOutPath, bind
 const renderMeta = JSON.parse(fs.readFileSync(`${bindPptxPath}.render-meta.json`, 'utf8'));
 assert.equal(renderMeta.slides[1].assetDecision.version, 'asset-decision/v1');
 assert.equal(renderMeta.slides[1].assetDecision.status, 'bound');
+assert.equal(renderMeta.slides[1].assetDecision.action, 'bound_asset');
+assert.equal(renderMeta.slides[1].assetDecision.reason, 'asset bound from slide media');
+assert.equal(renderMeta.slides[1].assetDecision.riskLevel, 'low');
+assert.equal(renderMeta.slides[1].assetDecision.originalRole, 'evidence');
+assert.equal(renderMeta.slides[1].assetDecision.resolvedRole, 'evidence');
+assert.equal(renderMeta.slides[1].assetDecision.provenanceClass, 'model-generated-preview');
+assert.deepEqual(renderMeta.slides[1].assetDecision.proofEligibility, ['synthetic-only']);
 assert.equal(renderMeta.slides[1].assetDecision.boundAssetCount, 1);
 assert.equal(renderMeta.slides[1].assetDecision.proofUse, 'synthetic-only');
 const visualQaRun = cp.spawnSync(process.execPath, ['scripts/visual_qa.js', bindPptxPath, '--json'], {

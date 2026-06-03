@@ -1,70 +1,13 @@
-const fs = require('fs');
-const zlib = require('zlib');
-
-function pngInfo(p) {
-  try {
-    const b = fs.readFileSync(p);
-    if (b.length >= 24 && b.toString('ascii', 1, 4) === 'PNG') {
-      return { w:b.readUInt32BE(16), h:b.readUInt32BE(20), bytes:b.length };
-    }
-  } catch (_) {}
-  return null;
-}
-
-function paeth(a, b, c) {
-  const pr = a + b - c;
-  const pa = Math.abs(pr - a);
-  const pb = Math.abs(pr - b);
-  const pc = Math.abs(pr - c);
-  if (pa <= pb && pa <= pc) return a;
-  if (pb <= pc) return b;
-  return c;
-}
+const {
+  decodePngPixels,
+  pngInfo
+} = require('./png-decode');
 
 function pngAnalysis(p) {
   try {
-    const b = fs.readFileSync(p);
-    if (b.length < 32 || b.toString('ascii', 1, 4) !== 'PNG') return null;
-    let off = 8;
-    let width = 0, height = 0, bitDepth = 0, colorType = 0;
-    const idat = [];
-    while (off < b.length) {
-      const len = b.readUInt32BE(off); off += 4;
-      const type = b.toString('ascii', off, off + 4); off += 4;
-      const data = b.subarray(off, off + len); off += len + 4;
-      if (type === 'IHDR') {
-        width = data.readUInt32BE(0);
-        height = data.readUInt32BE(4);
-        bitDepth = data[8];
-        colorType = data[9];
-      } else if (type === 'IDAT') {
-        idat.push(data);
-      } else if (type === 'IEND') break;
-    }
-    if (!width || !height || bitDepth !== 8 || ![0,2,6].includes(colorType)) return null;
-    const channels = colorType === 6 ? 4 : (colorType === 2 ? 3 : 1);
-    const stride = width * channels;
-    const raw = zlib.inflateSync(Buffer.concat(idat));
-    const pixels = Buffer.alloc(width * height * channels);
-    let src = 0;
-    for (let y = 0; y < height; y++) {
-      const filter = raw[src++];
-      const row = raw.subarray(src, src + stride);
-      src += stride;
-      const out = pixels.subarray(y * stride, (y + 1) * stride);
-      const prev = y > 0 ? pixels.subarray((y - 1) * stride, y * stride) : null;
-      for (let x = 0; x < stride; x++) {
-        const left = x >= channels ? out[x - channels] : 0;
-        const up = prev ? prev[x] : 0;
-        const upLeft = prev && x >= channels ? prev[x - channels] : 0;
-        let val = row[x];
-        if (filter === 1) val = (val + left) & 255;
-        else if (filter === 2) val = (val + up) & 255;
-        else if (filter === 3) val = (val + Math.floor((left + up) / 2)) & 255;
-        else if (filter === 4) val = (val + paeth(left, up, upLeft)) & 255;
-        out[x] = val;
-      }
-    }
+    const decoded = decodePngPixels(p);
+    if (!decoded) return null;
+    const { width, height, bytes, channels, stride, pixels } = decoded;
     const grid = 8;
     const vals = [];
     let sum = 0, sumSq = 0, count = 0;
@@ -133,6 +76,7 @@ function pngAnalysis(p) {
       const x1 = Math.min(width, Math.ceil((region.x + region.w) * width));
       const y1 = Math.min(height, Math.ceil((region.y + region.h) * height));
       let rSum = 0, rSumSq = 0, rCount = 0, nonBg = 0;
+      let rMinX = x1, rMinY = y1, rMaxX = -1, rMaxY = -1;
       const stepX = Math.max(1, Math.floor((x1 - x0) / 80));
       const stepY = Math.max(1, Math.floor((y1 - y0) / 50));
       for (let y = y0; y < y1; y += stepY) {
@@ -141,21 +85,55 @@ function pngAnalysis(p) {
           rSum += lum;
           rSumSq += lum * lum;
           rCount += 1;
-          if (Math.abs(lum - bg) > contentThreshold) nonBg += 1;
+          if (Math.abs(lum - bg) > contentThreshold) {
+            nonBg += 1;
+            if (x < rMinX) rMinX = x;
+            if (y < rMinY) rMinY = y;
+            if (x > rMaxX) rMaxX = x;
+            if (y > rMaxY) rMaxY = y;
+          }
         }
       }
+      const regionGrid = 4;
+      const regionVals = [];
+      for (let gy = 0; gy < regionGrid; gy++) {
+        for (let gx = 0; gx < regionGrid; gx++) {
+          let block = 0, blockCount = 0;
+          const by0 = Math.floor(y0 + gy * (y1 - y0) / regionGrid);
+          const by1 = Math.max(by0 + 1, Math.floor(y0 + (gy + 1) * (y1 - y0) / regionGrid));
+          const bx0 = Math.floor(x0 + gx * (x1 - x0) / regionGrid);
+          const bx1 = Math.max(bx0 + 1, Math.floor(x0 + (gx + 1) * (x1 - x0) / regionGrid));
+          const bxStep = Math.max(1, Math.floor((bx1 - bx0) / 10));
+          const byStep = Math.max(1, Math.floor((by1 - by0) / 8));
+          for (let y = by0; y < by1; y += byStep) {
+            for (let x = bx0; x < bx1; x += bxStep) {
+              block += lumAt(x, y);
+              blockCount += 1;
+            }
+          }
+          regionVals.push(block / Math.max(1, blockCount));
+        }
+      }
+      const regionAvg = regionVals.reduce((a, v) => a + v, 0) / Math.max(1, regionVals.length);
       const rMean = rSum / Math.max(1, rCount);
       const rVariance = rSumSq / Math.max(1, rCount) - rMean * rMean;
       regionStats[name] = {
         mean: Number(rMean.toFixed(2)),
         stddev: Number(Math.sqrt(Math.max(0, rVariance)).toFixed(2)),
-        coverage: Number((nonBg / Math.max(1, rCount)).toFixed(4))
+        hash: regionVals.map(v => v >= regionAvg ? '1' : '0').join(''),
+        coverage: Number((nonBg / Math.max(1, rCount)).toFixed(4)),
+        contentBBox: nonBg ? {
+          x: Number(((rMinX - x0) / Math.max(1, x1 - x0)).toFixed(4)),
+          y: Number(((rMinY - y0) / Math.max(1, y1 - y0)).toFixed(4)),
+          w: Number(((rMaxX - rMinX + 1) / Math.max(1, x1 - x0)).toFixed(4)),
+          h: Number(((rMaxY - rMinY + 1) / Math.max(1, y1 - y0)).toFixed(4))
+        } : null
       };
     });
     return {
       w: width,
       h: height,
-      bytes: b.length,
+      bytes,
       mean: Number(mean.toFixed(2)),
       stddev: Number(Math.sqrt(Math.max(0, variance)).toFixed(2)),
       hash,

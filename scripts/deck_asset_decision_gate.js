@@ -13,6 +13,16 @@ const {
   slideWantsImage,
   visualRole
 } = require('./design-system');
+const { MATRIX_VERSION, POLICY_VERSION, policyRowsForTypes } = require('./qa/quality-severity-policy');
+
+const ASSET_POLICY_TYPES = [
+  'skippedCriticalAsset',
+  'weakImageAsset',
+  'assetAuthorizationUnknown',
+  'assetAuthorizationUnresolved',
+  'assetAuthorizationBlocked',
+  'generatedAssetCannotSatisfyFactualProof'
+];
 
 function usage() {
   console.error([
@@ -81,6 +91,7 @@ function questionFor(plan = {}, slide = {}, idx = 0) {
   const required = generation.status === 'required' || generation.mustBind === true;
   const title = slide.title || slide.claim || `第 ${idx + 1} 页`;
   const isFactualBlocked = generation.status === 'blocked';
+  const severityFindingType = isFactualBlocked || required ? 'skippedCriticalAsset' : 'weakImageAsset';
   const options = [
     {
       action: 'provide_assets',
@@ -115,6 +126,8 @@ function questionFor(plan = {}, slide = {}, idx = 0) {
     allowedActions: options.map(option => option.action),
     recommendedAction: isFactualBlocked ? 'provide_assets' : 'auto_generate',
     generatedAssetPrompt: isFactualBlocked ? '' : prompt,
+    severityFindingType,
+    severityPolicy: policyRowsForTypes([severityFindingType])[0] || null,
     reason: generation.reason || 'image-led page family has no bound visual asset'
   };
 }
@@ -181,6 +194,7 @@ function buildGate(planPath, answersPath = '') {
       } else if (answer.action === 'skip_image') {
         delete slide.image;
         delete slide.images;
+        delete slide.generatedAssetPrompt;
         slide.visual = Object.assign({}, slide.visual || {}, { mode: 'solid', role: q.role });
         slide.visualMode = 'solid';
         slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, {
@@ -213,6 +227,12 @@ function buildGate(planPath, answersPath = '') {
       'If user chooses auto_generate, run scripts/asset_prompt_planner.js, generate images with Codex imagegen, then bind outputs before PPTX rendering.',
       'If user chooses skip_image, render the page as native structure and keep missing proof out of visible slides.'
     ],
+    severityPolicy: {
+      version: POLICY_VERSION,
+      matrixVersion: MATRIX_VERSION,
+      relevantTypes: ASSET_POLICY_TYPES,
+      matrix: policyRowsForTypes(ASSET_POLICY_TYPES)
+    },
     resolvedPlan: answers ? Object.assign({}, rawPlan, { slides: resolvedSlides }) : undefined
   };
   return gate;

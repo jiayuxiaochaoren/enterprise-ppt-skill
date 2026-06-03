@@ -1,4 +1,7 @@
 const assert = require('assert/strict');
+const fs = require('fs');
+const path = require('path');
+const zlib = require('zlib');
 const {
   applyQualitySeverityPolicy,
   severityPromotionsForMode
@@ -17,6 +20,35 @@ const {
   xmlTextShapes,
   xmlTextValues
 } = require('./qa/pptx-xml');
+const slideAuditFacade = require('./qa/visual-slide-audit');
+const slideAuditPrimitives = require('./qa/visual-slide-audit-primitives');
+const {
+  pngInfo
+} = require('./qa/png-analysis');
+const {
+  decodePngPixels
+} = require('./qa/png-decode');
+
+function crc32(buf) {
+  const table = crc32.table || (crc32.table = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  }));
+  let c = 0xffffffff;
+  for (const byte of buf) c = table[(c ^ byte) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+function pngChunk(type, data) {
+  const name = Buffer.from(type);
+  const out = Buffer.alloc(8 + data.length + 4);
+  out.writeUInt32BE(data.length, 0);
+  name.copy(out, 4);
+  data.copy(out, 8);
+  out.writeUInt32BE(crc32(Buffer.concat([name, data])), 8 + data.length);
+  return out;
+}
 
 assert.ok(severityPromotionsForMode('formal').smallChineseText);
 assert.ok(severityPromotionsForMode('delivery').previewMissing);
@@ -72,5 +104,35 @@ assert.equal(rectContainsPoint({ x:0, y:0, w:2, h:2 }, 1, 1), true);
 assert.equal(rectContainsPoint({ x:0, y:0, w:2, h:2 }, 0.01, 1), false);
 assert.equal(intersectionArea({ x:0, y:0, w:2, h:2 }, { x:1, y:1, w:2, h:2 }), 1);
 assert.equal(rectArea({ w:3, h:2 }), 6);
+assert.equal(slideAuditFacade.hasCjk('业务增长'), true);
+assert.equal(slideAuditPrimitives.hasCjk('growth'), false);
+assert.deepEqual(slideAuditFacade.compactUnique(['A', 'A', ' ', null, 'B']), ['A', 'B']);
+assert.deepEqual(slideAuditFacade.compactUnique(['A', 'A', ' ', null, 'B']), slideAuditPrimitives.compactUnique(['A', 'A', ' ', null, 'B']));
+assert.equal(slideAuditPrimitives.regionCoverage([{ x:0, y:0, w:1, h:1 }], { x:0.5, y:0.5, w:1, h:1 }), 0.25);
+assert.equal(slideAuditFacade.regionCoverage([{ x:0, y:0, w:1, h:1 }], { x:0.5, y:0.5, w:1, h:1 }), 0.25);
+assert.equal(slideAuditPrimitives.textCharsInRegion([{ x:0, y:0, w:1, h:1, text:'A B' }], { x:0, y:0, w:1, h:1 }), 2);
+assert.equal(slideAuditFacade.visualQaSettings({ minFontSize:7 }).minFontSize, 7);
+assert.ok(slideAuditPrimitives.BANNED_PLACEHOLDERS.includes('占位'));
+const tinyPngPath = path.join(__dirname, '..', 'outputs', 'test-visual-qa-utils-tiny.png');
+fs.mkdirSync(path.dirname(tinyPngPath), { recursive: true });
+const tinyIhdr = Buffer.alloc(13);
+tinyIhdr.writeUInt32BE(1, 0);
+tinyIhdr.writeUInt32BE(1, 4);
+tinyIhdr[8] = 8;
+tinyIhdr[9] = 2;
+fs.writeFileSync(tinyPngPath, Buffer.concat([
+  Buffer.from('89504e470d0a1a0a', 'hex'),
+  pngChunk('IHDR', tinyIhdr),
+  pngChunk('IDAT', zlib.deflateSync(Buffer.from([0, 255, 0, 0]))),
+  pngChunk('IEND', Buffer.alloc(0))
+]));
+const tinyInfo = pngInfo(tinyPngPath);
+const tinyDecoded = decodePngPixels(tinyPngPath);
+assert.equal(tinyInfo.w, 1);
+assert.equal(tinyInfo.h, 1);
+assert.equal(tinyDecoded.width, tinyInfo.w);
+assert.equal(tinyDecoded.height, tinyInfo.h);
+assert.equal(tinyDecoded.bytes, tinyInfo.bytes);
+assert.equal(tinyDecoded.channels, 3);
 
 console.log('visual QA utils ok');

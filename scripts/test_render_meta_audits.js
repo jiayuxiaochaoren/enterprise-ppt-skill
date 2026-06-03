@@ -6,6 +6,7 @@ const {
   expectedRenderedCountsForSlide,
   overlayContractAuditFromRender,
   renderMetaSchemaAuditFromRender,
+  routeMetadataAuditFromRender,
   secondaryVisualReview
 } = require('./qa/render-meta-audits');
 
@@ -39,7 +40,15 @@ function renderMeta(overrides = {}) {
       assetDecision: {
         version: 'asset-decision/v1',
         status: 'none',
-        mode: 'structure-only'
+        mode: 'structure-only',
+        action: 'structure_only',
+        reason: 'no image required for resolved slide route',
+        riskLevel: 'low',
+        originalRole: 'none',
+        resolvedRole: 'none',
+        provenanceClass: 'none',
+        proofEligibility: ['none'],
+        boundAssetCount: 0
       },
       nativeRendererContract: {
         version: 'native-renderer-contract/v1',
@@ -50,8 +59,8 @@ function renderMeta(overrides = {}) {
       },
       plannedComponents: [plannedComponent()],
       unknownComponents: [],
-      drawnComponents: [{ id:'content-card-grid', drawnCount:3, nativeSlot:'cards', bbox:{ x:0.7, y:1.2, w:4, h:3 } }],
-      consumedComponents: [{ id:'content-card-grid', required:true, mode:'native-renderer', rendered:true, drawnCount:3, nativeSlot:'cards', bbox:{ x:0.7, y:1.2, w:4, h:3 } }],
+      drawnComponents: [{ id:'content-card-grid', drawnCount:3, nativeSlot:'cards', bbox:{ x:0.7, y:1.2, w:4, h:3 }, rendererMethod:'testCards' }],
+      consumedComponents: [{ id:'content-card-grid', required:true, mode:'native-renderer', rendered:true, drawnCount:3, nativeSlot:'cards', bbox:{ x:0.7, y:1.2, w:4, h:3 }, rendererMethod:'testCards' }],
       missingRequiredComponents: [],
       textBoxes: [],
       ...overrides
@@ -80,6 +89,139 @@ const schemaAudit = renderMetaSchemaAuditFromRender({ file:'fixture.render-meta.
 assert.equal(schemaAudit.status, 'fail');
 assert.ok(schemaAudit.findings.some(f => f.type === 'renderMetaRendererFieldMissing' && /rendererName/.test(f.message)));
 
+const fallbackRendererAudit = renderMetaSchemaAuditFromRender({
+  file:'fixture.render-meta.json',
+  meta: renderMeta({
+    rendererMatch: {
+      requestedType: 'unknown-slide',
+      matchedType: 'fallback',
+      matchKind: 'fallback',
+      rendererId: 'fallbackBulletsSlide',
+      rendererName: 'fallbackBulletsSlide',
+      source: 'fallback'
+    }
+  })
+}, 1);
+assert.equal(fallbackRendererAudit.status, 'review');
+assert.ok(fallbackRendererAudit.findings.some(f => f.type === 'fallbackRendererUsed'));
+
+const assetSchemaAudit = renderMetaSchemaAuditFromRender({
+  file:'fixture.render-meta.json',
+  meta: renderMeta({
+    assetDecision: {
+      version:'asset-decision/v1',
+      status:'none',
+      mode:'structure-only'
+    }
+  })
+}, 1);
+assert.equal(assetSchemaAudit.status, 'fail');
+assert.ok(assetSchemaAudit.findings.some(f => f.type === 'renderMetaAssetDecisionFieldMissing' && /riskLevel/.test(f.message)));
+
+const mixedAssetDetailAudit = renderMetaSchemaAuditFromRender({
+  file:'fixture.render-meta.json',
+  meta: renderMeta({
+    assetDecision: {
+      version:'asset-decision/v1',
+      status:'bound',
+      mode:'bound',
+      action:'bound_asset',
+      reason:'mixed provenance detail omitted',
+      riskLevel:'medium',
+      originalRole:'evidence',
+      resolvedRole:'image',
+      provenanceClass:'mixed',
+      proofEligibility:['mixed'],
+      proofEligibilitySummary:'mixed',
+      boundAssetCount:1
+    }
+  })
+}, 1);
+assert.equal(mixedAssetDetailAudit.status, 'fail');
+assert.ok(mixedAssetDetailAudit.findings.some(f => f.type === 'renderMetaAssetDecisionMixedDetailMissing' && /provenanceClass=mixed/.test(f.message)));
+assert.ok(mixedAssetDetailAudit.findings.some(f => f.type === 'renderMetaAssetDecisionMixedDetailMissing' && /mixed proof/.test(f.message)));
+
+const validMixedAssetAudit = renderMetaSchemaAuditFromRender({
+  file:'fixture.render-meta.json',
+  meta: renderMeta({
+    assetDecision: {
+      version:'asset-decision/v1',
+      status:'bound',
+      mode:'bound',
+      action:'bound_asset',
+      reason:'mixed provenance detail present',
+      riskLevel:'medium',
+      originalRole:'evidence',
+      resolvedRole:'image',
+      provenanceClass:'mixed',
+      provenanceClasses:['user-owned', 'public-licensed'],
+      proofEligibility:['factual-proof', 'generic-category'],
+      proofEligibilitySummary:'mixed',
+      boundAssetCount:2
+    }
+  })
+}, 1);
+assert.equal(validMixedAssetAudit.status, 'pass');
+
+const skippedCriticalAssetAudit = renderMetaSchemaAuditFromRender({
+  file:'fixture.render-meta.json',
+  meta: renderMeta({
+    assetDecision: {
+      version:'asset-decision/v1',
+      status:'none',
+      mode:'structure-only',
+      action:'skip_image',
+      reason:'user skipped factual evidence image',
+      riskLevel:'high',
+      originalRole:'evidence',
+      resolvedRole:'solid',
+      provenanceClass:'none',
+      proofEligibility:['none'],
+      boundAssetCount:0,
+      skippedCriticalVisual:true
+    }
+  })
+}, 1);
+assert.equal(skippedCriticalAssetAudit.status, 'review');
+assert.ok(skippedCriticalAssetAudit.findings.some(f => f.type === 'skippedCriticalAsset'));
+
+const drawnSchemaAudit = renderMetaSchemaAuditFromRender({
+  file:'fixture.render-meta.json',
+  meta: renderMeta({
+    drawnComponents: [{ id:'content-card-grid', drawnCount:1, nativeSlot:'cards', bbox:{ x:0.7, y:1.2, w:4, h:3 } }]
+  })
+}, 1);
+assert.equal(drawnSchemaAudit.status, 'fail');
+assert.ok(drawnSchemaAudit.findings.some(f => f.type === 'renderMetaDrawnComponentFieldMissing' && /rendererMethod/.test(f.message)));
+
+const aliasSchemaAudit = renderMetaSchemaAuditFromRender({
+  file:'fixture.render-meta.json',
+  meta: renderMeta({
+    plannedComponents: [plannedComponent({ id:'gallery-grid', allowedModes:['native'] })]
+  })
+}, 1);
+assert.equal(aliasSchemaAudit.status, 'fail');
+assert.ok(aliasSchemaAudit.findings.some(f => f.type === 'renderMetaComponentAliasNotCanonical'));
+
+const routeAudit = routeMetadataAuditFromRender({
+  file:'fixture.render-meta.json',
+  meta: renderMeta({
+    routeSanitization: {
+      version:'route-sanitization/v1',
+      removed: [{ field:'layoutVariant', reason:'incompatible route' }],
+      suppressed: [],
+      recomputed: [],
+      staleForRoute: [{ field:'assetGeneration', reason:'old visual role', resolution:'kept' }],
+      active: ['type', 'assetGeneration', 'componentPlan']
+    },
+    assetDecision: Object.assign({}, renderMeta().slides[0].assetDecision, { staleForRoute:true })
+  })
+});
+assert.equal(routeAudit.status, 'fail');
+assert.ok(routeAudit.findings.some(f => f.type === 'staleRouteMetadataResolutionMissing'));
+assert.ok(routeAudit.findings.some(f => f.type === 'staleRouteMetadataStillActive'));
+assert.ok(routeAudit.findings.some(f => f.type === 'staleAssetDecisionForRoute'));
+
 const normalized = {
   slides:[{
     type:'cards',
@@ -90,6 +232,60 @@ const normalized = {
 const consumptionAudit = componentConsumptionAuditFromRender(normalized, { file:'fixture.render-meta.json', meta:renderMeta() });
 assert.equal(consumptionAudit.status, 'fail');
 assert.ok(consumptionAudit.findings.some(f => f.type === 'renderedCountMismatch'));
+
+const missingDrawnEvidenceAudit = componentConsumptionAuditFromRender(
+  {
+    slides:[{
+      type:'cards',
+      componentPlan: { components:[plannedComponent()] },
+      cards: [{}]
+    }]
+  },
+  {
+    file:'fixture.render-meta.json',
+    meta: renderMeta({
+      drawnComponents: [],
+      consumedComponents: [{
+        id:'content-card-grid',
+        required:true,
+        mode:'native-renderer',
+        rendered:true,
+        drawnCount:1,
+        nativeSlot:'cards',
+        bbox:{ x:0.7, y:1.2, w:4, h:3 },
+        rendererMethod:'testCards'
+      }]
+    })
+  }
+);
+assert.equal(missingDrawnEvidenceAudit.status, 'fail');
+assert.ok(missingDrawnEvidenceAudit.findings.some(f => f.type === 'nativeComponentDrawnEvidenceMissing'));
+
+const nativeOnlyOverlayAudit = componentConsumptionAuditFromRender(
+  {
+    slides:[{
+      type:'cards',
+      componentPlan: { components:[plannedComponent()] },
+      cards: [{}]
+    }]
+  },
+  {
+    file:'fixture.render-meta.json',
+    meta: renderMeta({
+      drawnComponents: [],
+      plannedComponents: [plannedComponent({ allowedModes:['overlay'] })],
+      consumedComponents: [{
+        id:'content-card-grid',
+        required:true,
+        mode:'overlay',
+        rendered:true,
+        bbox:{ x:0.7, y:1.2, w:4, h:3 }
+      }]
+    })
+  }
+);
+assert.equal(nativeOnlyOverlayAudit.status, 'fail');
+assert.ok(nativeOnlyOverlayAudit.findings.some(f => f.type === 'componentModeMismatch' && /capability manifest/.test(f.message)));
 
 const overlayAudit = overlayContractAuditFromRender({
   file:'fixture.render-meta.json',
@@ -117,6 +313,49 @@ const coverageAudit = contentCoverageAuditFromRender(
 assert.equal(coverageAudit.status, 'fail');
 assert.ok(coverageAudit.findings.some(f => f.type === 'mainBodyMissingContent'));
 assert.ok(coverageAudit.findings.some(f => f.type === 'rightEvidenceRegionMissing'));
+const coverageMainFinding = coverageAudit.findings.find(f => f.type === 'mainBodyMissingContent');
+assert.equal(coverageMainFinding.regionName, 'mainBody');
+assert.equal(coverageMainFinding.reason, 'main_body_empty');
+assert.equal(coverageMainFinding.mainBodyCoverage, 0);
+const coverageRightFinding = coverageAudit.findings.find(f => f.type === 'rightEvidenceRegionMissing');
+assert.equal(coverageRightFinding.regionName, 'rightEvidence');
+assert.equal(coverageRightFinding.reason, 'expected_evidence_region_empty');
+assert.equal(coverageRightFinding.rightEvidenceCoverage, 0);
+assert.deepEqual(coverageRightFinding.expectedComponentIds, ['proof-gallery']);
+
+const decorativeOnlyCoverageAudit = contentCoverageAuditFromRender(
+  {
+    file:'fixture.render-meta.json',
+    meta: renderMeta({
+      type:'content',
+      plannedComponents:[],
+      drawnComponents:[],
+      consumedComponents:[]
+    })
+  },
+  [{ slide:1, mainBodyCoverage:0.12, mainBodyCharCount:0, mainBodyElements:5, rightEvidenceCoverage:0, images:0 }]
+);
+assert.equal(decorativeOnlyCoverageAudit.status, 'fail');
+const decorativeOnlyFinding = decorativeOnlyCoverageAudit.findings.find(f =>
+  f.type === 'mainBodyMissingContent' && /non-text shapes/.test(f.message)
+);
+assert.equal(decorativeOnlyFinding.reason, 'main_body_decorative_only');
+assert.equal(decorativeOnlyFinding.mainBodyCoverage, 0.12);
+assert.equal(decorativeOnlyFinding.hasSemanticComponent, false);
+
+const nativeComponentCoverageAudit = contentCoverageAuditFromRender(
+  {
+    file:'fixture.render-meta.json',
+    meta: renderMeta({
+      type:'content',
+      plannedComponents:[plannedComponent()],
+      drawnComponents:[{ id:'content-card-grid', drawnCount:3, nativeSlot:'cards', bbox:{ x:0.7, y:1.3, w:4, h:3 }, rendererMethod:'testCards' }],
+      consumedComponents:[{ id:'content-card-grid', required:true, mode:'native-renderer', rendered:true, drawnCount:3, nativeSlot:'cards', bbox:{ x:0.7, y:1.3, w:4, h:3 }, rendererMethod:'testCards' }]
+    })
+  },
+  [{ slide:1, mainBodyCoverage:0.12, mainBodyCharCount:0, mainBodyElements:5, rightEvidenceCoverage:0, images:0 }]
+);
+assert.equal(nativeComponentCoverageAudit.status, 'pass');
 
 const secondary = secondaryVisualReview(
   { slides:Array.from({ length:6 }, () => ({ type:'cards', layoutVariant:'grid', visualDensity:'dense' })) },
