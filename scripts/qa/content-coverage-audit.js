@@ -1,4 +1,8 @@
 const MAIN_BODY_REGION = { x:0.70, y:1.28, w:11.88, h:5.38 };
+const CONTENT_COVERAGE_FINDING_TYPES = Object.freeze([
+  'mainBodyMissingContent',
+  'rightEvidenceRegionMissing'
+]);
 
 function intersectionArea(a = {}, b = {}) {
   if ([a.x, a.y, a.w, a.h, b.x, b.y, b.w, b.h].some(value => value == null)) return 0;
@@ -118,5 +122,6 @@ function contentCoverageAuditFromRender(renderMetaResult = {}, slideReports = []
 }
 
 module.exports = {
+  CONTENT_COVERAGE_FINDING_TYPES,
   contentCoverageAuditFromRender
 };

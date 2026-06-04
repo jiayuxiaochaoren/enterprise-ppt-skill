@@ -3,6 +3,10 @@ const {
   createTypographyTokenHelpers
 } = require('./typography-tokens');
 
+const TYPOGRAPHY_RENDER_META_FINDING_TYPES = Object.freeze([
+  'textShrinkRisk'
+]);
+
 function createTypographyHelpers({
   visualSystem = {},
   fontStack = {},
@@ -116,5 +120,6 @@ function createTypographyHelpers({
 
 module.exports = {
   TYPE_ROLE_ALIASES,
+  TYPOGRAPHY_RENDER_META_FINDING_TYPES,
   createTypographyHelpers
 };

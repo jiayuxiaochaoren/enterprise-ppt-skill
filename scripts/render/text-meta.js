@@ -1,6 +1,13 @@
-function containsCjk(text) {
-  return /[\u3400-\u9fff]/.test(String(text || ''));
-}
+const {
+  createPageFolioPolicy
+} = require('./page-folio-policy');
+const {
+  createTextBoxMetaRecorder
+} = require('./text-box-meta');
+const {
+  containsCjk,
+  createTextReadabilityPolicy
+} = require('./text-readability-policy');
 
 function createTextRenderHelpers(deps = {}) {
   const {
@@ -22,125 +29,26 @@ function createTextRenderHelpers(deps = {}) {
   const currentVisualSystem = () => (typeof visualSystem === 'function' ? visualSystem() : (visualSystem || {}));
   const currentCanvasWidth = () => Number(typeof canvasWidth === 'function' ? canvasWidth() : canvasWidth) || 13.333;
   const safeTypeSize = (name, fallback) => typeof typeSize === 'function' ? typeSize(name, fallback) : fallback;
-
-  function textOptionWithReadabilityFloor(text, opts = {}) {
-    const next = typeof normalizeTypographyOptions === 'function'
-      ? normalizeTypographyOptions(currentPlan(), text, opts)
-      : Object.assign({}, opts);
-    if (isPageFolioText(text, next)) return normalizePageFolioTextOptions(next);
-    if (next.allowTiny || typeof next.fontSize !== 'number' || !containsCjk(text)) return next;
-    const isFooter = Number(next.y || 0) >= 6.62;
-    const isMicroSlot = Number(next.w || 0) < 0.72 || Number(next.h || 0) < 0.11;
-    if (isMicroSlot && !containsCjk(text)) return next;
-    const cjkChars = (String(text || '').match(/[\u3400-\u9fff]/g) || []).length;
-    if (!next.allowNarrowCjk && cjkChars >= 12 && Number(next.w || 0) > 0 && Number(next.w || 0) < 1.42) {
-      const maxWidth = Math.max(Number(next.w || 0), currentCanvasWidth() - Number(next.x || 0) - 0.36);
-      next.w = Math.min(maxWidth, Math.max(1.56, Math.min(2.56, cjkChars * 0.12)));
-      if (Number(next.h || 0) > 0 && Number(next.h || 0) < 0.22) next.h = 0.22;
-      next.breakLine = true;
-    }
-    const qa = (currentVisualSystem().visualQA || {});
-    const bodyFloor = Number(qa.preferredBodyMin || 8.8);
-    const captionFloor = Number(qa.preferredCaptionMin || 7.2);
-    const titleFloor = next.bold ? 9.6 : bodyFloor;
-    const floor = isFooter ? captionFloor : Math.max(bodyFloor, titleFloor);
-    if (next.fontSize < floor) {
-      next.fontSize = floor;
-      if (!isFooter && Number(next.h || 0) > 0 && Number(next.h || 0) < 0.18) next.h = 0.18;
-    }
-    return next;
-  }
-
-  function isPageFolioText(text, opts = {}) {
-    const value = String(text || '').trim();
-    const fontSize = Number(opts.fontSize || safeTypeSize('number', 12.0));
-    return /^[0-9]{1,2}$/.test(value) &&
-      Number(opts.x || 0) >= 11.45 &&
-      Number(opts.y || 0) <= 1.18 &&
-      fontSize <= 14.2 &&
-      (opts.align === 'right' || opts.align == null);
-  }
-
-  function normalizePageFolioTextOptions(opts = {}) {
-    const next = Object.assign({}, opts);
-    next.x = 11.74;
-    next.y = 0.74;
-    next.w = 0.52;
-    next.h = 0.22;
-    next.fontSize = Math.min(Number(next.fontSize || safeTypeSize('number', 12.0)), 11.8);
-    next.align = 'right';
-    return next;
-  }
-
-  function pageFolioRendered(slide) {
-    return Boolean(slide && slide.__codexPageFolioRendered);
-  }
-
-  function markPageFolioRendered(slide) {
-    if (slide) slide.__codexPageFolioRendered = true;
-  }
-
-  function addPageFolioMarker(slide, opts = {}) {
-    if (opts.marker !== true) return;
-    const C = currentColors();
-    const markerColor = opts.markerColor || C.cyan;
-    addRect(slide, opts.x - 0.18, opts.y + 0.02, 0.026, 0.13, markerColor, markerColor, {
-      fill: { color: markerColor, transparency: 0 },
-      line: { color: markerColor, transparency: 100 }
-    });
-  }
-
-  function recordTextBoxMeta(slide, rawText, displayText, inputOpts = {}, textOpts = {}, role = '') {
-    if (!slide || !String(displayText || rawText || '').trim()) return;
-    const text = String(displayText || rawText || '');
-    const cjkChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
-    const w = Number(textOpts.w || inputOpts.w || 0);
-    const h = Number(textOpts.h || inputOpts.h || 0);
-    const fontSize = Number(textOpts.fontSize || inputOpts.fontSize || 0);
-    const x = Number(textOpts.x || inputOpts.x || 0);
-    const y = Number(textOpts.y || inputOpts.y || 0);
-    const fitStrategy = textOpts.__finalFitStrategy || (textOpts.fit === false || textOpts.noFit === true
-      ? 'none'
-      : (textOpts.fit || inputOpts.fit || ''));
-    const charsPerInch = w > 0 ? Number((cjkChars / w).toFixed(2)) : 0;
-    const boxArea = w > 0 && h > 0 ? Number((w * h).toFixed(4)) : 0;
-    const areaDensity = boxArea > 0 ? Number((text.length / boxArea).toFixed(2)) : 0;
-    const qa = (currentVisualSystem().visualQA || {});
-    const preferredBodyMin = Number(qa.preferredBodyMin || 8.8);
-    const minRenderedCjkSize = Number(qa.minRenderedCjkSize || 7.2);
-    const shrink = /shrink/i.test(String(fitStrategy || ''));
-    const dense = charsPerInch > 18 || areaDensity > 95 || (h > 0 && h < 0.18 && cjkChars >= 10);
-    const failRisk = cjkChars > 0 && shrink && (fontSize < minRenderedCjkSize || areaDensity > 130 || charsPerInch > 32);
-    const reviewRisk = cjkChars > 0 && shrink && (fontSize < preferredBodyMin || dense);
-    const region = y >= 6.62
-      ? 'footer'
-      : (x >= 7.8 ? 'rightEvidence' : (y >= 1.18 && y <= 6.7 ? 'mainBody' : 'chrome'));
-    slide.__codexTextBoxes = slide.__codexTextBoxes || [];
-    slide.__codexTextBoxes.push({
-      role: role || textOpts.__typeRole || inputOpts.typeRole || inputOpts.textRole || '',
-      originalFontSize: Number(inputOpts.fontSize || fontSize || 0),
-      fontSize,
-      fitStrategy: fitStrategy ? String(fitStrategy) : '',
-      textLength: text.length,
-      cjkChars,
-      region,
-      boxArea,
-      box: {
-        x,
-        y,
-        w,
-        h
-      },
-      charsPerInch,
-      areaDensity,
-      shrinkRisk: Boolean(failRisk || reviewRisk),
-      readabilityRiskLevel: failRisk ? 'fail' : (reviewRisk ? 'review' : ''),
-      readabilityRiskReason: failRisk || reviewRisk
-        ? 'shrink fit with dense or undersized CJK text'
-        : '',
-      sample: typeof compactText === 'function' ? compactText(text, 64) : text.slice(0, 64)
-    });
-  }
+  const folioPolicy = createPageFolioPolicy({ addRect, currentColors, safeTypeSize });
+  const {
+    addPageFolioMarker,
+    isPageFolioText,
+    markPageFolioRendered,
+    normalizePageFolioTextOptions,
+    pageFolioRendered
+  } = folioPolicy;
+  const {
+    textOptionWithReadabilityFloor
+  } = createTextReadabilityPolicy({
+    currentCanvasWidth,
+    currentPlan,
+    currentVisualSystem,
+    folioPolicy,
+    normalizeTypographyOptions
+  });
+  const {
+    recordTextBoxMeta
+  } = createTextBoxMetaRecorder({ compactText, currentVisualSystem });
 
   function addText(slide, t, opts = {}) {
     const rawText = String(t == null ? '' : t);

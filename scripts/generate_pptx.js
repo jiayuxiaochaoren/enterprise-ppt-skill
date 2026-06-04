@@ -24,6 +24,10 @@ const {
   shortHash
 } = require('./render/route-metadata');
 const {
+  attachRenderRoute,
+  renderRouteForSlide
+} = require('./render/render-route');
+const {
   compactEvidenceCaption,
   formatMetricDelta,
   itemBody,
@@ -322,6 +326,7 @@ function consumeComponentPlan(slide, plan, s, idx) {
     proofObject: (s.proof && s.proof.id) || s.proofObject || '',
     sourceTrace: s.sourceTrace || null,
     proof: s.proof || null,
+    renderRoute: slide.__codexRenderRoute || s.renderRoute || null,
     assetDecision: assetDecisionForMeta(plan, s),
     rendererMatch: slide.__codexRendererMatch || null,
     routeSanitization: s.routeSanitization || s.normalizationAudit || null,
@@ -373,6 +378,9 @@ function renderSlide(pptx, plan, s, idx) {
   }
   const renderer = renderMatch.render;
   slide.__codexRendererMatch = compactRenderMatch(renderMatch);
+  const renderRoute = renderRouteForSlide(plan, s, idx, { renderMatch: slide.__codexRendererMatch });
+  slide.__codexRenderRoute = renderRoute;
+  attachRenderRoute(s, renderRoute);
   declareNativeRendererContract(slide, nativeRendererContractFor(plan, s, renderMatch.rendererName || renderMatch.rendererId || renderer.name || type));
   renderer(slide, plan, s, idx);
   consumeComponentPlan(slide, plan, s, idx);

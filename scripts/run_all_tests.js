@@ -86,6 +86,9 @@ function main() {
     if (opts.json) console.log(JSON.stringify(changedProfile, null, 2));
     else {
       console.log(`CHANGED-FILE PROFILE groups=${changedProfile.groups.join(',') || 'none'} rules=${changedProfile.matchedRules.map(rule => rule.id).join(',') || 'none'} fallbackToFull=${changedProfile.fallbackToFull}`);
+      (changedProfile.fileMatches || []).forEach(row => {
+        console.log(`MATCH ${row.file} rules=${(row.ruleIds || []).join(',') || 'none'} groups=${(row.groups || []).join(',') || 'none'}`);
+      });
       if (changedProfile.unmatched.length) console.log(`UNMATCHED ${changedProfile.unmatched.join(',')}`);
       if (changedProfile.commands.length) console.log(`MINIMUM GATES ${changedProfile.commands.join(' && ')}`);
     }
@@ -114,6 +117,11 @@ function main() {
     if (opts.json) console.log(JSON.stringify(payload, null, 2));
     else {
       if (changedProfile) console.log(`CHANGED-FILE PROFILE groups=${changedProfile.groups.join(',') || 'none'} rules=${changedProfile.matchedRules.map(rule => rule.id).join(',') || 'none'} fallbackToFull=${changedProfile.fallbackToFull}`);
+      if (changedProfile) {
+        (changedProfile.fileMatches || []).forEach(row => {
+          console.log(`MATCH ${row.file} rules=${(row.ruleIds || []).join(',') || 'none'} groups=${(row.groups || []).join(',') || 'none'}`);
+        });
+      }
       console.log(`SELECTED TESTS ${tests.length}`);
       tests.forEach(file => console.log(file));
     }

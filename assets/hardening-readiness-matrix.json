@@ -40,10 +40,42 @@
   "testProfileGates": [
     {
       "id": "renderer-only",
-      "changedFiles": ["scripts/render/text-meta.js"],
+      "changedFiles": ["scripts/render/page-families/cover-core.js"],
       "expectedRuleIds": ["renderer"],
       "expectedGroups": ["unit", "render", "visual"],
       "expectedCommands": ["npm run test:unit", "npm run test:render", "npm run test:visual"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "render-text-parts",
+      "changedFiles": ["scripts/render/text-meta.js"],
+      "expectedRuleIds": ["render-text"],
+      "expectedGroups": ["unit", "visual"],
+      "expectedCommands": ["npm run test:unit", "npm run test:visual"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "region-qa-parts",
+      "changedFiles": ["scripts/qa/visual-region-contract.js", "scripts/qa/screenshot-baseline-region-rules.js"],
+      "expectedRuleIds": ["visual-region"],
+      "expectedGroups": ["unit", "visual"],
+      "expectedCommands": ["npm run test:unit", "npm run test:visual"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "component-consumption-parts",
+      "changedFiles": ["scripts/qa/component-consumption-counts.js"],
+      "expectedRuleIds": ["component-consumption"],
+      "expectedGroups": ["unit", "visual"],
+      "expectedCommands": ["npm run test:unit", "npm run test:visual"],
+      "expectedFallbackToFull": false
+    },
+    {
+      "id": "chart-qa-parts",
+      "changedFiles": ["scripts/design/chart-semantic-qa.js", "scripts/design/chart-spec-normalization.js"],
+      "expectedRuleIds": ["chart-qa"],
+      "expectedGroups": ["unit", "visual"],
+      "expectedCommands": ["npm run test:unit", "npm run test:visual"],
       "expectedFallbackToFull": false
     },
     {
@@ -184,7 +216,7 @@
       "priority": "P2",
       "title": "Test Profile speed-up",
       "evidenceTaskIds": ["P2-04"],
-      "testProfileGateIds": ["renderer-only", "asset-only", "material-only"],
+      "testProfileGateIds": ["renderer-only", "render-text-parts", "region-qa-parts", "component-consumption-parts", "chart-qa-parts", "asset-only", "material-only"],
       "requiredEvidence": ["codePath", "automatedQa"]
     },
     {
@@ -193,7 +225,7 @@
       "title": "Hardening Dashboard",
       "evidenceTaskIds": ["P2-04"],
       "moduleBudgetIds": ["p2-01-hotspot-facades", "p2-02-layout-modules", "p2-04-hardening-dashboard-modules"],
-      "testProfileGateIds": ["renderer-only", "asset-only", "material-only", "design-planning", "visual-qa", "delivery-readiness", "runner-and-docs", "unknown-path-fallback"],
+      "testProfileGateIds": ["renderer-only", "render-text-parts", "region-qa-parts", "component-consumption-parts", "chart-qa-parts", "asset-only", "material-only", "design-planning", "visual-qa", "delivery-readiness", "runner-and-docs", "unknown-path-fallback"],
       "deliveryGateIds": ["formal-validate-with-visual-qa", "hardening-smoke-visual-qa"],
       "requiredEvidence": ["codePath", "automatedQa"]
     }
@@ -204,7 +236,7 @@
   "moduleBudgets": [
     {
       "id": "p2-01-hotspot-facades",
-      "title": "P2-01 hotspot facades and helper closure stay slim after decomposition",
+      "title": "P2-01 hotspot facades and rule parts stay slim after decomposition",
       "maxLines": 300,
       "requireClosureRoots": [
         "scripts/design-system.js",
@@ -258,8 +290,12 @@
       ],
       "files": [
         "scripts/audit_hardening_readiness.js",
+        "scripts/design/typography-tokens.js",
+        "scripts/design/typography.js",
+        "scripts/qa/content-coverage-audit.js",
         "scripts/qa/hardening-delivery-gates.js",
         "scripts/qa/hardening-evidence-state.js",
+        "scripts/qa/contract-registry.js",
         "scripts/qa/hardening-readiness-environment.js",
         "scripts/qa/hardening-matrix-contract.js",
         "scripts/qa/hardening-matrix-contract-shapes.js",
@@ -280,9 +316,17 @@
         "scripts/qa/hardening-template-summary.js",
         "scripts/qa/hardening-test-profile-gates.js",
         "scripts/qa/hardening-task-summary.js",
+        "scripts/qa/png-analysis.js",
+        "scripts/qa/png-decode.js",
+        "scripts/qa/pptx-xml.js",
         "scripts/qa/quality-severity-commercial.js",
         "scripts/qa/quality-severity-matrix.js",
         "scripts/qa/quality-severity-policy.js",
+        "scripts/qa/screenshot-baseline-audit.js",
+        "scripts/qa/screenshot-baseline-region-rules.js",
+        "scripts/qa/visual-region-contract.js",
+        "scripts/qa/visual-slide-audit-primitives.js",
+        "scripts/qa/visual-slide-regions.js",
         "scripts/render/page-families/primitive-chrome.js",
         "scripts/render/page-families/primitive-content.js",
         "scripts/render/page-families/primitive-contract.js",
@@ -293,6 +337,8 @@
         "scripts/render/page-families/primitive-metrics.js",
         "scripts/render/page-families/primitive-stage-shell.js",
         "scripts/render/page-families/primitives.js",
+        "scripts/render/text-box-meta.js",
+        "scripts/render/text-readability-policy.js",
         "scripts/reports/hardening-readiness-format.js",
         "scripts/reports/hardening-readiness-human.js",
         "scripts/reports/hardening-readiness-report.js",
@@ -380,7 +426,7 @@
       "owner": "asset-gate",
       "status": "pass",
       "affectsVisualOutput": false,
-      "files": ["scripts/deck_asset_decision_gate.js", "scripts/asset_prompt_planner.js", "scripts/test_asset_decision_gate.js"],
+      "files": ["scripts/assets/decision-gate.js", "scripts/assets/prompt-planner.js", "scripts/assets/resolution-facade.js", "scripts/deck_asset_decision_gate.js", "scripts/asset_prompt_planner.js", "scripts/resolve_visual_assets.js", "scripts/test_asset_decision_gate.js"],
       "tests": ["node scripts/test_asset_decision_gate.js"],
       "renderedProof": [],
       "remainingGaps": []
@@ -392,7 +438,7 @@
       "owner": "normalization-contract",
       "status": "pass",
       "affectsVisualOutput": false,
-      "files": ["scripts/design-system.js", "scripts/generate_pptx.js", "scripts/test_routing.js", "scripts/test_chart_spec.js"],
+      "files": ["scripts/design-system.js", "scripts/generate_pptx.js", "scripts/render/render-route.js", "scripts/test_routing.js", "scripts/test_chart_spec.js"],
       "tests": ["node scripts/test_routing.js", "node scripts/test_chart_spec.js"],
       "renderedProof": [],
       "remainingGaps": []
@@ -524,7 +570,7 @@
       "owner": "qa-integration",
       "status": "pass",
       "affectsVisualOutput": false,
-      "files": ["scripts/visual_qa.js", "scripts/generate_pptx.js", "scripts/test_asset_decision_gate.js", "scripts/test_render_meta_schema.js"],
+      "files": ["scripts/visual_qa.js", "scripts/generate_pptx.js", "scripts/render/render-route.js", "scripts/qa/contract-registry.js", "scripts/test_asset_decision_gate.js", "scripts/test_render_meta_schema.js"],
       "tests": ["node scripts/test_asset_decision_gate.js", "node scripts/test_visual_qa_content_coverage.js", "node scripts/test_render_meta_schema.js"],
       "renderedProof": [],
       "remainingGaps": []
@@ -536,7 +582,7 @@
       "owner": "asset-provenance",
       "status": "pass",
       "affectsVisualOutput": false,
-      "files": ["scripts/bind_generated_assets.js", "scripts/design-system.js", "scripts/test_commercial_readiness_qa.js", "scripts/test_asset_decision_gate.js"],
+      "files": ["scripts/assets/binder.js", "scripts/bind_generated_assets.js", "scripts/design-system.js", "scripts/test_commercial_readiness_qa.js", "scripts/test_asset_decision_gate.js"],
       "tests": ["node scripts/test_commercial_readiness_qa.js", "node scripts/test_asset_decision_gate.js"],
       "renderedProof": [],
       "remainingGaps": []
@@ -548,8 +594,8 @@
       "owner": "qa-fixtures",
       "status": "pass",
       "affectsVisualOutput": true,
-      "files": ["scripts/visual_qa.js", "scripts/qa/visual-qa-cli.js", "scripts/qa/screenshot-baseline-audit.js", "scripts/qa/content-coverage-audit.js", "scripts/qa/visual-slide-audit.js", "scripts/test_visual_layout_qa.js", "scripts/test_visual_qa_baseline.js", "scripts/test_visual_qa_content_coverage.js", "scripts/test_visual_qa_overlap.js", "scripts/test_visual_qa_render_counts.js", "scripts/test_typography_system.js"],
-      "tests": ["node scripts/test_visual_layout_qa.js"],
+      "files": ["scripts/visual_qa.js", "scripts/qa/visual-qa-cli.js", "scripts/qa/visual-qa-runner.js", "scripts/qa/screenshot-baseline-audit.js", "scripts/qa/screenshot-baseline-region-rules.js", "scripts/qa/visual-region-contract.js", "scripts/qa/content-coverage-audit.js", "scripts/qa/visual-slide-audit.js", "scripts/qa/visual-slide-regions.js", "scripts/qa/component-consumption-audit.js", "scripts/qa/component-consumption-counts.js", "scripts/qa/component-consumption-mode-policy.js", "scripts/qa/component-consumption-native-evidence.js", "scripts/qa/render-meta-schema-audit.js", "scripts/qa/render-meta-schema-rules.js", "scripts/render/text-meta.js", "scripts/render/text-readability-policy.js", "scripts/render/text-box-meta.js", "scripts/render/page-folio-policy.js", "scripts/design/chart-spec-qa.js", "scripts/design/chart-semantic-qa.js", "scripts/design/chart-visual-qa.js", "scripts/design/chart-evidence-qa.js", "scripts/design/chart-page-scores.js", "scripts/design/chart-spec-routing.js", "scripts/design/chart-spec-normalization.js", "scripts/design/component-planning.js", "scripts/design/component-planning-filters.js", "scripts/test_visual_layout_qa.js", "scripts/test_visual_qa_baseline.js", "scripts/test_visual_qa_content_coverage.js", "scripts/test_visual_qa_overlap.js", "scripts/test_visual_qa_render_counts.js", "scripts/test_typography_system.js", "scripts/test_render_meta_schema.js", "scripts/test_render_meta_audits.js", "scripts/test_chart_spec.js", "scripts/test_routing.js", "scripts/test_composition_planner.js"],
+      "tests": ["node scripts/test_visual_layout_qa.js", "node scripts/test_visual_qa_baseline.js", "node scripts/test_visual_qa_content_coverage.js", "node scripts/test_visual_qa_render_counts.js", "node scripts/test_render_meta_schema.js", "node scripts/test_render_meta_audits.js", "node scripts/test_chart_spec.js", "node scripts/test_routing.js", "node scripts/test_composition_planner.js"],
       "renderedProof": ["outputs/test-visual-qa-baseline/preview/slide1.png", "outputs/test-visual-qa-content-coverage/blank-body.pptx", "outputs/test-visual-qa-overlap/text-covered-by-shape.pptx", "outputs/test-visual-qa-render-counts/missing-card.pptx"],
       "remainingGaps": []
     },
@@ -584,7 +630,7 @@
       "owner": "fixture-readiness",
       "status": "pass",
       "affectsVisualOutput": false,
-      "files": ["assets/hardening-readiness-matrix.json", "scripts/audit_hardening_readiness.js", "scripts/qa/hardening-delivery-gates.js", "scripts/qa/hardening-evidence-state.js", "scripts/qa/hardening-readiness-environment.js", "scripts/qa/hardening-matrix-contract.js", "scripts/qa/hardening-matrix-contract-shapes.js", "scripts/qa/hardening-module-budgets.js", "scripts/qa/hardening-require-closure.js", "scripts/qa/hardening-objective-contract-shapes.js", "scripts/qa/hardening-objective-coverage.js", "scripts/qa/hardening-quality-modes.js", "scripts/qa/hardening-readiness-cli.js", "scripts/qa/hardening-readiness-modes.js", "scripts/qa/hardening-readiness-subsystems.js", "scripts/qa/hardening-readiness-summary.js", "scripts/qa/hardening-task-contract-shapes.js", "scripts/qa/hardening-task-summary.js", "scripts/qa/hardening-template-summary.js", "scripts/qa/hardening-test-profile-gates.js", "scripts/reports/hardening-readiness-format.js", "scripts/reports/hardening-readiness-human.js", "scripts/reports/hardening-readiness-report.js", "scripts/run_all_tests.js", "scripts/test-profile-mapping.js", "scripts/test_hardening_dashboard.js", "scripts/test_hardening_matrix_contract.js", "scripts/test_hardening_readiness_helpers.js", "scripts/test_profile_mapping.js", "package.json"],
+      "files": ["assets/hardening-readiness-matrix.json", "scripts/audit_hardening_readiness.js", "scripts/assets/resolution-facade.js", "scripts/render/render-route.js", "scripts/qa/contract-registry.js", "scripts/qa/hardening-delivery-gates.js", "scripts/qa/hardening-evidence-state.js", "scripts/qa/hardening-readiness-environment.js", "scripts/qa/hardening-matrix-contract.js", "scripts/qa/hardening-matrix-contract-shapes.js", "scripts/qa/hardening-module-budgets.js", "scripts/qa/hardening-require-closure.js", "scripts/qa/hardening-objective-contract-shapes.js", "scripts/qa/hardening-objective-coverage.js", "scripts/qa/hardening-quality-modes.js", "scripts/qa/hardening-readiness-cli.js", "scripts/qa/hardening-readiness-modes.js", "scripts/qa/hardening-readiness-subsystems.js", "scripts/qa/hardening-readiness-summary.js", "scripts/qa/hardening-task-contract-shapes.js", "scripts/qa/hardening-task-summary.js", "scripts/qa/hardening-template-summary.js", "scripts/qa/hardening-test-profile-gates.js", "scripts/reports/hardening-readiness-format.js", "scripts/reports/hardening-readiness-human.js", "scripts/reports/hardening-readiness-report.js", "scripts/run_all_tests.js", "scripts/test-profile-mapping.js", "scripts/test_hardening_dashboard.js", "scripts/test_hardening_matrix_contract.js", "scripts/test_hardening_readiness_helpers.js", "scripts/test_profile_mapping.js", "package.json"],
       "tests": ["node scripts/audit_hardening_readiness.js", "node scripts/test_hardening_dashboard.js", "node scripts/test_hardening_matrix_contract.js", "node scripts/test_hardening_readiness_helpers.js", "node scripts/test_profile_mapping.js"],
       "renderedProof": [],
       "remainingGaps": []

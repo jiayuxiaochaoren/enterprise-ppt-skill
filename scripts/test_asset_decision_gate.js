@@ -28,6 +28,9 @@ const bindOutPath = path.join(OUT, 'bind-plan.bound.json');
 const bindPptxPath = path.join(OUT, 'bind-plan.pptx');
 const invalidBindMapPath = path.join(OUT, 'bind-map-invalid.json');
 const tinyPngPath = path.join(OUT, 'tiny.png');
+const bridgeUnavailableDir = path.join(OUT, 'bridge-unavailable');
+const bridgeAvailableDir = path.join(OUT, 'bridge-available');
+const bridgeBlockedDir = path.join(OUT, 'bridge-blocked');
 
 fs.writeFileSync(planPath, JSON.stringify({
   industry: 'beauty-consumer',
@@ -58,6 +61,51 @@ assert.ok(gate.questions.length >= 2, 'image-led beauty plan should ask for miss
 assert.ok(gate.questions.every(q => q.options.some(o => o.action === 'provide_assets') && q.options.some(o => o.action === 'auto_generate') && q.options.some(o => o.action === 'skip_image')));
 assert.equal(gate.severityPolicy.matrixVersion, 'quality-severity-matrix/v1');
 assert.ok(gate.questions.every(q => q.severityPolicy && q.severityPolicy.formal === 'fail'));
+
+const bridgeUnavailable = JSON.parse(cp.execFileSync(process.execPath, [
+  'scripts/resolve_visual_assets.js',
+  planPath,
+  '--out-dir',
+  bridgeUnavailableDir,
+  '--imagegen-capability',
+  'unavailable'
+], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}));
+assert.equal(bridgeUnavailable.status, 'ready');
+const bridgeUnavailableReport = JSON.parse(fs.readFileSync(path.join(bridgeUnavailableDir, 'visual-asset-resolution.json'), 'utf8'));
+assert.equal(bridgeUnavailableReport.imagegenCapability, 'unavailable');
+assert.equal(bridgeUnavailableReport.counts.autoGenerate, 0);
+assert.ok(bridgeUnavailableReport.counts.skipImage >= 2, 'unavailable imagegen should explicitly skip missing image decisions');
+const bridgeUnavailablePlan = JSON.parse(fs.readFileSync(path.join(ROOT, bridgeUnavailableReport.outputs.deckPlan), 'utf8'));
+assert.equal(bridgeUnavailablePlan.slides[0].visual.mode, 'solid');
+assert.equal(bridgeUnavailablePlan.slides[0].assetGeneration.status, 'none');
+assert.equal(Boolean(bridgeUnavailablePlan.slides[0].generatedAssetPrompt), false);
+
+const bridgeAvailable = JSON.parse(cp.execFileSync(process.execPath, [
+  'scripts/resolve_visual_assets.js',
+  planPath,
+  '--out-dir',
+  bridgeAvailableDir,
+  '--imagegen-capability',
+  'available'
+], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}));
+assert.equal(bridgeAvailable.status, 'needs_image_generation');
+const bridgeAvailableReport = JSON.parse(fs.readFileSync(path.join(bridgeAvailableDir, 'visual-asset-resolution.json'), 'utf8'));
+assert.equal(bridgeAvailableReport.imagegenCapability, 'available');
+assert.ok(bridgeAvailableReport.counts.autoGenerate >= 2, 'available imagegen should request generation before fallback');
+assert.equal(bridgeAvailableReport.counts.skipImage, 0);
+assert.ok(bridgeAvailableReport.promptCount >= 2);
+const bridgeAvailablePlan = JSON.parse(fs.readFileSync(path.join(ROOT, bridgeAvailableReport.outputs.deckPlan), 'utf8'));
+assert.equal(bridgeAvailablePlan.slides[0].visual.mode, 'generated');
+assert.equal(bridgeAvailablePlan.slides[0].assetGeneration.status, 'required');
+const bridgePrompts = JSON.parse(fs.readFileSync(path.join(bridgeAvailableDir, 'asset-prompts.json'), 'utf8'));
+assert.equal(bridgePrompts.status, 'ready');
+assert.equal(bridgePrompts.promptCount, bridgeAvailableReport.promptCount);
 
 fs.writeFileSync(answersPath, JSON.stringify({
   decisions: {
@@ -113,6 +161,25 @@ assert.equal(blockedGate.questions[0].blocked, true);
 assert.equal(blockedGate.questions[0].options.some(o => o.action === 'auto_generate'), false);
 assert.deepEqual(blockedGate.questions[0].allowedActions, ['provide_assets', 'skip_image']);
 assert.equal(blockedGate.questions[0].severityFindingType, 'skippedCriticalAsset');
+
+const bridgeBlocked = JSON.parse(cp.execFileSync(process.execPath, [
+  'scripts/resolve_visual_assets.js',
+  blockedPlanPath,
+  '--out-dir',
+  bridgeBlockedDir,
+  '--imagegen-capability',
+  'available',
+  '--blocked-action',
+  'require_user_input'
+], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}));
+assert.equal(bridgeBlocked.status, 'needs_user_input');
+const bridgeBlockedReport = JSON.parse(fs.readFileSync(path.join(bridgeBlockedDir, 'visual-asset-resolution.json'), 'utf8'));
+assert.equal(bridgeBlockedReport.counts.autoGenerate, 0);
+assert.equal(bridgeBlockedReport.counts.requireUserInput, 1);
+assert.equal(bridgeBlockedReport.unresolved[0].blocked, true);
 
 fs.writeFileSync(blockedAnswersPath, JSON.stringify({
   decisions: {

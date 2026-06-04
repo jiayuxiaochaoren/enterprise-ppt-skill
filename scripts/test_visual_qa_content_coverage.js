@@ -90,6 +90,15 @@ pptx.writeFile({ fileName: pptxPath }).then(() => {
         rendererName: 'testContent',
         source: 'test'
       },
+      renderRoute: {
+        version: 'render-route/v1',
+        family: 'business',
+        requestedType: 'content',
+        renderer: { id:'content', name:'testContent', matchKind:'exact', source:'test' },
+        layoutVariant: '',
+        componentPlan: { version:'component-plan/v1', componentIds:[], unknownComponents:[], rulesApplied:[] },
+        assetPolicy: { status:'none', role:'none', mustBind:false, syntheticOnly:false, staleForRoute:false, hasPrompt:false, hasBoundAsset:false }
+      },
       assetDecision: {
         version: 'asset-decision/v1',
         status: 'none',
@@ -119,6 +128,15 @@ pptx.writeFile({ fileName: pptxPath }).then(() => {
         rendererId: 'case-gallery',
         rendererName: 'testCaseGallery',
         source: 'test'
+      },
+      renderRoute: {
+        version: 'render-route/v1',
+        family: 'evidence-gallery',
+        requestedType: 'case-gallery',
+        renderer: { id:'case-gallery', name:'testCaseGallery', matchKind:'exact', source:'test' },
+        layoutVariant: '',
+        componentPlan: { version:'component-plan/v1', componentIds:['proof-gallery'], unknownComponents:[], rulesApplied:[] },
+        assetPolicy: { status:'none', role:'gallery', mustBind:false, syntheticOnly:false, staleForRoute:false, hasPrompt:false, hasBoundAsset:false }
       },
       assetDecision: {
         version: 'asset-decision/v1',

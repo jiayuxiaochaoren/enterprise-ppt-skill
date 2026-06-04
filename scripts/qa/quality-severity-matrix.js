@@ -25,6 +25,8 @@ const QUALITY_SEVERITY_MATRIX = {
   renderMetaSlideNumberInvalid: entry('contract', { draft:'fail', formal:'fail', delivery:'fail' }, 'render-meta slide records must identify a valid positive slide number'),
   renderMetaSlideTypeMissing: entry('contract', { draft:'fail', formal:'fail', delivery:'fail' }, 'render-meta slide records must identify the rendered slide type'),
   renderMetaRendererFieldMissing: entry('contract', { draft:'fail', formal:'fail', delivery:'fail' }, 'rendererMatch fields are part of the render-meta contract'),
+  renderMetaRenderRouteMissing: entry('contract', { draft:'fail', formal:'fail', delivery:'fail' }, 'renderRoute v1 is required as the single route contract'),
+  renderMetaRenderRouteFieldMissing: entry('contract', { draft:'fail', formal:'fail', delivery:'fail' }, 'renderRoute must expose renderer, component, asset, and route policy fields'),
   renderMetaComponentArrayMissing: entry('contract', { draft:'fail', formal:'fail', delivery:'fail' }, 'component evidence arrays are required for renderer QA'),
   renderMetaAssetDecisionMissing: entry('contract', { draft:'fail', formal:'fail', delivery:'fail' }, 'assetDecision v1 is required on every slide'),
   renderMetaAssetDecisionFieldMissing: entry('asset_provenance', { draft:'fail', formal:'fail', delivery:'fail' }, 'assetDecision provenance fields are required for delivery audit'),

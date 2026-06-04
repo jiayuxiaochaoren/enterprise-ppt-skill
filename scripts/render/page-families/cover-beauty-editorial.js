@@ -6,6 +6,74 @@ function createBeautyBrandEditorialCover(ctx = {}, deps = {}) {
     fileExists
   } = deps;
 
+  function drawBeautyTextureFallback(slide, box, label = 'PRODUCT TEXTURE') {
+    const C = colors();
+    const cream = C.paper || 'F7F2EE';
+    const blush = C.softBlue || 'F4D9D6';
+    const shadow = C.ink || '2A0D13';
+    ctx.addRect(slide, box.x, box.y, box.w, box.h, cream, cream, {
+      fill:{ color:cream, transparency:0 },
+      line:{ color:'FFFFFF', transparency:100 }
+    });
+    slide.addShape('ellipse', {
+      x:box.x + box.w * 0.12,
+      y:box.y + box.h * 0.16,
+      w:box.w * 0.92,
+      h:box.h * 0.78,
+      fill:{ color:blush, transparency:34 },
+      line:{ color:blush, transparency:100 }
+    });
+    slide.addShape('ellipse', {
+      x:box.x + box.w * 0.54,
+      y:box.y + box.h * 0.12,
+      w:box.w * 0.30,
+      h:box.h * 0.30,
+      fill:{ color:C.accent, transparency:76 },
+      line:{ color:C.accent, transparency:100 }
+    });
+    ctx.addRect(slide, box.x + box.w * 0.23, box.y + box.h * 0.24, box.w * 0.20, box.h * 0.54, shadow, shadow, {
+      fill:{ color:shadow, transparency:0 },
+      line:{ color:shadow, transparency:100 }
+    });
+    ctx.addRect(slide, box.x + box.w * 0.27, box.y + box.h * 0.12, box.w * 0.12, box.h * 0.16, shadow, shadow, {
+      fill:{ color:shadow, transparency:0 },
+      line:{ color:shadow, transparency:100 }
+    });
+    ctx.addRect(slide, box.x + box.w * 0.26, box.y + box.h * 0.48, box.w * 0.14, 0.035, C.accent, C.accent, {
+      fill:{ color:C.accent, transparency:8 },
+      line:{ color:C.accent, transparency:100 }
+    });
+    slide.addShape('ellipse', {
+      x:box.x + box.w * 0.54,
+      y:box.y + box.h * 0.48,
+      w:box.w * 0.30,
+      h:box.h * 0.18,
+      fill:{ color:'FFFFFF', transparency:5 },
+      line:{ color:C.accent, transparency:52, width:0.42 }
+    });
+    slide.addShape('ellipse', {
+      x:box.x + box.w * 0.58,
+      y:box.y + box.h * 0.50,
+      w:box.w * 0.22,
+      h:box.h * 0.12,
+      fill:{ color:C.accent, transparency:66 },
+      line:{ color:C.accent, transparency:100 }
+    });
+    ctx.addRect(slide, box.x + box.w * 0.58, box.y + box.h * 0.76, box.w * 0.36, 0.045, C.cyan, C.cyan, {
+      fill:{ color:C.cyan, transparency:16 },
+      line:{ color:C.cyan, transparency:100 }
+    });
+    ctx.addLabel(slide, label, {
+      x:box.x + 0.24,
+      y:box.y + box.h - 0.36,
+      w:box.w - 0.48,
+      h:0.10,
+      fontSize:5.8,
+      color:'64748B',
+      charSpace:0.8
+    });
+  }
+
   return function beautyBrandEditorialCover(slide, plan, s) {
     const C = colors();
     drawLightCanvasShell(slide);
@@ -25,7 +93,7 @@ function createBeautyBrandEditorialCover(ctx = {}, deps = {}) {
     if (imagePath && fileExists(imagePath)) {
       ctx.addPhotoPanel(slide, imagePath, hero.x+0.18, hero.y+0.18, hero.w-0.36, 2.56, { tone:'light', transparency:88, stroke:'FFFFFF', strokeTransparency:70, fit:'cover' });
     } else {
-      ctx.genericShowcaseField(slide, hero.x+0.22, hero.y+0.24, hero.w-0.44, 2.50, 'PRODUCT TEXTURE');
+      drawBeautyTextureFallback(slide, { x:hero.x+0.22, y:hero.y+0.24, w:hero.w-0.44, h:2.50 }, 'PRODUCT TEXTURE');
     }
     ctx.addRect(slide, hero.x, hero.y+hero.h-0.98, hero.w, 0.98, C.ink, C.ink, { fill:{color:C.ink, transparency:8}, line:{color:C.ink, transparency:100} });
     ctx.addLabel(slide, 'PRODUCT · TEXTURE · PROOF', { x:hero.x+0.30, y:hero.y+hero.h-0.64, w:1.72, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.7 });

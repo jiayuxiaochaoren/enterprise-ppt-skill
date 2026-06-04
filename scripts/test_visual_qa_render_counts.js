@@ -3,6 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
 const pptxgen = require('pptxgenjs');
+const {
+  runVisualQa: runVisualQaDirect
+} = require('./qa/visual-qa-runner');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-visual-qa-render-counts');
@@ -36,6 +39,15 @@ function baseRenderMeta({ title, drawnCount, mode = 'native-renderer', planned =
         rendererId: 'cards',
         rendererName: 'testCards',
         source: 'test'
+      },
+      renderRoute: {
+        version: 'render-route/v1',
+        family: 'business',
+        requestedType: 'cards',
+        renderer: { id:'cards', name:'testCards', matchKind:'exact', source:'test' },
+        layoutVariant: '',
+        componentPlan: { version:'component-plan/v1', componentIds:['content-card-grid'], unknownComponents:[], rulesApplied:[] },
+        assetPolicy: { status:'none', role:'none', mustBind:false, syntheticOnly:false, staleForRoute:false, hasPrompt:false, hasBoundAsset:false }
       },
       assetDecision: {
         version: 'asset-decision/v1',
@@ -140,6 +152,10 @@ function runQa(pptxPath, planPath) {
   assert.notEqual(missingCardQa.qa.status, 0, 'missing rendered card should fail visual QA');
   assert.equal(missingCardQa.result.component_consumption_qa.status, 'fail');
   assert.equal(missingCardQa.result.findings.some(f => f.type === 'renderedCountMismatch'), true);
+  const directMissingCardQa = runVisualQaDirect({ file: missingCard.pptxPath, planPath: missingCard.planPath });
+  assert.equal(directMissingCardQa.success, false);
+  assert.equal(directMissingCardQa.component_consumption_qa.status, 'fail');
+  assert.equal(directMissingCardQa.findings.some(f => f.type === 'renderedCountMismatch'), true);
 
   const modeMismatchPlan = {
     industry: 'general-operations',

@@ -107,6 +107,15 @@ function renderMetaSlide(slideNo) {
       rendererName: 'testCover',
       source: 'test'
     },
+    renderRoute: {
+      version: 'render-route/v1',
+      family: 'cover',
+      requestedType: 'cover',
+      renderer: { id:'cover', name:'testCover', matchKind:'exact', source:'test' },
+      layoutVariant: '',
+      componentPlan: { version:'component-plan/v1', componentIds:[], unknownComponents:[], rulesApplied:[] },
+      assetPolicy: { status:'none', role:'none', mustBind:false, syntheticOnly:false, staleForRoute:false, hasPrompt:false, hasBoundAsset:false }
+    },
     assetDecision: {
       version: 'asset-decision/v1',
       status: 'none',

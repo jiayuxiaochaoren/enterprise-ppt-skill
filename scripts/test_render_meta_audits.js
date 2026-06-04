@@ -37,6 +37,15 @@ function renderMeta(overrides = {}) {
         rendererName: 'testCards',
         source: 'test'
       },
+      renderRoute: {
+        version: 'render-route/v1',
+        family: 'business',
+        requestedType: 'cards',
+        renderer: { id: 'cards', name: 'testCards', matchKind: 'exact', source: 'test' },
+        layoutVariant: '',
+        componentPlan: { version:'component-plan/v1', componentIds:['content-card-grid'], unknownComponents:[], rulesApplied:[] },
+        assetPolicy: { status:'none', role:'none', mustBind:false, syntheticOnly:false, staleForRoute:false, hasPrompt:false, hasBoundAsset:false }
+      },
       assetDecision: {
         version: 'asset-decision/v1',
         status: 'none',
@@ -99,6 +108,15 @@ const fallbackRendererAudit = renderMetaSchemaAuditFromRender({
       rendererId: 'fallbackBulletsSlide',
       rendererName: 'fallbackBulletsSlide',
       source: 'fallback'
+    },
+    renderRoute: {
+      version: 'render-route/v1',
+      family: 'business',
+      requestedType: 'unknown-slide',
+      renderer: { id:'fallbackBulletsSlide', name:'fallbackBulletsSlide', matchKind:'fallback', source:'fallback' },
+      layoutVariant: '',
+      componentPlan: { version:'component-plan/v1', componentIds:['content-card-grid'], unknownComponents:[], rulesApplied:[] },
+      assetPolicy: { status:'none', role:'none', mustBind:false, syntheticOnly:false, staleForRoute:false, hasPrompt:false, hasBoundAsset:false }
     }
   })
 }, 1);

@@ -28,10 +28,12 @@ function parseArgs(argv) {
     else if (arg === '--story-plan') opts.storyPlan = argv[++i];
     else if (arg === '--clarifications') opts.clarifications = argv[++i];
     else if (arg === '--asset-answers') opts.assetAnswers = argv[++i];
+    else if (arg === '--asset-map') opts.assetMap = argv[++i];
     else if (arg === '--ocr-json') opts.ocrJson = argv[++i];
     else if (arg === '--ocr-command') opts.ocrCommand = argv[++i];
     else if (arg === '--summary-md') opts.summaryMd = argv[++i];
     else if (arg === '--allow-generated-assets') opts.allowGeneratedAssets = true;
+    else if (arg === '--imagegen-capability' || arg === '--imagegen') opts.imagegenCapability = argv[++i];
     else if (arg === '--auto-draft') opts.autoDraft = true;
     else if (arg === '--skip-preview') opts.skipPreview = true;
     else if (arg === '--preview-optional') opts.previewOptional = true;
@@ -54,7 +56,9 @@ function usage() {
     '  --ocr-command CMD         Optional local image OCR command compatible with: CMD image stdout.',
     '  --summary-md FILE         Write a human-readable delivery summary.',
     '  --quality-mode MODE       draft | formal | delivery. Default: draft.',
-    '  --allow-generated-assets  Stop with imagegen prompts when synthetic assets are needed.',
+    '  --allow-generated-assets  Resolve missing visuals through imagegen prompts before rendering.',
+    '  --imagegen-capability MODE available | unavailable. Defaults to available when --allow-generated-assets is set.',
+    '  --asset-map FILE           Bind generated/provided image assets before rendering.',
     '  --skip-preview            Do not request Keynote preview export during validation.',
     '',
     'Without --model-json or --auto-draft, this CLI stops at the model-extraction prompt stage.'

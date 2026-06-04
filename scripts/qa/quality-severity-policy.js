@@ -1,7 +1,8 @@
 const {
   MATRIX_VERSION,
-  QUALITY_SEVERITY_MATRIX
-} = require('./quality-severity-matrix');
+  QUALITY_SEVERITY_MATRIX,
+  severityMatrixRows
+} = require('./contract-registry');
 
 const POLICY_VERSION = 'quality-severity-policy/v1';
 const LEVEL_RANK = { pass:0, review:1, fail:2 };
@@ -43,7 +44,7 @@ function policyRowsForTypes(types = []) {
 }
 
 function policyRows() {
-  return Object.keys(QUALITY_SEVERITY_MATRIX).sort().map(policyRow);
+  return severityMatrixRows();
 }
 
 function severityPromotionsForMode(mode) {

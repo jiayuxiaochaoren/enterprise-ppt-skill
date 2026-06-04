@@ -41,8 +41,8 @@ function taskEvidenceState(task = {}, opts = {}) {
     ...tests,
     ...renderedProof
   ].join(' ');
-  const renderMetaRelevant = /render[-_ ]?meta|metadata|drawn|component|consumption|asset decision|asset-decision|text shrink|blank|visual qa|content[-_ ]?coverage|content_coverage/i.test(text);
-  const renderMetaEvidence = /render[-_ ]?meta|render_meta|render-meta-audits|visual_qa|generate_pptx|assetDecision|drawnComponents|textBoxes|content_coverage|test_asset_decision_gate|test_template_page_family_fixtures|template-readiness-matrix/i.test(text);
+  const renderMetaRelevant = /render[-_ ]?meta|renderRoute|metadata|drawn|component|consumption|asset decision|asset-decision|asset facade|asset resolution|contract registry|text shrink|blank|visual qa|content[-_ ]?coverage|content_coverage/i.test(text);
+  const renderMetaEvidence = /render[-_ ]?meta|render_meta|renderRoute|render-route|render-meta-audits|contract-registry|visual_qa|generate_pptx|assetDecision|drawnComponents|textBoxes|content_coverage|resolve_visual_assets|test_asset_decision_gate|test_template_page_family_fixtures|template-readiness-matrix/i.test(text);
   return {
     codePath: evidenceStatus(codeEvidence.length > 0, fileEvidence.length > 0),
     renderMeta: renderMetaRelevant ? evidenceStatus(renderMetaEvidence, /visual_qa|generate_pptx/.test(text)) : 'not_applicable',

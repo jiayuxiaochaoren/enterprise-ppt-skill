@@ -26,6 +26,9 @@ function hardeningReadinessMarkdown(summary = {}) {
   const testProfileGates = summary.testProfileGates || [];
   const testProfileCoverage = summary.testProfileGateCoverage || {};
   const testProfileTotals = summary.testProfileGateTotals || {};
+  const internalSummary = summary.internalSummary || {};
+  const contractEvidence = internalSummary.contractEvidence || [];
+  const contractEvidenceTotals = internalSummary.contractEvidenceTotals || {};
   const moduleBudgetHeadroom = moduleBudgets.length
     ? moduleBudgets.reduce((min, row) => Math.min(min, row.lineHeadroom || 0), Infinity)
     : 0;
@@ -48,6 +51,7 @@ function hardeningReadinessMarkdown(summary = {}) {
     `- Text shrink/blank-page QA: ${textBlank.ready ? 'ready' : 'not ready'} (${textBlank.requiredFindingCount || 0} findings, ${textBlank.requiredTextMetaFieldCount || 0} text-meta fields, ${textBlank.requiredCoverageFieldCount || 0} coverage fields)`,
     `- Test profile gates: pass ${testProfileTotals.pass || 0}, partial ${testProfileTotals.partial || 0}, missing ${testProfileTotals.missing || 0}`,
     `- Required test profile coverage: ${testProfileCoverage.ready ? 'ready' : 'not ready'} (${(testProfileCoverage.requiredGateIds || []).join(', ') || 'none'})`,
+    `- Internal contract evidence: ${contractEvidenceTotals.ready || 0}/${contractEvidenceTotals.total || 0} ready`,
     `- Evidence complete: ${summary.evidenceCompleteness ? summary.evidenceCompleteness.complete : 0}/${summary.taskCount}`,
     '',
     '## Modes',
@@ -175,6 +179,14 @@ function hardeningReadinessMarkdown(summary = {}) {
     '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
     ...testProfileGates.map(row =>
       `| ${row.id} | ${row.status || ''} | ${(row.mismatchReasons || []).join(', ') || 'none'} | ${(row.mismatchDetails || []).map(formatMismatchDetail).join('; ') || 'none'} | ${(row.actualRuleIds || []).join(', ') || 'none'} | ${(row.actualGroups || []).join(', ') || 'none'} | ${(row.actualCommands || []).join(' && ') || 'none'} | ${row.actualFallbackToFull ? 'yes' : 'no'} | ${(row.changedFiles || []).join(', ') || 'none'} |`
+    ),
+    '',
+    '## Internal Contract Evidence',
+    '',
+    '| Contract | Ready | Support | Facade | Runner | Rule Modules | Registry | Fixture Tests | Missing |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    ...contractEvidence.map(row =>
+      `| ${row.id} ${row.label || ''} | ${row.ready ? 'yes' : 'no'} | ${row.supportKind || ''} | ${formatList(row.facadeFiles)} | ${formatList(row.runnerFiles)} | ${formatList(row.ruleModuleFiles)} | ${formatList(row.registryFiles)} | ${formatList(row.fixtureTests)} | ${formatList(row.missingFiles)} |`
     ),
     '',
     '## Tasks',

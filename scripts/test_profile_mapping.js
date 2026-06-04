@@ -14,10 +14,16 @@ assert.equal(
   'scripts/render/text-meta.js'
 );
 
-const renderer = groupsForChangedFiles(['scripts/render/text-meta.js']);
+const renderer = groupsForChangedFiles(['scripts/render/page-families/cover-core.js']);
 assert.deepEqual(renderer.groups, ['unit', 'render', 'visual']);
 assert.equal(renderer.matchedRules[0].id, 'renderer');
 assert.equal(renderer.fallbackToFull, false);
+assert.deepEqual(renderer.fileMatches, [{
+  file: 'scripts/render/page-families/cover-core.js',
+  matched: true,
+  ruleIds: ['renderer'],
+  groups: ['unit', 'render', 'visual']
+}]);
 
 function assertProfile(file, expectedGroups, expectedRuleIds) {
   const profile = profileSummaryForChangedFiles([file]);
@@ -33,6 +39,14 @@ assert.ok(asset.commands.includes('npm run test:delivery'));
 const assetReport = profileSummaryForChangedFiles(['scripts/reports/asset-decision-summary.js']);
 assert.deepEqual(assetReport.groups, ['unit', 'pipeline', 'delivery']);
 assert.deepEqual(assetReport.matchedRules.map(rule => rule.id), ['asset']);
+
+const assetResolver = profileSummaryForChangedFiles(['scripts/resolve_visual_assets.js']);
+assert.deepEqual(assetResolver.groups, ['unit', 'pipeline', 'delivery']);
+assert.deepEqual(assetResolver.matchedRules.map(rule => rule.id), ['asset']);
+
+const assetFacade = profileSummaryForChangedFiles(['scripts/assets/resolution-facade.js']);
+assert.deepEqual(assetFacade.groups, ['unit', 'pipeline', 'delivery']);
+assert.deepEqual(assetFacade.matchedRules.map(rule => rule.id), ['asset']);
 
 const assetInternals = profileSummaryForChangedFiles([
   'scripts/design/asset-generation.js',
@@ -188,11 +202,36 @@ assert.deepEqual(validatePptx.matchedRules.map(rule => rule.id), ['visual-qa']);
 ].forEach(file => assertProfile(file, ['unit', 'render', 'visual'], ['renderer']));
 
 [
-  'scripts/qa/visual-slide-audit-primitives.js',
   'scripts/qa/route-metadata-audit.js',
   'scripts/qa/render-meta-schema-audit.js',
-  'scripts/qa/component-consumption-audit.js'
+  'scripts/qa/visual-slide-audit-primitives.js'
 ].forEach(file => assertProfile(file, ['unit', 'visual', 'delivery'], ['visual-qa']));
+
+[
+  'scripts/render/text-meta.js',
+  'scripts/render/text-readability-policy.js',
+  'scripts/render/text-box-meta.js'
+].forEach(file => assertProfile(file, ['unit', 'visual'], ['render-text']));
+
+[
+  'scripts/qa/visual-region-contract.js',
+  'scripts/qa/screenshot-baseline-region-rules.js',
+  'scripts/qa/visual-slide-regions.js'
+].forEach(file => assertProfile(file, ['unit', 'visual'], ['visual-region']));
+
+[
+  'scripts/qa/component-consumption-audit.js',
+  'scripts/qa/component-consumption-counts.js',
+  'scripts/qa/component-consumption-mode-policy.js',
+  'scripts/qa/component-consumption-native-evidence.js'
+].forEach(file => assertProfile(file, ['unit', 'visual'], ['component-consumption']));
+
+[
+  'scripts/design/chart-semantic-qa.js',
+  'scripts/design/chart-visual-qa.js',
+  'scripts/design/chart-evidence-qa.js',
+  'scripts/design/chart-spec-normalization.js'
+].forEach(file => assertProfile(file, ['unit', 'visual'], ['chart-qa']));
 
 [
   'scripts/test_commercial_readiness_qa.js',
@@ -250,8 +289,14 @@ const explain = JSON.parse(cp.execFileSync(process.execPath, [
   '--json'
 ], { cwd:path.resolve(__dirname, '..'), encoding:'utf8' }));
 assert.equal(explain.fallbackToFull, false);
-assert.deepEqual(explain.groups, ['unit', 'render', 'visual']);
-assert.ok(explain.commands.includes('npm run test:render'));
+assert.deepEqual(explain.groups, ['unit', 'visual']);
+assert.deepEqual(explain.fileMatches, [{
+  file: 'scripts/render/text-meta.js',
+  matched: true,
+  ruleIds: ['render-text'],
+  groups: ['unit', 'visual']
+}]);
+assert.equal(explain.commands.includes('npm run test:render'), false);
 
 const repeatedChangedFileExplain = JSON.parse(cp.execFileSync(process.execPath, [
   path.join(__dirname, 'run_all_tests.js'),
@@ -275,6 +320,7 @@ const humanExplain = cp.execFileSync(process.execPath, [
   '--explain'
 ], { cwd:path.resolve(__dirname, '..'), encoding:'utf8' });
 assert.match(humanExplain, /CHANGED-FILE PROFILE groups=unit,pipeline,delivery rules=asset fallbackToFull=false/);
+assert.match(humanExplain, /MATCH scripts\/deck_asset_decision_gate\.js rules=asset groups=unit,pipeline,delivery/);
 assert.match(humanExplain, /MINIMUM GATES npm run test:unit && npm run test:pipeline && npm run test:delivery/);
 
 const changedFileList = JSON.parse(cp.execFileSync(process.execPath, [
@@ -290,6 +336,7 @@ assert.equal(changedFileList.profile, 'full');
 assert.deepEqual(changedFileList.changedProfile.groups, ['unit']);
 assert.deepEqual(changedFileList.changedProfile.matchedRules.map(rule => rule.id), ['test-profile', 'docs-skill']);
 assert.deepEqual(changedFileList.changedProfile.commands, ['npm run test:unit', 'npm run validate:skill']);
+assert.deepEqual(changedFileList.changedProfile.fileMatches.map(row => row.ruleIds), [['test-profile'], ['test-profile'], ['docs-skill']]);
 assert.ok(changedFileList.tests.includes('test_profile_mapping.js'));
 assert.equal(changedFileList.tests.includes('test_component_screenshot_qa.js'), false);
 
@@ -300,6 +347,7 @@ const humanChangedFileList = cp.execFileSync(process.execPath, [
   '--list'
 ], { cwd:path.resolve(__dirname, '..'), encoding:'utf8' });
 assert.match(humanChangedFileList, /CHANGED-FILE PROFILE groups=unit rules=test-profile,docs-skill fallbackToFull=false/);
+assert.match(humanChangedFileList, /MATCH README\.md rules=docs-skill groups=unit/);
 assert.match(humanChangedFileList, /SELECTED TESTS \d+/);
 assert.match(humanChangedFileList, /test_profile_mapping\.js/);
 

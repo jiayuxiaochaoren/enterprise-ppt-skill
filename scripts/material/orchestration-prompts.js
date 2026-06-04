@@ -194,7 +194,7 @@ function orchestrationOverview(outDir) {
     '',
     '4. Re-run `04-extraction.prompt.md` with source audit, story architecture, and clarification JSON embedded, then save `material-extraction.json`.',
     '5. `05-critic.prompt.md` -> save JSON as `model-critic.json`; only compile when `safe_to_compile` is true or all revision instructions are handled.',
-    '6. After compiling a deck plan, run the asset decision gate before PPTX rendering. If it returns `needs_user_input`, ask the user whether to provide assets, skip images, or auto-generate synthetic visuals; bind generated/user assets before the final PPTX.',
+    '6. After compiling a deck plan, run the visual asset resolution bridge before PPTX rendering. The bridge executes the asset decision gate, then resolves missing visuals before any renderer fallback. If it returns `needs_image_generation`, generate and bind synthetic visuals before the final PPTX. If imagegen is unavailable, rerun the bridge with unavailable capability so missing images become explicit structure-only skips instead of renderer placeholders.',
     '',
     'If the user answers questions, save them as `clarification-answers.json`, then resolve the gate:',
     '',
@@ -206,14 +206,13 @@ function orchestrationOverview(outDir) {
     '',
     '```bash',
     `node scripts/material_to_deck_plan.js --bundle <bundle.json> --model-json ${path.join(root, 'material-extraction.json')} --out ${path.join(root, 'deck-plan.json')}`,
-    `node scripts/deck_asset_decision_gate.js ${path.join(root, 'deck-plan.json')} --out ${path.join(root, 'asset-decision-gate.json')}`,
+    `node scripts/resolve_visual_assets.js ${path.join(root, 'deck-plan.json')} --out-dir ${root} --imagegen-capability available`,
     '```',
     '',
-    'If the asset gate resolves to `auto_generate`, plan prompts and bind images before rendering:',
+    'If the bridge returns `needs_image_generation`, bind saved image outputs before rendering:',
     '',
     '```bash',
-    `node scripts/asset_prompt_planner.js ${path.join(root, 'deck-plan.json')} --out ${path.join(root, 'asset-prompts.json')}`,
-    `node scripts/bind_generated_assets.js ${path.join(root, 'deck-plan.json')} <asset-mapping.json> ${path.join(root, 'deck-plan.assets-bound.json')}`,
+    `node scripts/resolve_visual_assets.js ${path.join(root, 'deck-plan.json')} --out-dir ${root} --imagegen-capability available --asset-map <asset-mapping.json> --out-plan ${path.join(root, 'deck-plan.assets-bound.json')}`,
     '```'
   ].join('\n');
 }

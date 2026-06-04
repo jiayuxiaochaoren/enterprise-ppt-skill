@@ -19,6 +19,11 @@ const {
   usage
 } = require('./material/delivery-cli');
 const {
+  createInitialReport,
+  prepareExtractionPath,
+  resolveAssetStage
+} = require('./material/delivery-stages');
+const {
   assetDecisionSummary,
   parseJsonFromOutput
 } = require('./reports/delivery-report');
@@ -37,17 +42,7 @@ function main() {
   const previewDir = path.join(outDir, 'preview');
   fs.mkdirSync(outDir, { recursive: true });
 
-  const report = {
-    version: 'material-to-delivery/v1',
-    status: 'started',
-    qualityMode: opts.qualityMode,
-    inputs: opts.inputs.map(input => rel(input)),
-    steps: [],
-    outputs: {},
-    nextActions: [],
-    summaryMarkdownPath: opts.summaryMd ? path.resolve(ROOT, opts.summaryMd) : ''
-  };
-  if (report.summaryMarkdownPath) report.outputs.markdownSummary = rel(report.summaryMarkdownPath);
+  const report = createInitialReport(opts, rel, ROOT);
 
   const bundlePath = path.join(outDir, 'material-bundle.json');
   const ocrResults = opts.ocrJson ? readJsonOrStdin(opts.ocrJson, readJson) : null;
@@ -118,21 +113,17 @@ function main() {
     }
   }
 
-  let extractionPath = opts.modelJson ? path.resolve(opts.modelJson) : '';
-  if (!extractionPath && opts.autoDraft) {
-    extractionPath = path.join(orchestrationDir, 'material-extraction.draft.json');
-    const draft = buildDraftExtraction(bundle, opts);
-    const errors = validateExtraction(draft);
-    if (errors.length) throw new Error(`auto draft extraction failed validation: ${errors.join('; ')}`);
-    writeJson(extractionPath, draft);
-    report.outputs.draftExtraction = rel(extractionPath);
-    report.nextActions.push('Auto-draft extraction was used; replace it with model-reviewed material-extraction.json before external delivery.');
-  }
-
+  const extractionPath = prepareExtractionPath({
+    opts,
+    bundle,
+    orchestrationDir,
+    report,
+    buildDraftExtraction,
+    validateExtraction,
+    writeJson,
+    rel
+  });
   if (!extractionPath) {
-    report.status = 'awaiting_model_extraction';
-    report.outputs.extractionPrompt = rel(path.join(orchestrationDir, '04-extraction.prompt.md'));
-    report.nextActions.push('Run the generated extraction prompt with the model, save material-extraction.json, then rerun with --model-json.');
     writeReport(outDir, report);
     return;
   }
@@ -151,74 +142,18 @@ function main() {
   writeJson(deckPlanPath, plan);
   report.outputs.deckPlan = rel(deckPlanPath);
 
-  const assetGatePath = path.join(outDir, 'asset-decision-gate.json');
-  const assetGateArgs = ['scripts/deck_asset_decision_gate.js', deckPlanPath, '--out', assetGatePath];
-  if (opts.assetAnswers) {
-    assetGateArgs.push('--answers', path.resolve(opts.assetAnswers), '--out-plan', path.join(outDir, 'deck-plan.assets-resolved.json'));
-  }
-  const assetGateStep = runNode('asset decision gate', assetGateArgs);
-  report.steps.push(assetGateStep);
-  report.outputs.assetGate = rel(assetGatePath);
-  const assetGate = fs.existsSync(assetGatePath) ? readJson(assetGatePath) : null;
-  if (assetGate) {
-    report.assetGate = {
-      status: assetGate.status || '',
-      questionCount: (assetGate.questions || []).length
-    };
-  }
-  if (assetGate && assetGate.status === 'needs_user_input') {
-    if (opts.autoDraft) {
-      const skipAnswersPath = path.join(outDir, 'asset-answers.auto-skip.json');
-      const resolvedPlanPath = path.join(outDir, 'deck-plan.assets-resolved.json');
-      const decisions = {};
-      (assetGate.questions || []).forEach(question => {
-        decisions[String(question.slide)] = { action: 'skip_image' };
-      });
-      writeJson(skipAnswersPath, { decisions });
-      const resolvedGatePath = path.join(outDir, 'asset-decision-gate.resolved.json');
-      const resolvedGateStep = runNode('asset decision auto-skip for draft', [
-        'scripts/deck_asset_decision_gate.js',
-        deckPlanPath,
-        '--answers',
-        skipAnswersPath,
-        '--out',
-        resolvedGatePath,
-        '--out-plan',
-        resolvedPlanPath
-      ]);
-      report.steps.push(resolvedGateStep);
-      report.outputs.assetAnswers = rel(skipAnswersPath);
-      report.outputs.assetGateResolved = rel(resolvedGatePath);
-      if (resolvedGateStep.status === 'pass' && fs.existsSync(resolvedPlanPath)) {
-        const resolvedGate = fs.existsSync(resolvedGatePath) ? readJson(resolvedGatePath) : {};
-        report.assetGate = {
-          status: resolvedGate.status || 'auto_resolved',
-          questionCount: (resolvedGate.questions || assetGate.questions || []).length,
-          originalStatus: assetGate.status || ''
-        };
-        deckPlanPath = resolvedPlanPath;
-        report.outputs.deckPlan = rel(deckPlanPath);
-      } else {
-        report.status = 'needs_asset_decisions';
-        report.nextActions.push('Auto draft could not resolve asset decisions; answer asset-decision-gate.json manually.');
-        writeReport(outDir, report);
-        return;
-      }
-    } else
-    if (opts.allowGeneratedAssets) {
-      const promptPath = path.join(outDir, 'asset-prompts.json');
-      report.steps.push(runNode('asset prompt planning', ['scripts/asset_prompt_planner.js', deckPlanPath, '--out', promptPath]));
-      report.outputs.assetPrompts = rel(promptPath);
-      report.status = 'awaiting_generated_or_provided_assets';
-      report.nextActions.push('Generate or provide the assets listed in asset-prompts.json, bind them, then rerun with --asset-answers or --model-json against the resolved plan.');
-      writeReport(outDir, report);
-      return;
-    } else {
-      report.status = 'needs_asset_decisions';
-      report.nextActions.push('Answer asset-decision-gate.json with provide_assets or skip_image; add --allow-generated-assets only for synthetic preview visuals.');
-      writeReport(outDir, report);
-      return;
-    }
+  const assetStage = resolveAssetStage({
+    deckPlanPath,
+    opts,
+    outDir,
+    report,
+    root: ROOT,
+    rel
+  });
+  deckPlanPath = assetStage.deckPlanPath;
+  if (assetStage.stop) {
+    writeReport(outDir, report);
+    return;
   }
 
   const pptxPath = path.join(outDir, 'deck.pptx');
@@ -279,7 +214,6 @@ function main() {
 try {
   main();
 } catch (err) {
-  usage();
   console.error(err.stack || err.message || err);
   process.exit(1);
 }

@@ -29,6 +29,7 @@
     "assets:plan": "node scripts/asset_prompt_planner.js",
     "assets:plan:strict": "node scripts/asset_prompt_planner.js --fail-on-blocked",
     "assets:gate": "node scripts/deck_asset_decision_gate.js",
+    "assets:resolve": "node scripts/resolve_visual_assets.js",
     "assets:bind": "node scripts/bind_generated_assets.js",
     "references:build": "node scripts/build_reference_recipes.js",
     "materials:ingest": "node scripts/material_ingest.js",

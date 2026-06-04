@@ -10,6 +10,9 @@ const {
   rel
 } = require('./hardening-readiness-environment');
 const {
+  HARDENING_CONTRACT_EVIDENCE
+} = require('./contract-registry');
+const {
   evidenceStateTotals
 } = require('./hardening-evidence-state');
 const {
@@ -33,6 +36,38 @@ const {
   summarizeReadinessTasks,
   taskRows
 } = require('./hardening-task-summary');
+
+function evidenceFilesFor(row = {}) {
+  return [
+    ...(row.facadeFiles || []),
+    ...(row.runnerFiles || []),
+    ...(row.ruleModuleFiles || []),
+    ...(row.registryFiles || []),
+    ...(row.fixtureTests || [])
+  ];
+}
+
+function contractEvidenceRows(rows = HARDENING_CONTRACT_EVIDENCE, opts = {}) {
+  const fileExists = opts.exists || exists;
+  return rows.map(row => {
+    const files = evidenceFilesFor(row);
+    const missingFiles = files.filter(file => !fileExists(file));
+    return Object.assign({}, row, {
+      files,
+      missingFiles,
+      ready: missingFiles.length === 0
+    });
+  });
+}
+
+function contractEvidenceTotals(rows = []) {
+  return rows.reduce((totals, row) => {
+    totals.total += 1;
+    if (row.ready) totals.ready += 1;
+    else totals.missing += 1;
+    return totals;
+  }, { total: 0, ready: 0, missing: 0 });
+}
 
 function summarizeHardeningReadiness(matrix) {
   const issues = [];
@@ -105,6 +140,7 @@ function summarizeHardeningReadiness(matrix) {
     testProfileGates: subsystems.testProfileGates,
     templateReady: subsystems.template.ready
   });
+  const contractEvidence = contractEvidenceRows(HARDENING_CONTRACT_EVIDENCE, { exists });
 
   return {
     version: 'hardening-readiness-audit/v1',
@@ -128,6 +164,10 @@ function summarizeHardeningReadiness(matrix) {
     textBlank: subsystems.textBlank,
     testProfileGateCoverage: subsystems.testProfileGateCoverage,
     testProfileGateTotals: subsystems.testProfileGateTotals,
+    internalSummary: {
+      contractEvidence,
+      contractEvidenceTotals: contractEvidenceTotals(contractEvidence)
+    },
     evidenceStateTotals: evidenceStateTotals(tasks, { commandLooksAvailable, exists }),
     evidenceCompleteness: {
       complete: rows.filter(task => task.evidenceComplete).length,
@@ -147,5 +187,7 @@ function summarizeHardeningReadiness(matrix) {
 }
 
 module.exports = {
+  contractEvidenceRows,
+  contractEvidenceTotals,
   summarizeHardeningReadiness
 };

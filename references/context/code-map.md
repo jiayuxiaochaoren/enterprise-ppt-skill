@@ -6,6 +6,7 @@ Use this map before opening large implementation files.
 
 - `SKILL.md`: short skill contract and routing guide.
 - `CONTEXT.md`: repository context for new agent windows.
+- `references/maintenance-architecture.md`: maintenance boundary map for asset decisions, generated image state, renderRoute, render-meta schema, visual QA runner, and readiness dashboard evidence.
 - `references/context/skill-full-workflow.md`: archived long-form workflow. Open only when a detailed historical rule is missing elsewhere.
 
 ## Material Pipeline

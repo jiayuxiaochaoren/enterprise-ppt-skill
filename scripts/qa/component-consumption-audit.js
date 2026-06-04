@@ -1,44 +1,13 @@
 const {
-  componentCapabilityFor
-} = require('../render/component-capability-manifest');
-
-function arrayLength(slide = {}, keys = []) {
-  return Math.max(0, ...keys.map(key => Array.isArray(slide[key]) ? slide[key].length : 0));
-}
-
-function imageCountForSlide(slide = {}) {
-  return arrayLength(slide, ['images']) +
-    (slide.visual && Array.isArray(slide.visual.images) ? slide.visual.images.length : 0) +
-    (slide.image || (slide.visual && slide.visual.image) ? 1 : 0);
-}
-
-function expectedRenderedCountsForSlide(slide = {}) {
-  const counts = {};
-  const plannedIds = new Set(((slide.componentPlan && slide.componentPlan.componentIds) || [])
-    .concat(((slide.componentPlan && slide.componentPlan.components) || []).map(component => component.id))
-    .filter(Boolean));
-  const set = (ids, value) => {
-    const count = Number(value || 0);
-    if (!count) return;
-    ids.forEach(id => {
-      if (plannedIds.has(id)) counts[id] = Math.max(counts[id] || 0, count);
-    });
-  };
-  set(['navigation-sequence'], arrayLength(slide, ['items', 'sections']));
-  set(['content-card-grid'], arrayLength(slide, ['cards', 'items', 'modules', 'values', 'sections']));
-  set(['process-rail'], arrayLength(slide, ['phases', 'actions', 'steps', 'timeline', 'milestones']));
-  const rowCount = arrayLength(slide, ['rows', 'risks', 'controls']);
-  set(['risk-register', 'governance-table', 'table-with-commentary'], rowCount);
-  const metricCount = arrayLength(slide, ['metrics']);
-  set(['kpi-strip', 'metric-strip', 'scorecard'], Math.min(metricCount, 4));
-  set(['kpi-primary-metric'], metricCount ? 1 : 0);
-  const galleryCount = Math.max(imageCountForSlide(slide), arrayLength(slide, ['cards', 'items']));
-  set(['proof-gallery', 'proof-gallery-grid'], galleryCount);
-  set(['hero-image'], imageCountForSlide(slide) ? 1 : 0);
-  set(['product-matrix'], arrayLength(slide, ['products', 'productStory']));
-  set(['load-curve-band'], plannedIds.has('load-curve-band') ? 1 : 0);
-  return counts;
-}
+  expectedRenderedCountsForSlide,
+  renderedCountForComponent
+} = require('./component-consumption-counts');
+const {
+  modeFindingsForComponent
+} = require('./component-consumption-mode-policy');
+const {
+  nativeEvidenceFindingsForComponent
+} = require('./component-consumption-native-evidence');
 
 function componentConsumptionAuditFromRender(normalized = {}, renderMetaResult = {}) {
   const slides = normalized.slides || [];
@@ -89,13 +58,7 @@ function componentConsumptionAuditFromRender(normalized = {}, renderMetaResult =
       if (!expected) return;
       const consumed = (slide.consumedComponents || []).find(component => component.id === id && component.rendered);
       const drawn = (slide.drawnComponents || []).find(component => component.id === id);
-      const actual = Number(
-        (consumed && consumed.drawnCount != null ? consumed.drawnCount : null) ??
-        (consumed && consumed.itemCount != null ? consumed.itemCount : null) ??
-        (drawn && drawn.drawnCount != null ? drawn.drawnCount : null) ??
-        (drawn && drawn.itemCount != null ? drawn.itemCount : null) ??
-        (consumed && consumed.rendered && expected <= 1 ? 1 : 0)
-      );
+      const actual = renderedCountForComponent(consumed, drawn, expected);
       if (actual < expected) {
         findings.push({
           slide: slide.slide,
@@ -115,57 +78,8 @@ function componentConsumptionAuditFromRender(normalized = {}, renderMetaResult =
     });
     (slide.consumedComponents || []).forEach(component => {
       const planned = plannedById.get(component.id) || {};
-      const allowedModes = planned.allowedModes || planned.supportedModes || [];
-      const actualMode = component.mode === 'native-renderer'
-        ? 'native'
-        : (component.mode === 'overlay' ? 'overlay' : '');
-      const capability = componentCapabilityFor(component.id);
-      const manifestModes = capability && Array.isArray(capability.supportedModes) ? capability.supportedModes : [];
-      if (component.rendered && actualMode && manifestModes.length && !manifestModes.includes(actualMode)) {
-        findings.push({
-          slide: slide.slide,
-          level:'fail',
-          type:'componentModeMismatch',
-          message:`component ${component.id} rendered as ${actualMode}, but capability manifest allows ${manifestModes.join(',')}`
-        });
-      }
-      if (component.rendered && actualMode && Array.isArray(allowedModes) && allowedModes.length && !allowedModes.includes(actualMode)) {
-        findings.push({
-          slide: slide.slide,
-          level:'fail',
-          type:'componentModeMismatch',
-          message:`component ${component.id} rendered as ${actualMode}, but allowed modes are ${allowedModes.join(',')}`
-        });
-      }
-      if (component.mode === 'native-renderer' && component.rendered) {
-        const hasEvidence = component.nativeSlot && component.bbox && component.rendererMethod && Number(component.drawnCount || 0) > 0;
-        if (!hasEvidence) {
-          findings.push({
-            slide: slide.slide,
-            level:'fail',
-            type:'nativeComponentEvidenceMissing',
-            message:`native component ${component.id} was marked rendered without drawnCount/nativeSlot/bbox/rendererMethod evidence`
-          });
-        }
-        const drawn = (slide.drawnComponents || []).find(item => item.id === component.id);
-        const drawnEvidence = drawn && drawn.nativeSlot && drawn.bbox && drawn.rendererMethod && Number(drawn.drawnCount || 0) > 0;
-        if (!drawnEvidence) {
-          findings.push({
-            slide: slide.slide,
-            level:'fail',
-            type:'nativeComponentDrawnEvidenceMissing',
-            message:`native component ${component.id} was consumed without matching drawnComponents evidence`
-          });
-        }
-      }
-      if (component.mode === 'native-claimed-undrawn') {
-        findings.push({
-          slide: slide.slide,
-          level: component.required === false ? 'review' : 'fail',
-          type:'nativeComponentClaimedButUndrawn',
-          message:`native component ${component.id} was declared owned but no drawn evidence was recorded`
-        });
-      }
+      findings.push(...modeFindingsForComponent(slide.slide, component, planned));
+      findings.push(...nativeEvidenceFindingsForComponent(slide, component));
     });
     (slide.missingRequiredComponents || []).forEach(id => {
       if (!findings.some(f => f.slide === slide.slide && f.message.includes(id))) {

@@ -6,6 +6,19 @@ const {
   pngAnalysis,
   pngInfo
 } = require('./png-analysis');
+const {
+  baselineRegionResult,
+  defaultBaselineThresholds,
+  findingsForBaselineRegion
+} = require('./screenshot-baseline-region-rules');
+const {
+  regionExpectationEntries,
+  validateRegionManifest
+} = require('./visual-region-contract');
+
+const REQUIRED_BASELINE_AUDIT_FINDING_TYPES = Object.freeze([
+  'baselinePreviewMissing'
+]);
 
 function baselineEntryFor(manifest = {}, slideNo = 1) {
   if (Array.isArray(manifest.slides)) {
@@ -51,15 +64,8 @@ function baselineVisualAudit(manifestPath = '', previewReports = []) {
     findings.push({ level:'fail', type:'baselineManifestUnreadable', message:String(e.message || e) });
     return { version:'screenshot-baseline-audit/v1', status:'fail', manifest:manifestPath, findings, slides:[] };
   }
-  const defaults = Object.assign({
-    maxHashDistance: 18,
-    maxLumaDistance: 28,
-    maxBboxDelta: 0.38,
-    maxRegionHashDistance: null,
-    maxRegionBBoxDelta: null,
-    minRegionCoverageRatio: 0.45,
-    minRegionCoverage: 0.012
-  }, manifest.thresholds || {});
+  findings.push(...validateRegionManifest(manifest));
+  const defaults = defaultBaselineThresholds(manifest);
   const reportsBySlide = new Map(previewReports.map(report => [Number(report.slide || 0), report]));
   const expectedSlides = manifestSlideNumbers(manifest);
   expectedSlides.forEach(slideNo => {
@@ -100,84 +106,13 @@ function baselineVisualAudit(manifestPath = '', previewReports = []) {
     if (visualBBoxDelta != null && visualBBoxDelta > thresholds.maxBboxDelta) {
       findings.push({ slide:slideNo, level:'fail', type:'baselineContentBBoxShift', message:`content bbox delta ${visualBBoxDelta} exceeds ${thresholds.maxBboxDelta}` });
     }
-    const regionExpectations = entry.regions || manifest.regions || {};
-    Object.entries(regionExpectations).forEach(([name, expectation]) => {
+    regionExpectationEntries(entry, manifest).forEach(([name, expectation]) => {
       const currentRegion = current.regions && current.regions[name];
       const baselineRegion = baseline.regions && baseline.regions[name];
       if (!currentRegion) return;
-      const expectedCoverage = Number(
-        (expectation && expectation.minCoverage) ||
-        (baselineRegion && baselineRegion.coverage * thresholds.minRegionCoverageRatio) ||
-        thresholds.minRegionCoverage
-      );
-      const actualCoverage = Number(currentRegion.coverage || 0);
-      const baselineCoverage = baselineRegion ? Number(baselineRegion.coverage || 0) : null;
-      const localHashDistance = baselineRegion ? hamming(currentRegion.hash, baselineRegion.hash) : null;
-      const localBBoxDelta = baselineRegion ? bboxDelta(currentRegion.contentBBox, baselineRegion.contentBBox) : null;
-      const maxRegionHashDistance = Number(
-        (expectation && expectation.maxHashDistance != null ? expectation.maxHashDistance : null) ??
-        (thresholds.maxRegionHashDistance != null ? thresholds.maxRegionHashDistance : NaN)
-      );
-      const maxRegionBBoxDelta = Number(
-        (expectation && expectation.maxBboxDelta != null ? expectation.maxBboxDelta : null) ??
-        (thresholds.maxRegionBBoxDelta != null ? thresholds.maxRegionBBoxDelta : NaN)
-      );
-      const regionResult = {
-        name,
-        actualCoverage,
-        expectedCoverage:Number(expectedCoverage.toFixed(4)),
-        baselineCoverage,
-        coverageRatio: baselineCoverage ? Number((actualCoverage / Math.max(0.0001, baselineCoverage)).toFixed(4)) : null,
-        localHashDistance,
-        localBBoxDelta
-      };
+      const regionResult = baselineRegionResult(name, expectation, currentRegion, baselineRegion, thresholds);
       slideResult.regions.push(regionResult);
-      if (actualCoverage < expectedCoverage) {
-        findings.push({
-          slide:slideNo,
-          level:'fail',
-          type:'baselineRegionMissing',
-          regionName:name,
-          actualCoverage,
-          expectedCoverage:Number(expectedCoverage.toFixed(4)),
-          baselineCoverage,
-          coverageRatio: regionResult.coverageRatio,
-          localHashDistance,
-          localBBoxDelta,
-          reason:'region_coverage_below_minimum',
-          message:`region ${name} coverage ${actualCoverage} below expected ${expectedCoverage.toFixed(4)}`
-        });
-      }
-      if (Number.isFinite(maxRegionHashDistance) && localHashDistance != null && localHashDistance > maxRegionHashDistance) {
-        findings.push({
-          slide:slideNo,
-          level:'fail',
-          type:'baselineRegionHashDistance',
-          regionName:name,
-          localHashDistance,
-          maxRegionHashDistance,
-          actualCoverage,
-          expectedCoverage:Number(expectedCoverage.toFixed(4)),
-          baselineCoverage,
-          reason:'region_hash_distance_exceeded',
-          message:`region ${name} hash distance ${localHashDistance}/16 exceeds ${maxRegionHashDistance}`
-        });
-      }
-      if (Number.isFinite(maxRegionBBoxDelta) && localBBoxDelta != null && localBBoxDelta > maxRegionBBoxDelta) {
-        findings.push({
-          slide:slideNo,
-          level:'fail',
-          type:'baselineRegionBBoxShift',
-          regionName:name,
-          localBBoxDelta,
-          maxRegionBBoxDelta,
-          actualCoverage,
-          expectedCoverage:Number(expectedCoverage.toFixed(4)),
-          baselineCoverage,
-          reason:'region_bbox_delta_exceeded',
-          message:`region ${name} bbox delta ${localBBoxDelta} exceeds ${maxRegionBBoxDelta}`
-        });
-      }
+      findings.push(...findingsForBaselineRegion(slideNo, regionResult));
     });
     slides.push(slideResult);
   });
@@ -194,6 +129,7 @@ function baselineVisualAudit(manifestPath = '', previewReports = []) {
 }
 
 module.exports = {
+  REQUIRED_BASELINE_AUDIT_FINDING_TYPES,
   baselineEntryFor,
   manifestSlideNumbers,
   baselineVisualAudit,

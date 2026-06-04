@@ -214,6 +214,10 @@ const degradedBaselineReadiness = screenshotBaselineReadiness({
   exists(file) {
     return file !== 'references/screenshot-baseline-qa.md';
   },
+  contract: {
+    regionNames: ['cardGrid', 'mainBody', 'rightEvidence'],
+    findingTypes: ['baselineRegionMissing']
+  },
   readJson() {
     return {
       version: 'visual-baseline/v1',
@@ -229,6 +233,9 @@ const degradedBaselineReadiness = screenshotBaselineReadiness({
 });
 assert.equal(degradedBaselineReadiness.ready, false);
 assert.equal(degradedBaselineReadiness.filesReady, false);
+assert.equal(degradedBaselineReadiness.contractReady, false);
+assert.deepEqual(degradedBaselineReadiness.missingContractRegions, ['chartBoard', 'footer']);
+assert.deepEqual(degradedBaselineReadiness.missingContractFindings, ['baselinePreviewMissing', 'baselineRegionBBoxShift']);
 assert.deepEqual(degradedBaselineReadiness.missingManifestRegions, ['chartBoard', 'footer']);
 assert.deepEqual(degradedBaselineReadiness.missingAuditFindings, ['baselinePreviewMissing', 'baselineRegionBBoxShift']);
 const textBlankSummary = textBlankReadiness({
@@ -249,10 +256,18 @@ assert.equal(textBlankSummary.textMetaReady, true);
 assert.equal(textBlankSummary.shrinkQaReady, true);
 assert.equal(textBlankSummary.blankQaReady, true);
 assert.deepEqual(textBlankSummary.missingTextMetaFields, []);
+assert.deepEqual(textBlankSummary.missingReadabilityPolicyFields, []);
 assert.deepEqual(textBlankSummary.requiredFindings, ['mainBodyMissingContent', 'rightEvidenceRegionMissing', 'textShrinkRisk']);
 const degradedTextBlankSummary = textBlankReadiness({
   exists(file) {
     return file !== 'scripts/qa/content-coverage-audit.js';
+  },
+  contract: {
+    textMetaFields: ['areaDensity'],
+    readabilityPolicyFields: ['areaDensity'],
+    typographyFindings: [],
+    coverageFindings: ['mainBodyMissingContent'],
+    coverageFields: ['mainBodyCoverage']
   },
   readText() {
     return 'textShrinkRisk areaDensity';
@@ -261,7 +276,10 @@ const degradedTextBlankSummary = textBlankReadiness({
 assert.equal(degradedTextBlankSummary.ready, false);
 assert.equal(degradedTextBlankSummary.filesReady, false);
 assert.deepEqual(degradedTextBlankSummary.missingTextMetaFields, ['charsPerInch', 'readabilityRiskLevel', 'shrinkRisk', 'textBoxes']);
-assert.deepEqual(degradedTextBlankSummary.missingCoverageFindings, ['mainBodyMissingContent', 'rightEvidenceRegionMissing']);
+assert.deepEqual(degradedTextBlankSummary.missingReadabilityPolicyFields, ['charsPerInch', 'shrinkRisk', 'readabilityRiskLevel']);
+assert.deepEqual(degradedTextBlankSummary.missingTypographyFindings, ['textShrinkRisk']);
+assert.deepEqual(degradedTextBlankSummary.missingCoverageFindings, ['rightEvidenceRegionMissing']);
+assert.deepEqual(degradedTextBlankSummary.missingCoverageFields, ['mainBodyElements', 'rightEvidenceCoverage']);
 
 const readinessTaskSummary = summarizeReadinessTasks({
   tasks: [

@@ -9,6 +9,9 @@ const {
 const {
   createComponentPlanningInputHelpers
 } = require('./component-planning-inputs');
+const {
+  filterComponentPlanCandidates
+} = require('./component-planning-filters');
 
 function createComponentPlanHelpers(deps = {}) {
   const {
@@ -125,47 +128,24 @@ function createComponentPlanHelpers(deps = {}) {
 
     const dialect = industryDesignDialect(plan);
     dialectComponentsFor(plan, s).forEach(id => addComponent(components, { id: componentIdFromHint(id), role: 'industry dialect component', required: false }, 'industry-dialect'));
-    const avoid = new Set((dialect.avoidComponents || []).map(componentIdFromHint));
-    const hasExplicitVisibleSource = Boolean(s.sourceNote || s.source_note || (s.proof && s.proof.sourceNote));
-    const riskRegisterAllowed = riskEligible && (
-      type === 'risk-table' ||
-      riskMatrixExplicit ||
-      Array.isArray(s.rows) ||
-      Array.isArray(s.risks) ||
-      Array.isArray(s.controls) ||
-      Boolean(s.riskRegister || s.riskMatrix || s.controlsMatrix || s.matrix)
-    );
-    const processRailAllowed = ['timeline', 'timeline-dark'].includes(type) ||
-      Array.isArray(s.phases) ||
-      Array.isArray(s.actions) ||
-      Array.isArray(s.steps) ||
-      Array.isArray(s.timeline) ||
-      Array.isArray(s.milestones);
-    const systemRailAllowed = ['architecture', 'architecture-dark', 'strategy-map'].includes(type) ||
-      signals.hasArchitecture ||
-      Boolean(s.layers || s.architecture || s.systemMap || s.topology || s.capabilityMap || s.platformCapabilities || s.valueChain || s.capitals);
-    const productMatrixAllowed = productProofSignal ||
-      ['product-showcase', 'case-gallery', 'gallery', 'portfolio'].includes(type) ||
-      Array.isArray(s.products) ||
-      Array.isArray(s.productStory);
-    const energyCurveAllowed = plan.industry !== 'energy-utility' || s.loadCurve || s.loadCurveBand || s.curve || s.trend || s.monthlyTrend || s.monthlyPulse ||
-      /曲线|趋势|负荷|SOC|load|curve|trend|pulse/i.test(flattenText(s));
-    const filtered = components
-      .filter(component => !avoid.has(component.id))
-      .filter(component => type !== 'portfolio-table' || !['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'product-matrix'].includes(component.id))
-      .filter(component => !['risk-register', 'risk-matrix'].includes(component.id) || riskRegisterAllowed)
-      .filter(component => component.id !== 'process-rail' || processRailAllowed)
-      .filter(component => component.id !== 'system-rail' || systemRailAllowed)
-      .filter(component => component.id !== 'product-matrix' || productMatrixAllowed)
-      .filter(component => component.id !== 'load-curve-band' || energyCurveAllowed)
-      .filter(component => component.id !== 'source-note' || hasExplicitVisibleSource)
-      .filter(component => {
-        const capability = componentCapabilityFor(component.id);
-        if (!capability || capability.ownershipPolicy !== 'native-only') return true;
-        if (component.required !== false) return true;
-        if (!isSystemPlannedComponent(component)) return true;
-        return nativeOnlyOptionalComponentAllowed(plan, s, component, signals);
-      });
+    const valueCreationMapOwnsProcess = type === 'strategy-map' && /value-creation-process-map/i.test(`${variant} ${proofObject}`);
+    const filtered = filterComponentPlanCandidates({
+      componentCapabilityFor,
+      components,
+      dialect,
+      flattenText,
+      nativeOnlyOptionalComponentAllowed,
+      plan,
+      productProofSignal,
+      proofObject,
+      riskEligible,
+      riskMatrixExplicit,
+      signals,
+      slide: s,
+      type,
+      valueCreationMapOwnsProcess,
+      variant
+    });
     const unknownComponents = [];
     const knownComponents = filtered
       .map(component => {

@@ -4,10 +4,47 @@ const ALL_TEST_GROUPS = ['unit', 'pipeline', 'render', 'visual', 'delivery'];
 
 const TEST_PROFILE_RULES = [
   {
+    id: 'render-text',
+    label: 'Text rendering/readability metadata change',
+    patterns: [
+      /^scripts\/render\/text-[^/]+\.js$/
+    ],
+    groups: ['unit', 'visual'],
+    commands: ['npm run test:unit', 'npm run test:visual']
+  },
+  {
+    id: 'visual-region',
+    label: 'Visual region contract or baseline-region rule change',
+    patterns: [
+      /^scripts\/qa\/[^/]*region[^/]*\.js$/
+    ],
+    groups: ['unit', 'visual'],
+    commands: ['npm run test:unit', 'npm run test:visual']
+  },
+  {
+    id: 'component-consumption',
+    label: 'Component consumption QA rule-part change',
+    patterns: [
+      /^scripts\/qa\/component-consumption-[^/]+\.js$/
+    ],
+    groups: ['unit', 'visual'],
+    commands: ['npm run test:unit', 'npm run test:visual']
+  },
+  {
+    id: 'chart-qa',
+    label: 'Chart QA rule-part or normalization change',
+    patterns: [
+      /^scripts\/design\/chart-.*qa.*\.js$/,
+      /^scripts\/design\/chart-spec-normalization\.js$/
+    ],
+    groups: ['unit', 'visual'],
+    commands: ['npm run test:unit', 'npm run test:visual']
+  },
+  {
     id: 'renderer',
     label: 'Renderer/runtime/layout change',
     patterns: [
-      /^scripts\/render\//,
+      /^scripts\/render\/(?!text-[^/]+\.js$)/,
       /^scripts\/components\//,
       /^scripts\/generate_pptx\.js$/,
       /^scripts\/test_renderer_/,
@@ -29,7 +66,9 @@ const TEST_PROFILE_RULES = [
     patterns: [
       /^scripts\/deck_asset_decision_gate\.js$/,
       /^scripts\/asset_prompt_planner\.js$/,
+      /^scripts\/resolve_visual_assets\.js$/,
       /^scripts\/bind_generated_assets\.js$/,
+      /^scripts\/assets\//,
       /^scripts\/design\/asset-generation\.js$/,
       /^scripts\/design\/image-assets\.js$/,
       /^scripts\/design\/visual-media\.js$/,
@@ -69,7 +108,7 @@ const TEST_PROFILE_RULES = [
     patterns: [
       /^scripts\/visual_qa\.js$/,
       /^scripts\/validate_pptx\.js$/,
-      /^scripts\/qa\/(?!(hardening-|template-readiness-|skill-metadata\.js$))/,
+      /^scripts\/qa\/(?!(hardening-|template-readiness-|skill-metadata\.js$|[^/]*region[^/]*\.js$|component-consumption-[^/]+\.js$))/,
       /^scripts\/test_(commercial_readiness_qa|component_screenshot_qa|quality_mode|semantic_narrative_qa)\.js$/,
       /^scripts\/test_visual_qa/,
       /^scripts\/test_visual_layout_qa\.js$/,
@@ -83,7 +122,7 @@ const TEST_PROFILE_RULES = [
     id: 'design',
     label: 'Design planning/audit change',
     patterns: [
-      /^scripts\/design\/(?!asset-generation\.js$|image-assets\.js$|visual-media\.js$)/,
+      /^scripts\/design\/(?!asset-generation\.js$|image-assets\.js$|visual-media\.js$|chart-.*qa.*\.js$|chart-spec-normalization\.js$)/,
       /^scripts\/design-system\.js$/,
       /^scripts\/chart-spec\.js$/,
       /^scripts\/test_(acceptance_briefs|art_direction|composition_planner|composition_strategy|connector_pages|content_signals|deck_rhythm_helpers|density_strategy|image_layout_strategy|industry_pack_depth|intelligence_layers|reference_recipe_system|rhythm_planner|semantic_model|slide_normalization_helpers|slide_routing_helpers|typography_system)\.js$/,
@@ -167,21 +206,32 @@ function groupsForChangedFiles(files = [], opts = {}) {
   const matchedRules = [];
   const groups = new Set();
   const unmatched = [];
+  const fileMatches = [];
   normalized.forEach(file => {
     const fileRules = rulesForFile(file);
     if (!fileRules.length) {
       unmatched.push(file);
+      fileMatches.push({ file, matched: false, ruleIds: [], groups: [] });
       return;
     }
+    const fileGroups = new Set();
     fileRules.forEach(rule => {
       if (!matchedRules.some(item => item.id === rule.id)) matchedRules.push(rule);
       rule.groups.forEach(group => groups.add(group));
+      rule.groups.forEach(group => fileGroups.add(group));
+    });
+    fileMatches.push({
+      file,
+      matched: true,
+      ruleIds: fileRules.map(rule => rule.id),
+      groups: orderedGroups(fileGroups)
     });
   });
   if (unmatched.length) ALL_TEST_GROUPS.forEach(group => groups.add(group));
   return {
     version: 'test-profile-mapping/v1',
     files: normalized,
+    fileMatches,
     groups: orderedGroups(groups),
     matchedRules: matchedRules.map(rule => ({ id: rule.id, label: rule.label, groups: orderedGroups(rule.groups), commands: rule.commands })),
     unmatched,

@@ -66,7 +66,10 @@ const promptText = extractionPrompt(promptBundle);
 ].forEach(term => assert.ok(promptText.includes(term), `orchestration prompt should require ${term}`));
 assert.equal(stagePrompt('extraction', promptBundle), promptText, 'stagePrompt should route extraction through the shared prompt builder');
 assert.ok(storyArchitecturePrompt(promptBundle).includes('deck_art_direction'), 'story prompt should require art direction');
-assert.ok(orchestrationOverview('out/model-orchestration').includes('deck_asset_decision_gate'), 'overview should retain asset decision gate step');
+const overview = orchestrationOverview('out/model-orchestration');
+assert.ok(overview.includes('resolve_visual_assets'), 'overview should route missing visuals through the asset resolution bridge');
+assert.ok(/asset decision gate|asset decision/i.test(overview), 'overview should retain the asset decision gate concept');
+assert.ok(overview.includes('imagegen'), 'overview should mention imagegen capability before renderer fallback');
 
 const bundle = {
   version: 'material-bundle/v1',

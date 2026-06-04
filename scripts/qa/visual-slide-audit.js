@@ -12,6 +12,9 @@ const {
   xmlTextValues
 } = require('./pptx-xml');
 const {
+  slideRegionMetrics
+} = require('./visual-slide-regions');
+const {
   BANNED_PLACEHOLDERS,
   compactUnique,
   hasCjk,
@@ -46,21 +49,14 @@ function auditSlideXml(xml = '', slideNo = 1, qa = {}) {
     return (shape.w < settings.minReadableCjkWidth && nearBodySize) || (shape.w < 1.35 && pressure > settings.maxReadableCharsPerInch);
   });
   const images = (xml.match(/<a:blip\b/g) || []).length;
-  const mainBodyRegion = { x:0.70, y:1.28, w:11.88, h:5.38 };
-  const rightEvidenceRegion = { x:8.00, y:1.18, w:4.34, h:5.58 };
-  const significantRects = rectShapes.filter(shape => {
-    const area = shape.w * shape.h;
-    return area >= 0.025 && area <= 24 && !(shape.w > 12.5 && shape.h > 6.8);
-  });
-  const contentShapes = [
-    ...textShapes.filter(shape => shape.y == null || shape.y < 6.82),
-    ...significantRects,
-    ...imageShapes
-  ];
-  const mainBodyCoverage = regionCoverage(contentShapes, mainBodyRegion);
-  const rightEvidenceCoverage = regionCoverage(contentShapes, rightEvidenceRegion);
-  const mainBodyCharCount = textCharsInRegion(textShapes, mainBodyRegion);
-  const mainBodyElements = contentShapes.filter(shape => intersectionArea(shape, mainBodyRegion) > 0).length;
+  const {
+    mainBodyCoverage,
+    mainBodyRegion,
+    rightEvidenceCoverage,
+    mainBodyCharCount,
+    mainBodyElements,
+    significantRects
+  } = slideRegionMetrics(textShapes, rectShapes, imageShapes);
   const badWords = BANNED_PLACEHOLDERS.filter(w => allText.toLowerCase().includes(w.toLowerCase()));
 
   if (tiny.length > settings.maxTinyRuns) findings.push({ slide:slideNo, level:'fail', type:'tinyText', message:`${tiny.length} text runs below ${settings.minFontSize}pt` });

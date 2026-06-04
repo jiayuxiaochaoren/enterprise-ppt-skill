@@ -66,6 +66,7 @@ fs.mkdirSync(OUT, { recursive: true });
   const result = JSON.parse(qa.stdout);
   assert.equal(result.render_meta_schema_qa.status, 'fail');
   assert.equal(result.findings.some(f => f.type === 'renderMetaRendererFieldMissing' && /rendererName/.test(f.message)), true);
+  assert.equal(result.findings.some(f => f.type === 'renderMetaRenderRouteMissing'), true);
 
   console.log('render-meta schema gate ok');
 })().catch(err => {
