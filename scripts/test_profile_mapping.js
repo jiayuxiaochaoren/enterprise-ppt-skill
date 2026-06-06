@@ -143,6 +143,8 @@ assert.deepEqual(validatePptx.matchedRules.map(rule => rule.id), ['visual-qa']);
   'scripts/test_deck_rhythm_helpers.js',
   'scripts/test_density_strategy.js',
   'scripts/test_image_layout_strategy.js',
+  'scripts/test_industry_evidence_chain.js',
+  'scripts/test_industry_evidence_chain_smoke.js',
   'scripts/test_industry_pack_depth.js',
   'scripts/test_intelligence_layers.js',
   'scripts/test_reference_recipe_system.js',
@@ -163,6 +165,7 @@ assert.deepEqual(validatePptx.matchedRules.map(rule => rule.id), ['visual-qa']);
   'assets/reference-recipes/shards/cover.json',
   'assets/template-component-readiness.json',
   'examples/acceptance-financial-results-brief.json',
+  'examples/industry-evidence-chain/regression.json',
   'examples/client-brief-trial-deck-plan.json',
   'examples/manufacturing-ops-demo-deck-plan.json',
   'examples/sample-deck-plan.json',
@@ -172,7 +175,8 @@ assert.deepEqual(validatePptx.matchedRules.map(rule => rule.id), ['visual-qa']);
   'scripts/industry_acceptance_matrix.js',
   'scripts/inspect_design.js',
   'scripts/run_beauty_chart_benchmark.js',
-  'scripts/run_industry_acceptance.js'
+  'scripts/run_industry_acceptance.js',
+  'scripts/run_industry_evidence_chain_smoke.js'
 ].forEach(file => assertProfile(file, ['unit', 'pipeline', 'visual'], ['design']));
 
 [

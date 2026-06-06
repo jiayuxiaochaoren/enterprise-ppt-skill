@@ -16,6 +16,15 @@ function createProductEvidenceStoryRenderer(ctx = {}) {
   const { drawProductEvidenceHero } = createProductEvidenceHero(ctx);
   const { drawProductEvidenceProofList } = createProductEvidenceProofList(ctx);
 
+  function productEvidenceItems(s = {}) {
+    return [
+      s.products,
+      s.productStory,
+      s.cards,
+      s.items
+    ].find(value => Array.isArray(value) && value.length) || [];
+  }
+
   return function productEvidenceStory(slide, plan, s, idx) {
     drawLightPageHeader(slide, {
       kicker:'PRODUCT EVIDENCE STORY',
@@ -29,7 +38,7 @@ function createProductEvidenceStoryRenderer(ctx = {}) {
       pageNumber:'chrome'
     });
     const images = galleryImages(plan, s);
-    const items = (s.cards || s.items || s.productStory || []).slice(0, 4);
+    const items = productEvidenceItems(s).slice(0, 4);
     const hero = { x:0.92, y:2.04, w:5.44, h:4.02 };
     const lead = items[0] || { title:'明星单品', body:'产品图必须解释购买理由。' };
     drawProductEvidenceHero(slide, lead, images[0], hero);

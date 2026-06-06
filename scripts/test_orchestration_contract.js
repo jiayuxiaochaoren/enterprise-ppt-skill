@@ -20,7 +20,7 @@ assert.ok(Object.prototype.hasOwnProperty.call(schema, 'visible_language_policy'
 [
   'proof_object',
   'layoutVariant',
-  'componentHints',
+  'componentSuggestions',
   'referenceRecipeIds',
   'asset_requirements',
   'source_note',
@@ -55,7 +55,7 @@ const promptText = extractionPrompt(promptBundle);
   'themeIntent',
   'proof_object',
   'layoutVariant',
-  'componentHints',
+  'componentSuggestions',
   'referenceRecipeIds',
   'asset_requirements',
   'source_pages/source_excerpts',
@@ -125,7 +125,8 @@ const extraction = {
       theme_intent: 'value-signal',
       accent_role: 'data',
       layoutVariant: 'financial-kpi-snapshot',
-      componentHints: ['hero KPI', 'metric strip', 'source note'],
+      componentSuggestions: ['metric strip', 'source note'],
+      componentHints: ['hero KPI'],
       referenceRecipeIds: ['financial-kpi-snapshot'],
       asset_requirements: [{ role: 'source-table', required: true, provenance: 'src-001' }],
       source_note: 'Source: Q1 management reporting',
@@ -142,7 +143,7 @@ const extraction = {
       theme_intent: 'closing-anchor',
       accent_role: 'action',
       layoutVariant: 'premium-closing-anchor',
-      componentHints: ['final decision', 'next actions'],
+      componentSuggestions: ['final decision', 'next actions'],
       referenceRecipeIds: ['premium-closing-anchor'],
       asset_requirements: [{ role: 'owner-contact', required: false, provenance: 'user-confirmed or omitted' }],
       source_note: 'Source: board discussion draft',
@@ -161,7 +162,9 @@ const kpiSlide = plan.slides.find(slide => slide.layoutVariant === 'financial-kp
 assert.ok(kpiSlide, 'compiled deck should preserve layoutVariant');
 assert.equal(kpiSlide.proofObject, 'financial-kpi-snapshot');
 assert.equal(kpiSlide.themeIntent, 'value-signal');
-assert.deepEqual(kpiSlide.componentHints, ['hero KPI', 'metric strip', 'source note']);
+assert.equal(kpiSlide.componentHints, undefined);
+assert.deepEqual(kpiSlide.previousComponentHints, ['hero KPI']);
+assert.deepEqual(kpiSlide.previousComponentSuggestions, ['metric strip', 'source note']);
 assert.deepEqual(kpiSlide.referenceRecipeIds, ['financial-kpi-snapshot']);
 assert.equal(kpiSlide.referenceRecipeId, 'financial-kpi-snapshot');
 assert.deepEqual(kpiSlide.assetRequirements, [{ role: 'source-table', required: true, provenance: 'src-001' }]);

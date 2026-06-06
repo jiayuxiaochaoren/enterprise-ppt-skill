@@ -13,7 +13,7 @@ const META = `${PPTX}.render-meta.json`;
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 
-const requiredComponents = ['kpi-strip', 'proof-gallery', 'risk-register', 'value-chain'];
+const requiredComponents = ['kpi-strip', 'proof-gallery', 'risk-register', 'value-chain', 'product-matrix'];
 const sourceTrace = (claimId, excerpt) => ({
   version: 'source-trace/v2',
   claimId,
@@ -46,7 +46,7 @@ const plan = {
         { label: '风险', value: '3项', note: '持续跟踪', sourceId: 'component-src' }
       ],
       sourceTrace: sourceTrace('component-kpi', 'KPI strip uses three visible metrics with source-backed values.'),
-      componentPlan: { version: 'component-plan/v1', components: [{ id: 'kpi-strip', required: true }] }
+      componentHints: [{ id: 'kpi-strip', required: true }]
     },
     {
       type: 'report-board',
@@ -58,7 +58,7 @@ const plan = {
         { title: '动作', body: '说明下一步' }
       ],
       sourceTrace: sourceTrace('component-proof', 'Proof gallery uses three evidence cards with source captions.'),
-      componentPlan: { version: 'component-plan/v1', components: [{ id: 'proof-gallery', required: true }] }
+      componentHints: [{ id: 'proof-gallery', required: true }]
     },
     {
       type: 'report-board',
@@ -70,7 +70,7 @@ const plan = {
         ['外发对象未定', '中', '确认受众和版本']
       ],
       sourceTrace: sourceTrace('component-risk', 'Risk register lists authorization, metric basis, and audience boundary risks.'),
-      componentPlan: { version: 'component-plan/v1', components: [{ id: 'risk-register', required: true }] }
+      componentHints: [{ id: 'risk-register', required: true }]
     },
     {
       type: 'report-board',
@@ -82,7 +82,18 @@ const plan = {
         { title: '复盘结果' }
       ],
       sourceTrace: sourceTrace('component-value-chain', 'Value chain connects input facts, actions, and review results.'),
-      componentPlan: { version: 'component-plan/v1', components: [{ id: 'value-chain', required: true }] }
+      componentHints: [{ id: 'value-chain', required: true }]
+    },
+    {
+      type: 'report-board',
+      title: '产品证明矩阵组件可视性',
+      subtitle: '产品、场景、证明和经营意义同屏。',
+      products: [
+        { name: '修护精华', scene: '柜台咨询', efficacy: '屏障修护', businessMeaning: '复购入口' },
+        { name: '面霜系列', scene: '换季护理', efficacy: '舒缓锁水', businessMeaning: '套装承接' }
+      ],
+      sourceTrace: sourceTrace('component-product-matrix', 'Product matrix lists products, scenes, proof claims, and business meaning.'),
+      componentHints: [{ id: 'product-matrix', required: true }]
     },
     { type: 'closing', title: '组件验证完成', subtitle: '关键组件已生成截图和 render-meta。', actions: [{ title: '记录', body: '保留 QA 结果。' }] }
   ]

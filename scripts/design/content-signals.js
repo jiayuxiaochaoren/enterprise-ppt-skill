@@ -19,6 +19,7 @@ function createContentSignalHelpers(deps = {}) {
       (s.after && (typeof s.after === 'string' || s.after.image || s.after.img) ? 1 : 0);
     const imageCount = (Array.isArray(s.images) ? s.images.length : 0) +
       ((s.visual && Array.isArray(s.visual.images)) ? s.visual.images.length : 0) +
+      (s.image || (s.visual && s.visual.image) ? 1 : 0) +
       beforeAfterImageCount;
     const cardCount = Array.isArray(s.cards) ? s.cards.length : 0;
     const itemCount = Array.isArray(s.items) ? s.items.length : 0;
@@ -32,6 +33,7 @@ function createContentSignalHelpers(deps = {}) {
     const controlCount = Array.isArray(s.controls) ? s.controls.length : 0;
     const metricCount = Array.isArray(s.metrics) ? s.metrics.length : 0;
     const productCount = Array.isArray(s.products) ? s.products.length : 0;
+    const productStoryCount = Array.isArray(s.productStory) ? s.productStory.length : 0;
     const responsibilityCount = (Array.isArray(s.responsibilities) ? s.responsibilities.length : 0) +
       (Array.isArray(s.owners) ? s.owners.length : 0) +
       (Array.isArray(s.raci) ? s.raci.length : 0) +
@@ -101,6 +103,7 @@ function createContentSignalHelpers(deps = {}) {
       controlCount,
       metricCount,
       productCount,
+      productStoryCount,
       responsibilityCount,
       avgBlockLength,
       first: index === 0,

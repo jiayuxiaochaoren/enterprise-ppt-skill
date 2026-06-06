@@ -1,7 +1,7 @@
 const NATIVE_VARIANT_COMPONENTS = {
   'airy-concept-opening': ['hero-image', 'caption-bar'],
   'beauty-brand-editorial-cover': ['hero-image', 'caption-bar'],
-  'brand-world-and-business-proof': ['value-chain', 'system-rail', 'commentary-panel', 'hero-image', 'caption-bar'],
+  'brand-world-and-business-proof': ['value-chain', 'system-rail', 'commentary-panel', 'hero-image', 'caption-bar', 'kpi-strip'],
   'chart-grid-with-commentary': ['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'scorecard'],
   'consumer-proof-photo-grid': ['proof-gallery', 'proof-gallery-grid', 'caption-bar', 'hero-image'],
   'control-stack': ['risk-register', 'governance-table', 'process-rail'],
@@ -11,7 +11,7 @@ const NATIVE_VARIANT_COMPONENTS = {
   'guidance-and-risk-board': ['risk-register', 'governance-table', 'kpi-strip'],
   'lookbook-story': ['proof-gallery', 'proof-gallery-grid', 'caption-bar', 'hero-image'],
   'materiality-matrix-board': ['risk-register', 'risk-matrix', 'governance-table'],
-  'member-growth-board': ['kpi-strip', 'metric-strip', 'kpi-primary-metric', 'scorecard'],
+  'member-growth-board': ['kpi-strip', 'metric-strip', 'kpi-primary-metric', 'scorecard', 'proof-gallery', 'caption-bar'],
   'mission-statement-stage': ['content-card-grid', 'commentary-panel'],
   'people-proof-mosaic': ['proof-gallery', 'proof-gallery-grid', 'caption-bar', 'hero-image'],
   'premium-closing-anchor': ['decision-panel', 'contact-block', 'editorial-end-card'],
@@ -23,6 +23,9 @@ const NATIVE_VARIANT_COMPONENTS = {
   'value-creation-process-map': ['value-chain', 'value-chain-connector', 'system-rail', 'commentary-panel'],
   'value-principle-cards': ['content-card-grid', 'commentary-panel']
 };
+const {
+  canonicalIndustryEvidenceChainForSlide
+} = require('../design/industry-evidence-chain');
 
 const CHART_META_SUPPRESSED_NATIVE_VARIANTS = new Set([
   'brand-world-and-business-proof',
@@ -33,6 +36,31 @@ const CHART_META_SUPPRESSED_NATIVE_VARIANTS = new Set([
   'product-evidence-story',
   'value-creation-process-map'
 ]);
+
+const INDUSTRY_NATIVE_COMPONENTS = new Set([
+  'adoption-funnel',
+  'disclosure-footnote',
+  'equipment-nameplate',
+  'governance-table',
+  'inspection-matrix',
+  'patient-journey-band',
+  'permission-audit-tag',
+  'prototype-frame',
+  'quality-scorecard',
+  'risk-register',
+  'service-blueprint-lane',
+  'site-evidence-frame',
+  'value-chain',
+  'workflow-rail'
+]);
+
+function plannedComponentIdsForSlide(s = {}) {
+  const componentPlan = s.componentPlan || {};
+  return [
+    ...(Array.isArray(componentPlan.componentIds) ? componentPlan.componentIds : []),
+    ...(Array.isArray(componentPlan.components) ? componentPlan.components.map(component => component && component.id) : [])
+  ].filter(Boolean);
+}
 
 function nativeOwnedComponentIdsFor(type = '', variant = '') {
   const ids = new Set();
@@ -68,7 +96,9 @@ function nativeVariantSuppressesChartMeta(s = {}) {
 function createNativeComponentIdHelpers({
   chartComponentIds = new Set()
 } = {}) {
-  function nativeComponentIdsFor(s = {}) {
+  function nativeComponentIdsFor(planOrSlide = {}, maybeSlide = null) {
+    const plan = maybeSlide ? planOrSlide : {};
+    const s = maybeSlide || planOrSlide || {};
     const type = String(s.type || '');
     const variant = String(s.layoutVariant || s.variant || '');
     const ids = new Set(['page-number']);
@@ -107,6 +137,10 @@ function createNativeComponentIdHelpers({
     }
     if (type === 'risk-table' || type === 'table') {
       ['risk-register', 'governance-table', 'control-tag'].forEach(id => ids.add(id));
+      if (Array.isArray(s.metrics) && s.metrics.length) ids.add('kpi-strip');
+      if (Array.isArray(s.phases) || Array.isArray(s.actions) || Array.isArray(s.steps) || Array.isArray(s.timeline) || Array.isArray(s.milestones)) {
+        ids.add('process-rail');
+      }
       if (/risk-matrix|materiality-matrix/.test(variant) || s.matrix) ids.add('risk-matrix');
     }
     if (type === 'report-board') {
@@ -115,6 +149,12 @@ function createNativeComponentIdHelpers({
     if (type === 'closing') {
       ['decision-panel', 'contact-block', 'editorial-end-card'].forEach(id => ids.add(id));
     }
+    const chain = canonicalIndustryEvidenceChainForSlide(plan, s);
+    const chainComponents = new Set((chain && chain.components) || []);
+    const hasIndustryChain = chain && chain.stageId !== 'neutral-general';
+    plannedComponentIdsForSlide(s).forEach(id => {
+      if (hasIndustryChain && chainComponents.has(id) && INDUSTRY_NATIVE_COMPONENTS.has(id)) ids.add(id);
+    });
     nativeOwnedComponentIdsFor(type, variant).forEach(id => ids.add(id));
     return ids;
   }
@@ -126,6 +166,7 @@ function createNativeComponentIdHelpers({
 
 module.exports = {
   CHART_META_SUPPRESSED_NATIVE_VARIANTS,
+  INDUSTRY_NATIVE_COMPONENTS,
   NATIVE_VARIANT_COMPONENTS,
   createNativeComponentIdHelpers,
   energyNativeOwnedComponentIds,

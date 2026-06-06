@@ -113,6 +113,10 @@ function runVisualQa(options = {}) {
     page_count_qa: planQA.planPageCount,
     component_plan_qa: planQA.planComponentPlan,
     component_consumption_qa: planQA.planComponentConsumption,
+    industry_evidence_chain_qa: planQA.planIndustryEvidenceChain,
+    industry_evidence_chain_summary: planQA.planIndustryEvidenceChain
+      ? planQA.planIndustryEvidenceChain.industry_evidence_chain_summary || null
+      : null,
     overlay_contract_qa: overlayContractQA,
     industry_fit_qa: planQA.planIndustryFit,
     typography_qa: planQA.planTypography,

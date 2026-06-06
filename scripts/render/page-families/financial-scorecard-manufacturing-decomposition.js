@@ -29,7 +29,7 @@ function createManufacturingOeeDecomposition(ctx = {}) {
       addText(slide, m.body || m.note || '', { x:board.x+0.72, y:y+0.48, w:2.88, h:0.17, fontSize:8.8, color:C.body, fit:'shrink' });
     });
     addRect(slide, board.x+0.28, board.y+3.32, 3.52, 0.30, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:10}, line:{color:C.line, transparency:100} });
-    addText(slide, '产线证据要能回到停机原因、维修工单和策略更新。', { x:board.x+0.42, y:board.y+3.38, w:3.10, h:0.16, fontSize:8.8, color:C.body, fit:'shrink' });
+    addText(slide, '停机原因、工单与策略回写。', { x:board.x+0.42, y:board.y+3.38, w:3.10, h:0.18, fontSize:8.8, color:C.body, fit:'shrink' });
   }
 
   return {

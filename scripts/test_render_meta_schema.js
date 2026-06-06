@@ -9,6 +9,25 @@ const OUT = path.join(ROOT, 'outputs', 'test-render-meta-schema');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 
+function spawnVisualQaToFile(args = [], outFile = '') {
+  const fd = fs.openSync(outFile, 'w');
+  let run;
+  try {
+    run = cp.spawnSync(process.execPath, args, {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', fd, 'pipe']
+    });
+  } finally {
+    fs.closeSync(fd);
+  }
+  return {
+    status: Number(run && run.status != null ? run.status : 1),
+    stdout: fs.readFileSync(outFile, 'utf8'),
+    stderr: String((run && run.stderr) || '')
+  };
+}
+
 (async () => {
   const pptxPath = path.join(OUT, 'invalid-render-meta.pptx');
   const pptx = new pptxgen();
@@ -58,10 +77,7 @@ fs.mkdirSync(OUT, { recursive: true });
     }]
   }, null, 2)}\n`, 'utf8');
 
-  const qa = cp.spawnSync(process.execPath, ['scripts/visual_qa.js', pptxPath, '--quality-mode', 'formal', '--json'], {
-    cwd: ROOT,
-    encoding: 'utf8'
-  });
+  const qa = spawnVisualQaToFile(['scripts/visual_qa.js', pptxPath, '--quality-mode', 'formal', '--json'], path.join(OUT, 'invalid-render-meta.visual-qa.json'));
   assert.notEqual(qa.status, 0, 'formal visual QA should fail malformed render-meta schema');
   const result = JSON.parse(qa.stdout);
   assert.equal(result.render_meta_schema_qa.status, 'fail');

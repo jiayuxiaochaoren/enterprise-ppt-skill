@@ -44,6 +44,7 @@ function createOverlayRenderer(deps = {}) {
     componentSourceNoteText,
     overlayMetricsForSlide,
     overlayPointsForSlide,
+    overlayProductItemsForSlide,
     overlayProofItemsForSlide
   } = createOverlayDataHelpers({
     compactText,
@@ -93,6 +94,7 @@ function createOverlayRenderer(deps = {}) {
     componentSourceNoteText,
     overlayMetricsForSlide,
     overlayPointsForSlide,
+    overlayProductItemsForSlide,
     overlayProofItemsForSlide,
     itemTitle
   }));
@@ -101,6 +103,7 @@ function createOverlayRenderer(deps = {}) {
     componentSourceNoteText,
     overlayMetricsForSlide,
     overlayPointsForSlide,
+    overlayProductItemsForSlide,
     overlayProofItemsForSlide,
     evidenceZone,
     nativeDrawnEvidenceFor,

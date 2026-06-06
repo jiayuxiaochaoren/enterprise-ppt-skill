@@ -38,11 +38,15 @@ function createManufacturingOeeBoard(ctx = {}, deps = {}) {
     const primary = findMetric(metrics, /OEE|设备效率|產線|产线/i, 0);
     const maintenance = findMetric(metrics, /响应|維修|维修|MTTR|停机|停線|重复/i, 1);
     const quality = findMetric(metrics, /良率|质量|品質|重复|返工/i, 2);
-    const components = (s.oee || s.oeeComponents || [
+    const rawComponents = s.oeeComponents || s.oee || [
       { label:'稼动率', value:'92%', body:'停机窗口和换线等待进入复盘。' },
       { label:'性能率', value:'84%', body:'节拍波动和瓶颈工位可被识别。' },
       { label:'良率', value:'97%', body:'返工、报废和质量异常绑定工单。' }
-    ]).slice(0,3);
+    ];
+    const components = (Array.isArray(rawComponents) ? rawComponents : Object.entries(rawComponents).map(([label, value]) => ({
+      label,
+      value
+    }))).slice(0,3);
 
     renderPrimaryOee(slide, primary);
     renderOeeDecomposition(slide, components);

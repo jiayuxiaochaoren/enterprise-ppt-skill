@@ -89,10 +89,16 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
     slide.referenceRecipeId = slide.referenceRecipeId || slide.referenceRecipeIds[0];
   }
   if (claim.reference_category_id || claim.referenceCategoryId) slide.referenceCategoryId = claim.reference_category_id || claim.referenceCategoryId;
-  if (Array.isArray(claim.component_hints || claim.componentHints)) slide.componentHints = claim.component_hints || claim.componentHints;
-  if (Array.isArray(claim.component_suggestions || claim.componentSuggestions)) slide.componentSuggestions = claim.component_suggestions || claim.componentSuggestions;
-  if (!slide.componentHints && slide.componentSuggestions) slide.componentHints = slide.componentSuggestions;
-  if (claim.componentPlan || claim.component_plan) slide.componentPlan = claim.componentPlan || claim.component_plan;
+  if (Array.isArray(claim.component_hints || claim.componentHints)) {
+    slide.previousComponentHints = claim.component_hints || claim.componentHints;
+  }
+  if (Array.isArray(claim.component_suggestions || claim.componentSuggestions)) {
+    slide.previousComponentSuggestions = claim.component_suggestions || claim.componentSuggestions;
+  }
+  if (claim.componentPlan || claim.component_plan) {
+    const inputComponentPlan = claim.componentPlan || claim.component_plan;
+    slide.previousComponentPlan = inputComponentPlan;
+  }
   if (Array.isArray(claim.asset_requirements || claim.assetRequirements)) slide.assetRequirements = claim.asset_requirements || claim.assetRequirements;
   if (claim.source_note || claim.sourceNote || claim.provenance_note || claim.provenanceNote) {
     slide.sourceNote = claim.source_note || claim.sourceNote || claim.provenance_note || claim.provenanceNote;

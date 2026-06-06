@@ -1,4 +1,9 @@
 const CHART_ROUTE_TYPES = new Set(['metric-comparison', 'industry-chart', 'finance-bridge']);
+const TRUSTED_ASSET_DECISION_SOURCES = new Set([
+  'asset-decision-gate/v1',
+  'asset-binder/v1',
+  'asset-resolution-facade/v1'
+]);
 
 function createRouteSanitizationHelpers(deps = {}) {
   const {
@@ -27,6 +32,13 @@ function createRouteSanitizationHelpers(deps = {}) {
     const normalizedType = typePick.type || '';
     const valueKind = value => value && typeof value === 'object' ? (Array.isArray(value) ? 'array' : 'object') : typeof value;
     const previousRefFor = field => `previous${field.charAt(0).toUpperCase()}${field.slice(1)}`;
+    const isCurrentAssetDecision = generation => {
+      if (!generation || typeof generation !== 'object') return false;
+      const source = String(generation.decisionSource || generation.decision_source || '').trim();
+      if (TRUSTED_ASSET_DECISION_SOURCES.has(source)) return true;
+      if (generation.bound === true || Number(generation.boundCount || 0) > 0) return true;
+      return false;
+    };
     const recordStale = (field, value, reason, resolution) => {
       routeSanitization.staleForRoute.push({
         field,
@@ -84,27 +96,88 @@ function createRouteSanitizationHelpers(deps = {}) {
       delete routedInput.data_component;
     }
     const routeChanged = routeSanitization.removed.length > 0;
-    const previousComponentPlan = routeChanged && routedInput.componentPlan ? routedInput.componentPlan : null;
-    const previousCompositionPlan = routeChanged && routedInput.compositionPlan ? routedInput.compositionPlan : null;
-    const previousAssetGeneration = routeChanged && routedInput.assetGeneration ? routedInput.assetGeneration : null;
+    const previousComponentPlan = routedInput.componentPlan || routedInput.component_plan || null;
+    const previousCompositionPlan = routedInput.compositionPlan || routedInput.composition_plan || null;
+    const inputAssetGeneration = routedInput.assetGeneration || routedInput.asset_generation || null;
+    const previousAssetGeneration = inputAssetGeneration && !(routeChanged === false && isCurrentAssetDecision(inputAssetGeneration))
+      ? inputAssetGeneration
+      : null;
     if (previousComponentPlan) {
       routedInput.previousComponentPlan = routedInput.previousComponentPlan || previousComponentPlan;
-      recordSuppression('componentPlan', previousComponentPlan, 'component plan suppressed before recompute because route-sensitive metadata changed', 'recomputed');
+      recordSuppression(
+        'componentPlan',
+        previousComponentPlan,
+        routeChanged
+          ? 'component plan suppressed before recompute because route-sensitive metadata changed'
+          : 'input component plan suppressed before canonical normalization',
+        'recomputed'
+      );
       delete routedInput.componentPlan;
+      delete routedInput.component_plan;
     }
     if (previousCompositionPlan) {
       routedInput.previousCompositionPlan = routedInput.previousCompositionPlan || previousCompositionPlan;
-      recordSuppression('compositionPlan', previousCompositionPlan, 'composition plan suppressed before recompute because route-sensitive metadata changed', 'recomputed');
+      recordSuppression(
+        'compositionPlan',
+        previousCompositionPlan,
+        routeChanged
+          ? 'composition plan suppressed before recompute because route-sensitive metadata changed'
+          : 'input composition plan suppressed before canonical normalization',
+        'recomputed'
+      );
       delete routedInput.compositionPlan;
+      delete routedInput.composition_plan;
     }
     if (previousAssetGeneration) {
       routedInput.previousAssetGeneration = routedInput.previousAssetGeneration || previousAssetGeneration;
-      recordSuppression('assetGeneration', previousAssetGeneration, 'asset-generation decision suppressed before recompute because route-sensitive metadata changed', 'recomputed');
+      recordSuppression(
+        'assetGeneration',
+        previousAssetGeneration,
+        routeChanged
+          ? 'asset-generation decision suppressed before recompute because route-sensitive metadata changed'
+          : 'input asset-generation decision suppressed before canonical normalization',
+        'recomputed'
+      );
       delete routedInput.assetGeneration;
+      delete routedInput.asset_generation;
     }
-    if (routeChanged && routedInput.generatedAssetPrompt) {
+    if (previousAssetGeneration && routedInput.visual && String(routedInput.visual.mode || '').toLowerCase() === 'generated') {
+      routedInput.previousVisualMode = routedInput.previousVisualMode || routedInput.visual.mode;
+      recordRemoval(
+        'visual.mode',
+        routedInput.visual.mode,
+        'generated visual mode removed because asset-generation decision is being recomputed'
+      );
+      routedInput.visual = Object.assign({}, routedInput.visual);
+      delete routedInput.visual.mode;
+    }
+    if (previousAssetGeneration && String(routedInput.visualMode || '').toLowerCase() === 'generated') {
+      routedInput.previousVisualMode = routedInput.previousVisualMode || routedInput.visualMode;
+      recordRemoval(
+        'visualMode',
+        routedInput.visualMode,
+        'generated visual mode removed because asset-generation decision is being recomputed'
+      );
+      delete routedInput.visualMode;
+    }
+    if (previousAssetGeneration && String(routedInput.assetMode || '').toLowerCase() === 'generated') {
+      routedInput.previousAssetMode = routedInput.previousAssetMode || routedInput.assetMode;
+      recordRemoval(
+        'assetMode',
+        routedInput.assetMode,
+        'generated asset mode removed because asset-generation decision is being recomputed'
+      );
+      delete routedInput.assetMode;
+    }
+    if ((routeChanged || previousAssetGeneration) && routedInput.generatedAssetPrompt) {
       routedInput.previousGeneratedAssetPrompt = routedInput.previousGeneratedAssetPrompt || routedInput.generatedAssetPrompt;
-      recordRemoval('generatedAssetPrompt', routedInput.generatedAssetPrompt, 'generated asset prompt removed because route-sensitive metadata changed');
+      recordRemoval(
+        'generatedAssetPrompt',
+        routedInput.generatedAssetPrompt,
+        routeChanged
+          ? 'generated asset prompt removed because route-sensitive metadata changed'
+          : 'generated asset prompt removed because asset-generation decision is being recomputed'
+      );
       delete routedInput.generatedAssetPrompt;
     }
     return {

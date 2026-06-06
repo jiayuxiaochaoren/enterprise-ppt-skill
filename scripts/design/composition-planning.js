@@ -8,6 +8,7 @@ function createCompositionPlanningHelpers(deps = {}) {
     dialectComponentsFor,
     imageTreatmentFor,
     industryDesignDialect,
+    industryPackFor,
     layoutEnergyFor,
     microComponentsFor,
     primaryColorUseFor,
@@ -60,6 +61,7 @@ function createCompositionPlanningHelpers(deps = {}) {
     const composition = compositionNameFor(plan, intentSlide, s.type, s.layoutVariant, signals, themeIntent);
     const layoutPlan = zonePlanFor(plan, s, signals, design);
     const dialect = industryDesignDialect(plan);
+    const pack = typeof industryPackFor === 'function' ? industryPackFor(plan) : null;
     const dialectComponents = dialectComponentsFor(plan, s);
     const recipeComponents = recipe && Array.isArray(recipe.componentHints) ? recipe.componentHints : [];
     return {
@@ -89,7 +91,8 @@ function createCompositionPlanningHelpers(deps = {}) {
         motif: dialect.motif || '',
         principle: dialect.principle || '',
         primaryColorLogic: dialect.primaryColorLogic || '',
-        components: dialectComponents
+        components: dialectComponents,
+        visualGrammar: pack && pack.visualGrammar ? pack.visualGrammar : null
       },
       referenceRecipeId: recipe ? recipe.id : '',
       density: visualDensity

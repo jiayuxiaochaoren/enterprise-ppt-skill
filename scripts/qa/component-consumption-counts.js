@@ -8,10 +8,19 @@ function imageCountForSlide(slide = {}) {
     (slide.image || (slide.visual && slide.visual.image) ? 1 : 0);
 }
 
+function objectArrayLength(value = {}, keys = []) {
+  return Math.max(0, ...keys.map(key => value && Array.isArray(value[key]) ? value[key].length : 0));
+}
+
 function expectedRenderedCountsForSlide(slide = {}) {
   const counts = {};
-  const plannedIds = new Set(((slide.componentPlan && slide.componentPlan.componentIds) || [])
-    .concat(((slide.componentPlan && slide.componentPlan.components) || []).map(component => component.id))
+  const plannedIds = new Set(((slide.componentPlan && slide.componentPlan.components) || [])
+    .filter(component => component && component.required !== false)
+    .map(component => component.id)
+    .concat(((slide.componentPlan && slide.componentPlan.componentIds) || []).filter(id => {
+      const component = ((slide.componentPlan && slide.componentPlan.components) || []).find(item => item && item.id === id);
+      return !component || component.required !== false;
+    }))
     .filter(Boolean));
   const set = (ids, value) => {
     const count = Number(value || 0);
@@ -28,10 +37,20 @@ function expectedRenderedCountsForSlide(slide = {}) {
   const metricCount = arrayLength(slide, ['metrics']);
   set(['kpi-strip', 'metric-strip', 'scorecard'], Math.min(metricCount, 4));
   set(['kpi-primary-metric'], metricCount ? 1 : 0);
+  set(['quality-scorecard'], Math.max(metricCount, objectArrayLength(slide.oeeComponents, ['items']), slide.oee ? 1 : 0));
   const galleryCount = Math.max(imageCountForSlide(slide), arrayLength(slide, ['cards', 'items']));
   set(['proof-gallery', 'proof-gallery-grid'], galleryCount);
   set(['hero-image'], imageCountForSlide(slide) ? 1 : 0);
   set(['product-matrix'], arrayLength(slide, ['products', 'productStory']));
+  set(['equipment-nameplate'], slide.equipment || slide.productionLine || slide.topology || slide.layers ? 1 : 0);
+  set(['inspection-matrix'], Math.max(arrayLength(slide, ['inspectionMatrix', 'inspectionRecords', 'rows', 'controls']), arrayLength(slide, ['phases', 'steps']) ? 1 : 0));
+  set(['site-evidence-frame'], imageCountForSlide(slide) || slide.siteEvidence || slide.assetReadout ? 1 : 0);
+  set(['patient-journey-band'], Math.max(objectArrayLength(slide.serviceBlueprint, ['stages']), arrayLength(slide, ['touchpoints', 'phases']), slide.journeyMap ? 1 : 0));
+  set(['service-blueprint-lane'], Math.max(objectArrayLength(slide.serviceBlueprint, ['stages']), arrayLength(slide, ['touchpoints', 'handoffs']), slide.serviceBlueprint ? 1 : 0));
+  set(['prototype-frame'], imageCountForSlide(slide) || slide.prototype || slide.prototypeFlow ? 1 : 0);
+  set(['workflow-rail'], Math.max(arrayLength(slide, ['steps', 'phases', 'items', 'workflow', 'workflows']), slide.automationWorkflow || slide.platformCapabilities ? 1 : 0));
+  set(['permission-audit-tag'], Math.max(arrayLength(slide, ['permissionGovernance', 'permissions', 'risks', 'rows']), slide.auditLog ? 1 : 0));
+  set(['adoption-funnel'], Math.max(objectArrayLength(slide.adoptionFunnel, ['steps']), objectArrayLength(slide.activationFunnel, ['steps']), objectArrayLength(slide.cohortFunnel, ['steps']), slide.adoptionFunnel || slide.activationFunnel || slide.cohortFunnel ? 1 : 0));
   set(['load-curve-band'], plannedIds.has('load-curve-band') ? 1 : 0);
   return counts;
 }
@@ -50,5 +69,6 @@ module.exports = {
   arrayLength,
   expectedRenderedCountsForSlide,
   imageCountForSlide,
+  objectArrayLength,
   renderedCountForComponent
 };

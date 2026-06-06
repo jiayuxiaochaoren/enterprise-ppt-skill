@@ -64,18 +64,23 @@ function createShapeHelpers(core = {}) {
     return true;
   }
   function addDarkBreathingCircle(slide, x = 8.20, y = 0.78, outer = 4.42, inner = 2.50, accent = C.accent) {
+    if (slide.__codexBreathingCircleRendered) return false;
+    slide.__codexBreathingCircleRendered = true;
     markDecoration(slide, 'breathing-circle', zone('breathing-circle', x, y, outer, outer, 'decoration'));
     slide.addShape('ellipse', { x, y, w:outer, h:outer, fill:{ color:accent, transparency:98 }, line:{ color:accent, transparency:88, width:0.45 } });
     const inset = (outer - inner) / 2;
     slide.addShape('ellipse', { x:x + inset, y:y + inset, w:inner, h:inner, fill:{ color:C.ink, transparency:100 }, line:{ color:C.cyan, transparency:92, width:0.35 } });
   }
   function addLightBreathingCircle(slide, x = 9.58, y = 0.42, size = 3.45, color = C.softBlue, transparency = 50) {
+    if (slide.__codexBreathingCircleRendered) return false;
+    slide.__codexBreathingCircleRendered = true;
     markDecoration(slide, 'breathing-circle', zone('breathing-circle', x, y, size, size, 'decoration'));
     slide.addShape('ellipse', { x, y, w:size, h:size, fill:{ color, transparency }, line:{ color, transparency:100 } });
   }
   function addPulseCurve(slide, x, y, w, h, accent = C.accent, dark = true, opts = {}) {
     const isEnergy = activePlan().industry === 'energy-utility';
-    if (isEnergy && slide.__codexEnergyLoadCurveRendered && opts.allowMultiple !== true) return false;
+    if ((slide.__codexLoadCurveRendered || (isEnergy && slide.__codexEnergyLoadCurveRendered)) && opts.allowMultiple !== true) return false;
+    slide.__codexLoadCurveRendered = true;
     if (isEnergy) slide.__codexEnergyLoadCurveRendered = true;
     markDecoration(slide, opts.decorType || 'load-curve-band', zone(opts.decorType || 'load-curve-band', x, y, w, h, 'decoration'));
     const pts = opts.points || [[0.00,0.66],[0.16,0.64],[0.30,0.49],[0.43,0.55],[0.56,0.32],[0.70,0.38],[0.84,0.22],[1.00,0.29]];

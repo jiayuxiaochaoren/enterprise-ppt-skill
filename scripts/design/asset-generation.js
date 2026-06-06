@@ -1,3 +1,11 @@
+const ASSET_GENERATION_DECISION_SOURCE = 'asset-generation-policy/v1';
+
+function withDecisionSource(policy = {}) {
+  return Object.assign({
+    decisionSource: ASSET_GENERATION_DECISION_SOURCE
+  }, policy || {});
+}
+
 function normalizeAssetRole(role = '') {
   const r = String(role || '').toLowerCase();
   if (r.includes('background')) return 'background';
@@ -89,16 +97,16 @@ function createAssetGenerationHelpers({
       (recipeNeedsImage && recipeCanGenerate && ['case-gallery', 'hybrid'].includes(policy.visualMode || ''))
     );
     if (!shouldGenerate) {
-      return {
+      return withDecisionSource({
         status: hasBoundAsset ? 'bound' : 'none',
         role,
         mustBind: false,
         syntheticOnly,
         reason: hasBoundAsset ? 'real or generated asset already bound' : 'layout can render natively without generated image'
-      };
+      });
     }
     if (rule === 'blocked' || (factualRisk && (requested || recipeCanGenerate))) {
-      return {
+      return withDecisionSource({
         status: 'blocked',
         role,
         mustBind: false,
@@ -106,9 +114,9 @@ function createAssetGenerationHelpers({
         reason: rule === 'blocked'
           ? 'reference recipe disallows generated assets for this proof object'
           : 'visible content implies factual/customer/site evidence; generated assets cannot substitute for proof'
-      };
+      });
     }
-    return {
+    return withDecisionSource({
       status: requested || autoGenerateMissing ? 'required' : 'optional',
       role,
       mustBind: requested || autoGenerateMissing,
@@ -116,7 +124,7 @@ function createAssetGenerationHelpers({
       reason: requested || autoGenerateMissing
         ? 'slide explicitly requests generated visual asset'
         : 'reference layout can use a generated bitmap when no source image is available'
-    };
+    });
   }
 
   return {
@@ -129,6 +137,7 @@ function createAssetGenerationHelpers({
 }
 
 module.exports = {
+  ASSET_GENERATION_DECISION_SOURCE,
   assetRoleNeedsImage,
   createAssetGenerationHelpers,
   normalizeAssetRole,

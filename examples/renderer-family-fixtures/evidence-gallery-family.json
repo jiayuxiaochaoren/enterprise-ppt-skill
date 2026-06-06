@@ -86,10 +86,10 @@
       "layoutVariant": "product-evidence-story",
       "title": "产品证据故事解释质地功效和场景",
       "productStory": [
-        { "title": "明星单品", "body": "产品图解释购买理由" },
-        { "title": "质地证据", "body": "说明核心体验" },
-        { "title": "功效主张", "body": "声明来源保持清楚" },
-        { "title": "使用场景", "body": "连接业务作用" }
+        { "product": "明星单品", "scene": "日常护理", "efficacy": "产品图解释购买理由", "businessMeaning": "承担复购入口" },
+        { "product": "质地证据", "scene": "柜台试用", "efficacy": "说明核心体验", "businessMeaning": "减少决策阻力" },
+        { "product": "功效主张", "scene": "会员沟通", "efficacy": "声明来源保持清楚", "businessMeaning": "避免夸大承诺" },
+        { "product": "使用场景", "scene": "套装组合", "efficacy": "连接业务作用", "businessMeaning": "提升连带购买" }
       ]
     },
     {

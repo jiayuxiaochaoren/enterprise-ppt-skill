@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
 const { createFallbackRenderers } = require('./render/fallback-renderer');
+const { runVisualQa } = require('./qa/visual-qa-runner');
 
 const calls = [];
 const fallback = createFallbackRenderers({
@@ -46,18 +47,11 @@ assert.equal(draft.status, 0, draft.stderr || draft.stdout);
 const meta = JSON.parse(fs.readFileSync(path.join(OUT, 'draft-unknown.pptx.render-meta.json'), 'utf8'));
 assert.equal(meta.slides[0].rendererMatch.matchKind, 'fallback');
 assert.equal(meta.slides[0].rendererMatch.rendererName, 'fallbackBulletsSlide');
-const fallbackFormalQa = cp.spawnSync(process.execPath, [
-  'scripts/visual_qa.js',
-  path.join(OUT, 'draft-unknown.pptx'),
-  '--quality-mode',
-  'formal',
-  '--json'
-], {
-  cwd: ROOT,
-  encoding: 'utf8'
+const fallbackFormalJson = runVisualQa({
+  file: path.join(OUT, 'draft-unknown.pptx'),
+  qualityMode: 'formal'
 });
-assert.notEqual(fallbackFormalQa.status, 0, 'formal QA should reject fallback-rendered PPTX');
-const fallbackFormalJson = JSON.parse(fallbackFormalQa.stdout);
+assert.equal(fallbackFormalJson.success, false, 'formal QA should reject fallback-rendered PPTX');
 const fallbackFinding = fallbackFormalJson.findings.find(f => f.type === 'fallbackRendererUsed');
 assert.equal(fallbackFinding.level, 'fail');
 assert.equal(fallbackFinding.originalLevel, 'review');

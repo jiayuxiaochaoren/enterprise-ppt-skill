@@ -1,6 +1,6 @@
 const {
-  componentIdFromHint,
-  isSystemPlannedComponent
+  isSystemPlannedComponent,
+  normalizeComponentId
 } = require('./component-planning-normalization');
 
 function filterComponentPlanCandidates(options = {}) {
@@ -9,6 +9,7 @@ function filterComponentPlanCandidates(options = {}) {
     components = [],
     dialect = {},
     flattenText,
+    industryEvidenceChain = {},
     nativeOnlyOptionalComponentAllowed,
     plan = {},
     productProofSignal = false,
@@ -21,9 +22,19 @@ function filterComponentPlanCandidates(options = {}) {
     valueCreationMapOwnsProcess = false,
     variant = ''
   } = options;
-  const avoid = new Set((dialect.avoidComponents || []).map(componentIdFromHint));
+  const avoid = new Set([
+    ...((dialect.avoidComponents || []).map(normalizeComponentId)),
+    ...((industryEvidenceChain.avoidComponents || []).map(normalizeComponentId))
+  ]);
   const hasExplicitVisibleSource = Boolean(slide.sourceNote || slide.source_note || (slide.proof && slide.proof.sourceNote));
-  const riskRegisterAllowed = riskEligible && (
+  const portfolioRowsAreAssetRows = type === 'portfolio-table' &&
+    !Array.isArray(slide.risks) &&
+    !Array.isArray(slide.controls) &&
+    !slide.riskRegister &&
+    !slide.riskMatrix &&
+    !slide.controlsMatrix &&
+    !slide.matrix;
+  const riskRegisterAllowed = riskEligible && !portfolioRowsAreAssetRows && (
     type === 'risk-table' ||
     riskMatrixExplicit ||
     Array.isArray(slide.rows) ||

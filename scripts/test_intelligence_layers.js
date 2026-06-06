@@ -135,6 +135,25 @@ const generatedCover = normalizeSlide(
 assert.equal(generatedCover.assetGeneration.status, 'required', 'explicit generated background should be planned at architecture layer');
 assert.ok(generatedCover.generatedAssetPrompt && /no text/i.test(generatedCover.generatedAssetPrompt), 'generated prompt should enforce no text');
 
+const staleGeneratedPolicySource = normalizeSlide(
+  { industry:'saas-technology', title:'采用漏斗' },
+  {
+    type:'industry-chart',
+    layoutVariant:'adoption-funnel',
+    proofObject:'adoption-funnel',
+    title:'采用漏斗现在按原生漏斗呈现',
+    adoptionFunnel:{ steps:[{ label:'注册', value:'100%' }] },
+    visual:{ mode:'generated', role:'background' },
+    assetGeneration:{ decisionSource:'asset-generation-policy/v1', status:'required', role:'background', mustBind:true, reason:'previous normalized decision' },
+    generatedAssetPrompt:'OLD NORMALIZED PROMPT'
+  },
+  0,
+  1
+);
+assert.equal(staleGeneratedPolicySource.previousAssetGeneration.reason, 'previous normalized decision');
+assert.equal(staleGeneratedPolicySource.visual.mode, undefined);
+assert.notEqual(staleGeneratedPolicySource.generatedAssetPrompt, 'OLD NORMALIZED PROMPT');
+
 const zhLanguagePlan = { title:'中文方案汇报', slides:[{ title:'平台总体架构' }] };
 const microcopyShardEntryCount =
   Object.keys(MICROCOPY_CORE_TRANSLATIONS_ZH).length +

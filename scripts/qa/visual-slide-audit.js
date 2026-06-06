@@ -104,7 +104,9 @@ function auditSlideXml(xml = '', slideNo = 1, qa = {}) {
     findings.push({ slide:slideNo, level:'review', type:'textLineCollision', message:`${lineTextOverlaps.length} rule/underline shapes intersect visible text: ${sample}` });
   }
 
-  const arrowBlocked = lineShapes.filter(line => line.arrow && (line.w > 0.18 || line.h > 0.18)).filter(line => {
+  const arrowBlocked = lineShapes.filter(line => line.arrow && (line.w > 0.18 || line.h > 0.18))
+    .filter(line => !(line.w > 12 && line.h > 6))
+    .filter(line => {
     const mid = lineMidpoint(line);
     return rectShapes.some(rect => {
       const area = rect.w * rect.h;

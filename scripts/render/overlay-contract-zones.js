@@ -1,3 +1,7 @@
+const {
+  canonicalIndustryEvidenceChainForSlide
+} = require('../design/industry-evidence-chain');
+
 function createOverlayZoneHelpers(deps = {}) {
   const {
     H,
@@ -6,7 +10,16 @@ function createOverlayZoneHelpers(deps = {}) {
     z
   } = deps;
 
-  function defaultSafeOverlayZonesFor(s = {}) {
+  function chainIdForSlide(planOrSlide = {}, maybeSlide = null) {
+    const plan = maybeSlide ? planOrSlide : {};
+    const s = maybeSlide || planOrSlide || {};
+    const chain = canonicalIndustryEvidenceChainForSlide(plan, s);
+    return String(chain && chain.stageId !== 'neutral-general' ? chain.chainId : '');
+  }
+
+  function defaultSafeOverlayZonesFor(planOrSlide = {}, maybeSlide = null) {
+    const plan = maybeSlide ? planOrSlide : {};
+    const s = maybeSlide || planOrSlide || {};
     const type = String(s.type || '');
     if (['cover', 'cover-dark'].includes(type)) {
       return {
@@ -38,7 +51,7 @@ function createOverlayZoneHelpers(deps = {}) {
       }
       return zones;
     }
-    return {
+    const zones = {
       'caption-bar': z('caption-bar-lower-left', 0.86, 6.44, 4.80, 0.36, 'safe-overlay'),
       'chart-commentary-panel': z('commentary-lower-right', 8.22, 5.96, 3.42, 0.50, 'safe-overlay'),
       'commentary-panel': z('commentary-side-pocket', 9.10, 5.70, 2.44, 0.58, 'safe-overlay'),
@@ -54,6 +67,36 @@ function createOverlayZoneHelpers(deps = {}) {
       'value-chain': z('value-chain-lower-right', 8.04, 6.08, 3.62, 0.58, 'safe-overlay'),
       'value-chain-connector': z('value-chain-lower-right', 8.04, 6.08, 3.62, 0.58, 'safe-overlay')
     };
+    const chainId = chainIdForSlide(plan, s);
+    if (chainId === 'industrial-manufacturing') {
+      Object.assign(zones, {
+        'equipment-nameplate': z('equipment-nameplate-upper-right', 8.06, 1.04, 3.56, 0.70, 'safe-overlay'),
+        'inspection-matrix': z('inspection-matrix-lower-right', 8.04, 4.70, 3.72, 1.28, 'safe-overlay'),
+        'quality-scorecard': z('quality-scorecard-bottom-band', 0.86, 5.72, 6.70, 0.54, 'safe-overlay'),
+        'proof-gallery': z('field-proof-gallery-lower-right', 8.04, 5.96, 3.72, 0.62, 'safe-overlay')
+      });
+    } else if (chainId === 'finance-investment') {
+      Object.assign(zones, {
+        'governance-table': z('governance-table-upper-right', 8.04, 3.68, 3.72, 1.20, 'safe-overlay'),
+        'risk-register': z('risk-register-lower-right', 8.04, 4.92, 3.72, 1.48, 'safe-overlay'),
+        'disclosure-footnote': z('disclosure-footnote-footer-left', 0.86, 7.00, 6.90, 0.24, 'safe-overlay'),
+        'source-note': z('source-note-footer-right', 8.10, 7.00, 4.20, 0.24, 'safe-overlay')
+      });
+    } else if (chainId === 'healthcare-operations') {
+      Object.assign(zones, {
+        'patient-journey-band': z('patient-journey-band-bottom', 0.86, 6.02, 6.86, 0.62, 'safe-overlay'),
+        'service-blueprint-lane': z('service-blueprint-lane-mid', 7.90, 3.82, 3.86, 1.18, 'safe-overlay'),
+        'quality-scorecard': z('quality-scorecard-bottom-band', 0.86, 5.72, 6.70, 0.54, 'safe-overlay')
+      });
+    } else if (chainId === 'saas-technology') {
+      Object.assign(zones, {
+        'prototype-frame': z('prototype-frame-side-pocket', 8.18, 1.08, 3.20, 2.48, 'safe-overlay'),
+        'workflow-rail': z('workflow-rail-bottom-left', 0.94, 6.12, 5.10, 0.54, 'safe-overlay'),
+        'adoption-funnel': z('adoption-funnel-right', 8.04, 3.52, 3.72, 1.52, 'safe-overlay'),
+        'permission-audit-tag': z('permission-audit-tag-lower-right', 8.04, 5.14, 3.72, 0.66, 'safe-overlay')
+      });
+    }
+    return zones;
   }
 
   function energyOccupiedZonesForRenderer(rendererName = '') {

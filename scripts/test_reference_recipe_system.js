@@ -105,7 +105,7 @@ const referenceContext = referenceContextForPrompt({
 });
 assert.equal(referenceContext.industryPack.id, 'beauty-consumer');
 assert.ok(referenceContext.recommendedReferenceRecipes.length > 0);
-assert.ok(referenceContext.recommendedReferenceRecipes[0].componentHints);
+assert.ok(referenceContext.recommendedReferenceRecipes[0].componentSuggestions);
 
 const weakDeck = {
   industry: 'beauty-consumer',

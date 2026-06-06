@@ -11,6 +11,9 @@ const {
   CHART_ROUTE_TYPES,
   createRouteSanitizationHelpers
 } = require('./slide-route-sanitization');
+const {
+  ASSET_GENERATION_DECISION_SOURCE
+} = require('./asset-generation');
 
 function createSlideNormalizationHelpers(deps = {}) {
   const {
@@ -60,6 +63,12 @@ function createSlideNormalizationHelpers(deps = {}) {
     const text = flattenText(s);
     const nums = text.match(/[+-]?\d[\d,]*(?:\.\d+)?\s*(?:%|％|pt|倍|亿元|万元|件|台)?/g) || [];
     return nums.slice(0, 3).map((value, i) => ({ label: ['核心指标', '变化幅度', '目标进度'][i] || '指标', value, note: s.claim || s.subtitle || '' }));
+  }
+
+  function currentAssetGenerationDecision(decision = {}) {
+    return Object.assign({
+      decisionSource: ASSET_GENERATION_DECISION_SOURCE
+    }, decision || {});
   }
 
   function normalizeSlide(plan = {}, s = {}, index = 0, total = 1) {
@@ -126,21 +135,46 @@ function createSlideNormalizationHelpers(deps = {}) {
       out.closingVariant = (tone === 'light' || tone === 'split') ? 'editorial-light' : 'decision-board';
     }
     const design = slideDesign(plan, out);
-    out.compositionPlan = out.compositionPlan || compositionPlan(plan, out, index, total, contentSignals(plan, out, index, total), recipe, design);
-    if (previousCompositionPlan) {
+    const previousInputComponentPlan = previousComponentPlan || out.previousComponentPlan || null;
+    const previousInputCompositionPlan = previousCompositionPlan || out.previousCompositionPlan || null;
+    const previousInputAssetGeneration = previousAssetGeneration || out.previousAssetGeneration || null;
+    const previousIndustryEvidenceChain = previousInputComponentPlan && previousInputComponentPlan.industryEvidenceChain
+      ? previousInputComponentPlan.industryEvidenceChain
+      : null;
+
+    out.compositionPlan = compositionPlan(plan, out, index, total, contentSignals(plan, out, index, total), recipe, design);
+    if (previousInputCompositionPlan) {
       routeSanitization.recomputed.push({
         field: 'compositionPlan',
-        reason: 'composition plan recomputed after route-sensitive metadata normalization'
+        reason: 'composition plan recomputed after executable metadata normalization'
       });
     }
     const plannedComponents = componentPlanFor(plan, out, index, total, contentSignals(plan, out, index, total), out.compositionPlan);
-    if (routeChanged || previousComponentPlan) {
+    if (routeChanged || previousInputComponentPlan) {
       routeSanitization.recomputed.push({
         field: 'componentPlan',
-        reason: 'component plan recomputed after route-sensitive metadata normalization'
+        reason: 'component plan recomputed after executable metadata normalization'
       });
     }
-    out.componentPlan = Object.assign({}, plannedComponents, out.componentPlan && out.componentPlan.version ? out.componentPlan : {}, {
+    if (previousInputComponentPlan) out.previousComponentPlan = out.previousComponentPlan || previousInputComponentPlan;
+    if (previousInputCompositionPlan) out.previousCompositionPlan = out.previousCompositionPlan || previousInputCompositionPlan;
+    if (previousIndustryEvidenceChain) {
+      out.previousIndustryEvidenceChain = out.previousIndustryEvidenceChain || previousIndustryEvidenceChain;
+      const currentChain = plannedComponents.industryEvidenceChain || {};
+      if (
+        String(previousIndustryEvidenceChain.chainId || '') !== String(currentChain.chainId || '') ||
+        String(previousIndustryEvidenceChain.stageId || '') !== String(currentChain.stageId || '')
+      ) {
+        out.industryEvidenceChainConflict = out.industryEvidenceChainConflict || {
+          previousChainId: previousIndustryEvidenceChain.chainId || '',
+          previousStageId: previousIndustryEvidenceChain.stageId || '',
+          currentChainId: currentChain.chainId || '',
+          currentStageId: currentChain.stageId || '',
+          resolution: 'canonical chain recomputed from current slide fields'
+        };
+      }
+    }
+    out.componentPlan = Object.assign({}, plannedComponents, {
       components: plannedComponents.components,
       componentIds: plannedComponents.componentIds,
       rulesApplied: plannedComponents.rulesApplied
@@ -156,15 +190,15 @@ function createSlideNormalizationHelpers(deps = {}) {
     out.layoutEnergy = out.layoutEnergy || out.compositionPlan.layoutEnergy;
     out.visualDensity = out.visualDensity || out.compositionPlan.visualDensity || out.compositionPlan.density;
     out.rhythmTransition = out.rhythmTransition || out.compositionPlan.rhythmTransition;
-    const assetGeneration = generatedAssetPolicy(plan, out, recipe, design);
-    if (routeChanged || previousAssetGeneration) {
-      if (previousAssetGeneration) out.previousAssetGeneration = out.previousAssetGeneration || previousAssetGeneration;
+    const assetGeneration = currentAssetGenerationDecision(generatedAssetPolicy(plan, out, recipe, design));
+    if (routeChanged || previousInputAssetGeneration) {
+      if (previousInputAssetGeneration) out.previousAssetGeneration = out.previousAssetGeneration || previousInputAssetGeneration;
       routeSanitization.recomputed.push({
         field: 'assetGeneration',
-        reason: 'asset-generation decision recomputed after route-sensitive metadata normalization'
+        reason: 'asset-generation decision recomputed after executable metadata normalization'
       });
       out.assetGeneration = Object.assign({}, assetGeneration, {
-        previousDecisionStale: Boolean(previousAssetGeneration),
+        previousDecisionStale: Boolean(previousInputAssetGeneration),
         staleForRoute: false
       });
     } else {

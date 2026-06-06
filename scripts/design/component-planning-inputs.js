@@ -7,8 +7,6 @@ function createExplicitComponentEntries({
   compactUnique = values => Array.from(new Set((values || []).filter(Boolean)))
 } = {}) {
   return function explicitComponentEntries(s = {}) {
-    const planComponents = s.componentPlan && Array.isArray(s.componentPlan.components) ? s.componentPlan.components : [];
-    const snakeComponents = s.component_plan && Array.isArray(s.component_plan.components) ? s.component_plan.components : [];
     const hints = compactUnique([
       ...(Array.isArray(s.componentHints) ? s.componentHints : []),
       ...(Array.isArray(s.component_hints) ? s.component_hints : []),
@@ -16,8 +14,6 @@ function createExplicitComponentEntries({
       ...(Array.isArray(s.component_suggestions) ? s.component_suggestions : [])
     ]);
     return [
-      ...planComponents.map(c => normalizeComponentEntry(c, 'explicit-plan')),
-      ...snakeComponents.map(c => normalizeComponentEntry(c, 'explicit-plan')),
       ...hints.map(c => normalizeComponentEntry(c, 'component-hint'))
     ].filter(Boolean);
   };

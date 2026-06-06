@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+
+const ASSET_BINDER_DECISION_SOURCE = 'asset-binder/v1';
 const { imageDimensions } = require('../design-system');
 
 function readJson(file) {
@@ -137,6 +139,7 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
         generated: assets.every(item => item.type === 'generated-image' || item.generated === true)
       });
       slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, {
+        decisionSource: ASSET_BINDER_DECISION_SOURCE,
         status: 'bound',
         bound: true,
         boundCount: assets.length
@@ -160,6 +163,7 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
       generated: single.type === 'generated-image' || single.generated === true
     });
     slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, {
+      decisionSource: ASSET_BINDER_DECISION_SOURCE,
       status: 'bound',
       bound: true,
       boundCount: 1
@@ -185,6 +189,7 @@ function bindGeneratedAssetsFromFiles({ planPath, mapPath, outPath, cwd = proces
 }
 
 module.exports = {
+  ASSET_BINDER_DECISION_SOURCE,
   attributionFor,
   bindGeneratedAssets,
   bindGeneratedAssetsFromFiles,

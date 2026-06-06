@@ -579,7 +579,7 @@ assert.deepEqual(
     componentPlan:{ components:[{ name:'source-caption', required:false }] },
     componentHints:['hero-kpis', 'hero-kpis']
   }).map(component => [component.id, component.source, component.required]),
-  [['caption-bar', 'explicit-plan', false], ['kpi-strip', 'component-hint', true]]
+  [['kpi-strip', 'component-hint', true]]
 );
 assert.equal(
   componentPlanningInputs.nativeOnlyOptionalComponentAllowed({}, { type:'metric-comparison' }, { id:'kpi-primary-metric' }),
@@ -608,6 +608,13 @@ assert.equal(componentPlan.version, 'component-plan/v1');
 assert.ok(componentPlan.componentIds.includes('kpi-strip'));
 assert.ok(componentPlan.componentIds.includes('kpi-primary-metric'));
 assert.ok(componentPlan.componentIds.includes('bar-chart'));
+const rawPlanBypass = componentPlanHelpers.componentPlanFor({}, {
+  type:'metric-comparison',
+  layoutVariant:'growth-kpi',
+  component_plan:{ components:[{ id:'hero-image', required:true }] },
+  chartSpec:{ kind:'bar' }
+});
+assert.equal(rawPlanBypass.componentIds.includes('hero-image'), false);
 const compositionHelpers = createCompositionPlanningHelpers({
   accentRoleFor: () => 'data',
   backgroundToneFor: () => 'light',
@@ -1068,6 +1075,7 @@ const requestedRiskPolicy = assetGenerationHelpers.generatedAssetPolicy(
   { wantsImage:true }
 );
 assert.equal(requestedRiskPolicy.status, 'blocked');
+assert.equal(requestedRiskPolicy.decisionSource, 'asset-generation-policy/v1');
 const optionalPolicy = assetGenerationHelpers.generatedAssetPolicy(
   {},
   { title:'Conceptual workflow', visual:{ role:'showcase' } },
@@ -1075,5 +1083,6 @@ const optionalPolicy = assetGenerationHelpers.generatedAssetPolicy(
   { wantsImage:true }
 );
 assert.equal(optionalPolicy.status, 'optional');
+assert.equal(optionalPolicy.decisionSource, 'asset-generation-policy/v1');
 
 console.log('design system modules ok');

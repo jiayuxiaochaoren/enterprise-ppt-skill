@@ -15,7 +15,7 @@ function createRiskResponsibilityBoardRenderer(ctx = {}, C = ctx.colors()) {
       fill:{color:panelFill(), transparency:0},
       line:{color:C.line, transparency:14, width:0.50}
     });
-    addLabel(slide, s.loopLabel || 'RISK · OWNER · ACTION · EVIDENCE · REVIEW', { x:board.x+0.28, y:board.y+0.28, w:2.92, h:0.10, fontSize:6.0, color:C.muted, charSpace:0.72 });
+    addLabel(slide, s.loopLabel || 'RISK · OWNER · ACTION', { x:board.x+0.28, y:board.y+0.28, w:3.20, h:0.12, fontSize:6.0, color:C.muted, charSpace:0.5 });
 
     const cx = board.x + board.w/2;
     const cy = board.y + board.h/2 + 0.10;

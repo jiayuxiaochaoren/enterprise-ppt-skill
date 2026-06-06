@@ -19,6 +19,7 @@ const ASSET_POLICY_TYPES = [
   'assetAuthorizationBlocked',
   'generatedAssetCannotSatisfyFactualProof'
 ];
+const ASSET_DECISION_GATE_SOURCE = 'asset-decision-gate/v1';
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(path.resolve(file), 'utf8'));
@@ -150,11 +151,17 @@ function buildGate(planPath, answersPath = '') {
         } else {
           slide.visual = Object.assign({}, slide.visual || {}, { mode: 'photo', role: q.role, image: assets[0] });
         }
-        slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, { status: 'bound', bound: true, boundCount: assets.length });
+        slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, {
+          decisionSource: ASSET_DECISION_GATE_SOURCE,
+          status: 'bound',
+          bound: true,
+          boundCount: assets.length
+        });
       } else if (answer.action === 'auto_generate') {
         slide.visual = Object.assign({}, slide.visual || {}, { mode: 'generated', role: q.role });
         slide.generatedAssetPrompt = answer.prompt || q.generatedAssetPrompt || promptForSlide(normalized, normalized.slides[q.slide - 1] || slide);
         slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, {
+          decisionSource: ASSET_DECISION_GATE_SOURCE,
           status: 'required',
           role: q.role,
           mustBind: true,
@@ -168,6 +175,7 @@ function buildGate(planPath, answersPath = '') {
         slide.visual = Object.assign({}, slide.visual || {}, { mode: 'solid', role: q.role });
         slide.visualMode = 'solid';
         slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, {
+          decisionSource: ASSET_DECISION_GATE_SOURCE,
           status: 'none',
           role: q.role,
           mustBind: false,
@@ -215,6 +223,7 @@ function buildGateFromFiles({ planPath, answersPath = '', outPath = '', outPlanP
 }
 
 module.exports = {
+  ASSET_DECISION_GATE_SOURCE,
   ASSET_POLICY_TYPES,
   assetRoleNeedsImage,
   buildGate,

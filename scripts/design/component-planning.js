@@ -12,6 +12,12 @@ const {
 const {
   filterComponentPlanCandidates
 } = require('./component-planning-filters');
+const {
+  inferIndustryEvidenceChain
+} = require('./industry-evidence-chain');
+const {
+  industryChainComponentAllowed
+} = require('./industry-evidence-chain-components');
 
 function createComponentPlanHelpers(deps = {}) {
   const {
@@ -23,6 +29,7 @@ function createComponentPlanHelpers(deps = {}) {
     flattenText,
     hasExplicitChartSignal,
     industryDesignDialect,
+    industryPackFor,
     proofObjectIdForSlide,
     routeChartSpec,
     slideHasChartIntent,
@@ -47,6 +54,54 @@ function createComponentPlanHelpers(deps = {}) {
     const themeIntent = cp.themeIntent || s.themeIntent || themeIntentFor(plan, s, index, total, signals);
     const components = [];
     const rulesApplied = [];
+    const routeText = flattenText({
+      industry: plan.industry,
+      documentType: plan.documentType,
+      type,
+      variant,
+      proofObject,
+      title: s.title,
+      subtitle: s.subtitle,
+      claim: s.claim,
+      visual: s.visual,
+      cards: s.cards,
+      items: s.items,
+      productStory: s.productStory,
+      products: s.products
+    });
+    const slideRouteText = flattenText({
+      type,
+      variant,
+      proofObject,
+      title: s.title,
+      subtitle: s.subtitle,
+      claim: s.claim,
+      visual: s.visual,
+      cards: s.cards,
+      items: s.items,
+      productStory: s.productStory,
+      products: s.products
+    });
+    const visual = s.visual || {};
+    const directImageCount = (s.image || visual.image ? 1 : 0) +
+      (Array.isArray(s.images) ? s.images.length : 0) +
+      (Array.isArray(visual.images) ? visual.images.length : 0);
+    const galleryEligible = !['cover', 'cover-dark', 'closing', 'closing-dark', 'chapter-divider', 'toc', 'toc-clean'].includes(type);
+    const brandWorldStrategySignal = type === 'strategy-map' && /brand-world|brand-world-and-business/i.test(`${variant} ${proofObject}`);
+    const brandConsumerSceneSignal = /brand|consumer|retail|beauty|lookbook|shopper|store|柜台|门店|陳列|陈列|消费者|消費者|会员|會員|复购|復購|种草|品牌故事|产品故事/i.test(slideRouteText);
+    const productStorySignal = Array.isArray(s.productStory) && s.productStory.length;
+    const explicitProductMatrixTextSignal = /SKU|核心单品|明星单品|單品|单品|質地|质地|功效|efficacy|texture/i.test([s.title, s.subtitle, s.claim, proofObject].filter(Boolean).join(' '));
+    const productShowcaseHasEvidence = type === 'product-showcase' && (directImageCount > 0 || productStorySignal || (Array.isArray(s.products) && s.products.length) || explicitProductMatrixTextSignal);
+    const productProofSignal =
+      Boolean(s.product || (Array.isArray(s.products) && s.products.length) || productStorySignal) ||
+      productShowcaseHasEvidence ||
+      /sku|product-evidence|product-showcase|texture|efficacy|单品|質地|质地|功效/i.test(proofObject) ||
+      explicitProductMatrixTextSignal;
+    const explicitGalleryRouteSignal = ['case-gallery', 'gallery', 'portfolio'].includes(type) ||
+      (!brandWorldStrategySignal && /gallery|photo|lookbook|mosaic/i.test(`${variant} ${proofObject}`));
+    const imageBackedGallerySignal = signals.imageCount >= 2 || directImageCount > 0;
+    const productStoryGallerySignal = productStorySignal && (imageBackedGallerySignal || /product-evidence|product-showcase|gallery|photo|lookbook/i.test(`${variant} ${proofObject} ${type}`));
+    const brandSceneGallerySignal = brandConsumerSceneSignal && imageBackedGallerySignal;
 
     explicitComponentEntries(s).forEach(entry => addComponent(components, entry, entry.source || 'explicit'));
 
@@ -54,8 +109,34 @@ function createComponentPlanHelpers(deps = {}) {
       addComponent(components, { id, role, required }, rule);
       rulesApplied.push(rule);
     };
+    const pack = typeof industryPackFor === 'function' ? industryPackFor(plan) : null;
+    const industryEvidenceChain = inferIndustryEvidenceChain(plan, s, {
+      visualGrammar: pack && pack.visualGrammar ? pack.visualGrammar : null
+    });
+    if (industryEvidenceChain.stageId !== 'neutral-general') {
+      (industryEvidenceChain.components || []).forEach(id => {
+        if (!industryChainComponentAllowed(id, {
+          directImageCount,
+          evidenceChain: industryEvidenceChain,
+          productProofSignal,
+          signals,
+          slide: s,
+          type
+        })) return;
+        addRule(
+          id,
+          `industry evidence chain: ${industryEvidenceChain.stageLabel}`,
+          `industry-evidence-chain:${industryEvidenceChain.stageId}`,
+          true
+        );
+      });
+    }
 
-    if (['cover', 'cover-dark'].includes(type) || signals.imageCount > 0 || /hero|cover|brand-world|product|image/i.test(proofObject)) {
+    const proofObjectVisualAnchor = /hero|cover|brand-world|(?:^|[-_])product(?:$|[-_])|image/i.test(proofObject);
+    const heroImageRouteEligible = ['cover', 'cover-dark', 'case-gallery', 'gallery', 'portfolio', 'product-showcase', 'company-profile-spread'].includes(type) ||
+      proofObjectVisualAnchor ||
+      /hero|cover|brand|showcase|lookbook|gallery|photo|image/i.test(variant);
+    if (['cover', 'cover-dark'].includes(type) || (signals.imageCount > 0 && heroImageRouteEligible) || proofObjectVisualAnchor) {
       addRule('hero-image', 'primary visual or brand-world anchor', 'visual-or-cover-signal', !['toc', 'toc-clean'].includes(type));
     }
     if (['toc', 'toc-clean'].includes(type)) {
@@ -67,7 +148,9 @@ function createComponentPlanHelpers(deps = {}) {
     const metricEligible = !['cover', 'cover-dark', 'closing', 'chapter-divider', 'toc', 'toc-clean', 'risk-table', 'portfolio-table', 'timeline', 'timeline-dark'].includes(type);
     if ((metricEligible && signals.hasMetrics) || ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type)) {
       addRule('kpi-strip', 'metric evidence readout', 'metric-signal');
-      addRule('chart-commentary-panel', 'explain what the data proves', 'metric-signal', false);
+      if (!brandWorldStrategySignal) {
+        addRule('chart-commentary-panel', 'explain what the data proves', 'metric-signal', false);
+      }
     }
     if (['metric-comparison', 'industry-chart'].includes(type) && signals.metricCount >= 1) {
       addRule('kpi-primary-metric', 'one number carries the page claim', 'metric-primary');
@@ -83,15 +166,21 @@ function createComponentPlanHelpers(deps = {}) {
     if (chartIntent && chartComponentId && !inferredInformationGap && (explicitChartSignal || chartEligibleRoute) && !['cover', 'cover-dark', 'closing', 'closing-dark', 'toc', 'toc-clean', 'chapter-divider'].includes(type)) {
       addRule(chartComponentId, chartSpec.kind === 'informationGap' ? 'explicit data gap instead of fake chart' : `chartSpec/v1 ${chartSpec.kind} renderer`, 'chart-spec-router');
     }
-    if (signals.imageCount >= 2 || ['case-gallery', 'gallery', 'portfolio'].includes(type) || /gallery|photo|proof|lookbook|mosaic/i.test(proofObject)) {
+    if (
+      (galleryEligible && (
+        imageBackedGallerySignal ||
+        productStoryGallerySignal ||
+        brandSceneGallerySignal
+      )) ||
+      explicitGalleryRouteSignal ||
+      (!brandWorldStrategySignal && /proof/i.test(proofObject) && imageBackedGallerySignal)
+    ) {
       addRule('proof-gallery', 'captioned visual evidence set', 'gallery-signal');
       addRule('caption-bar', 'state what each image proves', 'gallery-signal');
     }
-    const productProofSignal =
-      Boolean(s.product || (Array.isArray(s.products) && s.products.length)) ||
-      type === 'product-showcase' ||
-      /sku|product-evidence|texture|efficacy|单品|质地|功效/i.test(proofObject) ||
-      /SKU|核心单品|明星单品|质地|功效/i.test([s.title, s.subtitle, s.claim].filter(Boolean).join(' '));
+    if (brandWorldStrategySignal) {
+      addRule('caption-bar', 'connect brand-world claim to evidence boundary', 'brand-world-proof-link');
+    }
     if (productProofSignal && !['cover', 'closing', 'chapter-divider', 'toc', 'toc-clean'].includes(type)) {
       addRule('product-matrix', 'SKU, texture, efficacy, price, or pack proof', 'product-signal');
     }
@@ -103,7 +192,7 @@ function createComponentPlanHelpers(deps = {}) {
       addRule(/architecture/.test(type) ? 'system-rail' : 'value-chain', 'show how inputs/actions/outcomes connect', 'system-or-value-chain-signal');
       addRule('commentary-panel', 'turn structure into a management judgment', 'system-or-value-chain-signal', false);
     }
-    const processEligible = !['industry-chart', 'metric-comparison', 'finance-bridge', 'portfolio-table', 'case-gallery', 'gallery', 'cover', 'cover-dark', 'closing'].includes(type);
+    const processEligible = !['industry-chart', 'metric-comparison', 'finance-bridge', 'portfolio-table', 'case-gallery', 'gallery', 'cover', 'cover-dark', 'closing'].includes(type) && !brandWorldStrategySignal;
     if (['timeline', 'timeline-dark'].includes(type) || (processEligible && (signals.hasTimeline || signals.hasLoop))) {
       addRule('process-rail', 'sequence or operating loop', 'process-signal');
     }
@@ -134,6 +223,7 @@ function createComponentPlanHelpers(deps = {}) {
       components,
       dialect,
       flattenText,
+      industryEvidenceChain,
       nativeOnlyOptionalComponentAllowed,
       plan,
       productProofSignal,
@@ -175,6 +265,7 @@ function createComponentPlanHelpers(deps = {}) {
       version: 'component-plan/v1',
       strategy: 'component-composition',
       proofObject,
+      industryEvidenceChain,
       themeIntent,
       components: knownComponents,
       componentIds: knownComponents.map(c => c.id),

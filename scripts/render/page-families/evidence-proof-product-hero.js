@@ -10,6 +10,11 @@ function createProductEvidenceHero(ctx = {}) {
   } = ctx;
   const C = ctx.colors();
 
+  function field(item = {}, keys = [], fallback = '') {
+    if (typeof item === 'string') return keys.includes('title') ? item : fallback;
+    return keys.map(key => item[key]).find(Boolean) || fallback;
+  }
+
   function drawProductEvidenceHero(slide, lead, image, hero) {
     const heroCaptionH = 0.90;
     const heroImageH = hero.h - heroCaptionH - 0.22;
@@ -36,11 +41,11 @@ function createProductEvidenceHero(ctx = {}) {
       x:hero.x+0.30, y:hero.y+hero.h-0.60, w:1.42, h:0.09,
       fontSize:5.8, color:C.accent, charSpace:0.7
     });
-    addText(slide, itemTitle(lead, '明星单品'), {
+    addText(slide, field(lead, ['product', 'sku', 'name', 'title', 'label'], itemTitle(lead, '明星单品')), {
       x:hero.x+0.30, y:hero.y+hero.h-0.34, w:1.64, h:0.14,
       fontSize:9.6, bold:true, color:C.white, fit:'shrink'
     });
-    addText(slide, itemBodyNoEllipsis(lead, '产品图解释购买理由和功效边界。'), {
+    addText(slide, field(lead, ['benefit', 'efficacy', 'claim', 'sellingPoint', 'body', 'note', 'description'], itemBodyNoEllipsis(lead, '产品图解释购买理由和功效边界。')), {
       x:hero.x+2.34, y:hero.y+hero.h-0.42, w:2.42, h:0.26,
       fontSize:7.8, color:C.captionOnImage, fit:false, breakLine:true
     });

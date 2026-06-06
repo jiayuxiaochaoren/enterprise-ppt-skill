@@ -235,7 +235,7 @@ function assertBrandWorldShell(ops) {
 
   assert(findRect(0.92, 2.04, 4.72, 4.02), 'expected brand world hero panel');
   assert(findRect(6.18, 2.04, 5.26, 4.02), 'expected brand proof board');
-  assert(findRect(0.92, 6.28, 8.76, 0.34), 'expected brand proof link strip');
+  assert(findRect(0.92, 6.28, 10.86, 0.42), 'expected brand proof link strip');
 
   const heroFallback = ops.find(op => op.name === 'genericShowcaseField'
     && Math.abs(op.args[1] - 1.10) < 0.001

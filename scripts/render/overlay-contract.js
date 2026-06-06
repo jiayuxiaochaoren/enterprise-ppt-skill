@@ -56,13 +56,13 @@ function createOverlayContractHelpers(deps = {}) {
   function nativeRendererContractFor(plan = {}, s = {}, rendererName = '') {
     const type = String(s.type || '');
     const variant = String(s.layoutVariant || s.variant || '');
-    const owned = nativeComponentIdsFor(s);
+    const owned = nativeComponentIdsFor(plan, s);
     if (isEnergyNativeRenderer(plan, rendererName)) {
       energyNativeOwnedComponentIds().forEach(id => owned.add(id));
     }
     const safeOverlayZones = isEnergyNativeRenderer(plan, rendererName)
       ? { 'source-note': z('source-note-footer', 8.10, 7.02, 4.20, 0.22, 'safe-overlay') }
-      : defaultSafeOverlayZonesFor(s);
+      : defaultSafeOverlayZonesFor(plan, s);
     return {
       version: 'native-renderer-contract/v1',
       rendererName: rendererName || 'unknown-renderer',

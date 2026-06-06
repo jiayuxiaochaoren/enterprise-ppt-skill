@@ -81,6 +81,7 @@ assert.ok(bridgeUnavailableReport.counts.skipImage >= 2, 'unavailable imagegen s
 const bridgeUnavailablePlan = JSON.parse(fs.readFileSync(path.join(ROOT, bridgeUnavailableReport.outputs.deckPlan), 'utf8'));
 assert.equal(bridgeUnavailablePlan.slides[0].visual.mode, 'solid');
 assert.equal(bridgeUnavailablePlan.slides[0].assetGeneration.status, 'none');
+assert.equal(bridgeUnavailablePlan.slides[0].assetGeneration.decisionSource, 'asset-decision-gate/v1');
 assert.equal(Boolean(bridgeUnavailablePlan.slides[0].generatedAssetPrompt), false);
 
 const bridgeAvailable = JSON.parse(cp.execFileSync(process.execPath, [
@@ -103,6 +104,7 @@ assert.ok(bridgeAvailableReport.promptCount >= 2);
 const bridgeAvailablePlan = JSON.parse(fs.readFileSync(path.join(ROOT, bridgeAvailableReport.outputs.deckPlan), 'utf8'));
 assert.equal(bridgeAvailablePlan.slides[0].visual.mode, 'generated');
 assert.equal(bridgeAvailablePlan.slides[0].assetGeneration.status, 'required');
+assert.equal(bridgeAvailablePlan.slides[0].assetGeneration.decisionSource, 'asset-decision-gate/v1');
 const bridgePrompts = JSON.parse(fs.readFileSync(path.join(bridgeAvailableDir, 'asset-prompts.json'), 'utf8'));
 assert.equal(bridgePrompts.status, 'ready');
 assert.equal(bridgePrompts.promptCount, bridgeAvailableReport.promptCount);
@@ -120,8 +122,10 @@ cp.execFileSync('node', ['scripts/deck_asset_decision_gate.js', planPath, '--ans
 const resolvedPlan = JSON.parse(fs.readFileSync(resolvedPlanPath, 'utf8'));
 assert.equal(resolvedPlan.slides[0].visual.mode, 'generated');
 assert.equal(resolvedPlan.slides[0].assetGeneration.status, 'required');
+assert.equal(resolvedPlan.slides[0].assetGeneration.decisionSource, 'asset-decision-gate/v1');
 assert.equal(resolvedPlan.slides[1].visual.mode, 'solid');
 assert.equal(resolvedPlan.slides[1].assetGeneration.status, 'none');
+assert.equal(resolvedPlan.slides[1].assetGeneration.decisionSource, 'asset-decision-gate/v1');
 const skipAuditPptxPath = path.join(OUT, 'skip-audit.pptx');
 cp.execFileSync(process.execPath, ['scripts/generate_pptx.js', resolvedPlanPath, skipAuditPptxPath], {
   cwd: ROOT,
@@ -270,6 +274,7 @@ assert.equal(bindResult.success, true);
 assert.equal(bindResult.boundSlides, 1);
 const boundPlan = JSON.parse(fs.readFileSync(bindOutPath, 'utf8'));
 assert.equal(boundPlan.slides[1].visual.image, path.relative(ROOT, tinyPngPath));
+assert.equal(boundPlan.slides[1].assetGeneration.decisionSource, 'asset-binder/v1');
 assert.equal(boundPlan.slides[1].sourceTrace.imageProvenance.length, 1);
 assert.equal(boundPlan.slides[1].sourceTrace.imageProvenance[0].provenanceClass, 'model-generated-preview');
 assert.equal(boundPlan.slides[1].sourceTrace.imageProvenance[0].proofEligibility, 'synthetic-only');

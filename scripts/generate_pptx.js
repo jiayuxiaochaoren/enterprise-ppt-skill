@@ -58,6 +58,12 @@ const {
   createRenderMetaHelpers
 } = require('./render/render-meta');
 const { createOverlayRenderer } = require('./render/overlay-renderer');
+const {
+  industryVisualGrammarDecisionFor
+} = require('./render/industry-visual-grammar');
+const {
+  canonicalIndustryEvidenceChainForSlide
+} = require('./design/industry-evidence-chain');
 
 const pptxgen = requirePptxGen();
 
@@ -88,6 +94,7 @@ const {
   componentCapabilityFor,
   renderKpiStrip,
   renderChartSpec,
+  renderProductMatrix,
   renderProofGallery,
   renderRiskRegister,
   renderValueChain
@@ -217,6 +224,7 @@ const {
   processRail: ProcessRail,
   recordChartConsumption,
   renderChartSpec,
+  renderProductMatrix,
   renderProofGallery,
   renderRiskRegister,
   renderValueChain,
@@ -305,8 +313,44 @@ function consumeComponentPlan(slide, plan, s, idx) {
   const contract = slide.__codexNativeRenderContract || nativeRendererContractFor(plan, s, 'unknown-renderer');
   const nativeIds = new Set(contract.ownedComponents || []);
   const renderedOverlays = [];
+  const canonicalIndustryEvidenceChain = canonicalIndustryEvidenceChainForSlide(plan, s);
+  const industryEvidenceChain = canonicalIndustryEvidenceChain && canonicalIndustryEvidenceChain.stageId !== 'neutral-general'
+    ? canonicalIndustryEvidenceChain
+    : null;
+  const industryEvidenceComponents = new Set((industryEvidenceChain && industryEvidenceChain.components) || []);
+  const industryEvidenceForComponent = (id, result = {}) => {
+    if (!industryEvidenceChain || !industryEvidenceComponents.has(id)) return {};
+    const rendered = result && result.rendered;
+    const countFallback = rendered && result.drawnCount == null && result.itemCount == null ? 1 : null;
+    const meta = {
+      chainStage: industryEvidenceChain.stageId || '',
+      chainStageLabel: industryEvidenceChain.stageLabel || '',
+      evidenceReason: (industryEvidenceChain.evidenceReasons || []).join('; '),
+      industryEvidenceChain: {
+        chainId: industryEvidenceChain.chainId || '',
+        stageId: industryEvidenceChain.stageId || '',
+        stageLabel: industryEvidenceChain.stageLabel || ''
+      }
+    };
+    if (countFallback != null) {
+      meta.drawnCount = countFallback;
+      meta.itemCount = countFallback;
+    }
+    return meta;
+  };
   const consumed = planned.map(component => {
-    const result = renderOverlayComponent(slide, plan, s, idx, component.id, nativeIds, contract, renderedOverlays);
+    let result = renderOverlayComponent(slide, plan, s, idx, component.id, nativeIds, contract, renderedOverlays);
+    if (component.required === false && result && (
+      /^blocked-/.test(String(result.mode || '')) ||
+      result.mode === 'native-claimed-undrawn'
+    )) {
+      result = {
+        id: component.id,
+        mode: 'optional-not-rendered',
+        rendered: false,
+        reason: result.reason || 'optional component dropped because no safe renderer evidence was available'
+      };
+    }
     if (result && result.rendered && result.mode === 'overlay') {
       renderedOverlays.push(Object.assign({ id:component.id }, result.bbox || overlaySlotForComponent(contract, component.id) || {}));
     }
@@ -314,7 +358,7 @@ function consumeComponentPlan(slide, plan, s, idx) {
       id: component.id,
       required: component.required !== false,
       role: component.role || ''
-    }, result);
+    }, result, industryEvidenceForComponent(component.id, result));
   });
   const plannedChartSpec = !nativeVariantSuppressesChartMeta(s) && slideHasChartSpecIntent(s)
     ? (s.chartSpec || routeChartSpec(plan, s, { index:idx, total:(plan.slides || []).length }) || null)
@@ -326,6 +370,8 @@ function consumeComponentPlan(slide, plan, s, idx) {
     proofObject: (s.proof && s.proof.id) || s.proofObject || '',
     sourceTrace: s.sourceTrace || null,
     proof: s.proof || null,
+    industryEvidenceChain,
+    industryVisualGrammar: industryVisualGrammarDecisionFor(plan, s),
     renderRoute: slide.__codexRenderRoute || s.renderRoute || null,
     assetDecision: assetDecisionForMeta(plan, s),
     rendererMatch: slide.__codexRendererMatch || null,
@@ -355,10 +401,15 @@ function consumeComponentPlan(slide, plan, s, idx) {
         id:c.id,
         nativeSlot:c.nativeSlot || '',
         drawnCount:c.drawnCount || 0,
+        itemCount:c.itemCount || c.drawnCount || 0,
         bbox:c.bbox || null,
         rendererModule:c.rendererModule || '',
         rendererMethod:c.rendererMethod || '',
-        evidence:c.evidence || ''
+        evidence:c.evidence || '',
+        chainStage:c.chainStage || '',
+        chainStageLabel:c.chainStageLabel || '',
+        evidenceReason:c.evidenceReason || '',
+        industryEvidenceChain:c.industryEvidenceChain || null
       })),
     consumedComponents: consumed,
     missingRequiredComponents: consumed.filter(c => c.required && !c.rendered).map(c => c.id)

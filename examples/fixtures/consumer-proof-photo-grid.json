@@ -38,6 +38,47 @@
         "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-3.png",
         "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/consumer-proof-photo-grid/proof-4.png"
       ],
+      "caption": "每张消费者场景图都需要说明触点、购买理由和复购边界。",
+      "proof": {
+        "explanation": "消费者图像只表达场景证据，不替代真实用户数据。",
+        "sourceNote": "fixture evidence",
+        "sourceIds": ["consumer-proof-fixture-src"],
+        "sourceTrace": {
+          "version": "source-trace/v2",
+          "sourceIds": ["consumer-proof-fixture-src"],
+          "sources": [
+            {
+              "id": "consumer-proof-fixture-src",
+              "kind": "test-fixture",
+              "name": "consumer-proof fixture",
+              "page": 1,
+              "excerpt": "Fixture consumer proof binds scene, reason, channel, and boundary.",
+              "provenance": "test-fixture-excerpt",
+              "authorizationStatus": "cleared"
+            }
+          ],
+          "imageProvenance": [],
+          "assetAuthorizationStatus": "cleared"
+        }
+      },
+      "sourceTrace": {
+        "version": "source-trace/v2",
+        "claimId": "consumer-proof-photo-grid",
+        "sourceIds": ["consumer-proof-fixture-src"],
+        "sources": [
+          {
+            "id": "consumer-proof-fixture-src",
+            "kind": "test-fixture",
+            "name": "consumer-proof fixture",
+            "page": 1,
+            "excerpt": "Fixture consumer proof binds scene, reason, channel, and boundary.",
+            "provenance": "test-fixture-excerpt",
+            "authorizationStatus": "cleared"
+          }
+        ],
+        "imageProvenance": [],
+        "assetAuthorizationStatus": "cleared"
+      },
       "cards": [
         {
           "title": "柜台咨询",

@@ -7,13 +7,13 @@ const { profileSummaryForChangedFiles } = require('./test-profile-mapping');
 const ROOT = path.resolve(__dirname, '..');
 const TEST_GROUPS = {
   unit: [
-    /^test_(architecture_core_renderers|architecture_energy_renderers|architecture_industry_renderers|beauty_renderers|business_renderers|chapter_renderers|chart_spec|chrome_helpers|closing_core_renderers|closing_industry_renderers|closing_routing|composition_strategy|content_signals|cover_core_renderers|deck_rhythm_helpers|density_strategy|design_proof_profile|design_system_modules|design_text_utils|evidence_brand_story_renderers|evidence_gallery_core_renderers|evidence_gallery_routing|evidence_industry_renderers|evidence_proof_board_renderers|fallback_renderer|financial_chart_utils|financial_industry_renderers|financial_investment_renderers|financial_results_renderers|financial_scorecard_renderers|hardening_dashboard|hardening_matrix_contract|hardening_readiness_helpers|image_layout_strategy|manifesto_renderers|metadata_policy|page_family_splits|profile_mapping|profile_renderers|quality_mode|render_content_helpers|render_geometry|render_meta_audits|render_meta_schema|render_runtime|renderer_api|renderer_context_contract|renderer_modularization|risk_board_renderers|routing|semantic_model|skill_metadata|slide_normalization_helpers|slide_routing_helpers|strategy_renderers|timeline_renderers|toc_renderers|typography_system|visual_qa_utils)\.js$/
+    /^test_(architecture_core_renderers|architecture_energy_renderers|architecture_industry_renderers|beauty_renderers|brand_visual_richness_audit|business_renderers|chapter_renderers|chart_spec|chrome_helpers|closing_core_renderers|closing_industry_renderers|closing_routing|composition_strategy|content_signals|cover_core_renderers|deck_rhythm_helpers|density_strategy|design_proof_profile|design_system_modules|design_text_utils|evidence_brand_story_renderers|evidence_gallery_core_renderers|evidence_gallery_routing|evidence_industry_renderers|evidence_proof_board_renderers|fallback_renderer|financial_chart_utils|financial_industry_renderers|financial_investment_renderers|financial_results_renderers|financial_scorecard_renderers|hardening_dashboard|hardening_matrix_contract|hardening_readiness_helpers|image_layout_strategy|manifesto_renderers|metadata_policy|page_family_splits|profile_mapping|profile_renderers|quality_mode|render_content_helpers|render_geometry|render_meta_audits|render_meta_schema|render_runtime|renderer_api|renderer_context_contract|renderer_modularization|risk_board_renderers|routing|semantic_model|skill_metadata|slide_normalization_helpers|slide_routing_helpers|strategy_renderers|timeline_renderers|toc_renderers|typography_system|visual_qa_utils)\.js$/
   ],
   pipeline: [
-    /^test_(acceptance_briefs|asset_decision_gate|composition_planner|connector_pages|industry_pack_depth|intelligence_layers|material_modules|material_pipeline|model_orchestration|orchestration_contract|reference_recipe_system|rhythm_planner)\.js$/
+    /^test_(acceptance_briefs|asset_decision_gate|composition_planner|connector_pages|industry_evidence_chain|industry_pack_depth|intelligence_layers|material_modules|material_pipeline|model_orchestration|orchestration_contract|reference_recipe_system|rhythm_planner)\.js$/
   ],
   render: [
-    /^test_(component_fixture_qa|render_contracts|renderer_family_fixtures|template_family_qa|template_novelty_qa|template_page_family_fixtures)\.js$/
+    /^test_(component_fixture_qa|industry_evidence_chain_smoke|render_contracts|renderer_family_fixtures|template_family_qa|template_novelty_qa|template_page_family_fixtures)\.js$/
   ],
   visual: [
     /^test_(art_direction|commercial_readiness_qa|component_screenshot_qa|semantic_narrative_qa|visual_layout_qa|visual_qa_baseline|visual_qa_content_coverage|visual_qa_overlap|visual_qa_render_counts)\.js$/
@@ -25,6 +25,7 @@ const TEST_GROUPS = {
 const SLOW_TESTS = new Set([
   'test_component_screenshot_qa.js',
   'test_delivery_fixtures.js',
+  'test_industry_evidence_chain_smoke.js',
   'test_material_to_delivery.js',
   'test_renderer_family_fixtures.js',
   'test_template_page_family_fixtures.js',

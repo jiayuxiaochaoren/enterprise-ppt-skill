@@ -81,12 +81,7 @@ function extractionSchema() {
         },
         data_component: 'comparison | funnel | root-cause-matrix | journey-breakpoint | before-after | heatmap | milestone | scorecard | scatter-bubble | trend-line | waterfall-bridge | progress-tracker',
         layoutVariant: 'recommended page-family variant from reference_recipe_plan',
-        componentHints: ['renderer components such as metric-strip, caption-bar, source-note'],
-        componentPlan: {
-          components: [
-            { id: 'hero-image | kpi-strip | caption-bar | commentary-panel | proof-gallery | risk-matrix | value-chain | product-matrix | source-note', required: true, role: 'what this component proves' }
-          ]
-        },
+        componentSuggestions: ['optional non-executable component suggestions backed by material evidence; do not output executable componentPlan'],
         referenceRecipeIds: ['reference recipe ids used for this page'],
         asset_requirements: [
           { role: 'evidence | product | site | screenshot | background', required: true, provenance: 'source id or user-supplied asset needed' }
@@ -165,7 +160,7 @@ function referenceContextForPrompt(bundle = {}, options = {}) {
       proofObject: recipe.proofObject,
       mainVisualMethod: recipe.designSyntax && recipe.designSyntax.mainVisualMethod,
       informationDensity: recipe.designSyntax && recipe.designSyntax.informationDensity,
-      componentHints: (recipe.componentHints || []).slice(0, 8),
+      componentSuggestions: (recipe.componentHints || []).slice(0, 8),
       forbiddenPoints: recipe.designSyntax && recipe.designSyntax.forbiddenPoints,
       score: recipe.scores && recipe.scores.overall
     }));
@@ -209,7 +204,7 @@ function buildModelPrompt(bundle = {}) {
     '- 如果用户或材料指定页数，写入 document.requested_slide_count；材料少时不要硬凑，缺少证据就写 missing_info。',
     '- claim 必须是可直接作为 PPT 页标题的判断句，不是主题词。',
     '- proof_object 应优先选择行业专用对象；不确定时用 report-board 或 metric-board。',
-    '- 每页必须有一个 proof_object，并写 componentHints/componentPlan：例如 hero-image + kpi-strip + caption-bar + commentary-panel。',
+    '- 每页必须有一个 proof_object；只有材料证据或用户偏好明确支持时才写 componentSuggestions，且它只是非执行建议。不要输出 componentHints 或可执行 componentPlan；若误输出会被 suppressed/audited，不会直接进入组件计划。',
     '- 区分真实证据和模型生成示意图：真实数据/截图/图片写 source_ids 和 provenance；生成图只能标为 model-generated-illustration，不能冒充真实 proof。',
     '- 每个诊断、数据、方案、价值页都要尽量填写 business_logic：现状/影响/原因/动作/指标；没有材料依据的字段留空，不要编造。',
     '- 数据页不能只摆漂亮数字，必须说明数字对应的业务判断；优先选择 comparison、funnel、root-cause-matrix、journey-breakpoint、before-after、heatmap、milestone、scorecard、scatter-bubble、trend-line、waterfall-bridge、progress-tracker 等 data_component。',

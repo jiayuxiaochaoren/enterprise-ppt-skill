@@ -63,11 +63,40 @@ function createOverlayDataHelpers(deps = {}) {
     return [proof.explanation || s.claim || s.subtitle].filter(Boolean).map(text => ({ title:'Proof', body:text }));
   }
 
+  function productField(item = {}, fields = []) {
+    if (typeof item === 'string') return fields.includes('title') ? item : '';
+    return fields.map(field => item[field]).find(Boolean) || '';
+  }
+
+  function overlayProductItemsForSlide(plan = {}, s = {}) {
+    const source = [
+      s.products,
+      s.productStory,
+      s.cards,
+      s.items
+    ].find(value => Array.isArray(value) && value.length);
+    if (!source) return [];
+    return source.slice(0, 4)
+      .map(item => {
+        if (typeof item === 'string') {
+          return { product:item, scene:'', benefit:'', businessMeaning:'' };
+        }
+        return {
+          product: productField(item, ['product', 'sku', 'name', 'title', 'label']),
+          scene: productField(item, ['scene', 'occasion', 'useCase', 'channel', 'context']),
+          benefit: productField(item, ['benefit', 'efficacy', 'claim', 'sellingPoint', 'body', 'note', 'description']),
+          businessMeaning: productField(item, ['businessMeaning', 'business', 'meaning', 'impact', 'outcome', 'value'])
+        };
+      })
+      .filter(item => item.product || item.scene || item.benefit || item.businessMeaning);
+  }
+
   return {
     componentSourceNoteText,
     overlayMetricsForSlide,
     overlayPointsForSlide,
-    overlayProofItemsForSlide
+    overlayProofItemsForSlide,
+    overlayProductItemsForSlide
   };
 }
 

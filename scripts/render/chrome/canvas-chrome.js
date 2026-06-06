@@ -60,8 +60,9 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
   }
   function SourceNote(slide, text, x = 0.82, y = 7.05, opts = {}) {
     h.addText(slide, text || h.footerText(activePlan()), {
-      x, y, w:opts.w || 7.8, h:opts.h || 0.16,
-      fontSize:opts.fontSize || h.typeSize('caption', 7.8),
+      x, y, w:opts.w || 7.8, h:opts.h || 0.18,
+      fontSize:opts.fontSize || 8.8,
+      lockFontSize:true,
       color:opts.dark ? (C.darkMuted || '94A3B8') : C.muted,
       fit:'shrink'
     });
@@ -76,6 +77,7 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
       addNumber:h.addNumber,
       addArrowLine:h.addArrowLine,
       addHairline:h.addHairline,
+      addSmartPhotoPanel:h.addSmartPhotoPanel,
       panelFill:h.panelFill,
       compactText:h.compactText
     };

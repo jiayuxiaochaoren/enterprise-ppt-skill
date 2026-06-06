@@ -1,3 +1,10 @@
+const {
+  industryVisualGrammarDecisionFor
+} = require('./industry-visual-grammar');
+const {
+  createIndustryComponentRenderer
+} = require('./industry-component-renderers');
+
 function createOverlayComponentRenderer(deps = {}) {
   const chartComponentIds = deps.chartComponentIds || new Set();
   const nativeRendererModule = deps.nativeRendererModule || 'generate_pptx/native-page-renderer';
@@ -12,13 +19,26 @@ function createOverlayComponentRenderer(deps = {}) {
   const mediaForRole = deps.mediaForRole || (() => '');
   const routeChartSpec = deps.routeChartSpec || (() => null);
   const renderChartSpec = deps.renderChartSpec || (() => ({ rendered:false }));
+  const renderProductMatrix = deps.renderProductMatrix || (() => ({ rendered:false }));
   const recordChartConsumption = deps.recordChartConsumption || (() => {});
   const nativeDrawnEvidenceFor = deps.nativeDrawnEvidenceFor || (() => null);
   const componentSourceNoteText = deps.componentSourceNoteText || (() => '');
   const overlayMetricsForSlide = deps.overlayMetricsForSlide || (() => []);
   const overlayPointsForSlide = deps.overlayPointsForSlide || (() => []);
+  const overlayProductItemsForSlide = deps.overlayProductItemsForSlide || (() => []);
   const overlayProofItemsForSlide = deps.overlayProofItemsForSlide || (() => []);
   const itemTitle = deps.itemTitle || ((value, fallback = '') => typeof value === 'string' ? value : ((value && (value.title || value.label || value.name || value.value)) || fallback));
+  const {
+    industryComponentResult,
+    overlayImagesForSlide
+  } = createIndustryComponentRenderer(Object.assign({}, deps, {
+    colors,
+    compactText,
+    componentSourceNoteText,
+    mediaForRole,
+    panelFill,
+    slideRole
+  }));
 
   function drawOverlayValueChain(slide, points = [], opts = {}) {
     const result = deps.renderValueChain(componentRendererContext(slide), points, opts);
@@ -33,8 +53,11 @@ function createOverlayComponentRenderer(deps = {}) {
   function renderOverlayComponent(slide, plan, s, idx, componentId, nativeIds, contract = {}, existingOverlays = []) {
     const C = colors();
     const dark = slideRenderedDark(slide, s);
+    const grammarDecision = industryVisualGrammarDecisionFor(plan, s) || {};
     const { slot, ownedByNative, blocked } = guardOverlayRender(componentId, nativeIds, contract, existingOverlays);
     if (blocked) return blocked;
+    const industryDrawn = industryComponentResult(slide, plan, s, componentId, slot, dark);
+    if (industryDrawn) return industryDrawn;
     if (componentId === 'hero-image' && !ownedByNative) {
       const image = mediaForRole(plan, s, slideRole(s));
       if (image && fileExists(image)) {
@@ -83,7 +106,14 @@ function createOverlayComponentRenderer(deps = {}) {
     if (componentId === 'proof-gallery' && !ownedByNative) {
       const items = overlayProofItemsForSlide(plan, s);
       const z = slot || {};
-      const component = drawOverlayProofGallery(slide, items, Object.assign({ dark }, z));
+      const proof = s.proof || {};
+      const component = drawOverlayProofGallery(slide, items, Object.assign({
+        dark,
+        images:overlayImagesForSlide(plan, s),
+        labelPrefix:grammarDecision.proofLabel,
+        caption:proof.explanation || s.caption || (s.visual && s.visual.caption) || s.subtitle || '',
+        sourceNote:componentSourceNoteText(plan, s)
+      }, z));
       if (component) return Object.assign({ id:componentId, mode:'overlay', rendered:true }, component);
     }
     if (componentId === 'risk-register' && !ownedByNative) {
@@ -93,20 +123,16 @@ function createOverlayComponentRenderer(deps = {}) {
       if (component.rendered) return Object.assign({ id:componentId, mode:'overlay', rendered:true }, component);
     }
     if (componentId === 'product-matrix' && !ownedByNative) {
-      const items = overlayProofItemsForSlide(plan, s).slice(0, 3);
+      const items = overlayProductItemsForSlide(plan, s).slice(0, 4);
       if (items.length) {
         const z = slot || { x:8.04, y:4.92, w:3.58, h:0.58 };
-        const x = z.x;
-        const y = z.y;
-        deps.addRect(slide, x, y, z.w, z.h, dark ? C.ink2 : panelFill(), dark ? C.darkLine : C.line, {
-          fill:{color:dark ? C.ink2 : panelFill(), transparency:dark ? 18 : 0},
-          line:{color:dark ? C.darkLine : C.line, transparency:dark ? 48 : 14, width:0.38}
+        const component = renderProductMatrix(componentRendererContext(slide), items, {
+          bbox: z,
+          dark,
+          itemTitle,
+          label:grammarDecision.productMatrixLabel || 'PRODUCT PROOF MATRIX'
         });
-        deps.addLabel(slide, 'SKU / PROOF MATRIX', { x:x+0.18, y:y+0.15, w:1.22, h:0.08, fontSize:4.7, color:dark ? C.cyan : C.accent, charSpace:0.35 });
-        deps.addText(slide, items.map(item => compactText(itemTitle(item, 'Proof'), 16)).join('  /  '), {
-          x:x+1.48, y:y+0.14, w:Math.max(1.0, z.w-1.70), h:0.12, fontSize:6.8, color:dark ? C.captionOnImage : C.body, fit:'shrink'
-        });
-        return { id:componentId, mode:'overlay', rendered:true, bbox:z };
+        if (component.rendered) return Object.assign({ id:componentId, mode:'overlay' }, component);
       }
     }
     if (componentId === 'source-note' && !ownedByNative) {
@@ -118,14 +144,14 @@ function createOverlayComponentRenderer(deps = {}) {
       }
     }
     if (componentId === 'caption-bar' && !ownedByNative) {
-      const caption = (s.proof && s.proof.explanation) || s.caption || s.subtitle || '';
+      const caption = (s.proof && s.proof.explanation) || s.caption || s.subtitle || s.claim || '';
       if (caption) {
         const z = slot || { x:0.86, y:6.50, w:4.80, h:0.28 };
         deps.addCaptionBar(slide, z.x, z.y, z.w, z.h, {
-          label:'PROOF',
+          label:grammarDecision.captionLabel || 'PROOF',
           caption,
           dark,
-          transparency:dark ? 28 : 0
+          transparency:dark ? 72 : 86
         });
         return { id:componentId, mode:'overlay', rendered:true, bbox:z };
       }

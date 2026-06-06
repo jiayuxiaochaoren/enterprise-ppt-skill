@@ -46,7 +46,7 @@ function storyArchitectureSchema() {
       { section: '产品与工艺', proof_object: 'production-topology', evidence_ids_or_sources: ['src-001'] }
     ],
     reference_recipe_plan: [
-      { section: '数据页', recipe_id: 'reference recipe id from reference_context', layoutVariant: 'financial-kpi-snapshot', component_suggestions: ['metric-strip', 'chart-commentary-panel'], componentHints: ['metric-strip'], referenceRecipeIds: ['recipe id'] }
+      { section: '数据页', recipe_id: 'reference recipe id from reference_context', layoutVariant: 'financial-kpi-snapshot', component_suggestions: ['metric-strip', 'chart-commentary-panel'], referenceRecipeIds: ['recipe id'] }
     ],
     asset_requirements: [
       { section: '案例证据', role: 'site-photo | product-photo | screenshot | source-table', required: true, provenance: 'source id, user-owned asset, or missing input question' }

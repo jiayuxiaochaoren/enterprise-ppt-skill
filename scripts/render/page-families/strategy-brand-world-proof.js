@@ -54,7 +54,7 @@ function createBrandWorldBusinessProofRenderer(ctx = {}) {
 
     const board = { x:6.18, y:2.04, w:5.26, h:4.02 };
     drawBrandWorldBoard(slide, board, { drivers, actions, outcomes });
-    drawBrandWorldProofLink(slide);
+    drawBrandWorldProofLink(slide, s, metrics);
     drawFooter(slide, plan);
   };
 }

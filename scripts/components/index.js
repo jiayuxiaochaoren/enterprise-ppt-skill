@@ -1,5 +1,6 @@
 const { renderKpiStrip } = require('./kpi-strip');
 const { renderProofGallery } = require('./proof-gallery');
+const { renderProductMatrix } = require('./product-matrix');
 const { renderRiskRegister } = require('./risk-register');
 const { renderValueChain } = require('./value-chain');
 const { renderBarChart } = require('./bar-chart');
@@ -57,6 +58,7 @@ module.exports = {
   renderMatrixChart,
   renderParetoChart,
   renderProofGallery,
+  renderProductMatrix,
   renderRiskRegister,
   renderScorecard,
   renderTableWithCommentary,

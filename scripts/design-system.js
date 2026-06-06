@@ -19,6 +19,11 @@ const {
   localizeMicrocopy
 } = require('./design/language-policy');
 const {
+  industryEvidenceChainFor,
+  inferIndustryEvidenceChain,
+  normalizeIndustryEvidenceChainId
+} = require('./design/industry-evidence-chain');
+const {
   chartAcceptanceGate,
   chartEvidenceQA,
   hasExplicitChartSignal,
@@ -96,5 +101,10 @@ module.exports = buildDesignSystemExports({
   audits: auditRuntime,
   planning: Object.assign({}, planningRuntime, { normalizeDeckPlan }),
   assetsAndIndustry: foundation,
-  copyAndLanguage: Object.assign({}, foundation, languageRuntime)
+  copyAndLanguage: Object.assign({}, foundation, languageRuntime),
+  industryEvidenceChain: {
+    industryEvidenceChainFor,
+    inferIndustryEvidenceChain,
+    normalizeIndustryEvidenceChainId
+  }
 });

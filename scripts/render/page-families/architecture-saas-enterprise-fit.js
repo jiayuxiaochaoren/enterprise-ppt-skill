@@ -21,11 +21,11 @@ function createSaasEnterpriseFitPanel(ctx = {}) {
       const y = right.y + 0.88 + i*0.86;
       const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : C.violet);
       addText(slide, row.title, { x:right.x+0.28, y:y, w:0.42, h:0.14, fontSize:8.8, bold:true, color:accent, fit:'shrink' });
-      addText(slide, row.body, { x:right.x+0.86, y:y-0.02, w:1.34, h:0.16, fontSize:8.8, color:C.text, fit:'shrink' });
+      addText(slide, row.body, { x:right.x+0.78, y:y-0.02, w:1.68, h:0.18, fontSize:8.8, color:C.text, fit:'shrink' });
       addHairline(slide, right.x+0.28, y+0.42, 2.14, C.line, 20, 0.34);
     });
     addRect(slide, right.x+0.28, right.y+3.42, 2.10, 0.32, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:8}, line:{color:C.line, transparency:100} });
-    addText(slide, s.footerNote || '能力地图必须能解释采用深度和扩展收入。', { x:right.x+0.40, y:right.y+3.48, w:1.82, h:0.14, fontSize:8.8, color:C.body, fit:'shrink' });
+    addText(slide, s.footerNote || '解释采用与扩展收入。', { x:right.x+0.40, y:right.y+3.48, w:1.92, h:0.16, fontSize:8.8, color:C.body, fit:'shrink' });
   }
 
   return {

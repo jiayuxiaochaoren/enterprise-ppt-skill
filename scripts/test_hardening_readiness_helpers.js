@@ -153,7 +153,7 @@ const severityMatrixSummary = qualitySeverityMatrixSummary();
 assert.equal(severityMatrixSummary.ready, true);
 assert.equal(severityMatrixSummary.policyVersion, 'quality-severity-policy/v1');
 assert.equal(severityMatrixSummary.matrixVersion, 'quality-severity-matrix/v1');
-assert.equal(severityMatrixSummary.categoryCount, 16);
+assert.equal(severityMatrixSummary.categoryCount, 17);
 assert.equal(severityMatrixSummary.requiredCategoryCount, 8);
 assert.equal(severityMatrixSummary.requiredTypeCount, 8);
 assert.equal(severityMatrixSummary.readyRequiredTypeCount, 8);

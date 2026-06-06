@@ -71,6 +71,51 @@ assert.equal(brandImageSlide.compositionPlan.industryExpression.dialect, 'retail
 assert.ok(brandImageSlide.compositionPlan.microComponents.includes('lookbook-frame'));
 assert.equal(brandImageSlide.compositionPlan.microComponents.includes('equipment-nameplate'), false);
 
+const singleVisualEvidenceSlide = normalizeSlide(
+  { industry:'beauty-consumer', title:'品牌场景证据' },
+  {
+    type:'content',
+    title:'柜台场景证明消费者触点',
+    visual:{ mode:'photo', role:'evidence', image:'counter.png', caption:'柜台咨询作为消费者证据' },
+    cards:[{ title:'柜台咨询', body:'解释肤质问题与产品匹配。' }]
+  },
+  2,
+  5
+);
+assert.equal(singleVisualEvidenceSlide.componentPlan.componentIds.includes('proof-gallery'), true);
+assert.equal(singleVisualEvidenceSlide.componentPlan.componentIds.includes('caption-bar'), true);
+
+const productStoryMatrixSlide = normalizeSlide(
+  { industry:'beauty-consumer', title:'产品证据故事' },
+  {
+    type:'content',
+    title:'明星单品把质地、功效和场景连起来',
+    productStory:[
+      { title:'修护精华', body:'高频复购入口。' },
+      { title:'面霜系列', body:'承接换季修护。' }
+    ],
+    visual:{ images:['sku-1.png', 'sku-2.png'] }
+  },
+  3,
+  5
+);
+assert.equal(productStoryMatrixSlide.componentPlan.componentIds.includes('product-matrix'), true);
+assert.equal(productStoryMatrixSlide.componentPlan.componentIds.includes('proof-gallery'), true);
+assert.equal(productStoryMatrixSlide.componentPlan.componentIds.includes('caption-bar'), true);
+
+const genericProductNarrative = normalizeSlide(
+  { industry:'general-operations', title:'产品路线' },
+  {
+    type:'content',
+    title:'产品路线说明不等于产品矩阵',
+    subtitle:'这是一页无图的管理叙述。',
+    cards:[{ title:'路线', body:'说明方向。' }]
+  },
+  2,
+  5
+);
+assert.equal(genericProductNarrative.componentPlan.componentIds.includes('product-matrix'), false);
+
 const manufacturingTopology = normalizeSlide(
   { industry:'manufacturing-operations', title:'制造能力介绍' },
   {

@@ -38,6 +38,67 @@
         "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/product-evidence-story/proof-3.png",
         "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/product-evidence-story/proof-4.png"
       ],
+      "caption": "产品证据必须绑定购买理由、场景和经营意义。",
+      "proof": {
+        "explanation": "图片只作为真实证据载体，功效与经营判断来自字段说明。",
+        "sourceNote": "fixture evidence",
+        "sourceIds": ["product-evidence-fixture-src"],
+        "sourceTrace": {
+          "version": "source-trace/v2",
+          "sourceIds": ["product-evidence-fixture-src"],
+          "sources": [
+            {
+              "id": "product-evidence-fixture-src",
+              "kind": "test-fixture",
+              "name": "product-evidence fixture",
+              "page": 1,
+              "excerpt": "Fixture product story binds product, scene, efficacy, and business meaning.",
+              "provenance": "test-fixture-excerpt",
+              "authorizationStatus": "cleared"
+            }
+          ],
+          "imageProvenance": [],
+          "assetAuthorizationStatus": "cleared"
+        }
+      },
+      "sourceTrace": {
+        "version": "source-trace/v2",
+        "claimId": "product-evidence-story",
+        "sourceIds": ["product-evidence-fixture-src"],
+        "sources": [
+          {
+            "id": "product-evidence-fixture-src",
+            "kind": "test-fixture",
+            "name": "product-evidence fixture",
+            "page": 1,
+            "excerpt": "Fixture product story binds product, scene, efficacy, and business meaning.",
+            "provenance": "test-fixture-excerpt",
+            "authorizationStatus": "cleared"
+          }
+        ],
+        "imageProvenance": [],
+        "assetAuthorizationStatus": "cleared"
+      },
+      "productStory": [
+        {
+          "product": "修护精华",
+          "scene": "高频日常护理",
+          "efficacy": "屏障修护与补水",
+          "businessMeaning": "承担复购入口"
+        },
+        {
+          "product": "面霜系列",
+          "scene": "换季护理",
+          "efficacy": "舒缓与锁水",
+          "businessMeaning": "承接季节性套装"
+        },
+        {
+          "product": "套装组合",
+          "scene": "礼盒与会员加购",
+          "efficacy": "完整护理路径",
+          "businessMeaning": "提升连带购买和客单"
+        }
+      ],
       "cards": [
         {
           "title": "修护精华",

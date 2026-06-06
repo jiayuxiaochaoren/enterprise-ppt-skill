@@ -29,6 +29,9 @@ const {
   componentConsumptionAuditFromRender,
   secondaryVisualReview
 } = require('./render-meta-audits');
+const {
+  auditIndustryEvidenceChain
+} = require('./industry-evidence-chain-audit');
 
 function defaultPlanAuditResult() {
   return {
@@ -43,6 +46,7 @@ function defaultPlanAuditResult() {
     planPageCount: null,
     planComponentPlan: null,
     planIndustryFit: null,
+    planIndustryEvidenceChain: null,
     planComponentConsumption: null,
     planSourceTrace: null,
     planCommercialReadiness: null,
@@ -91,6 +95,9 @@ function runPlanAudits(options = {}) {
     result.planComponentPlan = componentPlanAudit(rawPlan, normalized);
     result.planIndustryFit = industryFitAudit(rawPlan, normalized);
     result.planComponentConsumption = componentConsumptionAuditFromRender(normalized, renderMetaResult);
+    result.planIndustryEvidenceChain = auditIndustryEvidenceChain(rawPlan, normalized, {
+      renderMeta: renderMetaResult.meta || (renderMetaResult.error ? { __readError:renderMetaResult.error } : null)
+    });
     result.planSourceTrace = sourceTraceAudit(rawPlan, normalized);
     result.planTypography = typographyAudit(rawPlan, normalized, renderMetaResult.meta);
     result.planChartSemantic = chartSemanticQA(rawPlan, normalized);
@@ -124,6 +131,7 @@ function runPlanAudits(options = {}) {
       result.planComponentPlan,
       result.planIndustryFit,
       result.planComponentConsumption,
+      result.planIndustryEvidenceChain,
       result.planSourceTrace,
       result.planTypography,
       result.planChartSemantic,

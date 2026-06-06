@@ -33,4 +33,4 @@ if (result.error && !result.findings) failResult(file, result.error);
 const output = JSON.stringify(result, null, 2);
 if (jsonOnly || !result.success) console.log(output);
 else console.log(output);
-if (!result.success) process.exit(1);
+if (!result.success) process.exitCode = 1;

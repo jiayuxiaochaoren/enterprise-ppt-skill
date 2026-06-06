@@ -1,7 +1,6 @@
 const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
-const cp = require('child_process');
 const pptxgen = require('pptxgenjs');
 const {
   MATRIX_VERSION,
@@ -11,6 +10,9 @@ const {
   policyRows,
   severityPromotionsForMode
 } = require('./qa/quality-severity-policy');
+const {
+  runVisualQa: runVisualQaRunner
+} = require('./qa/visual-qa-runner');
 const {
   MATRIX_VERSION: MATRIX_SHARD_VERSION,
   QUALITY_SEVERITY_MATRIX: MATRIX_SHARD
@@ -31,6 +33,10 @@ const VISUAL_QA_FINDING_POLICY_SOURCE_FILES = [
   'scripts/qa/content-coverage-audit.js',
   'scripts/qa/overlay-contract-audit.js',
   'scripts/qa/component-consumption-audit.js',
+  'scripts/qa/industry-evidence-chain-audit.js',
+  'scripts/qa/industry-evidence-chain-audit-helpers.js',
+  'scripts/qa/industry-evidence-chain-field-gaps.js',
+  'scripts/qa/industry-evidence-render-meta.js',
   'scripts/qa/secondary-visual-review.js',
   'scripts/design/deck-plan-audit.js',
   'scripts/design/aesthetic-model.js',
@@ -67,17 +73,8 @@ async function makePptx() {
 }
 
 function runVisualQa(pptxPath, mode) {
-  const args = ['scripts/visual_qa.js', pptxPath, '--quality-mode', mode, '--json'];
-  try {
-    const stdout = cp.execFileSync(process.execPath, args, {
-      cwd: ROOT,
-      encoding: 'utf8',
-      maxBuffer: 20 * 1024 * 1024
-    });
-    return { status: 0, result: JSON.parse(stdout) };
-  } catch (error) {
-    return { status: error.status || 1, result: JSON.parse(String(error.stdout || '')) };
-  }
+  const result = runVisualQaRunner({ file:pptxPath, qualityMode:mode });
+  return { status: result.success ? 0 : 1, result };
 }
 
 function assertSeverityMatrix() {
@@ -119,7 +116,16 @@ function assertSeverityMatrix() {
   assert.equal(policyRow('skippedCriticalAsset').formal, 'fail');
   assert.equal(policyRow('textShrinkRisk').category, 'shrink_risk');
   assert.equal(policyRow('possiblyBlankPreview').delivery, 'fail');
+  assert.equal(policyRow('chainStageNeutral').formal, 'fail');
+  assert.equal(policyRow('captionCoverageLow').formal, 'review');
+  assert.equal(policyRow('componentHintEvidenceMissing').formal, 'fail');
+  assert.equal(policyRow('sourceCoverageLow').delivery, 'fail');
+  assert.equal(policyRow('prototypeEvidenceMissing').draft, 'review');
+  assert.equal(policyRow('healthcareHandoffEvidenceMissing').formal, 'fail');
   assert.ok(severityPromotionsForMode('formal').skippedCriticalAsset);
+  assert.ok(severityPromotionsForMode('formal').componentHintEvidenceMissing);
+  assert.ok(severityPromotionsForMode('formal').prototypeEvidenceMissing);
+  assert.ok(severityPromotionsForMode('delivery').sourceCoverageLow);
   assert.ok(severityPromotionsForMode('delivery').possiblyBlankPreview);
 
   const findings = [
@@ -127,12 +133,19 @@ function assertSeverityMatrix() {
     { level:'review', type:'skippedCriticalAsset', message:'skip' },
     { level:'review', type:'textShrinkRisk', message:'shrink' },
     { level:'review', type:'possiblyBlankPreview', message:'blank' },
+    { level:'review', type:'chainStageNeutral', message:'neutral' },
+    { level:'review', type:'captionCoverageLow', message:'caption' },
+    { level:'review', type:'componentHintEvidenceMissing', message:'hint' },
+    { level:'review', type:'sourceCoverageLow', message:'source' },
+    { level:'review', type:'prototypeEvidenceMissing', message:'prototype' },
+    { level:'review', type:'healthcareHandoffEvidenceMissing', message:'handoff' },
     { level:'fail', type:'unknownComponentId', message:'unknown' },
     { level:'fail', type:'baselineHashDistance', message:'baseline' }
   ];
   const draft = applyQualitySeverityPolicy(findings, 'draft');
   assert.equal(draft.findings.find(f => f.type === 'fallbackRendererUsed').level, 'review');
   assert.equal(draft.findings.find(f => f.type === 'skippedCriticalAsset').level, 'review');
+  assert.equal(draft.findings.find(f => f.type === 'prototypeEvidenceMissing').level, 'review');
   assert.equal(draft.findings.find(f => f.type === 'unknownComponentId').level, 'fail');
   assert.equal(draft.policy.summary.byCategory.fallback.review, 1);
 
@@ -143,6 +156,12 @@ function assertSeverityMatrix() {
   assert.equal(formalFallback.fatalBecauseOfQualityMode, 'formal');
   assert.equal(formal.findings.find(f => f.type === 'textShrinkRisk').level, 'fail');
   assert.equal(formal.findings.find(f => f.type === 'possiblyBlankPreview').level, 'review');
+  assert.equal(formal.findings.find(f => f.type === 'chainStageNeutral').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'captionCoverageLow').level, 'review');
+  assert.equal(formal.findings.find(f => f.type === 'componentHintEvidenceMissing').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'sourceCoverageLow').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'prototypeEvidenceMissing').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'healthcareHandoffEvidenceMissing').level, 'fail');
   assert.ok(formal.policy.promotedTypes.includes('fallbackRendererUsed'));
   assert.ok(formal.policy.categories.includes('stale_metadata'));
 

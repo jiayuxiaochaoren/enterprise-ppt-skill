@@ -61,6 +61,9 @@ const {
   createOverlayNativeEvidence
 } = require('./render/overlay-native-evidence');
 const {
+  renderProofGallery
+} = require('./components/proof-gallery');
+const {
   createEnergyIndustryRenderers
 } = require('./render/industry/energy');
 const {
@@ -252,6 +255,7 @@ const overlayRendererDeps = {
   recordChartConsumption: (slide, spec, component, meta) => { slide.__chartRecorded = { spec, component, meta }; },
   renderChartSpec: (ctx, spec, box) => ({ rendered:true, bbox:box, rendererModule:'fixture/chart', componentId:'bar-chart' }),
   renderProofGallery: (ctx, items, opts) => ({ rendered:Boolean(items.length), bbox:opts, itemCount:items.length }),
+  renderProductMatrix: (ctx, items, opts) => ({ rendered:Boolean(items.length), bbox:opts.bbox, itemCount:items.length, drawnCount:items.length, rendererModule:'components/product-matrix' }),
   renderRiskRegister: (ctx, rows, opts) => ({ rendered:Boolean(rows.length), bbox:opts, rowCount:rows.length }),
   renderValueChain: (ctx, points, opts) => ({ rendered:Boolean(points.length), bbox:opts, itemCount:points.length }),
   routeChartSpec: () => ({ kind:'bar', values:[1, 2] }),
@@ -268,6 +272,54 @@ assert.equal(overlayRenderer.componentSourceNoteText({}, { source_note:'Source A
 assert.equal(overlayRenderer.overlayMetricsForSlide({}, { title:'Revenue +12% YoY' })[0].value, '+12%');
 assert.deepEqual(overlayRenderer.overlayPointsForSlide({ phases:[{ title:'A' }, { title:'B' }] }).map(item => item.title), ['A', 'B']);
 assert.equal(overlayRenderer.overlayProofItemsForSlide({}, { rows:[['Risk', 'Action']] })[0].body, 'Action');
+assert.deepEqual(overlayRenderer.overlayProductItemsForSlide({}, {
+  products:[{ name:'Serum', scene:'Counter', efficacy:'Hydration', businessMeaning:'Repeat purchase' }]
+})[0], {
+  product:'Serum',
+  scene:'Counter',
+  benefit:'Hydration',
+  businessMeaning:'Repeat purchase'
+});
+const proofGalleryOps = [];
+const proofGalleryStory = renderProofGallery({
+  slide:{},
+  colors:{
+    accent:'0066FF',
+    body:'222222',
+    captionOnImage:'FFFFFF',
+    cyan:'00FFFF',
+    darkLine:'334155',
+    darkMuted:'94A3B8',
+    ink:'0F172A',
+    ink2:'111827',
+    line:'CBD5E1',
+    text:'111111',
+    violet:'7C3AED'
+  },
+  addLabel:(...args) => proofGalleryOps.push(['label', args]),
+  addRect:(...args) => proofGalleryOps.push(['rect', args]),
+  addSmartPhotoPanel:(...args) => proofGalleryOps.push(['photo', args]),
+  addText:(...args) => proofGalleryOps.push(['text', args]),
+  compactText:(text, maxChars) => String(text || '').slice(0, maxChars),
+  panelFill:() => 'F8FAFC'
+}, [
+  { title:'Main proof', body:'Source-bound evidence' },
+  { title:'Second proof', body:'Business evidence' }
+], {
+  x:1,
+  y:2,
+  w:5,
+  h:1.6,
+  images:['/tmp/fixture-image.png'],
+  caption:'Caption A',
+  sourceNote:'Source A'
+});
+assert.equal(proofGalleryStory.rendered, true);
+assert.equal(proofGalleryStory.rendererMethod, 'story');
+assert.equal(proofGalleryStory.imageCount, 1);
+assert.ok(proofGalleryOps.some(op => op[0] === 'photo'));
+assert.ok(proofGalleryOps.some(op => op[0] === 'label' && op[1][1] === 'CAPTION'));
+assert.ok(proofGalleryOps.some(op => op[0] === 'text' && op[1][1] === 'Caption A'));
 const blockedOverlay = overlayRenderer.renderOverlayComponent({}, {}, {}, 1, 'proof-gallery', new Set(), { ownedComponents:[], safeOverlayZones:{}, occupiedZones:[] }, []);
 assert.equal(blockedOverlay.mode, 'blocked-unsafe-overlay');
 const kpiOverlay = overlayRenderer.renderOverlayComponent({}, {}, { metrics:[{ label:'ARR', value:'42%' }] }, 1, 'kpi-strip', new Set(), {
@@ -278,11 +330,35 @@ const kpiOverlay = overlayRenderer.renderOverlayComponent({}, {}, { metrics:[{ l
 assert.equal(kpiOverlay.rendered, true);
 assert.equal(kpiOverlay.mode, 'overlay');
 assert.equal(kpiOverlay.itemCount, 1);
+const proofGalleryOverlay = overlayRenderer.renderOverlayComponent({}, {}, {
+  visual:{ image:'/tmp/fixture-image.png', caption:'Caption A' },
+  cards:[{ title:'Proof A', body:'Evidence body' }]
+}, 1, 'proof-gallery', new Set(), {
+  ownedComponents:[],
+  occupiedZones:[],
+  safeOverlayZones:{ 'proof-gallery':{ id:'proof-gallery-story', x:1, y:2, w:5, h:1.6, role:'safe-overlay' } }
+}, []);
+assert.equal(proofGalleryOverlay.rendered, true);
+assert.equal(proofGalleryOverlay.mode, 'overlay');
+assert.equal(proofGalleryOverlay.itemCount, 1);
+assert.equal(proofGalleryOverlay.bbox.images[0], '/tmp/fixture-image.png');
+assert.equal(proofGalleryOverlay.bbox.caption, 'Caption A');
+const productMatrixOverlay = overlayRenderer.renderOverlayComponent({}, {}, {
+  products:[{ name:'Serum', scene:'Counter', efficacy:'Hydration', businessMeaning:'Repeat purchase' }]
+}, 1, 'product-matrix', new Set(), {
+  ownedComponents:[],
+  occupiedZones:[],
+  safeOverlayZones:{ 'product-matrix':{ id:'product-matrix-board', x:1, y:2, w:5, h:1.4, role:'safe-overlay' } }
+}, []);
+assert.equal(productMatrixOverlay.rendered, true);
+assert.equal(productMatrixOverlay.mode, 'overlay');
+assert.equal(productMatrixOverlay.itemCount, 1);
 const directOverlayComponentRenderer = createOverlayComponentRenderer(Object.assign({}, overlayRendererDeps, {
   nativeRendererModule: 'fixture/native',
   componentSourceNoteText: overlayRenderer.componentSourceNoteText,
   overlayMetricsForSlide: overlayRenderer.overlayMetricsForSlide,
   overlayPointsForSlide: overlayRenderer.overlayPointsForSlide,
+  overlayProductItemsForSlide: overlayRenderer.overlayProductItemsForSlide,
   overlayProofItemsForSlide: overlayRenderer.overlayProofItemsForSlide,
   guardOverlayRender: overlayGuardHelpers.guardOverlayRender,
   nativeDrawnEvidenceFor: overlayRenderer.nativeDrawnEvidenceFor

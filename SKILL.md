@@ -24,6 +24,8 @@ Core output expectations:
 
 - Build a business claim spine before designing pages.
 - Give every slide one clear claim and one proof object.
+- Treat industry expression as an evidence chain plus visual grammar plus proof components, not as a generic template skin.
+- For industry-specific decks, verify `industry_evidence_chain_qa` in visual QA when a deck plan is available; do not treat component plans as enough without render-meta consumption evidence.
 - Use deterministic scripts for deck plans, rendering, validation, and QA.
 - Keep visible PPT copy free of internal scaffolding and production notes.
 - Do not invent facts, customers, metrics, policies, awards, dates, images, or authorizations.
@@ -209,6 +211,8 @@ Use `npm run preview:doctor` to inspect local preview provider capability.
 Structure:
 
 - Audience, goal, industry, and source facts are clear.
+- Industry-specific decks follow the right evidence chain: claim, promise, and proof should use that industry's credible logic instead of defaulting to consumer-brand expression.
+- Industry evidence components are actually consumed by the renderer with visible bbox and drawnCount/itemCount evidence.
 - Page titles are claims.
 - The deck has 4-6 coherent sections.
 - No fabricated facts.
