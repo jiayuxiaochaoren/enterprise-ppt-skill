@@ -197,21 +197,21 @@ Each component must have fixtures and visual proof in at least two different pag
 
 - [x] KPI primary metric component: supports hero KPI, compact metric strip, comparison metric.
 - [x] Chart commentary component: supports side commentary, bottom insight bar, and callout marker.
-- [x] Caption image evidence component: supports dark caption bar, light caption bar, source note.
+- [x] Caption image evidence component: supports dark caption bar, light caption bar, opt-in source note.
 - [x] Product/case proof gallery: supports hero-plus-supporting, 3-column proof grid, contact-sheet gallery.
 - [x] Value creation flow: supports input-output, value chain, process loop.
 - [x] Risk matrix: supports 2x2 matrix, risk queue, control stack.
 - [x] Governance table: supports owner/cadence/evidence/decision columns.
 - [x] People/team evidence wall: supports role captions and scene-output captions.
 - [x] Brand world hero: supports image-led brand proof and business proof side panel.
-- [x] Chrome components: industry label, source note, page number, chapter rail, dark sidebar.
+- [x] Chrome components: industry label, opt-in source note, page number, chapter rail, dark sidebar.
 
 Component QA:
 
 - [x] Add `componentFixtureQA`.
 - [x] Add checks for text overflow in fixed component slots.
 - [x] Add checks for image/caption pairing.
-- [x] Add checks for source-note visibility on data-heavy slides.
+- [x] Add checks that source evidence stays internal by default and source-note visibility remains opt-in.
 
 ## Phase 3: Industry Pack Vertical Acceptance
 

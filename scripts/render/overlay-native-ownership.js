@@ -5,7 +5,7 @@ const NATIVE_VARIANT_COMPONENTS = {
   'chart-grid-with-commentary': ['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'scorecard'],
   'consumer-proof-photo-grid': ['proof-gallery', 'proof-gallery-grid', 'caption-bar', 'hero-image'],
   'control-stack': ['risk-register', 'governance-table', 'process-rail'],
-  'executive-proof-board': ['proof-gallery', 'proof-gallery-grid', 'caption-bar', 'source-note'],
+  'executive-proof-board': ['proof-gallery', 'proof-gallery-grid', 'caption-bar'],
   'financial-kpi-snapshot': ['kpi-strip', 'metric-strip', 'kpi-primary-metric', 'chart-commentary-panel'],
   'governance-table-editorial': ['risk-register', 'governance-table'],
   'guidance-and-risk-board': ['risk-register', 'governance-table', 'kpi-strip'],
@@ -19,7 +19,7 @@ const NATIVE_VARIANT_COMPONENTS = {
   'product-evidence-story': ['proof-gallery', 'caption-bar', 'hero-image', 'product-matrix'],
   'quarterly-results-summary': ['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'scorecard'],
   'single-object-concept-map': ['hero-image', 'value-chain', 'commentary-panel'],
-  'sustainability-proof-spread': ['proof-gallery', 'caption-bar', 'source-note'],
+  'sustainability-proof-spread': ['proof-gallery', 'caption-bar'],
   'value-creation-process-map': ['value-chain', 'value-chain-connector', 'system-rail', 'commentary-panel'],
   'value-principle-cards': ['content-card-grid', 'commentary-panel']
 };
@@ -65,10 +65,10 @@ function plannedComponentIdsForSlide(s = {}) {
 function nativeOwnedComponentIdsFor(type = '', variant = '') {
   const ids = new Set();
   (NATIVE_VARIANT_COMPONENTS[variant] || []).forEach(id => ids.add(id));
-  if (type === 'cover' || type === 'cover-dark') ['caption-bar', 'proof-gallery', 'product-matrix', 'source-note', 'value-chain'].forEach(id => ids.add(id));
-  if (type === 'chapter-divider') ['process-rail', 'value-chain', 'system-rail', 'caption-bar', 'source-note'].forEach(id => ids.add(id));
-  if (type === 'timeline' || type === 'timeline-dark') ['value-chain', 'system-rail', 'product-matrix', 'proof-gallery', 'caption-bar', 'source-note'].forEach(id => ids.add(id));
-  if (type === 'closing' || type === 'closing-dark') ['value-chain', 'system-rail', 'process-rail', 'product-matrix', 'proof-gallery', 'caption-bar', 'source-note'].forEach(id => ids.add(id));
+  if (type === 'cover' || type === 'cover-dark') ['caption-bar', 'proof-gallery', 'product-matrix', 'value-chain'].forEach(id => ids.add(id));
+  if (type === 'chapter-divider') ['process-rail', 'value-chain', 'system-rail', 'caption-bar'].forEach(id => ids.add(id));
+  if (type === 'timeline' || type === 'timeline-dark') ['value-chain', 'system-rail', 'product-matrix', 'proof-gallery', 'caption-bar'].forEach(id => ids.add(id));
+  if (type === 'closing' || type === 'closing-dark') ['value-chain', 'system-rail', 'process-rail', 'product-matrix', 'proof-gallery', 'caption-bar'].forEach(id => ids.add(id));
   return ids;
 }
 
@@ -130,7 +130,7 @@ function createNativeComponentIdHelpers({
       ['value-chain', 'value-chain-connector', 'business-proof-rail', 'commentary-panel', 'system-rail', 'brand-world-hero'].forEach(id => ids.add(id));
     }
     if (type === 'architecture' || type === 'architecture-dark') {
-      ['system-rail', 'capability-layer-stack', 'commentary-panel'].forEach(id => ids.add(id));
+      ['system-rail', 'capability-layer-stack', 'commentary-panel', 'caption-bar'].forEach(id => ids.add(id));
     }
     if (type === 'timeline' || type === 'timeline-dark') {
       ['process-rail', 'campaign-to-member-rail', 'launch-rhythm-strip'].forEach(id => ids.add(id));
@@ -144,7 +144,7 @@ function createNativeComponentIdHelpers({
       if (/risk-matrix|materiality-matrix/.test(variant) || s.matrix) ids.add('risk-matrix');
     }
     if (type === 'report-board') {
-      ['proof-board', 'commentary-panel', 'source-note'].forEach(id => ids.add(id));
+      ['proof-board', 'commentary-panel'].forEach(id => ids.add(id));
     }
     if (type === 'closing') {
       ['decision-panel', 'contact-block', 'editorial-end-card'].forEach(id => ids.add(id));

@@ -94,6 +94,7 @@ function createPlanningNormalizationRuntime(deps = {}) {
     recipeCompatibleWithSlideType,
     recommendSlideType,
     routeChartSpec,
+    semanticFrame,
     selectPaletteName,
     selectReferenceRecipe,
     slideDesign,

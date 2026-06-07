@@ -29,6 +29,10 @@ function primaryProofEligibility(decision = {}) {
   return decision.proofEligibility || decision.proofEligibilitySummary || 'unknown';
 }
 
+function authorizationStatusBucket(decision = {}) {
+  return decision.authorizationStatusNormalized || decision.authorizationStatus || 'none';
+}
+
 function assetDecisionSummary(renderMeta = {}) {
   const slides = Array.isArray(renderMeta.slides) ? renderMeta.slides : [];
   const summary = {
@@ -54,7 +58,7 @@ function assetDecisionSummary(renderMeta = {}) {
     const proofDetails = proofDetailValues(decision);
     summary.boundAssetCount += safeCount(decision.boundAssetCount);
     addCount(summary.byAction, decision.action || decision.status || 'unknown');
-    addCount(summary.byAuthorizationStatus, decision.authorizationStatus || 'none');
+    addCount(summary.byAuthorizationStatus, authorizationStatusBucket(decision));
     addCount(summary.byRiskLevel, decision.riskLevel || 'unknown');
     addCount(summary.byProvenanceClass, decision.provenanceClass || 'unknown');
     provenanceDetails.forEach(value => addCount(summary.byProvenanceClassDetail, value));

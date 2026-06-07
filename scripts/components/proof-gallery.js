@@ -10,7 +10,12 @@ function bodyOf(item, fallback = '') {
 
 function captionOf(item, fallback = '') {
   if (typeof item === 'string') return fallback;
-  return item.caption || item.source || item.sourceNote || item.source_note || fallback;
+  return item.caption || fallback;
+}
+
+function sourceOf(item, fallback = '') {
+  if (typeof item === 'string') return fallback;
+  return item.source || item.sourceNote || item.source_note || fallback;
 }
 
 function compact(ctx, text = '', maxChars = 32) {
@@ -28,7 +33,8 @@ function renderProofGallery(ctx, items = [], opts = {}) {
   const w = opts.w == null ? 3.72 : opts.w;
   const h = opts.h == null ? 0.74 : opts.h;
   const images = (Array.isArray(opts.images) ? opts.images : []).filter(Boolean);
-  const sourceText = compact(ctx, opts.sourceNote || opts.source || captionOf(list[0], ''), 52);
+  const showSourceNote = Boolean(opts.showSourceNote || opts.visibleSourceNotes);
+  const sourceText = showSourceNote ? compact(ctx, opts.sourceNote || opts.source || sourceOf(list[0], ''), 52) : '';
   const captionText = compact(ctx, opts.caption || opts.explanation || bodyOf(list[0], ''), 74);
   const labelPrefix = opts.labelPrefix || 'PROOF';
 

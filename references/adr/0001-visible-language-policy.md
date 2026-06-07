@@ -24,7 +24,7 @@ This includes:
 - section kickers;
 - agenda and table-of-contents labels;
 - renderer fallback copy;
-- captions and source-note labels;
+- captions and opt-in source-note labels;
 - component labels;
 - closing labels;
 - industry profile labels.

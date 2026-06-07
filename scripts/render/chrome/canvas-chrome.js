@@ -58,14 +58,28 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
       charSpace:opts.charSpace == null ? 1.0 : opts.charSpace
     });
   }
-  function SourceNote(slide, text, x = 0.82, y = 7.05, opts = {}) {
+  function FooterNote(slide, text, x = 0.82, y = 7.05, opts = {}) {
     h.addText(slide, text || h.footerText(activePlan()), {
       x, y, w:opts.w || 7.8, h:opts.h || 0.18,
       fontSize:opts.fontSize || 8.8,
       lockFontSize:true,
-      color:opts.dark ? (C.darkMuted || '94A3B8') : C.muted,
+      color:opts.color || (opts.dark ? (C.darkMuted || '94A3B8') : C.muted),
       fit:'shrink'
     });
+  }
+  function DeckFooter(slide, text, x = 0.82, y = 7.05, opts = {}) {
+    return FooterNote(slide, text, x, y, opts);
+  }
+  function SourceNote(slide, text, x = 0.82, y = 7.05, opts = {}) {
+    if (!text) return false;
+    h.addText(slide, text, {
+      x, y, w:opts.w || 7.8, h:opts.h || 0.18,
+      fontSize:opts.fontSize || 8.8,
+      lockFontSize:true,
+      color:opts.color || (opts.dark ? (C.darkMuted || '94A3B8') : C.muted),
+      fit:'shrink'
+    });
+    return true;
   }
   function componentRendererContext(slide) {
     return {
@@ -191,7 +205,7 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
     if (title) h.addText(slide, title, { x:0.78, y:0.74, w:8.8, h:0.42, fontSize:h.typeSize('pageTitle', 23), bold:true, color:C.white });
     if (subtitle) h.addText(slide, subtitle, { x:0.80, y:1.22, w:8.8, h:0.28, fontSize:13.5, color:'CBD5E1' });
     if (idx) h.addText(slide, String(idx).padStart(2, '0'), { x:11.75, y:0.76, w:0.7, h:0.24, fontSize:13, bold:true, color:'CBD5E1', align:'right' });
-    h.addText(slide, h.footerText(plan), { x:0.78, y:7.05, w:7.5, h:0.16, fontSize:h.typeSize('caption', 8.5), color:'94A3B8' });
+    FooterNote(slide, h.footerText(plan), 0.78, 7.05, { w:7.5, h:0.16, fontSize:h.typeSize('caption', 8.5), color:'94A3B8' });
   }
   function masterLight(slide, plan, title, idx, subtitle = '') {
     lightCanvas(slide);
@@ -199,11 +213,13 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
     h.addText(slide, title || '', { x:0.82, y:0.66, w:8.95, h:0.38, fontSize:h.typeSize('pageTitle', 22.5), bold:true, color:C.text });
     if (subtitle) h.addText(slide, subtitle, { x:0.84, y:1.08, w:8.8, h:0.22, fontSize:10.8, color:C.muted });
     PageNumber(slide, idx);
-    SourceNote(slide, h.footerText(plan));
+    FooterNote(slide, h.footerText(plan));
   }
 
   return {
     ContactBlock,
+    DeckFooter,
+    FooterNote,
     MetricStrip,
     PageNumber,
     ProcessRail,

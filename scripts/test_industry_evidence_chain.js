@@ -10,6 +10,22 @@ const {
   auditIndustryEvidenceChain
 } = require('./qa/industry-evidence-chain-audit');
 const {
+  canonicalIndustryEvidenceChainForSlide,
+  chainsShareIdentity
+} = require('./design/industry-evidence-chain');
+const {
+  hasAssetProvenanceSignal,
+  hasStructuredSourceTraceSignal,
+  hasSourceTraceRefs,
+  hasTextSourceTraceSignal,
+  hasVisibleSourceNote,
+  sourceEntryIds,
+  sourceIdentityValues,
+  sourceTraceForSlide,
+  sourceTraceNoteText,
+  sourceTraceObjectIsExplainable
+} = require('./design/source-evidence');
+const {
   applyQualitySeverityPolicy
 } = require('./qa/quality-severity-policy');
 const {
@@ -18,6 +34,16 @@ const {
 
 const ROOT = path.resolve(__dirname, '..');
 const fixture = JSON.parse(fs.readFileSync(path.join(ROOT, 'examples', 'industry-evidence-chain', 'regression.json'), 'utf8'));
+
+const normalizedSamplePlan = normalizeDeckPlan(JSON.parse(fs.readFileSync(path.join(ROOT, 'examples', 'sample-deck-plan.json'), 'utf8')));
+normalizedSamplePlan.slides.forEach((slide, index) => {
+  const planned = slide.componentPlan && slide.componentPlan.industryEvidenceChain;
+  const canonical = canonicalIndustryEvidenceChainForSlide(normalizedSamplePlan, slide);
+  assert.ok(
+    chainsShareIdentity(planned, canonical),
+    `slide ${index + 1} componentPlan chain should match canonical chain after narrative proofObject inference`
+  );
+});
 
 const claimSlideWithModelPlan = slideFromClaim({
   claim:'模型给了旧组件计划',
@@ -34,6 +60,207 @@ const claimSlideWithModelPlan = slideFromClaim({
 assert.equal(claimSlideWithModelPlan.componentPlan, undefined);
 assert.ok(claimSlideWithModelPlan.previousComponentPlan);
 assert.equal(claimSlideWithModelPlan.componentHints, undefined);
+assert.deepEqual(
+  sourceTraceForSlide({ sourceTrace:{ sourceIds:'src-abc' } }).sourceIds,
+  ['src-abc'],
+  'source evidence should preserve scalar sourceIds instead of splitting into characters'
+);
+const nestedSnakeCaseTrace = sourceTraceForSlide({
+  source_trace:{
+    source_ids:'src-slide-snake',
+    sources:[{ id:'src-slide-snake', page:2, excerpt:'slide snake excerpt' }],
+    source_note:'Slide snake trace note',
+    image_provenance:[{ ref:'slide-snake-image', authorization_status:'cleared' }],
+    asset_authorization_status:'cleared'
+  },
+  proof:{
+    source_note:'Proof snake source note',
+    source_trace:{
+      source_ids:'src-proof-snake',
+      sources:[{ id:'src-proof-snake', page:1, excerpt:'proof snake excerpt' }]
+    }
+  },
+  chart_spec:{
+    source_trace:{
+      source_ids:'src-chart-snake',
+      sources:[{ id:'src-chart-snake', page:3, excerpt:'chart snake excerpt' }]
+    }
+  }
+});
+assert.deepEqual(
+  nestedSnakeCaseTrace.sourceIds,
+  ['src-proof-snake', 'src-slide-snake', 'src-chart-snake'],
+  'canonical source trace should merge nested source_trace containers'
+);
+assert.equal(
+  sourceTraceObjectIsExplainable(nestedSnakeCaseTrace, { requireSourceId:true }),
+  true,
+  'nested source_trace containers should remain explainable when ids match page/excerpt sources'
+);
+assert.equal(nestedSnakeCaseTrace.sourceNote, 'Slide snake trace note');
+assert.equal(nestedSnakeCaseTrace.imageProvenance[0].ref, 'slide-snake-image');
+assert.equal(
+  sourceTraceNoteText({ proof:{ source_note:'Proof snake source note' } }),
+  'Proof snake source note',
+  'proof.source_note should remain available for opt-in visible source notes'
+);
+assert.equal(
+  sourceTraceNoteText({ source_trace:{ source_note:'Trace snake note' } }),
+  'Trace snake note',
+  'source_trace.source_note should remain available for opt-in visible source notes'
+);
+assert.equal(
+  hasSourceTraceRefs({ sourceTrace:{ sourceNote:'Display source note only' } }),
+  false,
+  'source trace refs should represent structured trace, not visible source note text'
+);
+assert.equal(
+  hasStructuredSourceTraceSignal({ sourceTrace:{ sourceIds:['src-abc'] } }),
+  true,
+  'structured source trace signal should remain available under the clearer helper name'
+);
+assert.equal(
+  hasTextSourceTraceSignal({ sourceTrace:{ sourceIds:['src-abc'] } }),
+  true,
+  'text source trace signal should detect source ids'
+);
+assert.equal(
+  hasTextSourceTraceSignal({ sourceTrace:{ imageProvenance:[{ id:'img-a' }], assetAuthorizationStatus:'blocked' } }),
+  false,
+  'text source trace signal should not be satisfied by image provenance or authorization metadata'
+);
+assert.equal(
+  hasAssetProvenanceSignal({ sourceTrace:{ imageProvenance:[{ id:'img-a' }] } }),
+  true,
+  'asset provenance signal should detect image provenance'
+);
+assert.equal(
+  hasAssetProvenanceSignal({ sourceTrace:{ assetAuthorizationStatus:'unknown' } }),
+  true,
+  'asset provenance signal should detect authorization status'
+);
+assert.equal(
+  hasAssetProvenanceSignal({ sourceTrace:{ assetAuthorizationStatus:'none' } }),
+  false,
+  'asset provenance signal should not treat none as meaningful authorization provenance'
+);
+assert.equal(
+  hasSourceTraceRefs({ sourceTrace:{ assetAuthorizationStatus:'none' } }),
+  false,
+  'legacy hasSourceTraceRefs alias should not treat none as structured source trace'
+);
+assert.equal(
+  hasVisibleSourceNote({ sourceNote:'Display source note only' }),
+  true,
+  'visible source note compatibility should remain separate from structured source trace refs'
+);
+assert.deepEqual(
+  sourceEntryIds({ ref:'doc-ref', file:'doc.pdf', assetId:'asset-a', asset_id:'asset-b' }),
+  ['doc-ref', 'doc.pdf', 'asset-a', 'asset-b'],
+  'source entry ids should include ref/file/assetId aliases'
+);
+assert.deepEqual(
+  sourceEntryIds({ name:'human readable label' }),
+  [],
+  'source entry ids should not treat name as a stable identity'
+);
+assert.deepEqual(
+  sourceIdentityValues({ sourceId:'src-id', ref:'doc-ref', file:'doc.pdf', asset_id:'asset-b', name:'ignored' }),
+  ['src-id', 'doc-ref', 'doc.pdf', 'asset-b'],
+  'canonical source identity values should use only stable identity aliases'
+);
+assert.equal(
+  sourceTraceObjectIsExplainable({
+    sourceIds:['doc-ref'],
+    sources:[{ ref:'doc-ref', page:3, excerpt:'Document excerpt.' }]
+  }, { requireSourceId:true }),
+  true,
+  'source trace explainability should match sourceIds to ref aliases with page/excerpt evidence'
+);
+assert.equal(
+  sourceTraceObjectIsExplainable({
+    sourceIds:['src-a'],
+    sources:[{ id:'src-a', sourcePage:'p5', excerpt:'Document excerpt.' }]
+  }, { requireSourceId:true }),
+  true,
+  'source trace explainability should accept sourcePage as structured page evidence'
+);
+const visibleChartSourceWithoutSourceId = {
+  sources:[{ ref:'chart-doc', page:7, excerpt:'Chart source excerpt.' }]
+};
+assert.ok(
+  /^Source chart-doc/.test(sourceTraceNoteText({ sourceTrace:visibleChartSourceWithoutSourceId })),
+  'source trace note fallback can show opt-in chart source text from ref/page/excerpt'
+);
+assert.equal(
+  sourceTraceObjectIsExplainable(visibleChartSourceWithoutSourceId, { requireSourceId:true }),
+  false,
+  'chart QA can remain stricter than visible source notes when sourceIds are absent'
+);
+assert.ok(
+  /^Source doc-ref/.test(sourceTraceNoteText({
+    sourceTrace:{ sources:[{ ref:'doc-ref', page:3, excerpt:'Document excerpt.' }] }
+  })),
+  'source trace note fallback should support ref aliases when visible notes are explicitly requested'
+);
+assert.ok(
+  /^Source brief.pdf/.test(sourceTraceNoteText({
+    sourceTrace:{ sources:[{ file:'brief.pdf', page:4, excerpt:'File excerpt.' }] }
+  })),
+  'source trace note fallback should support file aliases when visible notes are explicitly requested'
+);
+assert.ok(
+  /^Source asset-a/.test(sourceTraceNoteText({
+    sourceTrace:{ sources:[{ assetId:'asset-a', page:5, excerpt:'Asset excerpt.' }] }
+  })),
+  'source trace note fallback should support assetId aliases when visible notes are explicitly requested'
+);
+assert.equal(
+  sourceTraceNoteText({
+    sourceTrace:{ sourceIds:['src-a'], sources:[{ name:'src-a', page:3, excerpt:'Name-only source excerpt.' }] }
+  }),
+  '',
+  'source trace note fallback should not imply sourceIds match name-only entries'
+);
+const canonicalMergedTrace = sourceTraceForSlide({
+  source_ids:'src-slide-top',
+  image_provenance:[{ ref:'slide-top-image', authorizationStatus:'licensed' }],
+  asset_authorization_statuses:['needs-review'],
+  sourceTrace:{
+    source_ids:'src-slide',
+    sources:[{ id:'src-slide', page:'2', excerpt:'slide excerpt' }],
+    imageProvenance:[{ ref:'slide-image', authorizationStatus:'cleared' }],
+    assetAuthorizationStatus:'cleared'
+  },
+  proof:{
+    sourceIds:'src-proof-top',
+    imageProvenance:[{ ref:'proof-top-image', authorizationStatus:'internal-only' }],
+    assetAuthorizationStatuses:['internal-only'],
+    sources:[{ id:'src-proof-top', page:'1', excerpt:'proof top excerpt' }],
+    sourceTrace:{
+      sourceIds:'src-proof',
+      sources:[{ id:'src-proof', page:'1', excerpt:'proof excerpt' }],
+      imageProvenance:[{ ref:'proof-image', authorizationStatus:'cleared' }],
+      assetAuthorizationStatus:'cleared'
+    }
+  }
+});
+assert.deepEqual(
+  canonicalMergedTrace.sourceIds,
+  ['src-proof-top', 'src-proof', 'src-slide', 'src-slide-top'],
+  'canonical source trace should merge scalar and alias source ids from proof and slide'
+);
+assert.deepEqual(
+  canonicalMergedTrace.sources.map(source => source.id),
+  ['src-proof-top', 'src-proof', 'src-slide', 'src-slide-top'],
+  'canonical source trace should preserve top-level, proof, and slide source entries'
+);
+assert.deepEqual(
+  canonicalMergedTrace.imageProvenance.map(item => item.ref),
+  ['proof-top-image', 'proof-image', 'slide-image', 'slide-top-image'],
+  'canonical source trace should merge top-level and sourceTrace image provenance from proof and slide'
+);
+assert.equal(canonicalMergedTrace.assetAuthorizationStatus, 'needs-review');
 
 const claimSlideWithModelHints = slideFromClaim({
   claim:'模型给出组件建议',
@@ -160,12 +387,12 @@ const expectedStagesBySample = {
 const expectedComponentsBySample = {
   'manufacturing-oee-evidence-chain': ['equipment-nameplate', 'inspection-matrix', 'quality-scorecard', 'kpi-strip', 'value-chain'],
   'beauty-brand-product-user-evidence-chain': ['hero-image', 'product-matrix', 'proof-gallery', 'caption-bar', 'kpi-strip'],
-  'finance-thesis-portfolio-risk-evidence-chain': ['value-chain', 'governance-table', 'risk-register', 'source-note', 'disclosure-footnote', 'kpi-strip'],
+  'finance-thesis-portfolio-risk-evidence-chain': ['value-chain', 'governance-table', 'risk-register', 'disclosure-footnote', 'kpi-strip'],
   'healthcare-service-handoff-quality-evidence-chain': ['patient-journey-band', 'service-blueprint-lane', 'quality-scorecard', 'risk-register'],
   'saas-platform-workflow-adoption-evidence-chain': ['workflow-rail', 'prototype-frame', 'adoption-funnel', 'permission-audit-tag', 'kpi-strip'],
   'lifestyle-experience-journey-retention-evidence-chain': ['hero-image', 'value-chain', 'proof-gallery', 'caption-bar', 'kpi-strip'],
-  'public-governance-resource-risk-evidence-chain': ['source-note', 'commentary-panel', 'value-chain', 'governance-table', 'kpi-strip', 'risk-register'],
-  'people-culture-behavior-growth-evidence-chain': ['value-chain', 'caption-bar', 'proof-gallery', 'kpi-strip', 'source-note']
+  'public-governance-resource-risk-evidence-chain': ['commentary-panel', 'value-chain', 'governance-table', 'kpi-strip', 'risk-register'],
+  'people-culture-behavior-growth-evidence-chain': ['value-chain', 'caption-bar', 'proof-gallery', 'kpi-strip']
 };
 
 assert.equal(fixture.version, 'industry-evidence-chain-fixtures/v1');
@@ -266,6 +493,111 @@ assert.ok(
   'QA should expose suppressed stale chain on normalized slides'
 );
 assert.equal(staleConsumerAudit.industry_evidence_chain_summary.conflictSummary.suppressedComponentPlanSlides, 1);
+
+const previousSameStageWrongComponents = normalizeSlide(
+  { industry:'manufacturing-operations' },
+  {
+    type:'industry-chart',
+    layoutVariant:'oee-board',
+    proofObject:'downtime-pareto',
+    title:'OEE 停机损失需要按设备和原因拆解',
+    metrics:[{ label:'OEE', value:'64%' }],
+    componentPlan:{
+      version:'component-plan/v1',
+      industryEvidenceChain:{
+        chainId:'industrial-manufacturing',
+        stageId:'operations-quality-evidence',
+        components:['hero-image', 'product-matrix'],
+        matchedFields:[],
+        matchedProofObjects:[],
+        matchedKeywords:[],
+        matchedRoutes:[],
+        evidenceReasons:[]
+      }
+    }
+  },
+  1,
+  3
+);
+const previousSameStageAudit = auditIndustryEvidenceChain(
+  { industry:'manufacturing-operations' },
+  { industry:'manufacturing-operations', slides:[previousSameStageWrongComponents] }
+);
+assert.ok(
+  previousSameStageAudit.findings.some(finding => finding.type === 'previousIndustryEvidenceChainComponentMismatch'),
+  'QA should flag same-stage previous chain component mismatches'
+);
+assert.equal(previousSameStageAudit.industry_evidence_chain_summary.conflictSummary.previousChainComponentMismatchSlides, 1);
+
+const suppressedGeneratedPromptPlan = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  slides:[{
+    type:'industry-chart',
+    proofObject:'downtime-pareto',
+    title:'OEE 停机损失',
+    claim:'OEE 停机损失需要按设备和原因拆解。',
+    metrics:[{ label:'OEE', value:'64%' }],
+    assetGeneration:{ status:'required', decisionSource:'asset-generation-policy/v1', reason:'old prompt decision' },
+    generatedAssetPrompt:'old consumer lookbook product hero image prompt'
+  }]
+});
+assert.equal(suppressedGeneratedPromptPlan.slides[0].generatedAssetPrompt, undefined);
+assert.equal(suppressedGeneratedPromptPlan.slides[0].previousGeneratedAssetPrompt, 'old consumer lookbook product hero image prompt');
+assert.equal(
+  auditIndustryEvidenceChain(suppressedGeneratedPromptPlan).industry_evidence_chain_summary.conflictSummary.suppressedGeneratedPromptSlides,
+  1,
+  'compact summary should expose suppressed generated prompt slides'
+);
+
+const rawAuditWithSuppressedInputChain = auditIndustryEvidenceChain({
+  industry:'manufacturing-operations',
+  slides:[{
+    type:'content',
+    title:'普通说明页',
+    claim:'没有足够工业证据字段',
+    componentPlan:{
+      version:'component-plan/v1',
+      industryEvidenceChain:{
+        chainId:'consumer-beauty',
+        stageId:'consumer-product-scene-proof',
+        components:['product-matrix'],
+        matchedFields:[],
+        matchedProofObjects:[],
+        matchedKeywords:[],
+        matchedRoutes:[],
+        evidenceReasons:[]
+      },
+      componentIds:['product-matrix'],
+      components:[{ id:'product-matrix', source:'component-hint', required:true }]
+    }
+  }]
+});
+assert.notEqual(rawAuditWithSuppressedInputChain.slides[0].chainId, 'consumer-beauty');
+assert.ok(
+  rawAuditWithSuppressedInputChain.findings.some(finding => finding.type === 'industryEvidenceChainInputSuppressed'),
+  'raw QA should suppress supplied chains instead of treating them as current chain'
+);
+
+const canonicalGrammarProbe = canonicalIndustryEvidenceChainForSlide(
+  { industry:'manufacturing-operations' },
+  {
+    type:'industry-chart',
+    proofObject:'downtime-pareto',
+    title:'OEE 停机损失',
+    metrics:[{ label:'OEE', value:'64%' }],
+    componentPlan:{
+      industryEvidenceChain:{
+        chainId:'industrial-manufacturing',
+        stageId:'operations-quality-evidence',
+        components:['quality-scorecard'],
+        matchedFields:['metrics'],
+        matchedProofObjects:['downtime-pareto'],
+        visualGrammar:{ source:'stale-consumer-grammar' }
+      }
+    }
+  }
+);
+assert.equal(canonicalGrammarProbe.visualGrammar, null, 'canonical chain should not inherit supplied visualGrammar');
 
 const sameSemanticConsumer = normalizeSlide(
   { industry:'beauty-consumer', title:'产品能力证据' },
@@ -504,6 +836,18 @@ assert.equal(
   'compact summary should expose chain mismatch finding count separately'
 );
 
+const malformedPreviousNormalized = normalizeDeckPlan(malformedStaleChain);
+const malformedPreviousReport = auditIndustryEvidenceChain(malformedStaleChain, malformedPreviousNormalized);
+assert.ok(
+  malformedPreviousReport.findings.some(finding => finding.type === 'previousIndustryEvidenceChainInvalid'),
+  'normalized QA should preserve malformed previous chain diagnostics'
+);
+assert.equal(
+  malformedPreviousReport.industry_evidence_chain_summary.conflictSummary.previousChainInvalidSlides,
+  1,
+  'compact summary should count malformed previous chain slides'
+);
+
 const missingSegment = normalizeDeckPlan({
   industry:'finance-investment',
   title:'缺段金融证据链',
@@ -568,34 +912,166 @@ assert.ok(
   'QA should flag finance source-note without source fields'
 );
 
+const financeSourceTraceOnly = normalizeDeckPlan({
+  industry:'finance-investment',
+  slides:[{
+    type:'finance-bridge',
+    proofObject:'return-bridge',
+    title:'组合估值与退出假设',
+    claim:'退出假设来自组合月报 sourceTrace。',
+    investmentThesis:'估值修复判断。',
+    bridge:[{ label:'基准估值', value:10 }, { label:'退出折价', value:-2 }],
+    sourceTrace:{
+      version:'source-trace/v2',
+      sourceIds:['src-finance-1'],
+      sources:[{ id:'src-finance-1', page:3, excerpt:'组合月报披露估值与退出假设。' }]
+    }
+  }]
+});
+const financeSourceTraceOnlyAudit = auditIndustryEvidenceChain(
+  { industry:'finance-investment' },
+  financeSourceTraceOnly
+);
+assert.ok(
+  !financeSourceTraceOnly.slides[0].componentPlan.componentIds.includes('source-note'),
+  'sourceTrace should remain internal and should not render source-note by default'
+);
+assert.ok(
+  financeSourceTraceOnly.slides[0].componentPlan.industryEvidenceChain.hasSourceEvidence,
+  'sourceTrace with page and excerpt should still satisfy internal source evidence'
+);
+assert.equal(
+  financeSourceTraceOnlyAudit.findings.some(finding => finding.type === 'sourceCoverageLow'),
+  false,
+  'sourceTrace-only slides should not be reported as missing all source/provenance'
+);
+assert.equal(
+  financeSourceTraceOnlyAudit.findings.some(finding => finding.type === 'visibleSourceNoteMissing'),
+  false,
+  'formal PPT QA should not require visible source-note text'
+);
+
+const financeSourceTraceNoteOnly = normalizeDeckPlan({
+  industry:'finance-investment',
+  slides:[{
+    type:'finance-bridge',
+    proofObject:'return-bridge',
+    title:'组合估值与退出假设',
+    investmentThesis:'估值修复判断。',
+    sourceTrace:{
+      version:'source-trace/v2',
+      sourceNote:'组合月报，2026-05。'
+    }
+  }]
+});
+const financeSourceTraceNoteOnlyAudit = auditIndustryEvidenceChain(
+  { industry:'finance-investment' },
+  financeSourceTraceNoteOnly
+);
+assert.equal(
+  financeSourceTraceNoteOnly.slides[0].componentPlan.industryEvidenceChain.hasSourceEvidence,
+  false,
+  'sourceTrace.sourceNote without page/excerpt should not satisfy internal source evidence'
+);
+assert.ok(
+  financeSourceTraceNoteOnlyAudit.findings.some(finding => finding.type === 'sourceCoverageLow'),
+  'sourceTrace.sourceNote without structured evidence should still be reviewed as low source coverage'
+);
+
+const financeVisibleSourceOptIn = normalizeDeckPlan({
+  industry:'finance-investment',
+  visibleSourceNotes:true,
+  slides:[{
+    type:'finance-bridge',
+    proofObject:'return-bridge',
+    title:'组合估值与退出假设',
+    investmentThesis:'估值修复判断。',
+    sourceTrace:{
+      version:'source-trace/v2',
+      sourceIds:['src-finance-1'],
+      sources:[{ id:'src-finance-1', page:3, excerpt:'组合月报披露估值与退出假设。' }]
+    }
+  }]
+});
+assert.ok(
+  financeVisibleSourceOptIn.slides[0].componentPlan.componentIds.includes('source-note'),
+  'visible source-note remains available only when explicitly enabled'
+);
+['no visible source notes', 'do not render source notes'].forEach(policy => {
+  const hiddenByPolicy = normalizeDeckPlan({
+    industry:'finance-investment',
+    sourceNotePolicy:policy,
+    slides:[{
+      type:'finance-bridge',
+      proofObject:'return-bridge',
+      title:'组合估值与退出假设',
+      investmentThesis:'估值修复判断。',
+      sourceTrace:{
+        version:'source-trace/v2',
+        sourceIds:['src-finance-1'],
+        sources:[{ id:'src-finance-1', page:3, excerpt:'组合月报披露估值与退出假设。' }]
+      }
+    }]
+  });
+  assert.ok(
+    !hiddenByPolicy.slides[0].componentPlan.componentIds.includes('source-note'),
+    `${policy} should not opt into visible source-note`
+  );
+});
+['yes', 'enabled'].forEach(policy => {
+  const ambiguousPolicy = normalizeDeckPlan({
+    industry:'finance-investment',
+    sourceNotePolicy:policy,
+    slides:[{
+      type:'finance-bridge',
+      proofObject:'return-bridge',
+      title:'组合估值与退出假设',
+      investmentThesis:'估值修复判断。',
+      sourceTrace:{
+        version:'source-trace/v2',
+        sourceIds:['src-finance-1'],
+        sources:[{ id:'src-finance-1', page:3, excerpt:'组合月报披露估值与退出假设。' }]
+      }
+    }]
+  });
+  assert.ok(
+    !ambiguousPolicy.slides[0].componentPlan.componentIds.includes('source-note'),
+    `${policy} should not be treated as a visible source-note opt-in`
+  );
+});
+const explicitSourceTracePolicyOff = normalizeDeckPlan({
+  industry:'finance-investment',
+  visibleSourceNotes:true,
+  sourceTracePolicy:{ visibleSourceNotes:false },
+  slides:[{
+    type:'finance-bridge',
+    proofObject:'return-bridge',
+    title:'组合估值与退出假设',
+    investmentThesis:'估值修复判断。',
+    sourceTrace:{
+      version:'source-trace/v2',
+      sourceIds:['src-finance-1'],
+      sources:[{ id:'src-finance-1', page:3, excerpt:'组合月报披露估值与退出假设。' }]
+    }
+  }]
+});
+assert.ok(
+  !explicitSourceTracePolicyOff.slides[0].componentPlan.componentIds.includes('source-note'),
+  'sourceTracePolicy.visibleSourceNotes:false should explicitly disable visible source-note'
+);
+
 const badSaasPrototypeClaim = {
   industry:'saas-technology',
   slides:[{
     type:'case-gallery',
     title:'SaaS 声明 prototype 但没有截图',
-    componentPlan:{
-      version:'component-plan/v1',
-      industryEvidenceChain:{
-        chainId:'saas-technology',
-        chainLabel:'SaaS/科技',
-        stageId:'workflow-implementation',
-        stageLabel:'工作流落地',
-        position:2,
-        confidence:'high',
-        components:['prototype-frame', 'workflow-rail'],
-        matchedFields:['prototype', 'workflow'],
-        matchedProofObjects:['prototype-flow'],
-        matchedKeywords:[]
-      },
-      componentIds:['prototype-frame', 'workflow-rail'],
-      components:[{ id:'prototype-frame', required:true }, { id:'workflow-rail', required:true }]
-    },
+    proofObject:'prototype-flow',
     prototype:{ state:'审批流原型' },
     workflow:[{ title:'审批', body:'状态回写' }]
   }]
 };
 assert.ok(
-  auditIndustryEvidenceChain(badSaasPrototypeClaim).findings.some(finding => finding.type === 'prototypeEvidenceMissing'),
+  auditIndustryEvidenceChain(badSaasPrototypeClaim, normalizeDeckPlan(badSaasPrototypeClaim)).findings.some(finding => finding.type === 'prototypeEvidenceMissing'),
   'QA should flag SaaS prototype-frame without screenshot/image evidence'
 );
 
@@ -604,28 +1080,13 @@ const badHealthcareHandoffClaim = {
   slides:[{
     type:'architecture',
     title:'医疗声明交接但缺少交接字段',
-    componentPlan:{
-      version:'component-plan/v1',
-      industryEvidenceChain:{
-        chainId:'healthcare-operations',
-        chainLabel:'医疗健康',
-        stageId:'process-touchpoint',
-        stageLabel:'流程/触点',
-        position:2,
-        confidence:'high',
-        components:['service-blueprint-lane'],
-        matchedFields:[],
-        matchedProofObjects:['service-blueprint'],
-        matchedKeywords:['交接']
-      },
-      componentIds:['service-blueprint-lane'],
-      components:[{ id:'service-blueprint-lane', required:true }]
-    },
+    proofObject:'service-blueprint',
+    componentHints:['service-blueprint-lane'],
     claim:'交接流程已建立。'
   }]
 };
 assert.ok(
-  auditIndustryEvidenceChain(badHealthcareHandoffClaim).findings.some(finding => finding.type === 'healthcareHandoffEvidenceMissing'),
+  auditIndustryEvidenceChain(badHealthcareHandoffClaim, normalizeDeckPlan(badHealthcareHandoffClaim)).findings.some(finding => finding.type === 'healthcareHandoffEvidenceMissing'),
   'QA should flag healthcare service-blueprint-lane without handoff fields'
 );
 
@@ -635,7 +1096,10 @@ const formalSeverity = applyQualitySeverityPolicy([
   { level:'review', type:'prototypeEvidenceMissing', message:'missing prototype screenshot' },
   { level:'review', type:'healthcareHandoffEvidenceMissing', message:'missing handoff fields' },
   { level:'review', type:'sourceCoverageLow', message:'missing source' },
-  { level:'review', type:'componentHintEvidenceMissing', message:'unsupported hint' }
+  { level:'review', type:'componentHintEvidenceMissing', message:'unsupported hint' },
+  { level:'review', type:'industryEvidenceChainInputSuppressed', message:'input chain suppressed' },
+  { level:'review', type:'previousIndustryEvidenceChainInvalid', message:'previous chain invalid' },
+  { level:'review', type:'previousIndustryEvidenceChainComponentMismatch', message:'previous chain components mismatch' }
 ], 'formal');
 assert.equal(formalSeverity.findings.every(finding => finding.level === 'fail'), true);
 

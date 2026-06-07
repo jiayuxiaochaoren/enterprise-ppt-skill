@@ -253,6 +253,34 @@ function main() {
   assert(ops.filter(op => op.name === 'addText').length >= 40, 'expected text output');
   assertFinancialFooters(ops);
 
+  const hiddenSourceOps = [];
+  createFinancialResultsRenderers(createFakeCtx(hiddenSourceOps)).financialKpiSnapshot({}, {}, section({
+    sourceNote:'Hidden Source A',
+    sourceTrace:{ sourceNote:'Hidden Trace Source A' }
+  }), 1);
+  assert(
+    !hiddenSourceOps.some(op => op.name === 'addText' && /Hidden Source A|Hidden Trace Source A/.test(String(op.args[1] || ''))),
+    'financial KPI snapshot should not render source text by default'
+  );
+
+  const visibleSourceOps = [];
+  createFinancialResultsRenderers(createFakeCtx(visibleSourceOps)).financialKpiSnapshot({}, { visibleSourceNotes:true }, section({
+    sourceNote:'Visible Source A'
+  }), 1);
+  assert(
+    visibleSourceOps.some(op => op.name === 'addText' && op.args[1] === 'Visible Source A'),
+    'financial KPI snapshot should render explicit source text only when opted in'
+  );
+
+  const visibleTraceSourceOps = [];
+  createFinancialResultsRenderers(createFakeCtx(visibleTraceSourceOps)).financialKpiSnapshot({}, { visibleSourceNotes:true }, section({
+    sourceTrace:{ sourceNote:'Visible Trace Source A' }
+  }), 1);
+  assert(
+    visibleTraceSourceOps.some(op => op.name === 'addText' && op.args[1] === 'Visible Trace Source A'),
+    'financial KPI snapshot should use sourceTrace note as an opt-in fallback'
+  );
+
   console.log('financial results renderers ok');
 }
 

@@ -1,6 +1,7 @@
 const assert = require('assert/strict');
 const path = require('path');
 const { requirePptxGen } = require('./render/pptx-runtime');
+const { chartConsumedFields } = require('./chart-spec');
 const {
   RENDERER_CONTEXT_CONTRACT,
   RENDERER_COLOR_CONTRACT,
@@ -168,6 +169,8 @@ const nativeComponentIdHelpers = createNativeComponentIdHelpers({ chartComponent
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'metric-comparison' }).has('bar-chart'), true);
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'product-showcase' }).has('product-matrix'), true);
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'closing' }).has('decision-panel'), true);
+assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'closing' }).has('source-note'), false);
+assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'report-board' }).has('source-note'), false);
 const overlayHelpers = createOverlayContractHelpers({
   canvasWidth: () => 13.333,
   canvasHeight: () => 7.5
@@ -268,7 +271,19 @@ const overlayRendererDeps = {
   canvasHeight: () => 7.5
 };
 const overlayRenderer = createOverlayRenderer(overlayRendererDeps);
-assert.equal(overlayRenderer.componentSourceNoteText({}, { source_note:'Source A' }), 'Source A');
+assert.equal(overlayRenderer.componentSourceNoteText({}, { source_note:'Source A' }), '');
+assert.equal(overlayRenderer.componentSourceNoteText({ visibleSourceNotes:true }, { source_note:'Source A' }), 'Source A');
+assert.equal(overlayRenderer.componentSourceNoteText({ sourceNotePolicy:'enabled' }, { source_note:'Source A' }), '');
+assert.equal(overlayRenderer.componentSourceNoteText({ sourceNotePolicy:'yes' }, { source_note:'Source A' }), '');
+assert.equal(overlayRenderer.componentSourceNoteText({ sourceNotePolicy:'show' }, { source_note:'Source A' }), 'Source A');
+assert.equal(
+  overlayRenderer.componentSourceNoteText({ visibleSourceNotes:true, sourceTracePolicy:{ visibleSourceNotes:false } }, { source_note:'Source A' }),
+  ''
+);
+assert.equal(
+  overlayRenderer.componentSourceNoteText({ visibleSourceNotes:true }, { sourceTrace:{ sourceNote:'Trace Source A' } }),
+  'Trace Source A'
+);
 assert.equal(overlayRenderer.overlayMetricsForSlide({}, { title:'Revenue +12% YoY' })[0].value, '+12%');
 assert.deepEqual(overlayRenderer.overlayPointsForSlide({ phases:[{ title:'A' }, { title:'B' }] }).map(item => item.title), ['A', 'B']);
 assert.equal(overlayRenderer.overlayProofItemsForSlide({}, { rows:[['Risk', 'Action']] })[0].body, 'Action');
@@ -280,29 +295,32 @@ assert.deepEqual(overlayRenderer.overlayProductItemsForSlide({}, {
   benefit:'Hydration',
   businessMeaning:'Repeat purchase'
 });
+function proofGalleryCtx(ops) {
+  return {
+    slide:{},
+    colors:{
+      accent:'0066FF',
+      body:'222222',
+      captionOnImage:'FFFFFF',
+      cyan:'00FFFF',
+      darkLine:'334155',
+      darkMuted:'94A3B8',
+      ink:'0F172A',
+      ink2:'111827',
+      line:'CBD5E1',
+      text:'111111',
+      violet:'7C3AED'
+    },
+    addLabel:(...args) => ops.push(['label', args]),
+    addRect:(...args) => ops.push(['rect', args]),
+    addSmartPhotoPanel:(...args) => ops.push(['photo', args]),
+    addText:(...args) => ops.push(['text', args]),
+    compactText:(text, maxChars) => String(text || '').slice(0, maxChars),
+    panelFill:() => 'F8FAFC'
+  };
+}
 const proofGalleryOps = [];
-const proofGalleryStory = renderProofGallery({
-  slide:{},
-  colors:{
-    accent:'0066FF',
-    body:'222222',
-    captionOnImage:'FFFFFF',
-    cyan:'00FFFF',
-    darkLine:'334155',
-    darkMuted:'94A3B8',
-    ink:'0F172A',
-    ink2:'111827',
-    line:'CBD5E1',
-    text:'111111',
-    violet:'7C3AED'
-  },
-  addLabel:(...args) => proofGalleryOps.push(['label', args]),
-  addRect:(...args) => proofGalleryOps.push(['rect', args]),
-  addSmartPhotoPanel:(...args) => proofGalleryOps.push(['photo', args]),
-  addText:(...args) => proofGalleryOps.push(['text', args]),
-  compactText:(text, maxChars) => String(text || '').slice(0, maxChars),
-  panelFill:() => 'F8FAFC'
-}, [
+const proofGalleryStory = renderProofGallery(proofGalleryCtx(proofGalleryOps), [
   { title:'Main proof', body:'Source-bound evidence' },
   { title:'Second proof', body:'Business evidence' }
 ], {
@@ -320,6 +338,32 @@ assert.equal(proofGalleryStory.imageCount, 1);
 assert.ok(proofGalleryOps.some(op => op[0] === 'photo'));
 assert.ok(proofGalleryOps.some(op => op[0] === 'label' && op[1][1] === 'CAPTION'));
 assert.ok(proofGalleryOps.some(op => op[0] === 'text' && op[1][1] === 'Caption A'));
+assert.ok(!proofGalleryOps.some(op => op[0] === 'text' && op[1][1] === 'Source A'));
+const proofGalleryHiddenSourceOps = [];
+renderProofGallery(proofGalleryCtx(proofGalleryHiddenSourceOps), [
+  { title:'Main proof', sourceNote:'Item Source A' }
+], {
+  x:1,
+  y:2,
+  w:5,
+  h:1.6,
+  images:['/tmp/fixture-image.png'],
+  sourceNote:'Source A'
+});
+assert.ok(!proofGalleryHiddenSourceOps.some(op => op[0] === 'text' && /Source A|Item Source A/.test(op[1][1])));
+const proofGalleryVisibleSourceOps = [];
+renderProofGallery(proofGalleryCtx(proofGalleryVisibleSourceOps), [
+  { title:'Main proof', sourceNote:'Item Source A' }
+], {
+  x:1,
+  y:2,
+  w:5,
+  h:1.6,
+  images:['/tmp/fixture-image.png'],
+  showSourceNote:true,
+  sourceNote:'Source A'
+});
+assert.ok(proofGalleryVisibleSourceOps.some(op => op[0] === 'text' && op[1][1] === 'Source A'));
 const blockedOverlay = overlayRenderer.renderOverlayComponent({}, {}, {}, 1, 'proof-gallery', new Set(), { ownedComponents:[], safeOverlayZones:{}, occupiedZones:[] }, []);
 assert.equal(blockedOverlay.mode, 'blocked-unsafe-overlay');
 const kpiOverlay = overlayRenderer.renderOverlayComponent({}, {}, { metrics:[{ label:'ARR', value:'42%' }] }, 1, 'kpi-strip', new Set(), {
@@ -343,6 +387,19 @@ assert.equal(proofGalleryOverlay.mode, 'overlay');
 assert.equal(proofGalleryOverlay.itemCount, 1);
 assert.equal(proofGalleryOverlay.bbox.images[0], '/tmp/fixture-image.png');
 assert.equal(proofGalleryOverlay.bbox.caption, 'Caption A');
+assert.equal(proofGalleryOverlay.bbox.showSourceNote, false);
+assert.equal(proofGalleryOverlay.bbox.sourceNote, '');
+const visibleProofGalleryOverlay = overlayRenderer.renderOverlayComponent({}, { visibleSourceNotes:true }, {
+  sourceNote:'Source A',
+  visual:{ image:'/tmp/fixture-image.png', caption:'Caption A' },
+  cards:[{ title:'Proof A', body:'Evidence body' }]
+}, 1, 'proof-gallery', new Set(), {
+  ownedComponents:[],
+  occupiedZones:[],
+  safeOverlayZones:{ 'proof-gallery':{ id:'proof-gallery-story', x:1, y:2, w:5, h:1.6, role:'safe-overlay' } }
+}, []);
+assert.equal(visibleProofGalleryOverlay.bbox.showSourceNote, true);
+assert.equal(visibleProofGalleryOverlay.bbox.sourceNote, 'Source A');
 const productMatrixOverlay = overlayRenderer.renderOverlayComponent({}, {}, {
   products:[{ name:'Serum', scene:'Counter', efficacy:'Hydration', businessMeaning:'Repeat purchase' }]
 }, 1, 'product-matrix', new Set(), {
@@ -379,6 +436,14 @@ const chartOverlay = overlayRenderer.renderOverlayComponent(chartSlideFixture, {
 }, []);
 assert.equal(chartOverlay.rendered, true);
 assert.equal(chartSlideFixture.__chartRecorded.meta.plannedComponentId, 'bar-chart');
+assert.equal(chartOverlay.bbox.showSourceNote, false);
+const visibleChartSlideFixture = {};
+const visibleChartOverlay = overlayRenderer.renderOverlayComponent(visibleChartSlideFixture, { visibleSourceNotes:true, slides:[{}] }, { chartSpec:{ kind:'bar' } }, 1, 'bar-chart', new Set(), {
+  ownedComponents:[],
+  occupiedZones:[],
+  safeOverlayZones:{ 'bar-chart':{ id:'chart-overlay', x:1, y:1, w:3, h:2, role:'safe-overlay' } }
+}, []);
+assert.equal(visibleChartOverlay.bbox.showSourceNote, true);
 const nativeEvidence = overlayRenderer.renderOverlayComponent({}, {}, { type:'architecture-dark', layers:[{ title:'Data' }] }, 1, 'value-chain', new Set(['value-chain']), {
   ownedComponents:['value-chain'],
   safeOverlayZones:{},
@@ -410,6 +475,13 @@ assert.equal(chartNativeEvidence.rendererMethod, 'nativeDrawnEvidenceFor');
 assert.equal(chartNativeEvidence.nativeSlot, 'chart-board');
 assert.equal(chartNativeEvidence.drawnCount, 1);
 assert.equal(chartNativeEvidence.rendererModule, 'fixture/native-helper');
+assert.equal(
+  nativeEvidenceHelpers.nativeDrawnEvidenceFor({}, { type:'report-board', sourceNote:'Source A' }, 'source-note', {
+    safeOverlayZones:{ 'source-note':{ id:'source-note-footer', x:8, y:7, w:4, h:0.2, role:'safe-overlay' } }
+  }, {}),
+  null,
+  'native evidence should not mark source-note consumed unless a native renderer actually draws it'
+);
 const energyCalls = [];
 const energyCtx = {
   colors: () => ({
@@ -611,7 +683,65 @@ const assetDecision = renderMetaHelpers.assetDecisionForMeta({}, {
 assert.equal(assetDecision.mode, 'bound');
 assert.equal(assetDecision.generatedAssetPromptHash, 'hash:rend');
 assert.equal(assetDecision.proofUse, 'factual-proof');
+const topLevelProvenanceAssetDecision = renderMetaHelpers.assetDecisionForMeta({}, {
+  image:'assets/top-level-proof.png',
+  imageProvenance:[{ id:'slide-top-img', proofEligibility:'factual-proof', provenanceClass:'client-supplied', authorizationStatus:'licensed' }]
+});
+assert.equal(topLevelProvenanceAssetDecision.imageProvenanceCount, 1);
+assert.equal(topLevelProvenanceAssetDecision.authorizationStatus, 'licensed');
+assert.equal(topLevelProvenanceAssetDecision.authorizationStatusNormalized, 'cleared');
+assert.equal(topLevelProvenanceAssetDecision.proofUse, 'factual-proof');
+const blockedProvenanceAssetDecision = renderMetaHelpers.assetDecisionForMeta({}, {
+  image:'assets/blocked-proof.png',
+  sourceTrace:{
+    assetAuthorizationStatus:'cleared',
+    imageProvenance:[{ id:'blocked-img', proofEligibility:'factual-proof', provenanceClass:'client-supplied', authorizationStatus:'blocked' }]
+  }
+});
+assert.equal(blockedProvenanceAssetDecision.authorizationStatus, 'blocked');
+assert.equal(blockedProvenanceAssetDecision.authorizationStatusNormalized, 'blocked');
+assert.equal(blockedProvenanceAssetDecision.riskLevel, 'high');
+assert.equal(blockedProvenanceAssetDecision.reviewRequired, true);
+const mergedTraceSlide = {
+  image:'assets/merged-proof.png',
+  proof:{ sourceTrace:{
+    sourceIds:['proof-src'],
+    sources:[{ id:'proof-src', page:1, excerpt:'proof excerpt' }]
+  } },
+  sourceTrace:{
+    sourceIds:['slide-src'],
+    sources:[{ id:'slide-src', page:2, excerpt:'slide excerpt' }],
+    imageProvenance:[{ sourceId:'slide-img', proofEligibility:'factual-proof', provenanceClass:'client-supplied', authorizationStatus:'cleared' }],
+    assetAuthorizationStatus:'cleared'
+  }
+};
+const mergedTrace = renderMetaHelpers.sourceTraceForMeta(mergedTraceSlide);
+assert.deepEqual([...mergedTrace.sourceIds].sort(), ['proof-src', 'slide-src']);
+assert.equal(mergedTrace.imageProvenance.length, 1);
+const mergedTraceAssetDecision = renderMetaHelpers.assetDecisionForMeta({}, mergedTraceSlide);
+assert.equal(mergedTraceAssetDecision.imageProvenanceCount, 1);
+assert.equal(mergedTraceAssetDecision.authorizationStatus, 'cleared');
+assert.equal(mergedTraceAssetDecision.proofUse, 'factual-proof');
+const defaultMediaMetaHelpers = createRenderMetaHelpers({
+  chartConsumedFields: () => [],
+  chartSpecToComponentId: () => '',
+  cwd: () => '/repo',
+  mediaForRole: (plan, slide, role, opts = {}) => opts.includeDefault === false ? '' : 'assets/default-industry.jpg',
+  slideRole: () => 'content',
+  visualRole: () => 'structure'
+});
+const defaultOnlyAssetDecision = defaultMediaMetaHelpers.assetDecisionForMeta({ industry:'manufacturing-operations' }, {
+  title:'No explicit bound asset'
+});
+assert.equal(defaultOnlyAssetDecision.status, 'none');
+assert.equal(defaultOnlyAssetDecision.boundAssetCount, 0);
+assert.equal(defaultOnlyAssetDecision.defaultMediaCount, 1);
+assert.deepEqual(defaultOnlyAssetDecision.defaultMediaRefs, ['assets/default-industry.jpg']);
 assert.deepEqual(renderMetaHelpers.compactChartSpecForMeta({ kind:'bar', categories:['A'], sourceTrace:{ id:'s1' } }).componentId, 'bar-component');
+assert.ok(chartConsumedFields({
+  kind:'bar',
+  sourceTrace:{ source_ids:'src-meta', sources:[{ id:'src-meta', page:1, excerpt:'Meta source excerpt.' }] }
+}).includes('sourceTrace'));
 const chartSlide = {};
 renderMetaHelpers.recordChartConsumption(chartSlide, { requestedKind:'waterfall', kind:'bar', title:'Chart' }, { rendered:true, rendererModule:'fixture', componentId:'bar-chart' }, { mode:'overlay' });
 assert.equal(chartSlide.__codexChartConsumption.degraded, true);

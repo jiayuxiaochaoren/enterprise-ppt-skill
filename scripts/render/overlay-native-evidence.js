@@ -1,3 +1,7 @@
+const {
+  hasSourceEvidence
+} = require('../design/source-evidence');
+
 function createOverlayNativeEvidence(deps = {}) {
   const chartComponentIds = deps.chartComponentIds || deps.CHART_COMPONENT_IDS || new Set();
   const nativeRendererModule = deps.nativeRendererModule || deps.nativeDrawnEvidenceRendererModule || 'generate_pptx/native-page-renderer';
@@ -77,6 +81,9 @@ function createOverlayNativeEvidence(deps = {}) {
       const chartItemCount = componentId === 'scorecard' && hasMetrics ? Math.max(1, s.metrics.length) : 1;
       return evidence([/chart|content|stage|board|native/i], chartItemCount, 'native chartSpec renderer owns chart board');
     }
+    if (componentId === 'caption-bar' && ['architecture', 'architecture-dark'].includes(type) && (s.caption || s.subtitle || (s.proof && s.proof.explanation))) {
+      return evidence([/caption|summary|title|content|stage|native/i], 1, 'native architecture renderer draws caption or subtitle boundary');
+    }
     if (['proof-gallery', 'proof-gallery-grid', 'caption-bar'].includes(componentId) && (['case-gallery', 'gallery', 'portfolio', 'product-showcase'].includes(type) || hasImages || hasRetailProofCards || /gallery|proof|lookbook|mosaic|product/i.test(`${variant} ${proofObject}`))) return evidence([/visual|caption|gallery|stage|content|native/i], Math.max(1, (s.images || []).length || (s.cards || []).length || 1), 'native evidence renderer draws gallery/caption system');
     if (componentId === 'product-matrix' && (type === 'product-showcase' || Array.isArray(s.products) || Array.isArray(s.productStory) || /product|sku|texture|efficacy/i.test(`${variant} ${proofObject} ${s.title || ''}`))) {
       const productCount = Math.max(
@@ -103,10 +110,9 @@ function createOverlayNativeEvidence(deps = {}) {
     if (componentId === 'commentary-panel' && (['strategy-map', 'architecture', 'architecture-dark', 'module-matrix', 'value-tiles', 'report-board'].includes(type) || s.businessLogic || s.claim)) return evidence([/commentary|summary|caption|text|content|stage|native/i], 1, 'native renderer draws a commentary or management-judgment panel');
     if (componentId === 'process-rail' && (['timeline', 'timeline-dark'].includes(type) || hasFlow || /process|loop|timeline|flywheel/i.test(`${variant} ${proofObject}`))) return evidence([/process|timeline|loop|stage|content|native/i], Math.max(1, (s.phases || s.actions || s.steps || []).length || 1), 'native timeline renderer draws process rail');
     if (['risk-register', 'risk-matrix', 'governance-table'].includes(componentId) && (['risk-table', 'table'].includes(type) || hasRows || /risk|governance|materiality|control/i.test(`${variant} ${proofObject}`))) return evidence([/risk|table|governance|content|stage|native/i], Math.max(1, (s.rows || s.risks || s.controls || []).length || 1), 'native governance renderer draws risk/table structure');
-    if (componentId === 'disclosure-footnote' && (componentSourceNoteText(plan, s) || s.disclosure || s.assumptions)) return evidence([/source|footer|disclosure|stage|native/i], 1, 'native renderer draws disclosure or assumption boundary');
+    if (componentId === 'disclosure-footnote' && (componentSourceNoteText(plan, s) || s.disclosure || s.assumptions || hasSourceEvidence(s))) return evidence([/source|footer|disclosure|stage|native/i], 1, 'native renderer draws disclosure, assumption, or source-evidence boundary');
     if (['decision-panel', 'contact-block', 'editorial-end-card'].includes(componentId) && ['closing', 'closing-dark'].includes(type)) return evidence([/closing|stage|native/i], 1, 'native closing renderer draws decision/contact block');
     if (componentId === 'load-curve-band' && slide && (slide.__codexDecorations || []).some(decoration => decoration.type === 'load-curve-band')) return evidence([/load-curve|visual|stage|native/i], 1, 'native renderer drew a load-curve-band decoration');
-    if (componentId === 'source-note' && componentSourceNoteText(plan, s)) return evidence([/source|footer|stage|native/i], 1, 'native renderer draws visible source note');
     return null;
   }
 

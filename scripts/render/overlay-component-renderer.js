@@ -4,6 +4,9 @@ const {
 const {
   createIndustryComponentRenderer
 } = require('./industry-component-renderers');
+const {
+  visibleSourceNotesEnabled
+} = require('../design/source-evidence');
 
 function createOverlayComponentRenderer(deps = {}) {
   const chartComponentIds = deps.chartComponentIds || new Set();
@@ -53,6 +56,7 @@ function createOverlayComponentRenderer(deps = {}) {
   function renderOverlayComponent(slide, plan, s, idx, componentId, nativeIds, contract = {}, existingOverlays = []) {
     const C = colors();
     const dark = slideRenderedDark(slide, s);
+    const showSourceNote = visibleSourceNotesEnabled(plan);
     const grammarDecision = industryVisualGrammarDecisionFor(plan, s) || {};
     const { slot, ownedByNative, blocked } = guardOverlayRender(componentId, nativeIds, contract, existingOverlays);
     if (blocked) return blocked;
@@ -112,6 +116,7 @@ function createOverlayComponentRenderer(deps = {}) {
         images:overlayImagesForSlide(plan, s),
         labelPrefix:grammarDecision.proofLabel,
         caption:proof.explanation || s.caption || (s.visual && s.visual.caption) || s.subtitle || '',
+        showSourceNote,
         sourceNote:componentSourceNoteText(plan, s)
       }, z));
       if (component) return Object.assign({ id:componentId, mode:'overlay', rendered:true }, component);
@@ -173,7 +178,7 @@ function createOverlayComponentRenderer(deps = {}) {
     if (chartComponentIds.has(componentId) && !ownedByNative) {
       const spec = s.chartSpec || routeChartSpec(plan, s, { index:idx, total:(plan.slides || []).length });
       if (spec) {
-        const component = renderChartSpec(componentRendererContext(slide), spec, { x:4.06, y:2.16, w:7.44, h:3.76 });
+        const component = renderChartSpec(componentRendererContext(slide), spec, { x:4.06, y:2.16, w:7.44, h:3.76, showSourceNote });
         if (component.rendered) {
           recordChartConsumption(slide, spec, component, { plannedComponentId:componentId, mode:'overlay' });
           return Object.assign({ id:componentId, mode:'overlay', rendered:true }, component);

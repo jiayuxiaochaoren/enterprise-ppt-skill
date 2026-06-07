@@ -44,7 +44,7 @@ function createIndustryPolicyHelpers({
         principle: 'Use restrained commercial structure with clear claim, proof object, and decision action.',
         motif: 'executive-rule-grid',
         primaryColorLogic: 'Use primary color for structure and decision emphasis.',
-        components: { common: ['page-number', 'section-kicker', 'source-note'] },
+        components: { common: ['page-number', 'section-kicker'] },
         colorCarriers: { common: ['page-number', 'accent-rail'] },
         avoidComponents: []
       };

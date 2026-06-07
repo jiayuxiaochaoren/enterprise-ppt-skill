@@ -78,6 +78,11 @@ helpers.PageNumber(slide, 3);
 helpers.addArrowLine(slide, 1, 1, 2, 0, '0066FF');
 helpers.addPhotoPanel(slide, '/missing-fixture-image.png', 2, 2, 1, 1, { fallback:'ABCDEF' });
 helpers.addDeckMeta(slide, { metadata:{ organization:'Acme' }, showMeta:true }, { x:0, y:0, w:2, h:0.2 });
+const beforeEmptySourceNote = texts.length;
+assert.equal(helpers.SourceNote(slide, ''), false, 'SourceNote should not fall back to the deck footer when no visible source note is provided');
+assert.equal(texts.length, beforeEmptySourceNote);
+helpers.FooterNote(slide, 'Deck footer');
+helpers.SourceNote(slide, 'Visible source note');
 
 const directMetaWrites = [];
 const deckMetaPolicy = createDeckMetaPolicy({
@@ -115,6 +120,8 @@ assert.ok(shapes.some(op => op.type === 'ellipse'), 'lightCanvas should add a ca
 assert.ok(shapes.some(op => op.type === 'line' && op.opts.line.endArrowType === 'triangle'), 'addArrowLine should record arrow styling');
 assert.ok(shapes.some(op => op.type === 'rect' && op.opts.fill.color === 'ABCDEF'), 'missing photo should draw fallback panel');
 assert.ok(texts.some(op => op.text === 'Acme'), 'deck meta should render organization metadata');
+assert.ok(texts.some(op => op.text === 'Deck footer'), 'FooterNote should render ordinary deck footer text');
+assert.ok(texts.some(op => op.text === 'Visible source note'), 'SourceNote should render explicit visible source notes');
 assert.equal(deckMetaPolicy.metaDisabled({ showMeta:false }), true);
 assert.equal(deckMetaPolicy.coverMetaText(metaPlan), 'Acme  /  Board');
 assert.equal(helpers.coverMetaText(metaPlan), deckMetaPolicy.coverMetaText(metaPlan));

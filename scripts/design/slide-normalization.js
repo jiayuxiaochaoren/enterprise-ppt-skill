@@ -35,6 +35,7 @@ function createSlideNormalizationHelpers(deps = {}) {
     routeChartSpec,
     selectPaletteName,
     selectReferenceRecipe,
+    semanticFrame,
     slideDesign,
     slideHasChartIntent,
     visualSystem
@@ -99,6 +100,29 @@ function createSlideNormalizationHelpers(deps = {}) {
     if (!out.layoutVariant) {
       const pickedVariant = pickLayoutVariant(plan, routedInput, out.type, signals);
       out.layoutVariant = pickedVariant || (recipe && recipe.score >= 8 && recipeCompatibleWithSlideType(recipe, out.type) ? recipe.layoutVariant : undefined);
+    }
+    if (!out.proofObject && !out.proof_object) {
+      const highValueFamilyHas = value => {
+        if (!value) return false;
+        if (highValuePageFamilies && typeof highValuePageFamilies.has === 'function') return highValuePageFamilies.has(value);
+        return Array.isArray(highValuePageFamilies) && highValuePageFamilies.includes(value);
+      };
+      const variantProofObject = out.layoutVariant &&
+        highValueFamilyHas(out.layoutVariant) &&
+        layoutVariantCompatibleWithType(out.type, out.layoutVariant)
+        ? out.layoutVariant
+        : '';
+      const semantic = typeof semanticFrame === 'function'
+        ? (semanticFrame(plan, out, contentSignals(plan, out, index, total)) || {})
+        : {};
+      if (variantProofObject) {
+        out.proofObject = variantProofObject;
+        out.proofObjectSource = out.proofObjectSource || 'layout-variant';
+      } else if (semantic.proofObject) {
+        out.proofObject = semantic.proofObject;
+        out.proofObjectInferred = true;
+        out.proofObjectSource = out.proofObjectSource || 'semantic-frame';
+      }
     }
     const claimRules = (visualSystem.contentIntelligence && visualSystem.contentIntelligence.claimSpine) || {};
     if (!out.claim) {

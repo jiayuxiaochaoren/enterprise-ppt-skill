@@ -66,7 +66,7 @@ function createAssetGenerationHelpers({
     const slideHasImages = (Array.isArray(s.images) && s.images.length > 0) ||
       (s.visual && Array.isArray(s.visual.images) && s.visual.images.length > 0) ||
       Boolean(s.image || (s.visual && s.visual.image));
-    const existingAsset = mediaForRole(plan, s, slideRole(s));
+    const existingAsset = mediaForRole(plan, s, slideRole(s), { includeDefault:false });
     const requested = (s.visual && s.visual.mode === 'generated') || s.assetMode === 'generated';
     const hasBoundAsset = slideHasImages || (Boolean(existingAsset) && !requested);
     const recipeNeedsImage = recipe && assetRoleNeedsImage(recipe.assetRole || role);

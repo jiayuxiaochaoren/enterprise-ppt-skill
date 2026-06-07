@@ -118,7 +118,7 @@ function createVisualMediaHelpers({
     return '';
   }
 
-  function mediaForRole(plan = {}, s = {}, role = slideRole(s)) {
+  function mediaForRole(plan = {}, s = {}, role = slideRole(s), opts = {}) {
     const visual = s.visual || {};
     const direct = visual.image || s.image;
     if (direct) return resolveAssetPath(direct);
@@ -134,6 +134,7 @@ function createVisualMediaHelpers({
     const val = media[key];
     if (Array.isArray(val)) return resolveAssetPath(val[0]);
     if (val) return resolveAssetPath(val);
+    if (opts && opts.includeDefault === false) return '';
     return defaultIndustryMedia(plan, role);
   }
 

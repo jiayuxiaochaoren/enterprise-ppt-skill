@@ -17,6 +17,10 @@ const {
   MATRIX_VERSION: MATRIX_SHARD_VERSION,
   QUALITY_SEVERITY_MATRIX: MATRIX_SHARD
 } = require('./qa/quality-severity-matrix');
+const {
+  acceptanceAudit,
+  normalizeDeckPlan
+} = require('./design-system');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-quality-mode');
@@ -119,6 +123,9 @@ function assertSeverityMatrix() {
   assert.equal(policyRow('chainStageNeutral').formal, 'fail');
   assert.equal(policyRow('captionCoverageLow').formal, 'review');
   assert.equal(policyRow('componentHintEvidenceMissing').formal, 'fail');
+  assert.equal(policyRow('industryEvidenceChainInputSuppressed').formal, 'fail');
+  assert.equal(policyRow('previousIndustryEvidenceChainInvalid').formal, 'fail');
+  assert.equal(policyRow('previousIndustryEvidenceChainComponentMismatch').delivery, 'fail');
   assert.equal(policyRow('sourceCoverageLow').delivery, 'fail');
   assert.equal(policyRow('prototypeEvidenceMissing').draft, 'review');
   assert.equal(policyRow('healthcareHandoffEvidenceMissing').formal, 'fail');
@@ -136,6 +143,9 @@ function assertSeverityMatrix() {
     { level:'review', type:'chainStageNeutral', message:'neutral' },
     { level:'review', type:'captionCoverageLow', message:'caption' },
     { level:'review', type:'componentHintEvidenceMissing', message:'hint' },
+    { level:'review', type:'industryEvidenceChainInputSuppressed', message:'suppressed chain' },
+    { level:'review', type:'previousIndustryEvidenceChainInvalid', message:'previous invalid' },
+    { level:'review', type:'previousIndustryEvidenceChainComponentMismatch', message:'previous components' },
     { level:'review', type:'sourceCoverageLow', message:'source' },
     { level:'review', type:'prototypeEvidenceMissing', message:'prototype' },
     { level:'review', type:'healthcareHandoffEvidenceMissing', message:'handoff' },
@@ -159,6 +169,9 @@ function assertSeverityMatrix() {
   assert.equal(formal.findings.find(f => f.type === 'chainStageNeutral').level, 'fail');
   assert.equal(formal.findings.find(f => f.type === 'captionCoverageLow').level, 'review');
   assert.equal(formal.findings.find(f => f.type === 'componentHintEvidenceMissing').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'industryEvidenceChainInputSuppressed').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'previousIndustryEvidenceChainInvalid').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'previousIndustryEvidenceChainComponentMismatch').level, 'fail');
   assert.equal(formal.findings.find(f => f.type === 'sourceCoverageLow').level, 'fail');
   assert.equal(formal.findings.find(f => f.type === 'prototypeEvidenceMissing').level, 'fail');
   assert.equal(formal.findings.find(f => f.type === 'healthcareHandoffEvidenceMissing').level, 'fail');
@@ -170,8 +183,66 @@ function assertSeverityMatrix() {
   assert.equal(delivery.findings.find(f => f.type === 'baselineHashDistance').severityCategory, 'baseline_drift');
 }
 
+function assertFormalExplicitChartSourceAcceptance() {
+  const missing = normalizeDeckPlan({
+    industry: 'general-operations',
+    outputIntent: 'formal',
+    requestedSlideCount: 1,
+    slides: [{
+      type: 'metric-comparison',
+      title: 'Explicit chartSpec without structured source',
+      claim: 'Formal explicit chart must still carry structured chart source trace.',
+      chartSpec: {
+        version: 'chartSpec/v1',
+        kind: 'bar',
+        title: 'Explicit chartSpec without structured source',
+        categories: ['A', 'B'],
+        series: [{ values: [{ category:'A', value:1 }, { category:'B', value:2 }] }]
+      },
+      sourceTrace:{ sourceNote:'Visible note text only' }
+    }]
+  });
+  const missingAudit = acceptanceAudit(missing, missing, {
+    strict:true,
+    renderMeta:{ slides:[{ slide:1, missingRequiredComponents:[], chartConsumption:{ rendered:true, spec:missing.slides[0].chartSpec } }] }
+  });
+  assert.notEqual(missingAudit.status, 'pass');
+  assert.ok(missingAudit.findings.some(finding => finding.type === 'chartSourceMissing' || finding.type === 'acceptanceChartSourceMissing'));
+
+  const traced = normalizeDeckPlan({
+    industry: 'general-operations',
+    outputIntent: 'formal',
+    requestedSlideCount: 1,
+    slides: [{
+      type: 'metric-comparison',
+      title: 'Explicit chartSpec with slide source',
+      claim: 'Formal explicit chart inherits slide source trace.',
+      chartSpec: {
+        version: 'chartSpec/v1',
+        kind: 'bar',
+        title: 'Explicit chartSpec with slide source',
+        categories: ['A', 'B'],
+        series: [{ values: [{ category:'A', value:1 }, { category:'B', value:2 }] }]
+      },
+      sourceTrace:{
+        sourceIds:['src-formal-chart'],
+        sources:[{ id:'src-formal-chart', page:5, excerpt:'Formal chart source excerpt.' }]
+      }
+    }]
+  });
+  const tracedAudit = acceptanceAudit(traced, traced, {
+    strict:true,
+    renderMeta:{ slides:[{ slide:1, missingRequiredComponents:[], chartConsumption:{ rendered:true, spec:traced.slides[0].chartSpec } }] }
+  });
+  assert.equal(
+    tracedAudit.findings.some(finding => finding.type === 'chartSourceMissing' || finding.type === 'acceptanceChartSourceMissing'),
+    false
+  );
+}
+
 (async () => {
   assertSeverityMatrix();
+  assertFormalExplicitChartSourceAcceptance();
 
   const pptxPath = await makePptx();
   const draft = runVisualQa(pptxPath, 'draft');

@@ -33,6 +33,7 @@ briefs.forEach(brief => {
       'chart-semantic',
       'chart-visual',
       'chart-evidence',
+      'chart-gate',
       'industry-customization',
       'layout-repetition',
       'semantic-color',

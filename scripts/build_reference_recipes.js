@@ -317,9 +317,9 @@ function paletteIntentFor(tags = [], labels = []) {
 }
 
 function componentHintsFor(renderType = '', variant = '', industryFit = []) {
-  const base = ['top-rule', 'page-number', 'section-kicker', 'source-note'];
+  const base = ['top-rule', 'page-number', 'section-kicker'];
   const add = [];
-  if (renderType === 'metric-comparison') add.push('metric-strip', 'chart-commentary-panel', 'source-note');
+  if (renderType === 'metric-comparison') add.push('metric-strip', 'chart-commentary-panel');
   if (renderType === 'strategy-map') add.push('process-rail', 'system-rail', 'value-chain-connector');
   if (renderType === 'risk-table' || renderType === 'table') add.push('risk-matrix', 'control-tag', 'disclosure-footnote');
   if (renderType === 'case-gallery') add.push('evidence-frame', 'caption-bar', 'proof-gallery-grid');

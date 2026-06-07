@@ -1,4 +1,9 @@
 function createOverlayDataHelpers(deps = {}) {
+  const {
+    sourceTraceNoteText,
+    visibleSourceNotesEnabled,
+    visibleSourceNoteText
+  } = require('../design/source-evidence');
   const compactText = typeof deps.compactText === 'function'
     ? deps.compactText
     : ((text = '', maxChars = 32) => String(text || '').replace(/\s+/g, ' ').trim().slice(0, maxChars));
@@ -10,8 +15,8 @@ function createOverlayDataHelpers(deps = {}) {
     : ((value, fallback = '') => typeof value === 'string' ? '' : ((value && (value.body || value.note || value.text || value.description)) || fallback));
 
   function componentSourceNoteText(plan = {}, s = {}) {
-    const proof = s.proof || {};
-    return s.sourceNote || s.source_note || proof.sourceNote || '';
+    if (!visibleSourceNotesEnabled(plan)) return '';
+    return visibleSourceNoteText(s) || sourceTraceNoteText(s);
   }
 
   function overlayMetricsForSlide(plan = {}, s = {}) {

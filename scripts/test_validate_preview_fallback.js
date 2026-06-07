@@ -57,6 +57,8 @@ fs.mkdirSync(OUT, { recursive: true });
         riskLevel: 'low',
         originalRole: 'none',
         resolvedRole: 'none',
+        authorizationStatus: 'none',
+        authorizationStatusNormalized: 'none',
         provenanceClass: 'none',
         proofEligibility: ['none'],
         boundAssetCount: 0

@@ -1,3 +1,7 @@
+const {
+  visibleSourceNotesEnabled
+} = require('./source-evidence');
+
 function hasStructuredField(s = {}, fields = []) {
   return fields.some(field => {
     const value = s[field];
@@ -21,7 +25,7 @@ function industryChainComponentAllowed(id = '', options = {}) {
   const hasRows = Array.isArray(slide.rows) || Array.isArray(slide.risks) || Array.isArray(slide.controls);
   const hasFlow = hasStructuredField(slide, ['phases', 'actions', 'steps', 'timeline', 'milestones', 'loopItems', 'workflows']);
   const hasArchitecture = signals.hasArchitecture || hasStructuredField(slide, ['layers', 'architecture', 'systemMap', 'topology', 'capabilityMap', 'platformCapabilities', 'valueChain', 'capitals']);
-  if (id === 'source-note') return evidenceChain.hasSourceEvidence;
+  if (id === 'source-note') return visibleSourceNotesEnabled(options.plan || {}, options) && evidenceChain.hasSourceEvidence;
   if (id === 'disclosure-footnote') return evidenceChain.hasSourceEvidence || hasStructuredField(slide, ['disclosure', 'assumptions']);
   if (id === 'caption-bar') return evidenceChain.hasCaptionEvidence || hasImages;
   if (id === 'hero-image') return hasImages || ['cover', 'cover-dark'].includes(type);

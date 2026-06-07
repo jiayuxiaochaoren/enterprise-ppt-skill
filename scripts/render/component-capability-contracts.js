@@ -69,7 +69,7 @@ const COMPONENT_DATA_REQUIREMENTS = {
   'scorecard': ['chartSpec|metrics'],
   'service-blueprint-lane': ['serviceBlueprint|touchpoints|journeyMap|handoffs|qualityHandoff'],
   'site-evidence-frame': ['siteEvidence|assetReadout|images|visual.image|visual.images'],
-  'source-note': ['sourceNote|source_note|proof.sourceNote'],
+  'source-note': ['sourceNote|source_note|proof.sourceNote|sourceTrace.sourceIds|sourceTrace.sources|proof.sourceTrace.sourceIds|proof.sourceTrace.sources'],
   'system-rail': ['layers|architecture|systemMap|topology|capabilityMap|platformCapabilities|valueChain|capitals'],
   'table-with-commentary': ['rows|headers|table'],
   'value-chain': ['drivers|actions|outcomes|valueChain|layers|capitals'],

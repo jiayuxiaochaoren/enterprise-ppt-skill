@@ -196,6 +196,19 @@ const slideImageFallback = mediaForRole(
 );
 assert.ok(slideImageFallback.endsWith('assets/media/energy-storage-cover.jpg'), 'single-slide images should be available to cover/showcase renderers');
 
+const defaultMediaOnlyIndustrial = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  slides:[
+    { type:'cover', title:'封面' },
+    { type:'content', title:'普通说明页', claim:'介绍组织协作方式' }
+  ]
+});
+assert.equal(
+  defaultMediaOnlyIndustrial.slides[1].assetGeneration.status,
+  'none',
+  'industry default media should not make structure-only pages look asset-bound'
+);
+
 const unsafeGeneratedEvidence = normalizeDeckPlan({
   industry:'manufacturing-operations',
   slides:[

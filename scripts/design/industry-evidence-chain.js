@@ -11,6 +11,9 @@ const CHAIN_TEXT_OMIT_KEYS = new Set([
   'previousVisualMode',
   'previousAssetMode',
   'previousIndustryEvidenceChain',
+  'previousGeneratedAssetPrompt',
+  'proofObjectInferred',
+  'proofObjectSource',
   'industryEvidenceChainConflict',
   'routeSanitization',
   'normalizationAudit',
@@ -63,6 +66,10 @@ function hasFieldPath(source = {}, path = '') {
 
 const COMMON_SOURCE_FIELDS = ['sourceNote', 'source_note', 'proof.sourceNote', 'proof.source'];
 const COMMON_CAPTION_FIELDS = ['caption', 'subtitle', 'claim', 'proof.explanation', 'visual.caption'];
+const {
+  hasSourceEvidence,
+  visibleSourceNotesEnabled
+} = require('./source-evidence');
 
 const INDUSTRY_EVIDENCE_CHAINS = require('./industry-evidence-chain-definitions');
 
@@ -221,7 +228,10 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
     return neutralEvidenceChain(`${chain.label} chain has insufficient route/proof/field evidence`);
   }
   const stage = best.stage;
-  const components = compactUnique(stage.components || []);
+  const rawComponents = compactUnique(stage.components || []);
+  const visibleSources = visibleSourceNotesEnabled(plan, opts);
+  const components = rawComponents.filter(id => id !== 'source-note' || visibleSources);
+  const sourceEvidence = hasSourceEvidence(slide);
   const evidenceReasons = compactUnique([
     ...best.matchedProofObjects.map(value => `proofObject:${value}`),
     ...best.matchedRoutes.map(value => `route:${value}`),
@@ -249,22 +259,17 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
     structuredEvidenceBound: Boolean(best.matchedFields.length || best.matchedProofObjects.length),
     inferenceBasis: best.matchedProofObjects.length ? 'proofObject' : (best.matchedFields.length ? 'field' : (best.matchedRoutes.length ? 'route' : 'keyword')),
     requiresCaption: components.includes('caption-bar') || components.includes('proof-gallery') || components.includes('hero-image'),
-    requiresSource: COMMON_SOURCE_FIELDS.some(field => hasFieldPath(slide, field)) || components.includes('source-note'),
+    requiresSource: sourceEvidence || rawComponents.includes('source-note'),
     hasCaptionEvidence: COMMON_CAPTION_FIELDS.some(field => hasFieldPath(slide, field)),
-    hasSourceEvidence: COMMON_SOURCE_FIELDS.some(field => hasFieldPath(slide, field)),
+    hasSourceEvidence: sourceEvidence,
+    visibleSourceNotes: visibleSources,
+    sourceNoteComponentSuppressed: rawComponents.includes('source-note') && !visibleSources,
     visualGrammar: opts.visualGrammar || null
   };
 }
 
 function canonicalIndustryEvidenceChainForSlide(plan = {}, slide = {}, opts = {}) {
-  const inferred = normalizeIndustryEvidenceChainShape(inferIndustryEvidenceChain(plan, slide, opts));
-  const supplied = normalizeIndustryEvidenceChainShape(
-    slide && slide.componentPlan && slide.componentPlan.industryEvidenceChain
-  );
-  if (chainsShareIdentity(supplied, inferred) && supplied.visualGrammar && !inferred.visualGrammar) {
-    return Object.assign({}, inferred, { visualGrammar: supplied.visualGrammar });
-  }
-  return inferred;
+  return normalizeIndustryEvidenceChainShape(inferIndustryEvidenceChain(plan, slide, opts));
 }
 
 function componentsForIndustryEvidenceChain(chainResult = {}) {

@@ -29,7 +29,13 @@ function buildIndustryEvidenceChainSummary({
   const blocking = findings.find(finding => finding.level === 'fail') ||
     findings.find(finding => finding.level === 'review') ||
     null;
-  const chainMismatchFindings = findings.filter(finding => finding.type === 'industryEvidenceChainMismatch' || finding.type === 'industryEvidenceChainInvalid');
+  const chainMismatchFindings = findings.filter(finding =>
+    finding.type === 'industryEvidenceChainMismatch' ||
+    finding.type === 'industryEvidenceChainInvalid' ||
+    finding.type === 'industryEvidenceChainInputSuppressed'
+  );
+  const previousChainInvalidFindings = findings.filter(finding => finding.type === 'previousIndustryEvidenceChainInvalid');
+  const previousChainComponentMismatchFindings = findings.filter(finding => finding.type === 'previousIndustryEvidenceChainComponentMismatch');
   const chainMismatchSlides = unique(chainMismatchFindings.map(finding => finding.slide).filter(Boolean)).length;
   return {
     version: 'industry-evidence-chain-summary/v1',
@@ -48,7 +54,10 @@ function buildIndustryEvidenceChainSummary({
       suppressedComponentHintSlides: slideAudits.filter(slide => slide.inputMetadata && (slide.inputMetadata.previousComponentHints || slide.inputMetadata.previousComponentSuggestions)).length,
       suppressedCompositionPlanSlides: slideAudits.filter(slide => slide.inputMetadata && slide.inputMetadata.previousCompositionPlan).length,
       suppressedAssetGenerationSlides: slideAudits.filter(slide => slide.inputMetadata && slide.inputMetadata.previousAssetGeneration).length,
+      suppressedGeneratedPromptSlides: slideAudits.filter(slide => slide.inputMetadata && slide.inputMetadata.previousGeneratedAssetPrompt).length,
       staleChainSlides: findings.filter(finding => finding.type === 'industryEvidenceChainStale').length,
+      previousChainInvalidSlides: unique(previousChainInvalidFindings.map(finding => finding.slide).filter(Boolean)).length,
+      previousChainComponentMismatchSlides: unique(previousChainComponentMismatchFindings.map(finding => finding.slide).filter(Boolean)).length,
       chainMismatchSlides,
       chainMismatchFindings: chainMismatchFindings.length
     },

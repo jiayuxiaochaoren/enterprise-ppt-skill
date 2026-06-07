@@ -86,7 +86,7 @@ function extractionSchema() {
         asset_requirements: [
           { role: 'evidence | product | site | screenshot | background', required: true, provenance: 'source id or user-supplied asset needed' }
         ],
-        source_note: 'short visible source/provenance note when required',
+        source_note: 'optional visible source/provenance note only when explicitly requested; do not use as a substitute for source_pages/source_excerpts',
         theme_intent: 'page-level theme intent from deck_art_direction.rhythm_map',
         accent_role: 'semantic accent role for the page',
         layout_energy: 'hero | calm | structured | high-contrast | editorial-dense',

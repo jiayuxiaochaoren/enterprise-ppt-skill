@@ -208,6 +208,35 @@ assert.deepEqual(assetSummary.mixedProofEligibilitySlides, [{
   proofEligibility: ['factual-proof', 'generic-category'],
   proofEligibilitySummary: ''
 }]);
+const normalizedAuthorizationSummary = assetDecisionSummary({
+  slides:[{
+    slide: 1,
+    assetDecision: {
+      action:'bound_asset',
+      riskLevel:'high',
+      provenanceClass:'user-owned',
+      proofEligibility:['factual-proof'],
+      authorizationStatus:'unauthorized',
+      authorizationStatusNormalized:'blocked',
+      boundAssetCount:1
+    }
+  }, {
+    slide: 2,
+    assetDecision: {
+      action:'bound_asset',
+      riskLevel:'low',
+      provenanceClass:'public-licensed',
+      proofEligibility:['generic-category'],
+      authorizationStatus:'licensed',
+      authorizationStatusNormalized:'cleared',
+      boundAssetCount:1
+    }
+  }]
+});
+assert.equal(normalizedAuthorizationSummary.byAuthorizationStatus.blocked, 1);
+assert.equal(normalizedAuthorizationSummary.byAuthorizationStatus.cleared, 1);
+assert.equal(normalizedAuthorizationSummary.byAuthorizationStatus.unauthorized, undefined);
+assert.equal(normalizedAuthorizationSummary.byAuthorizationStatus.licensed, undefined);
 
 const delivery = deliveryReport({
   status: 'complete',

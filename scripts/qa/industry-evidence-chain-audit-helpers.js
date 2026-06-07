@@ -4,6 +4,12 @@ const {
   normalizeIndustryEvidenceChainId,
   normalizeIndustryEvidenceChainShape
 } = require('../design/industry-evidence-chain');
+const {
+  hasSourceEvidence,
+  hasSourceTraceRefs,
+  hasVisibleSourceNote,
+  sourceTraceIsExplainable
+} = require('../design/source-evidence');
 
 function hasValue(value) {
   if (value == null) return false;
@@ -124,8 +130,17 @@ function inputChainFindings({ canonical = {}, slide = {}, slideNo = 1, suppliedR
       });
     }
   }
-  if (supplied && canonical && canonical.stageId !== 'neutral-general') {
-    if (!chainsShareIdentity(supplied, canonical)) {
+  if (supplied && canonical) {
+    if (canonical.stageId === 'neutral-general') {
+      if (supplied.stageId !== 'neutral-general' || supplied.chainId !== 'neutral-general') {
+        findings.push({
+          slide: slideNo,
+          level: 'review',
+          type: 'industryEvidenceChainInputSuppressed',
+          message: `input componentPlan.industryEvidenceChain ${chainIdentity(supplied)} was suppressed because canonical inference is neutral/general`
+        });
+      }
+    } else if (!chainsShareIdentity(supplied, canonical)) {
       findings.push({
         slide: slideNo,
         level: 'fail',
@@ -142,13 +157,29 @@ function inputChainFindings({ canonical = {}, slide = {}, slideNo = 1, suppliedR
     }
   }
   if (slide.previousIndustryEvidenceChain) {
+    const previousIssues = industryEvidenceChainShapeIssues(slide.previousIndustryEvidenceChain);
+    if (previousIssues.length) {
+      findings.push({
+        slide: slideNo,
+        level: 'review',
+        type: 'previousIndustryEvidenceChainInvalid',
+        message: `previousIndustryEvidenceChain is malformed: ${previousIssues.join(', ')}`
+      });
+    }
     const previous = normalizeIndustryEvidenceChainShape(slide.previousIndustryEvidenceChain);
-    if (previous && canonical && canonical.stageId !== 'neutral-general' && !chainsShareIdentity(previous, canonical)) {
+    if (previous && canonical && !chainsShareIdentity(previous, canonical)) {
       findings.push({
         slide: slideNo,
         level: 'review',
         type: 'industryEvidenceChainStale',
         message: `previousIndustryEvidenceChain ${chainIdentity(previous)} was suppressed; canonical chain is ${chainIdentity(canonical)}`
+      });
+    } else if (previous && canonical && canonical.stageId !== 'neutral-general' && !previousIssues.length && componentSetDiffers(previous, canonical)) {
+      findings.push({
+        slide: slideNo,
+        level: 'review',
+        type: 'previousIndustryEvidenceChainComponentMismatch',
+        message: `previousIndustryEvidenceChain components differ from canonical ${chainIdentity(canonical)}`
       });
     }
   }
@@ -159,10 +190,14 @@ module.exports = {
   consumedComponentForSlide,
   consumedIdsForSlide,
   crossIndustryFindings,
+  hasSourceEvidence,
+  hasSourceTraceRefs,
+  hasVisibleSourceNote,
   hasFieldPath,
   inputChainFindings,
   knownIndustry,
   plannedComponentsForSlide,
   plannedIdsForSlide,
-  renderedSlideFor
+  renderedSlideFor,
+  sourceTraceIsExplainable
 };

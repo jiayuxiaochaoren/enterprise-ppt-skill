@@ -55,6 +55,8 @@ function renderMeta(overrides = {}) {
         riskLevel: 'low',
         originalRole: 'none',
         resolvedRole: 'none',
+        authorizationStatus: 'none',
+        authorizationStatusNormalized: 'unknown',
         provenanceClass: 'none',
         proofEligibility: ['none'],
         boundAssetCount: 0
@@ -135,6 +137,7 @@ const assetSchemaAudit = renderMetaSchemaAuditFromRender({
 }, 1);
 assert.equal(assetSchemaAudit.status, 'fail');
 assert.ok(assetSchemaAudit.findings.some(f => f.type === 'renderMetaAssetDecisionFieldMissing' && /riskLevel/.test(f.message)));
+assert.ok(assetSchemaAudit.findings.some(f => f.type === 'renderMetaAssetDecisionFieldMissing' && /authorizationStatusNormalized/.test(f.message)));
 
 const mixedAssetDetailAudit = renderMetaSchemaAuditFromRender({
   file:'fixture.render-meta.json',
@@ -148,6 +151,8 @@ const mixedAssetDetailAudit = renderMetaSchemaAuditFromRender({
       riskLevel:'medium',
       originalRole:'evidence',
       resolvedRole:'image',
+      authorizationStatus:'mixed',
+      authorizationStatusNormalized:'unknown',
       provenanceClass:'mixed',
       proofEligibility:['mixed'],
       proofEligibilitySummary:'mixed',
@@ -171,6 +176,8 @@ const validMixedAssetAudit = renderMetaSchemaAuditFromRender({
       riskLevel:'medium',
       originalRole:'evidence',
       resolvedRole:'image',
+      authorizationStatus:'mixed',
+      authorizationStatusNormalized:'unknown',
       provenanceClass:'mixed',
       provenanceClasses:['user-owned', 'public-licensed'],
       proofEligibility:['factual-proof', 'generic-category'],
@@ -193,6 +200,8 @@ const skippedCriticalAssetAudit = renderMetaSchemaAuditFromRender({
       riskLevel:'high',
       originalRole:'evidence',
       resolvedRole:'solid',
+      authorizationStatus:'none',
+      authorizationStatusNormalized:'unknown',
       provenanceClass:'none',
       proofEligibility:['none'],
       boundAssetCount:0,

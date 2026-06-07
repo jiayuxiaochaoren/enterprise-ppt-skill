@@ -56,6 +56,8 @@ const RENDER_META_SCHEMA_CONTRACT = {
     'riskLevel',
     'originalRole',
     'resolvedRole',
+    'authorizationStatus',
+    'authorizationStatusNormalized',
     'provenanceClass',
     'proofEligibility',
     'boundAssetCount'

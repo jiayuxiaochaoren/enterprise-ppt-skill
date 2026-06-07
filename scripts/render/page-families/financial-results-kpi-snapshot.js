@@ -1,3 +1,8 @@
+const {
+  sourceTraceNoteText,
+  visibleSourceNotesEnabled
+} = require('../../design/source-evidence');
+
 function createFinancialKpiSnapshot(ctx = {}, deps = {}) {
   const C = ctx.colors();
   const {
@@ -30,7 +35,9 @@ function createFinancialKpiSnapshot(ctx = {}, deps = {}) {
     const metrics = (s.metrics || []).slice(0, 4);
     const primary = metrics[0] || { label:'主指标', value:'-', note:'需要补充本期核心经营判断。' };
     const period = s.period || s.quarter || s.reportingPeriod || s.reporting_period || '';
-    const source = s.source || s.sourceNote || s.source_note || ((s.proof && s.proof.sourceNote) || '');
+    const source = visibleSourceNotesEnabled(plan)
+      ? (s.source || s.sourceNote || s.source_note || ((s.proof && s.proof.sourceNote) || '') || sourceTraceNoteText(s))
+      : '';
 
     const hero = { x:0.92, y:2.02, w:4.18, h:4.16 };
     addRect(slide, hero.x, hero.y, hero.w, hero.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });

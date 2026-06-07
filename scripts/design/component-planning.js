@@ -18,6 +18,10 @@ const {
 const {
   industryChainComponentAllowed
 } = require('./industry-evidence-chain-components');
+const {
+  hasSourceEvidence,
+  visibleSourceNotesEnabled
+} = require('./source-evidence');
 
 function createComponentPlanHelpers(deps = {}) {
   const {
@@ -50,6 +54,7 @@ function createComponentPlanHelpers(deps = {}) {
     const type = s.type || '';
     const variant = String(s.layoutVariant || s.variant || '');
     const proofObject = proofObjectIdForSlide(s);
+    const proofObjectForVisualRules = s.proofObjectInferred || s.proof_object_inferred ? '' : proofObject;
     const cp = composition || s.compositionPlan || {};
     const themeIntent = cp.themeIntent || s.themeIntent || themeIntentFor(plan, s, index, total, signals);
     const components = [];
@@ -118,6 +123,7 @@ function createComponentPlanHelpers(deps = {}) {
         if (!industryChainComponentAllowed(id, {
           directImageCount,
           evidenceChain: industryEvidenceChain,
+          plan,
           productProofSignal,
           signals,
           slide: s,
@@ -132,7 +138,7 @@ function createComponentPlanHelpers(deps = {}) {
       });
     }
 
-    const proofObjectVisualAnchor = /hero|cover|brand-world|(?:^|[-_])product(?:$|[-_])|image/i.test(proofObject);
+    const proofObjectVisualAnchor = /hero|cover|brand-world|(?:^|[-_])product(?:$|[-_])|image/i.test(proofObjectForVisualRules);
     const heroImageRouteEligible = ['cover', 'cover-dark', 'case-gallery', 'gallery', 'portfolio', 'product-showcase', 'company-profile-spread'].includes(type) ||
       proofObjectVisualAnchor ||
       /hero|cover|brand|showcase|lookbook|gallery|photo|image/i.test(variant);
@@ -208,7 +214,7 @@ function createComponentPlanHelpers(deps = {}) {
     if (/governance|control|responsibility/i.test(variant) || signals.hasGovernance || signals.hasResponsibilityLoop) {
       addRule('governance-table', 'governance rows with owner/action logic', 'governance-signal', false);
     }
-    if (s.sourceNote || s.source_note || (s.proof && s.proof.sourceNote)) {
+    if (hasSourceEvidence(s) && visibleSourceNotesEnabled(plan)) {
       addRule('source-note', 'visible provenance or source boundary', 'source-provenance');
     }
     if (/closing/.test(type) || s.decision || s.nextStep || s.nextSteps || (Array.isArray(s.actions) && s.actions.length && ['closing', 'closing-dark'].includes(type))) {

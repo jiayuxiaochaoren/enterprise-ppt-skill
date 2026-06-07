@@ -1,6 +1,5 @@
 const {
   COMMON_CAPTION_FIELDS,
-  COMMON_SOURCE_FIELDS,
   INDUSTRY_EVIDENCE_CHAINS,
   canonicalIndustryEvidenceChainForSlide,
   inferIndustryEvidenceChain,
@@ -13,6 +12,7 @@ const {
   consumedComponentForSlide,
   consumedIdsForSlide,
   crossIndustryFindings,
+  hasSourceEvidence,
   hasFieldPath,
   inputChainFindings,
   knownIndustry,
@@ -24,8 +24,17 @@ const {
 function componentHintHasEvidence(id = '', slide = {}) {
   const any = fields => fields.some(field => hasFieldPath(slide, field));
   const imageFields = ['image', 'images', 'visual.image', 'visual.images'];
-  const sourceFields = ['sourceNote', 'source_note', 'proof.sourceNote', 'proof.source', 'sourceTrace.sourceIds', 'sourceTrace.metricSources'];
-  const commonEvidenceFields = [...imageFields, ...sourceFields];
+  const visibleSourceFields = ['sourceNote', 'source_note', 'proof.sourceNote', 'proof.source'];
+  const structuredSourceFields = [
+    'sourceTrace.sourceIds',
+    'sourceTrace.source_ids',
+    'sourceTrace.sources',
+    'sourceTrace.metricSources',
+    'proof.sourceTrace.sourceIds',
+    'proof.sourceTrace.source_ids',
+    'proof.sourceTrace.sources'
+  ];
+  const commonEvidenceFields = [...imageFields, ...structuredSourceFields];
   if (['hero-image', 'proof-gallery'].includes(id)) return any(commonEvidenceFields);
   if (id === 'caption-bar') return any([...commonEvidenceFields, 'caption', 'visual.caption', 'proof.explanation']);
   if (id === 'product-matrix') return any(['product', 'products', 'productStory', ...commonEvidenceFields]);
@@ -43,10 +52,10 @@ function componentHintHasEvidence(id = '', slide = {}) {
   if (id === 'workflow-rail') return any(['workflow', 'prototypeFlow', 'steps', 'phases']);
   if (['risk-register', 'risk-matrix'].includes(id)) return any(['rows', 'risks', 'controls', 'riskRegister', 'riskMatrix', 'matrix']);
   if (id === 'governance-table') return any(['rows', 'controls', 'governance', 'responsibilityLoop']);
-  if (id === 'source-note') return any(sourceFields);
+  if (id === 'source-note') return any([...visibleSourceFields, ...structuredSourceFields]);
   if (id === 'service-blueprint-lane') return any(['serviceBlueprint', 'touchpoints', 'handoffs', 'qualityHandoff', 'journeyMap']);
   if (id === 'patient-journey-band') return any(['journeyMap', 'patientJourney', 'touchpoints', 'handoffs']);
-  if (['equipment-nameplate', 'inspection-matrix', 'quality-scorecard'].includes(id)) return any(['equipment', 'equipmentNameplate', 'inspectionMatrix', 'oee', 'metrics', ...sourceFields]);
+  if (['equipment-nameplate', 'inspection-matrix', 'quality-scorecard'].includes(id)) return any(['equipment', 'equipmentNameplate', 'inspectionMatrix', 'oee', 'metrics', ...structuredSourceFields]);
   if (id === 'adoption-funnel') return any(['adoptionFunnel', 'funnel', 'metrics']);
   return any(commonEvidenceFields);
 }
@@ -68,12 +77,14 @@ function componentHintFindings(slideNo, chain = {}, slide = {}) {
 
 function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
   const slideNo = index + 1;
+  const type = String(slide.type || '');
+  const neutralStageAllowed = ['toc', 'toc-clean', 'chapter-divider'].includes(type);
   const suppliedRaw = slide.componentPlan && slide.componentPlan.industryEvidenceChain;
   const supplied = normalizeIndustryEvidenceChainShape(suppliedRaw);
   const canonical = canonicalIndustryEvidenceChainForSlide(plan, slide);
   const chain = canonical && canonical.stageId !== 'neutral-general'
     ? canonical
-    : (supplied || inferIndustryEvidenceChain(plan, slide));
+    : inferIndustryEvidenceChain(plan, slide);
   const planned = plannedIdsForSlide(slide);
   const expected = Array.isArray(chain.components) ? chain.components : [];
   const plannedExpected = expected.filter(id => planned.includes(id));
@@ -84,7 +95,7 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
   findings.push(...inputChainFindings({ canonical, slide, slideNo, suppliedRaw, supplied }));
 
   if (chain.stageId === 'neutral-general') {
-    if (knownIndustry(plan, slide)) {
+    if (knownIndustry(plan, slide) && !neutralStageAllowed) {
       findings.push({
         slide: slideNo,
         level: 'review',
@@ -127,12 +138,12 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
         message: `${chain.stageLabel} expects captioned evidence but no caption/proof explanation field was found`
       });
     }
-    if (expected.includes('source-note') && !COMMON_SOURCE_FIELDS.some(field => hasFieldPath(slide, field))) {
+    if (chain.requiresSource && !hasSourceEvidence(slide)) {
       findings.push({
         slide: slideNo,
         level: 'review',
         type: 'sourceCoverageLow',
-        message: `${chain.stageLabel} expects source/provenance coverage but no source note field was found`
+        message: `${chain.stageLabel} expects internal source/provenance coverage but no explainable source trace was found`
       });
     }
     if (renderMeta && renderMeta.__readError) {
@@ -199,6 +210,7 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
       previousComponentSuggestions: Boolean(slide.previousComponentSuggestions),
       previousCompositionPlan: Boolean(slide.previousCompositionPlan),
       previousAssetGeneration: Boolean(slide.previousAssetGeneration),
+      previousGeneratedAssetPrompt: Boolean(slide.previousGeneratedAssetPrompt),
       previousIndustryEvidenceChain: Boolean(slide.previousIndustryEvidenceChain),
       industryEvidenceChainConflict: slide.industryEvidenceChainConflict || null
     },

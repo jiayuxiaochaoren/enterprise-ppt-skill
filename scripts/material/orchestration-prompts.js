@@ -96,7 +96,7 @@ function extractionPrompt(bundle, sourceAudit, storyPlan, clarifications) {
     '- 事实必须来自 Stage 1 标为可用的来源；source_ids 必填。',
     '- claim_spine 必须服从 Stage 2 的章节顺序和 proof_object_plan。',
     '- 如果 Stage 2 提供 reference_recipe_plan，把 recipe_id / layoutVariant / component_suggestions 写入对应 claim；component_suggestions 只是非执行建议。',
-    '- 每个 claim 必须输出 page-level themeIntent、proof_object、layoutVariant、referenceRecipeIds、asset_requirements、source_pages/source_excerpts 和 source_note/provenance_note；只有材料证据或用户偏好明确支持时才写 componentSuggestions，不要输出 componentHints。缺素材时写入 missing_info 或 clarification_candidates，不要静默忽略。',
+    '- 每个 claim 必须输出 page-level themeIntent、proof_object、layoutVariant、referenceRecipeIds、asset_requirements 和 source_pages/source_excerpts；source_note/provenance_note 仅在用户明确要求可见来源说明时输出，不能替代结构化来源页码和摘录。只有材料证据或用户偏好明确支持时才写 componentSuggestions，不要输出 componentHints。缺素材时写入 missing_info 或 clarification_candidates，不要静默忽略。',
     '- 每个诊断、数据、方案、价值 claim 尽量填写 business_logic；如果材料没有依据，字段留空但不要编造。',
     '- 每个数据 claim 填写 data_component，用来驱动后续 renderer 和 QA。',
     '- 保留 Stage 2 的 deck_art_direction，并把对应的 themeIntent/accentRole/layoutEnergy/visualDensity/rhythmTransition 写入每个 claim；这些字段不代表事实，不需要 source_ids。',

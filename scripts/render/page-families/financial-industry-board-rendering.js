@@ -1,3 +1,7 @@
+const {
+  visibleSourceNotesEnabled
+} = require('../../design/source-evidence');
+
 function createFinancialIndustryBoardRenderer(ctx = {}, drawers = {}) {
   const {
     chartSpecToComponentId,
@@ -26,7 +30,8 @@ function createFinancialIndustryBoardRenderer(ctx = {}, drawers = {}) {
       h:board.h,
       noFrame:true,
       showTitle:false,
-      compactHeader:true
+      compactHeader:true,
+      showSourceNote:visibleSourceNotesEnabled(plan)
     });
     if (!result.rendered) return false;
 

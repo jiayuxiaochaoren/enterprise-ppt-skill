@@ -29,6 +29,11 @@ assert.ok(Object.prototype.hasOwnProperty.call(schema, 'visible_language_policy'
   'theme_intent',
   'accent_role'
 ].forEach(field => assert.ok(Object.prototype.hasOwnProperty.call(claimSchema, field), `extraction schema should include ${field}`));
+assert.match(
+  claimSchema.source_note,
+  /only when explicitly requested/,
+  'source_note schema should describe visible source notes as opt-in display text'
+);
 
 for (const brief of industryAcceptanceBriefs()) {
   const context = referenceContextForPrompt({
@@ -64,6 +69,16 @@ const promptText = extractionPrompt(promptBundle);
   'visible_language_policy',
   'localize_non_essential_microcopy'
 ].forEach(term => assert.ok(promptText.includes(term), `orchestration prompt should require ${term}`));
+assert.match(
+  promptText,
+  /source_note\/provenance_note 仅在用户明确要求可见来源说明时输出/,
+  'orchestration prompt should keep visible source notes opt-in'
+);
+assert.equal(
+  /必须输出[^；。\n]*和 source_note\/provenance_note/.test(promptText),
+  false,
+  'orchestration prompt should not require every claim to output visible source notes'
+);
 assert.equal(stagePrompt('extraction', promptBundle), promptText, 'stagePrompt should route extraction through the shared prompt builder');
 assert.ok(storyArchitecturePrompt(promptBundle).includes('deck_art_direction'), 'story prompt should require art direction');
 const overview = orchestrationOverview('out/model-orchestration');

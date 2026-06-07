@@ -26,16 +26,16 @@ const HIGH_VALUE_PAGE_FAMILIES = new Set([
 ]);
 
 const PRIORITY_PAGE_FAMILY_SPECS = [
-  ['financial-kpi-snapshot', 'metric-comparison', ['finance-investment'], 'value-signal', ['kpi-primary-metric', 'metric-strip', 'chart-commentary-panel', 'source-note']],
-  ['chart-grid-with-commentary', 'metric-comparison', ['finance-investment', 'general-operations'], 'value-signal', ['metric-strip', 'chart-commentary-panel', 'source-note']],
+  ['financial-kpi-snapshot', 'metric-comparison', ['finance-investment'], 'value-signal', ['kpi-primary-metric', 'metric-strip', 'chart-commentary-panel']],
+  ['chart-grid-with-commentary', 'metric-comparison', ['finance-investment', 'general-operations'], 'value-signal', ['metric-strip', 'chart-commentary-panel']],
   ['quarterly-results-summary', 'metric-comparison', ['finance-investment'], 'value-signal', ['kpi-primary-metric', 'metric-strip', 'chart-commentary-panel', 'disclosure-footnote']],
   ['guidance-and-risk-board', 'risk-table', ['finance-investment', 'government-public-sector'], 'risk-warning', ['risk-matrix', 'control-tag', 'disclosure-footnote']],
-  ['value-creation-process-map', 'strategy-map', ['beauty-consumer', 'general-operations'], 'system-architecture', ['process-rail', 'system-rail', 'value-chain-connector', 'source-note']],
-  ['materiality-matrix-board', 'risk-table', ['general-operations', 'government-public-sector'], 'risk-warning', ['risk-matrix', 'control-tag', 'source-note']],
-  ['sustainability-proof-spread', 'case-gallery', ['beauty-consumer', 'general-operations'], 'case-evidence', ['caption-bar', 'proof-gallery-grid', 'source-note']],
-  ['governance-table-editorial', 'risk-table', ['finance-investment', 'government-public-sector', 'general-operations'], 'risk-warning', ['governance-table', 'control-tag', 'source-note']],
+  ['value-creation-process-map', 'strategy-map', ['beauty-consumer', 'general-operations'], 'system-architecture', ['process-rail', 'system-rail', 'value-chain-connector']],
+  ['materiality-matrix-board', 'risk-table', ['general-operations', 'government-public-sector'], 'risk-warning', ['risk-matrix', 'control-tag']],
+  ['sustainability-proof-spread', 'case-gallery', ['beauty-consumer', 'general-operations'], 'case-evidence', ['caption-bar', 'proof-gallery-grid']],
+  ['governance-table-editorial', 'risk-table', ['finance-investment', 'government-public-sector', 'general-operations'], 'risk-warning', ['governance-table', 'control-tag']],
   ['culture-cover-with-soft-geometry', 'manifesto', ['people-culture', 'people-culture-company'], 'industry-opening', ['statement-stage', 'value-principle-cards', 'caption-bar']],
-  ['mission-statement-stage', 'manifesto', ['people-culture', 'people-culture-company'], 'executive-narrative', ['statement-stage', 'source-note']],
+  ['mission-statement-stage', 'manifesto', ['people-culture', 'people-culture-company'], 'executive-narrative', ['statement-stage']],
   ['people-proof-mosaic', 'case-gallery', ['people-culture', 'people-culture-company'], 'case-evidence', ['people-proof-mosaic', 'caption-bar', 'proof-gallery-grid']],
   ['value-principle-cards', 'manifesto', ['people-culture', 'people-culture-company'], 'executive-narrative', ['statement-stage', 'value-principle-cards']],
   ['beauty-brand-editorial-cover', 'cover', ['beauty-consumer', 'brand-retail'], 'industry-opening', ['brand-world-hero', 'caption-bar', 'meta-folio']],
@@ -44,7 +44,7 @@ const PRIORITY_PAGE_FAMILY_SPECS = [
   ['product-evidence-story', 'case-gallery', ['beauty-consumer', 'brand-retail'], 'case-evidence', ['caption-bar', 'product-story-caption', 'proof-gallery-grid']],
   ['airy-concept-opening', 'cover', ['general-operations', 'finance-investment', 'manufacturing-operations', 'industrial-energy', 'saas-technology', 'saas-ai-technology', 'healthcare-operations', 'healthcare-wellness', 'government-public-sector', 'lifestyle-food-tourism-fashion', 'people-culture', 'people-culture-company', 'beauty-consumer'], 'industry-opening', ['brand-world-hero', 'meta-folio']],
   ['single-object-concept-map', 'strategy-map', ['general-operations', 'saas-technology', 'people-culture'], 'system-architecture', ['system-rail', 'value-chain-connector']],
-  ['executive-proof-board', 'case-gallery', ['general-operations', 'finance-investment', 'government-public-sector'], 'case-evidence', ['proof-gallery-grid', 'caption-bar', 'source-note']],
+  ['executive-proof-board', 'case-gallery', ['general-operations', 'finance-investment', 'government-public-sector'], 'case-evidence', ['proof-gallery-grid', 'caption-bar']],
   ['premium-closing-anchor', 'closing', ['general-operations', 'finance-investment', 'manufacturing-operations', 'industrial-energy', 'saas-technology', 'saas-ai-technology', 'healthcare-operations', 'healthcare-wellness', 'government-public-sector', 'lifestyle-food-tourism-fashion', 'brand-retail', 'beauty-consumer', 'people-culture', 'people-culture-company'], 'closing-anchor', ['editorial-end-card', 'contact-block']]
 ];
 

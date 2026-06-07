@@ -2,6 +2,11 @@ const {
   isSystemPlannedComponent,
   normalizeComponentId
 } = require('./component-planning-normalization');
+const {
+  hasVisibleSourceNote,
+  sourceTraceIsExplainable,
+  visibleSourceNotesEnabled
+} = require('./source-evidence');
 
 function filterComponentPlanCandidates(options = {}) {
   const {
@@ -26,7 +31,9 @@ function filterComponentPlanCandidates(options = {}) {
     ...((dialect.avoidComponents || []).map(normalizeComponentId)),
     ...((industryEvidenceChain.avoidComponents || []).map(normalizeComponentId))
   ]);
-  const hasExplicitVisibleSource = Boolean(slide.sourceNote || slide.source_note || (slide.proof && slide.proof.sourceNote));
+  const hasExplicitVisibleSource = hasVisibleSourceNote(slide);
+  const hasRenderableSourceTrace = sourceTraceIsExplainable(slide);
+  const sourceNoteVisible = visibleSourceNotesEnabled(plan);
   const portfolioRowsAreAssetRows = type === 'portfolio-table' &&
     !Array.isArray(slide.risks) &&
     !Array.isArray(slide.controls) &&
@@ -65,7 +72,7 @@ function filterComponentPlanCandidates(options = {}) {
     .filter(component => component.id !== 'system-rail' || systemRailAllowed)
     .filter(component => component.id !== 'product-matrix' || productMatrixAllowed)
     .filter(component => component.id !== 'load-curve-band' || energyCurveAllowed)
-    .filter(component => component.id !== 'source-note' || hasExplicitVisibleSource)
+    .filter(component => component.id !== 'source-note' || (sourceNoteVisible && (hasExplicitVisibleSource || hasRenderableSourceTrace)))
     .filter(component => {
       const capability = componentCapabilityFor(component.id);
       if (!capability || capability.ownershipPolicy !== 'native-only') return true;
