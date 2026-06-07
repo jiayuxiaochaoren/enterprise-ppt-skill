@@ -3,26 +3,47 @@ const {
 } = require('../component-id-normalization');
 
 const VALID_COMPONENT_RENDER_PATHS = new Set(['native', 'overlay', 'suppressed-by-policy']);
+const VALID_COMPONENT_RENDER_KINDS = new Set(['evidence', 'chrome', 'utility']);
 
 const COMPONENT_RENDER_PATHS = {
   'adoption-funnel': ['native'],
+  'bar-chart': ['native', 'overlay'],
+  'beauty-channel-structure': ['native', 'overlay'],
+  'beauty-efficacy-table': ['native', 'overlay'],
+  'beauty-member-repurchase': ['native', 'overlay'],
+  'beauty-price-band-matrix': ['native', 'overlay'],
+  'beauty-proof-gallery': ['native', 'overlay'],
+  'beauty-review-sentiment': ['native', 'overlay'],
+  'beauty-sku-matrix': ['native', 'overlay'],
+  'beauty-social-funnel': ['native', 'overlay'],
+  'beauty-sustainability-matrix': ['native', 'overlay'],
   'caption-bar': ['native', 'overlay'],
   'chart-commentary-panel': ['native', 'overlay'],
   'commentary-panel': ['native', 'overlay'],
+  'contact-block': ['native'],
   'content-card-grid': ['native'],
+  'campaign-to-member-rail': ['native'],
   'decision-panel': ['native'],
   'disclosure-footnote': ['native'],
+  'editorial-index': ['native'],
   'editorial-end-card': ['native'],
   'equipment-nameplate': ['native'],
+  'funnel-chart': ['native', 'overlay'],
   'governance-table': ['native'],
+  'heatmap-chart': ['native', 'overlay'],
   'hero-image': ['native', 'overlay'],
+  'information-gap': ['native', 'overlay'],
   'inspection-matrix': ['native'],
   'kpi-primary-metric': ['native'],
   'kpi-strip': ['native', 'overlay'],
   'load-curve-band': ['native'],
+  'launch-rhythm-strip': ['native'],
+  'line-chart': ['native', 'overlay'],
+  'matrix-chart': ['native', 'overlay'],
   'metric-strip': ['native', 'overlay'],
   'navigation-sequence': ['native'],
   'page-number': ['native'],
+  'pareto-chart': ['native', 'overlay'],
   'patient-journey-band': ['native'],
   'permission-audit-tag': ['native'],
   'process-rail': ['native', 'overlay'],
@@ -33,19 +54,84 @@ const COMPONENT_RENDER_PATHS = {
   'quality-scorecard': ['native'],
   'risk-matrix': ['native', 'overlay'],
   'risk-register': ['native', 'overlay'],
+  'scorecard': ['native', 'overlay'],
   'section-kicker': ['native'],
   'service-blueprint-lane': ['native'],
   'site-evidence-frame': ['native'],
   'source-note': ['overlay', 'suppressed-by-policy'],
   'system-rail': ['native', 'overlay'],
-  'value-chain': ['native'],
-  'value-chain-connector': ['native'],
+  'table-with-commentary': ['native', 'overlay'],
+  'value-chain': ['native', 'overlay'],
+  'value-chain-connector': ['native', 'overlay'],
+  'waterfall-chart': ['native', 'overlay'],
   'workflow-rail': ['native']
+};
+
+const COMPONENT_RENDER_PATH_KINDS = {
+  'adoption-funnel': 'evidence',
+  'bar-chart': 'evidence',
+  'beauty-channel-structure': 'evidence',
+  'beauty-efficacy-table': 'evidence',
+  'beauty-member-repurchase': 'evidence',
+  'beauty-price-band-matrix': 'evidence',
+  'beauty-proof-gallery': 'evidence',
+  'beauty-review-sentiment': 'evidence',
+  'beauty-sku-matrix': 'evidence',
+  'beauty-social-funnel': 'evidence',
+  'beauty-sustainability-matrix': 'evidence',
+  'caption-bar': 'evidence',
+  'chart-commentary-panel': 'evidence',
+  'commentary-panel': 'evidence',
+  'contact-block': 'utility',
+  'content-card-grid': 'utility',
+  'campaign-to-member-rail': 'utility',
+  'decision-panel': 'utility',
+  'disclosure-footnote': 'evidence',
+  'editorial-index': 'utility',
+  'editorial-end-card': 'utility',
+  'equipment-nameplate': 'evidence',
+  'funnel-chart': 'evidence',
+  'governance-table': 'evidence',
+  'heatmap-chart': 'evidence',
+  'hero-image': 'evidence',
+  'information-gap': 'evidence',
+  'inspection-matrix': 'evidence',
+  'kpi-primary-metric': 'evidence',
+  'kpi-strip': 'evidence',
+  'load-curve-band': 'utility',
+  'launch-rhythm-strip': 'utility',
+  'line-chart': 'evidence',
+  'matrix-chart': 'evidence',
+  'metric-strip': 'evidence',
+  'navigation-sequence': 'chrome',
+  'page-number': 'chrome',
+  'pareto-chart': 'evidence',
+  'patient-journey-band': 'evidence',
+  'permission-audit-tag': 'evidence',
+  'process-rail': 'utility',
+  'product-matrix': 'evidence',
+  'proof-gallery': 'evidence',
+  'proof-gallery-grid': 'evidence',
+  'prototype-frame': 'evidence',
+  'quality-scorecard': 'evidence',
+  'risk-matrix': 'evidence',
+  'risk-register': 'evidence',
+  'scorecard': 'evidence',
+  'section-kicker': 'chrome',
+  'service-blueprint-lane': 'evidence',
+  'site-evidence-frame': 'evidence',
+  'source-note': 'evidence',
+  'system-rail': 'utility',
+  'table-with-commentary': 'evidence',
+  'value-chain': 'evidence',
+  'value-chain-connector': 'utility',
+  'waterfall-chart': 'evidence',
+  'workflow-rail': 'evidence'
 };
 
 const NATIVE_EVIDENCE_COMPONENT_IDS = new Set(
   Object.entries(COMPONENT_RENDER_PATHS)
-    .filter(([, paths]) => paths.includes('native'))
+    .filter(([id, paths]) => paths.includes('native') && COMPONENT_RENDER_PATH_KINDS[id] === 'evidence')
     .map(([id]) => id)
 );
 
@@ -58,12 +144,23 @@ function componentHasRenderPath(id = '', path = '') {
   return path ? paths.includes(path) : paths.length > 0;
 }
 
+function componentRenderKindFor(id = '') {
+  return COMPONENT_RENDER_PATH_KINDS[normalizeComponentId(id)] || '';
+}
+
 function componentRenderPathIssues(id = '') {
-  const paths = componentRenderPathsFor(id);
+  const key = normalizeComponentId(id);
+  const paths = componentRenderPathsFor(key);
+  const kind = componentRenderKindFor(key);
   const issues = [];
   if (!paths.length) {
     issues.push(`${id} has no component render path`);
     return issues;
+  }
+  if (!kind) {
+    issues.push(`${id} has no component render kind`);
+  } else if (!VALID_COMPONENT_RENDER_KINDS.has(kind)) {
+    issues.push(`${id} render kind ${kind} is not one of evidence, chrome, utility`);
   }
   paths.forEach(path => {
     if (!VALID_COMPONENT_RENDER_PATHS.has(path)) {
@@ -77,10 +174,13 @@ function componentRenderPathIssues(id = '') {
 }
 
 module.exports = {
+  COMPONENT_RENDER_PATH_KINDS,
   COMPONENT_RENDER_PATHS,
   NATIVE_EVIDENCE_COMPONENT_IDS,
+  VALID_COMPONENT_RENDER_KINDS,
   VALID_COMPONENT_RENDER_PATHS,
   componentHasRenderPath,
+  componentRenderKindFor,
   componentRenderPathIssues,
   componentRenderPathsFor
 };

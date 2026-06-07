@@ -314,6 +314,46 @@ const nativeOnlyOverlayAudit = componentConsumptionAuditFromRender(
 assert.equal(nativeOnlyOverlayAudit.status, 'fail');
 assert.ok(nativeOnlyOverlayAudit.findings.some(f => f.type === 'componentModeMismatch' && /capability manifest/.test(f.message)));
 
+const sourceNoteNativeAudit = componentConsumptionAuditFromRender(
+  {
+    slides:[{
+      type:'report-board',
+      componentPlan: { components:[plannedComponent({ id:'source-note', allowedModes:['native', 'overlay'] })] }
+    }]
+  },
+  {
+    file:'fixture.render-meta.json',
+    meta: renderMeta({
+      plannedComponents: [plannedComponent({ id:'source-note', allowedModes:['native', 'overlay'] })],
+      drawnComponents: [{
+        id:'source-note',
+        required:true,
+        mode:'native-renderer',
+        rendered:true,
+        drawnCount:1,
+        nativeSlot:'source-footer',
+        bbox:{ x:8, y:7, w:4, h:0.2 },
+        rendererMethod:'fakeSourceNote'
+      }],
+      consumedComponents: [{
+        id:'source-note',
+        required:true,
+        mode:'native-renderer',
+        rendered:true,
+        drawnCount:1,
+        nativeSlot:'source-footer',
+        bbox:{ x:8, y:7, w:4, h:0.2 },
+        rendererMethod:'fakeSourceNote'
+      }]
+    })
+  }
+);
+assert.equal(sourceNoteNativeAudit.status, 'fail');
+assert.ok(
+  sourceNoteNativeAudit.findings.some(f => f.type === 'componentRenderPathModeMismatch' && /source-note/.test(f.message)),
+  'source-note should not be accepted as native-renderer even though legacy capability rows still list native'
+);
+
 const overlayAudit = overlayContractAuditFromRender({
   file:'fixture.render-meta.json',
   meta: renderMeta({

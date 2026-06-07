@@ -38,15 +38,7 @@ Object.values(INDUSTRY_EVIDENCE_CHAINS).forEach(chain => {
   });
 });
 
-const priorityCoveragePolicyChains = [
-  'energy-infrastructure',
-  'finance-investment',
-  'saas-technology',
-  'healthcare-operations'
-];
-priorityCoveragePolicyChains.forEach(chainId => {
-  const chain = INDUSTRY_EVIDENCE_CHAINS[chainId];
-  assert.ok(chain, `${chainId} should be registered`);
+Object.values(INDUSTRY_EVIDENCE_CHAINS).forEach(chain => {
   (chain.stages || []).forEach(stage => {
     const policy = normalizeStageCoveragePolicy(stage);
     const legacyEquivalent = !policy.requiredAll.length &&
@@ -57,7 +49,7 @@ priorityCoveragePolicyChains.forEach(chainId => {
     assert.equal(
       legacyEquivalent,
       false,
-      `${chainId}/${stage.id} should not collapse back to legacy requiredAny/minHits:1 semantics`
+      `${chain.id}/${stage.id} should not collapse back to legacy requiredAny/minHits:1 semantics`
     );
   });
 });

@@ -23,8 +23,10 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "hero-image",
+          "requiredAll": [
+            "hero-image"
+          ],
+          "optional": [
             "caption-bar"
           ],
           "minHits": 1

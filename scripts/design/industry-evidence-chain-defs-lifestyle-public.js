@@ -19,8 +19,10 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "hero-image",
+          "requiredAll": [
+            "hero-image"
+          ],
+          "optional": [
             "caption-bar"
           ],
           "minHits": 1
@@ -159,8 +161,10 @@ module.exports = {
         ],
         "coveragePolicy": {
           "requiredAny": [
-            "source-note",
             "commentary-panel"
+          ],
+          "optional": [
+            "source-note"
           ],
           "minHits": 1
         },
@@ -196,11 +200,13 @@ module.exports = {
           "governance-table"
         ],
         "coveragePolicy": {
+          "requiredAll": [
+            "value-chain"
+          ],
           "requiredAny": [
-            "value-chain",
             "governance-table"
           ],
-          "minHits": 1
+          "minHits": 2
         },
         "proofObjects": [
           "resource-map",
@@ -238,7 +244,9 @@ module.exports = {
         "coveragePolicy": {
           "requiredAny": [
             "kpi-strip",
-            "risk-register",
+            "risk-register"
+          ],
+          "optional": [
             "source-note"
           ],
           "minHits": 1

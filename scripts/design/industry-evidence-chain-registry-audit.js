@@ -11,6 +11,7 @@ const {
 } = require('../render/component-capability-manifest');
 const {
   componentHasRenderPath,
+  componentRenderKindFor,
   componentRenderPathIssues
 } = require('../render/component-render-path-registry');
 
@@ -98,6 +99,9 @@ function auditIndustryEvidenceChainRegistry(chains = INDUSTRY_EVIDENCE_CHAINS) {
         if (!componentHasRenderPath(id)) {
           addFinding(findings, 'fail', 'industryStageComponentRenderPathMissing', `${chainId}/${stageId || 'unknown'} component ${id} has no render path`, { chainId, stageId, componentId:id });
         } else {
+          if (componentRenderKindFor(id) !== 'evidence') {
+            addFinding(findings, 'fail', 'industryStageComponentRenderKindInvalid', `${chainId}/${stageId || 'unknown'} component ${id} render kind must be evidence`, { chainId, stageId, componentId:id });
+          }
           componentRenderPathIssues(id).forEach(issue => {
             addFinding(findings, 'fail', 'industryStageComponentRenderPathInvalid', `${chainId}/${stageId || 'unknown'} ${issue}`, { chainId, stageId, componentId:id });
           });

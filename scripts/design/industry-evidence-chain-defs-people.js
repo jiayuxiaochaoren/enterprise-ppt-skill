@@ -21,8 +21,10 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "value-chain",
+          "requiredAll": [
+            "value-chain"
+          ],
+          "optional": [
             "caption-bar"
           ],
           "minHits": 1
@@ -61,8 +63,10 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "proof-gallery",
+          "requiredAll": [
+            "proof-gallery"
+          ],
+          "optional": [
             "caption-bar"
           ],
           "minHits": 1
@@ -102,8 +106,10 @@ module.exports = {
           "source-note"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "kpi-strip",
+          "requiredAll": [
+            "kpi-strip"
+          ],
+          "optional": [
             "source-note"
           ],
           "minHits": 1

@@ -22,8 +22,10 @@ module.exports = {
           "value-chain"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "equipment-nameplate",
+          "requiredAll": [
+            "equipment-nameplate"
+          ],
+          "optional": [
             "value-chain"
           ],
           "minHits": 1

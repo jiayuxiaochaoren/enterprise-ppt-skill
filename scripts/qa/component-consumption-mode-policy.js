@@ -1,6 +1,9 @@
 const {
   componentCapabilityFor
 } = require('../render/component-capability-manifest');
+const {
+  componentHasRenderPath
+} = require('../render/component-render-path-registry');
 
 function actualComponentMode(component = {}) {
   if (component.mode === 'native-renderer') return 'native';
@@ -14,6 +17,14 @@ function modeFindingsForComponent(slideNo, component = {}, planned = {}) {
   const actualMode = actualComponentMode(component);
   const capability = componentCapabilityFor(component.id);
   const manifestModes = capability && Array.isArray(capability.supportedModes) ? capability.supportedModes : [];
+  if (component.rendered && actualMode && !componentHasRenderPath(component.id, actualMode)) {
+    findings.push({
+      slide: slideNo,
+      level:'fail',
+      type:'componentRenderPathModeMismatch',
+      message:`component ${component.id} rendered as ${actualMode}, but render path registry does not allow that mode`
+    });
+  }
   if (component.rendered && actualMode && manifestModes.length && !manifestModes.includes(actualMode)) {
     findings.push({
       slide: slideNo,
