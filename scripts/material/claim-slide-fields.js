@@ -1,5 +1,9 @@
 const { extractNumbers } = require('./common');
 const { evidenceById, sourceById } = require('./source-trace');
+const {
+  sourceIdValues,
+  toArray
+} = require('../design/source-evidence');
 
 function textItems(values = [], fallback = []) {
   const arr = Array.isArray(values) && values.length ? values : fallback;
@@ -25,17 +29,19 @@ function metricsFromClaim(claim = {}) {
 
 function attachMetricSourceTrace(metric = {}, sourceTrace = {}) {
   if (metric.sourceTrace || metric.source_trace) return metric;
-  const textSource = (sourceTrace.sources || []).find(entry => entry && entry.kind !== 'image');
+  const textSource = toArray(sourceTrace.sources).find(entry => entry && entry.kind !== 'image');
   if (!textSource) return metric;
+  const sourceIds = sourceIdValues(metric.sourceId, metric.source_id, textSource.id);
+  const sourceId = sourceIds[0] || '';
   return Object.assign({}, metric, {
-    sourceId: metric.sourceId || metric.source_id || textSource.id,
+    sourceId,
     sourcePage: metric.sourcePage || metric.source_page || textSource.page || textSource.pageRef || textSource.pageNumber,
     sourceExcerpt: metric.sourceExcerpt || metric.source_excerpt || textSource.excerpt,
     sourceTrace: {
       version: 'metric-source-trace/v1',
-      sourceIds: [metric.sourceId || metric.source_id || textSource.id].filter(Boolean),
+      sourceIds,
       sources: [{
-        id: metric.sourceId || metric.source_id || textSource.id,
+        id: sourceId,
         page: metric.sourcePage || metric.source_page || textSource.page || textSource.pageRef || textSource.pageNumber,
         excerpt: metric.sourceExcerpt || metric.source_excerpt || textSource.excerpt,
         provenance: 'metric-source-excerpt'
@@ -104,12 +110,17 @@ function imagesForClaim(claim = {}, extraction = {}, bundle = {}) {
   const sources = sourceById(bundle);
   const evMap = evidenceById(extraction);
   const refs = [];
-  (claim.visuals || []).forEach(v => {
-    if (v.source_id) refs.push({ sourceId: v.source_id, caption: v.caption, role: v.role });
+  toArray(claim.visuals).forEach(v => {
+    sourceIdValues(v.source_id, v.sourceId, v.asset_source_id, v.assetSourceId).forEach(sourceId => {
+      refs.push({ sourceId, caption: v.caption, role: v.role });
+    });
   });
-  (claim.evidence_ids || []).forEach(id => {
+  sourceIdValues(claim.evidence_ids, claim.evidenceIds).forEach(id => {
     const ev = evMap.get(id);
-    if (ev && ev.asset_source_id) refs.push({ sourceId: ev.asset_source_id, caption: ev.summary || ev.title, role: ev.type });
+    if (!ev) return;
+    sourceIdValues(ev.asset_source_id, ev.assetSourceId).forEach(sourceId => {
+      refs.push({ sourceId, caption: ev.summary || ev.title, role: ev.type });
+    });
   });
   const unique = [];
   const seen = new Set();

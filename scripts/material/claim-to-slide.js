@@ -73,7 +73,7 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
     subtitle,
     claim: subtitle,
     proofObject: claim.proof_object || claim.proofObject || '',
-    proof: proofObjectForClaim(claim, extraction, bundle),
+    proof: proofObjectForClaim(claim, extraction, bundle, { sourceTrace }),
     note: cleanPublicNote(claim.note || ''),
     sourceTrace
   };

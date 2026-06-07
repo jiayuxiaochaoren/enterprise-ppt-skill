@@ -1,5 +1,13 @@
 const path = require('path');
 const { enrichAssetDecision } = require('./asset-decision-meta');
+const {
+  imageAuthorizationStatus,
+  imageProofEligibility,
+  imageProvenanceClass,
+  normalizeAuthorizationStatus,
+  preferredAuthorizationStatus,
+  sourceTraceForSlide
+} = require('../design/source-evidence');
 
 function createRenderMetaHelpers(deps = {}) {
   const {
@@ -29,7 +37,7 @@ function createRenderMetaHelpers(deps = {}) {
       push(s.visual.images);
     }
     if (typeof mediaForRole === 'function') {
-      push(mediaForRole(plan, s, typeof slideRole === 'function' ? slideRole(s) : undefined));
+      push(mediaForRole(plan, s, typeof slideRole === 'function' ? slideRole(s) : undefined, { includeDefault:false }));
     }
     const unique = new Map();
     refs.forEach(ref => {
@@ -39,13 +47,30 @@ function createRenderMetaHelpers(deps = {}) {
     return [...unique.values()];
   }
 
+  function defaultMediaRefsForSlide(plan = {}, s = {}) {
+    if (typeof mediaForRole !== 'function') return [];
+    const role = typeof slideRole === 'function' ? slideRole(s) : undefined;
+    const defaultRef = mediaForRole(plan, s, role);
+    const explicitRef = mediaForRole(plan, s, role, { includeDefault:false });
+    if (!defaultRef || explicitRef === defaultRef) return [];
+    return [defaultRef];
+  }
+
   function sourceTraceForMeta(s = {}) {
-    return (s.proof && s.proof.sourceTrace) || s.sourceTrace || {};
+    return sourceTraceForSlide(s);
+  }
+
+  function authorizationRiskLevel(status = '') {
+    const normalized = normalizeAuthorizationStatus(status);
+    if (normalized === 'blocked') return 'high';
+    if (normalized === 'unknown') return 'medium';
+    return '';
   }
 
   function assetDecisionForMeta(plan = {}, s = {}) {
     const generation = s.assetGeneration || {};
     const refs = assetRefsForSlide(plan, s);
+    const defaultMediaRefs = defaultMediaRefsForSlide(plan, s);
     const trace = sourceTraceForMeta(s);
     const provenance = Array.isArray(trace.imageProvenance) ? trace.imageProvenance : [];
     const status = generation.status || (refs.length ? 'bound' : (s.generatedAssetPrompt ? 'required' : 'none'));
@@ -57,13 +82,24 @@ function createRenderMetaHelpers(deps = {}) {
     else if (s.generatedAssetPrompt) mode = 'pending-generation';
     else if (status === 'required' || generation.mustBind) mode = 'needs-generation';
     else if (status === 'optional') mode = 'optional-generation';
-    const proofEligibility = [...new Set(provenance.map(item => item.proofEligibility || '').filter(Boolean))];
-    const provenanceClasses = [...new Set(provenance.map(item => item.provenanceClass || item.provenance || '').filter(Boolean))];
+    const proofEligibility = [...new Set(provenance.map(imageProofEligibility).filter(Boolean))];
+    const provenanceClasses = [...new Set(provenance.map(imageProvenanceClass).filter(Boolean))];
     const authorizationStatuses = [...new Set([
       trace.assetAuthorizationStatus,
-      ...provenance.map(item => item.authorizationStatus)
+      ...((trace.assetAuthorizationStatuses) || []),
+      ...provenance.map(imageAuthorizationStatus)
     ].filter(Boolean))];
+    const preferredStatus = preferredAuthorizationStatus(authorizationStatuses);
+    const authorizationStatus = preferredStatus || 'none';
+    const authorizationStatusNormalized = preferredStatus
+      ? normalizeAuthorizationStatus(preferredStatus)
+      : 'none';
     const enriched = enrichAssetDecision({ generation, provenance, refs, role, slide:s, status, mode, trace });
+    const authorizationRisk = authorizationRiskLevel(preferredStatus);
+    const riskLevel = authorizationRisk === 'high'
+      ? 'high'
+      : (authorizationRisk === 'medium' && enriched.riskLevel === 'low' ? 'medium' : enriched.riskLevel);
+    const reviewRequired = Boolean(enriched.reviewRequired || authorizationRisk);
     const proofEligibilityValues = enriched.action === 'skip_image' && !refs.length
       ? [enriched.proofEligibilitySummary || 'none']
       : proofEligibility.length
@@ -88,22 +124,25 @@ function createRenderMetaHelpers(deps = {}) {
       mustBind: generation.mustBind === true,
       syntheticOnly: generation.syntheticOnly === true,
       staleForRoute: generation.staleForRoute === true,
-      riskLevel: enriched.riskLevel,
+      riskLevel,
       reason,
       source: enriched.source,
       generatedAssetPrompt: Boolean(s.generatedAssetPrompt),
       generatedAssetPromptHash: s.generatedAssetPrompt ? hash(String(s.generatedAssetPrompt)) : '',
       boundAssetCount: refs.length,
       boundAssetRefs: refs,
+      defaultMediaCount: defaultMediaRefs.length,
+      defaultMediaRefs,
       hasBoundAsset: refs.length > 0,
-      authorizationStatus: authorizationStatuses[0] || '',
+      authorizationStatus,
+      authorizationStatusNormalized,
       provenanceClass,
       provenanceClasses,
       proofEligibility: proofEligibilityValues,
       proofEligibilitySummary: enriched.proofEligibilitySummary || proofEligibilityValues[0] || 'none',
       imageProvenanceCount: provenance.length,
       skippedCriticalVisual: enriched.skippedCriticalVisual,
-      reviewRequired: enriched.reviewRequired,
+      reviewRequired,
       proofUse: proofEligibilityValues.includes('factual-proof')
         ? 'factual-proof'
         : (proofEligibilityValues.includes('synthetic-only') || generation.syntheticOnly ? 'synthetic-only' : '')
@@ -157,6 +196,7 @@ function createRenderMetaHelpers(deps = {}) {
     assetDecisionForMeta,
     assetRefsForSlide,
     compactChartSpecForMeta,
+    defaultMediaRefsForSlide,
     recordChartConsumption,
     sourceTraceForMeta
   };

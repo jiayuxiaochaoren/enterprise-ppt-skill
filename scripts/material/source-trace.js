@@ -1,29 +1,16 @@
 const { compactUnique } = require('./common');
+const {
+  preferredAuthorizationStatus,
+  sourceIdValues,
+  toArray
+} = require('../design/source-evidence');
 
 function sourceById(bundle = {}) {
-  return new Map((bundle.sources || []).map(s => [s.id, s]));
+  return new Map(toArray(bundle.sources).map(s => [s.id, s]));
 }
 
 function evidenceById(extraction = {}) {
-  return new Map((extraction.evidence || []).map(e => [e.id, e]));
-}
-
-function sourceSummariesById(bundle = {}, ids = []) {
-  const sources = sourceById(bundle);
-  return compactUnique(ids).map(id => {
-    const src = sources.get(id);
-    return src ? {
-      id: src.id,
-      kind: src.kind,
-      name: src.name,
-      relativePath: src.relativePath,
-      suggestedRole: src.suggestedRole || undefined,
-      page: src.page || src.pageNumber || undefined,
-      excerpt: (src.candidateFacts && src.candidateFacts[0]) || (src.chunks && src.chunks[0] && src.chunks[0].text && src.chunks[0].text.slice(0, 240)) || undefined,
-      provenance: src.kind === 'image' ? 'ingested-image-asset' : `ingested-${src.kind || 'source'}`,
-      authorizationStatus: src.authorizationStatus || src.assetRights || 'unknown'
-    } : { id };
-  });
+  return new Map(toArray(extraction.evidence).map(e => [e.id, e]));
 }
 
 function firstTextExcerpt(values = [], max = 260) {
@@ -38,7 +25,7 @@ function pageRefForSource(source = {}, claim = {}, evidence = []) {
   if (explicit) return explicit;
   const sourcePages = claim.source_pages || claim.sourcePages || {};
   if (sourcePages && typeof sourcePages === 'object' && sourcePages[source.id]) return sourcePages[source.id];
-  const ev = evidence.find(item => (item.source_ids || item.sourceIds || []).includes(source.id));
+  const ev = evidence.find(item => sourceIdValues(item.source_ids, item.sourceIds).includes(source.id));
   return ev && (ev.page || ev.pageNumber || ev.source_page || ev.sourcePage || ev.page_ref || ev.pageRef);
 }
 
@@ -47,7 +34,7 @@ function excerptForSource(source = {}, claim = {}, evidence = []) {
   if (explicit) return firstTextExcerpt([explicit]);
   const sourceExcerpts = claim.source_excerpts || claim.sourceExcerpts || {};
   if (sourceExcerpts && typeof sourceExcerpts === 'object' && sourceExcerpts[source.id]) return firstTextExcerpt([sourceExcerpts[source.id]]);
-  const ev = evidence.find(item => (item.source_ids || item.sourceIds || []).includes(source.id));
+  const ev = evidence.find(item => sourceIdValues(item.source_ids, item.sourceIds).includes(source.id));
   return firstTextExcerpt([
     ev && (ev.excerpt || ev.source_excerpt || ev.original_excerpt || ev.summary || ev.title),
     claim.support,
@@ -59,9 +46,7 @@ function excerptForSource(source = {}, claim = {}, evidence = []) {
 
 function assetAuthorizationForSource(source = {}, claim = {}, evidence = []) {
   const ev = evidence.find(item =>
-    item.asset_source_id === source.id ||
-    item.assetSourceId === source.id ||
-    (item.source_ids || item.sourceIds || []).includes(source.id)
+    sourceIdValues(item.asset_source_id, item.assetSourceId, item.source_ids, item.sourceIds).includes(source.id)
   ) || {};
   return ev.authorization_status || ev.authorizationStatus ||
     ev.asset_rights || ev.assetRights ||
@@ -73,20 +58,16 @@ function assetAuthorizationForSource(source = {}, claim = {}, evidence = []) {
 function sourceTraceForClaim(claim = {}, extraction = {}, bundle = {}) {
   const sources = sourceById(bundle);
   const evMap = evidenceById(extraction);
-  const evidenceIds = compactUnique(claim.evidence_ids || claim.evidenceIds || []);
+  const evidenceIds = compactUnique([...toArray(claim.evidence_ids), ...toArray(claim.evidenceIds)]);
   const evidence = evidenceIds.map(id => evMap.get(id)).filter(Boolean);
-  const sourceIds = compactUnique([
-    ...(claim.source_ids || claim.sourceIds || []),
-    ...evidence.flatMap(ev => ev.source_ids || ev.sourceIds || []),
-    ...evidence.map(ev => ev.asset_source_id || ev.assetSourceId).filter(Boolean)
-  ]);
+  const sourceIds = sourceIdValues(
+    claim.source_ids,
+    claim.sourceIds,
+    evidence.flatMap(ev => sourceIdValues(ev.source_ids, ev.sourceIds)),
+    evidence.flatMap(ev => sourceIdValues(ev.asset_source_id, ev.assetSourceId))
+  );
   const evidenceReferencesSource = (ev = {}, id = '') => {
-    const refs = compactUnique([
-      ev.asset_source_id,
-      ev.assetSourceId,
-      ...(ev.source_ids || ev.sourceIds || [])
-    ].filter(Boolean));
-    return refs.includes(id);
+    return sourceIdValues(ev.asset_source_id, ev.assetSourceId, ev.source_ids, ev.sourceIds).includes(id);
   };
   const sourceEntries = sourceIds.map(id => {
     const src = sources.get(id) || { id, kind: 'unknown' };
@@ -124,17 +105,16 @@ function sourceTraceForClaim(claim = {}, extraction = {}, bundle = {}) {
     sourceIds,
     sources: sourceEntries,
     imageProvenance,
-    assetAuthorizationStatus: authorizationStatuses.includes('blocked') || authorizationStatuses.includes('needs authorization')
-      ? 'blocked'
-      : (authorizationStatuses.includes('unknown') ? 'unknown' : (authorizationStatuses[0] || 'unknown')),
+    assetAuthorizationStatus: preferredAuthorizationStatus(authorizationStatuses) || 'unknown',
     confidence: claim.confidence
   };
 }
 
-function proofObjectForClaim(claim = {}, extraction = {}, bundle = {}) {
+function proofObjectForClaim(claim = {}, extraction = {}, bundle = {}, opts = {}) {
+  const sourceTrace = opts.sourceTrace || sourceTraceForClaim(claim, extraction, bundle);
   const evMap = evidenceById(extraction);
-  const evidenceIds = compactUnique(claim.evidence_ids || claim.evidenceIds || []);
-  const sourceIds = compactUnique(claim.source_ids || claim.sourceIds || []);
+  const evidenceIds = sourceTrace.evidenceIds || [];
+  const sourceIds = sourceTrace.sourceIds || [];
   const evidence = evidenceIds.map(id => evMap.get(id)).filter(Boolean);
   const evidenceTypes = compactUnique(evidence.map(ev => ev.type || 'evidence'));
   const visuals = Array.isArray(claim.visuals) ? claim.visuals : [];
@@ -145,9 +125,9 @@ function proofObjectForClaim(claim = {}, extraction = {}, bundle = {}) {
     ...visuals.map(v => `${v.mode || ''} ${v.provenance || ''} ${v.role || ''}`),
     ...assetRequirements.map(v => `${v.provenance || ''} ${v.role || ''}`)
   ].join(' ');
-  const hasRealEvidence = Boolean(sourceIds.length || evidence.some(ev => Array.isArray(ev.source_ids) && ev.source_ids.length));
-  const hasBoundAssetEvidence = evidence.some(ev => ev.asset_source_id) || visuals.some(v => v.source_id);
-  const generatedIllustration = /generated|synthetic|model|示意|生成/i.test(generatedSignals);
+  const hasBoundAssetEvidence = toArray(sourceTrace.imageProvenance).length > 0;
+  const hasRealEvidence = Boolean(sourceIds.length || toArray(sourceTrace.sources).length || hasBoundAssetEvidence);
+  const generatedIllustration = /generated|synthetic|model|示意|生成/i.test(generatedSignals) && !hasBoundAssetEvidence;
   const provenance = generatedIllustration && !hasBoundAssetEvidence
     ? 'model-generated-illustration'
     : (hasRealEvidence ? (hasBoundAssetEvidence ? 'real-asset-evidence' : 'source-derived-evidence') : 'unproven');
@@ -158,8 +138,8 @@ function proofObjectForClaim(claim = {}, extraction = {}, bundle = {}) {
     claimId: claim.id || '',
     evidenceIds,
     sourceIds,
-    sources: sourceSummariesById(bundle, sourceIds),
-    sourceTrace: sourceTraceForClaim(claim, extraction, bundle),
+    sources: toArray(sourceTrace.sources),
+    sourceTrace,
     evidenceTypes,
     provenance,
     evidenceMode: generatedIllustration ? 'synthetic-illustration' : 'real-evidence',
@@ -171,18 +151,21 @@ function proofObjectForClaim(claim = {}, extraction = {}, bundle = {}) {
 }
 
 function claimSpineContract(claims = [], extraction = {}, bundle = {}) {
-  return claims.map((claim, i) => ({
-    index: i + 1,
-    id: claim.id || `claim-${String(i + 1).padStart(3, '0')}`,
-    narrativeRole: claim.narrative_role || claim.narrativeRole || '',
-    claim: claim.claim || claim.title || '',
-    support: claim.support || claim.summary || '',
-    proofObject: proofObjectForClaim(claim, extraction, bundle),
-    sourceTrace: sourceTraceForClaim(claim, extraction, bundle),
-    sourceIds: compactUnique(claim.source_ids || claim.sourceIds || []),
-    evidenceIds: compactUnique(claim.evidence_ids || claim.evidenceIds || []),
-    confidence: claim.confidence
-  }));
+  return claims.map((claim, i) => {
+    const sourceTrace = sourceTraceForClaim(claim, extraction, bundle);
+    return {
+      index: i + 1,
+      id: claim.id || `claim-${String(i + 1).padStart(3, '0')}`,
+      narrativeRole: claim.narrative_role || claim.narrativeRole || '',
+      claim: claim.claim || claim.title || '',
+      support: claim.support || claim.summary || '',
+      proofObject: proofObjectForClaim(claim, extraction, bundle, { sourceTrace }),
+      sourceTrace,
+      sourceIds: sourceIdValues(claim.source_ids, claim.sourceIds),
+      evidenceIds: compactUnique([...toArray(claim.evidence_ids), ...toArray(claim.evidenceIds)]),
+      confidence: claim.confidence
+    };
+  });
 }
 
 module.exports = {

@@ -40,6 +40,9 @@ function createAcceptanceAuditHelpers({
       requireContactSheet: options.requireContactSheet === true,
       strict: options.strict === true
     });
+    const chartVisualFindingsForAcceptance = (chartVisual.findings || [])
+      .filter(f => f.level === 'fail' || f.type === 'chartSourceMissing');
+    const chartGateFindings = Array.isArray(chartGate.findings) ? chartGate.findings : [];
     const checks = [
       {
         id: 'report-depth',
@@ -75,13 +78,19 @@ function createAcceptanceAuditHelpers({
         id: 'chart-visual',
         label: 'Chart Visual QA',
         description: '图表是否有轴标签、单位、来源和可读标签。',
-        findings: chartVisual.findings.filter(f => f.level === 'fail')
+        findings: chartVisualFindingsForAcceptance
       },
       {
         id: 'chart-evidence',
         label: 'Chart Evidence QA',
         description: '图表是否可追溯到 proof object 和真实/生成证据模式。',
         findings: chartEvidence.findings
+      },
+      {
+        id: 'chart-gate',
+        label: 'Chart Acceptance Gate',
+        description: '图表渲染消费、单位和结构化来源是否满足交付验收。',
+        findings: chartGateFindings
       },
       {
         id: 'industry-customization',

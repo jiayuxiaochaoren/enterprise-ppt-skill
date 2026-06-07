@@ -1,6 +1,13 @@
+const { createSourceTraceAuditPrimitives } = require('./source-trace-audit-primitives');
 const {
-  createSourceTraceAuditPrimitives
-} = require('./source-trace-audit-primitives');
+  effectiveImageAuthorizationStatus,
+  imageProvenanceCanSatisfyFactualProof,
+  imageProvenanceIsSyntheticOnly,
+  preferredAuthorizationStatus,
+  sourceEntryDisplayId,
+  sourceIdentityValues,
+  toArray
+} = require('./source-evidence');
 
 function createSourceTraceAuditHelpers({
   compactUnique,
@@ -21,6 +28,64 @@ function createSourceTraceAuditHelpers({
     sourceTraceIsPlanAuthored
   });
 
+  function imageIdentity(value = {}) { return sourceIdentityValues(value)[0] || 'unknown'; }
+  function imageProvenanceMatchesEntry(img = {}, entry = {}) {
+    const imageIds = sourceIdentityValues(img);
+    return sourceIdentityValues(entry).some(id => imageIds.includes(id));
+  }
+  function createImageAliasIndex() {
+    const aliasToId = new Map();
+    return {
+      canonical(value = {}, preferred = '') {
+        const aliases = sourceIdentityValues(value);
+        const existing = aliases.map(alias => aliasToId.get(alias)).find(Boolean);
+        const auditId = existing || preferred || aliases[0] || 'unknown';
+        aliases.forEach(alias => aliasToId.set(alias, auditId));
+        return auditId;
+      },
+      link(value = {}, auditId = '') {
+        sourceIdentityValues(value).forEach(alias => aliasToId.set(alias, auditId));
+      }
+    };
+  }
+  function createAuthorizationFindingPusher(findings, slideNumber, keyed = false) {
+    const byId = new Map();
+    const keys = new Set();
+    return function pushFinding(type, level, id, message) {
+      const statusId = id || 'unknown';
+      const existing = byId.get(statusId);
+      if (existing && existing.type === 'assetAuthorizationBlocked') return;
+      if (existing && type === 'assetAuthorizationBlocked') {
+        if (keyed) {
+          keys.delete(`${existing.type}:${statusId}`);
+          keys.add(`${type}:${statusId}`);
+        }
+        Object.assign(existing, { level, type, message });
+        return;
+      }
+      if (existing && !keyed) return;
+      const key = `${type}:${statusId}`;
+      if (keyed && keys.has(key)) return;
+      if (keyed) keys.add(key);
+      const finding = { slide: slideNumber, level, type, message };
+      byId.set(statusId, finding);
+      findings.push(finding);
+    };
+  }
+
+  function explicitAssetAuthorizationTraceForSlide(slide = {}) {
+    const proof = slide.proof || {};
+    const chartSpec = slide.chartSpec || slide.chart_spec || {};
+    const traceObjects = [proof, proof.sourceTrace || proof.source_trace || {}, slide.sourceTrace || slide.source_trace || {}, chartSpec.sourceTrace || chartSpec.source_trace || {}, slide];
+    const statuses = traceObjects.flatMap(trace => [
+      trace && trace.assetAuthorizationStatus,
+      trace && trace.asset_authorization_status,
+      ...toArray(trace && trace.assetAuthorizationStatuses),
+      ...toArray(trace && trace.asset_authorization_statuses)
+    ]);
+    return { assetAuthorizationStatus: preferredAuthorizationStatus(statuses), assetAuthorizationStatuses: statuses };
+  }
+
   function sourceTraceAudit(plan = {}, normalizedPlan = null) {
     const normalized = normalizedPlan || normalizeDeckPlan(plan);
     const slides = normalized.slides || [];
@@ -29,8 +94,19 @@ function createSourceTraceAuditHelpers({
       if (['cover', 'closing', 'toc', 'toc-clean', 'chapter-divider'].includes(slide.type || '')) return;
       const entries = sourceEntriesForSlide(slide);
       const trace = sourceTraceForSlide(slide);
+      const authorizationTrace = explicitAssetAuthorizationTraceForSlide(slide);
       const proof = slideProofObject(slide);
-      const hasSource = entries.length || (proof.sourceIds || []).length;
+      const imageAliases = createImageAliasIndex();
+      const pushAuthorizationFinding = createAuthorizationFindingPusher(findings, i + 1, true);
+      function matchedImageAuditId(entry = {}, img = {}) {
+        const preferred = imageIdentity(entry) !== 'unknown' ? imageIdentity(entry) : imageIdentity(img);
+        const auditId = imageAliases.canonical(entry, preferred);
+        imageAliases.link(img, auditId);
+        return auditId;
+      }
+      const imageProvenance = Array.isArray(trace.imageProvenance) ? trace.imageProvenance : [];
+      const hasFactualProofImage = imageProvenance.some(imageProvenanceCanSatisfyFactualProof);
+      const hasSource = entries.length || (proof.sourceIds || []).length || hasFactualProofImage;
       if (!hasSource && proof.factual) {
         findings.push({
           slide: i + 1,
@@ -38,16 +114,19 @@ function createSourceTraceAuditHelpers({
           type: 'sourceTraceMissing',
           message: 'factual proof object has no source trace'
         });
-        return;
       }
       entries.forEach(entry => {
+        const entryDisplayId = sourceEntryDisplayId(entry) || 'unknown';
         const isImage = entry.kind === 'image' || entry.assetProvenance || /image|screenshot|photo/i.test(entry.provenance || '');
+        const matchingImageProvenance = isImage
+          ? (trace.imageProvenance || []).find(img => imageProvenanceMatchesEntry(img, entry))
+          : null;
         if (!isImage && !sourceEntryHasPage(entry)) {
           findings.push({
             slide: i + 1,
             level: 'fail',
             type: 'sourceTraceNotExplainable',
-            message: `source ${entry.id} needs page/pageRef`
+            message: `source ${entryDisplayId} needs page/pageRef`
           });
         }
         if (!isImage && !sourceEntryHasExcerpt(entry)) {
@@ -55,33 +134,37 @@ function createSourceTraceAuditHelpers({
             slide: i + 1,
             level: 'fail',
             type: 'sourceTraceNotExplainable',
-            message: `source ${entry.id} needs original excerpt`
+            message: `source ${entryDisplayId} needs original excerpt`
           });
         }
-        if (isImage && !entry.assetProvenance && !(trace.imageProvenance || []).some(img => img.sourceId === entry.id)) {
+        if (isImage && !entry.assetProvenance && !matchingImageProvenance) {
+          const statusId = imageAliases.canonical(entry);
           findings.push({
             slide: i + 1,
             level: 'fail',
             type: 'imageProvenanceMissing',
-            message: `image source ${entry.id} needs screenshot/image provenance`
+            message: `image source ${statusId} needs screenshot/image provenance`
           });
         }
         if (isImage) {
-          const entryStatus = normalizeAuthorizationStatus(entry.authorizationStatus || trace.assetAuthorizationStatus);
+          const statusId = matchingImageProvenance
+            ? matchedImageAuditId(entry, matchingImageProvenance)
+            : imageAliases.canonical(entry);
+          const authorizationItem = matchingImageProvenance
+            ? {
+                authorizationStatus: preferredAuthorizationStatus([
+                  entry.authorizationStatus,
+                  entry.authorization_status,
+                  matchingImageProvenance.authorizationStatus,
+                  matchingImageProvenance.authorization_status
+                ])
+              }
+            : entry;
+          const entryStatus = normalizeAuthorizationStatus(effectiveImageAuthorizationStatus(authorizationItem, authorizationTrace));
           if (entryStatus === 'blocked') {
-            findings.push({
-              slide: i + 1,
-              level: 'fail',
-              type: 'assetAuthorizationBlocked',
-              message: `image source ${entry.id || 'unknown'} is not authorized for external use`
-            });
-          } else if (entryStatus === 'unknown') {
-            findings.push({
-              slide: i + 1,
-              level: 'review',
-              type: 'assetAuthorizationUnknown',
-              message: `image source ${entry.id || 'unknown'} authorization is unknown`
-            });
+            pushAuthorizationFinding('assetAuthorizationBlocked', 'fail', statusId, `image source ${statusId} is not authorized for external use`);
+          } else if (entryStatus === 'unknown' && !matchingImageProvenance) {
+            pushAuthorizationFinding('assetAuthorizationUnknown', 'review', statusId, `image source ${statusId} authorization is unknown`);
           }
         }
       });
@@ -103,39 +186,21 @@ function createSourceTraceAuditHelpers({
               slide: i + 1,
               level: 'fail',
               type: 'metricSourceTraceNotExplainable',
-              message: `metric ${metricIndex + 1} source ${entry.id || 'unknown'} needs page and original excerpt`
+              message: `metric ${metricIndex + 1} source ${sourceEntryDisplayId(entry) || 'unknown'} needs page and original excerpt`
             });
           }
         });
       });
       (trace.imageProvenance || []).forEach(img => {
-        const status = normalizeAuthorizationStatus(img.authorizationStatus || trace.assetAuthorizationStatus);
+        const statusId = imageAliases.canonical(img);
+        const status = normalizeAuthorizationStatus(effectiveImageAuthorizationStatus(img, authorizationTrace));
         if (status === 'blocked') {
-          findings.push({
-            slide: i + 1,
-            level: 'fail',
-            type: 'assetAuthorizationBlocked',
-            message: `image source ${img.sourceId || img.file || 'unknown'} is not authorized for external use`
-          });
+          pushAuthorizationFinding('assetAuthorizationBlocked', 'fail', statusId, `image source ${statusId} is not authorized for external use`);
         } else if (status === 'unknown') {
-          findings.push({
-            slide: i + 1,
-            level: 'review',
-            type: 'assetAuthorizationUnknown',
-            message: `image source ${img.sourceId || img.file || 'unknown'} authorization is unknown`
-          });
+          pushAuthorizationFinding('assetAuthorizationUnknown', 'review', statusId, `image source ${statusId} authorization is unknown`);
         }
       });
-      const imageProvenance = Array.isArray(trace.imageProvenance) ? trace.imageProvenance : [];
-      const generatedOnly = imageProvenance.length > 0 && imageProvenance.every(img => {
-        const proofEligibility = String(img.proofEligibility || '').toLowerCase();
-        const provenanceClass = String(img.provenanceClass || img.type || img.provenance || '').toLowerCase();
-        return proofEligibility === 'synthetic-only' ||
-          proofEligibility === 'illustration-only' ||
-          /model-generated|generated|synthetic/.test(provenanceClass);
-      });
-      const hasFactualProofImage = imageProvenance.some(img => String(img.proofEligibility || '').toLowerCase() === 'factual-proof' ||
-        ['user-owned', 'public-licensed'].includes(String(img.provenanceClass || '').toLowerCase()));
+      const generatedOnly = imageProvenance.length > 0 && imageProvenance.every(imageProvenanceIsSyntheticOnly);
       if (proof.factual && imageProvenance.length && generatedOnly && !hasFactualProofImage) {
         findings.push({
           slide: i + 1,
@@ -164,10 +229,12 @@ function createSourceTraceAuditHelpers({
     const findings = [];
     slides.forEach((slide, i) => {
       const trace = sourceTraceForSlide(slide);
+      const authorizationTrace = explicitAssetAuthorizationTraceForSlide(slide);
       const imageRefs = imageRefsForSlide(slide);
       const provenance = Array.isArray(trace.imageProvenance) ? trace.imageProvenance : [];
-      const status = normalizeAuthorizationStatus(trace.assetAuthorizationStatus);
-      if (imageRefs.length && required && !provenance.length && status !== 'cleared') {
+      const imageAliases = createImageAliasIndex();
+      const pushGateFinding = createAuthorizationFindingPusher(findings, i + 1);
+      if (imageRefs.length && required && !provenance.length) {
         findings.push({
           slide: i + 1,
           level: 'fail',
@@ -176,21 +243,12 @@ function createSourceTraceAuditHelpers({
         });
       }
       provenance.forEach(item => {
-        const itemStatus = normalizeAuthorizationStatus(item.authorizationStatus || trace.assetAuthorizationStatus);
+        const itemId = imageAliases.canonical(item);
+        const itemStatus = normalizeAuthorizationStatus(effectiveImageAuthorizationStatus(item, authorizationTrace));
         if (itemStatus === 'blocked') {
-          findings.push({
-            slide: i + 1,
-            level: 'fail',
-            type: 'assetAuthorizationBlocked',
-            message: `asset ${item.sourceId || item.file || 'unknown'} is blocked for external material generation`
-          });
+          pushGateFinding('assetAuthorizationBlocked', 'fail', itemId, `asset ${itemId} is blocked for external material generation`);
         } else if (required && itemStatus !== 'cleared' && itemStatus !== 'internal-only') {
-          findings.push({
-            slide: i + 1,
-            level: 'fail',
-            type: 'assetAuthorizationUnresolved',
-            message: `asset ${item.sourceId || item.file || 'unknown'} authorization must be resolved before formal rendering`
-          });
+          pushGateFinding('assetAuthorizationUnresolved', 'fail', itemId, `asset ${itemId} authorization must be resolved before formal rendering`);
         }
       });
     });
@@ -217,6 +275,4 @@ function createSourceTraceAuditHelpers({
   };
 }
 
-module.exports = {
-  createSourceTraceAuditHelpers
-};
+module.exports = { createSourceTraceAuditHelpers };

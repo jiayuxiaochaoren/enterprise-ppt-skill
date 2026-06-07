@@ -70,7 +70,7 @@ function renderTableWithCommentary(ctx, spec = {}, opts = {}) {
     visualChecks: {
       axisLabels: false,
       unitVisible: Boolean(spec.unit),
-      sourceVisible: Boolean((spec.sourceTrace || {}).sourceNote || ((spec.sourceTrace || {}).sourceIds || []).length),
+      sourceVisible: frame.sourceVisible,
       labelCollision: rows.length > 5,
       valueOverflow: false
     }

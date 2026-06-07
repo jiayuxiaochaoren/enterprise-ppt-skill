@@ -1,3 +1,8 @@
+const {
+  imageProofEligibility,
+  imageProvenanceClass
+} = require('../design/source-evidence');
+
 function compactFirst(values = [], fallback = '') {
   const filtered = values.map(value => String(value || '').trim()).filter(Boolean);
   if (!filtered.length) return fallback;
@@ -37,11 +42,11 @@ function riskLevelForAssetDecision(input = {}) {
 function provenanceSummary(input = {}) {
   const { generation = {}, provenance = [], refs = [], slide = {} } = input;
   const provenanceClass = compactFirst(
-    provenance.map(item => item.provenanceClass || item.provenance || item.type),
+    provenance.map(imageProvenanceClass),
     refs.length ? 'unknown-bound' : (generation.syntheticOnly || slide.generatedAssetPrompt ? 'model-generated-preview' : 'none')
   );
   const proofEligibility = compactFirst(
-    provenance.map(item => item.proofEligibility),
+    provenance.map(imageProofEligibility),
     generation.syntheticOnly || slide.generatedAssetPrompt ? 'synthetic-only' : (refs.length ? 'unknown' : 'none')
   );
   return { provenanceClass, proofEligibility };

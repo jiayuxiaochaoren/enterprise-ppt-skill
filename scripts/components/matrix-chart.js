@@ -91,7 +91,7 @@ function renderMatrixChart(ctx, spec = {}, opts = {}) {
     visualChecks: {
       axisLabels: true,
       unitVisible: Boolean(spec.unit),
-      sourceVisible: Boolean((spec.sourceTrace || {}).sourceNote || ((spec.sourceTrace || {}).sourceIds || []).length),
+      sourceVisible: frame.sourceVisible,
       labelCollision: cells.rows.length * cells.cols.length > 20,
       valueOverflow: false
     }

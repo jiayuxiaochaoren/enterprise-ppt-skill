@@ -11,6 +11,10 @@ const {
   informationGapSpec,
   normalizeChartSpec
 } = require('./chart-spec-normalization');
+const {
+  assetAuthorizationStatusHasSignal,
+  sourceTraceForSlide
+} = require('./source-evidence');
 
 function routeChartSpec(plan = {}, slide = {}, options = {}) {
   return normalizeChartSpec(plan, slide, options);
@@ -28,7 +32,16 @@ function chartConsumedFields(spec = {}) {
   if (spec.unit) fields.push('unit');
   if (spec.period) fields.push('period');
   if (spec.baseline) fields.push('baseline');
-  if (spec.sourceTrace && ((spec.sourceTrace.sourceIds || []).length || (spec.sourceTrace.sources || []).length)) fields.push('sourceTrace');
+  if (spec.sourceTrace) {
+    const trace = sourceTraceForSlide({ sourceTrace: spec.sourceTrace });
+    if ((trace.sourceIds || []).length ||
+      (trace.sources || []).length ||
+      (trace.imageProvenance || []).length ||
+      (trace.assetAuthorizationStatuses || []).some(assetAuthorizationStatusHasSignal) ||
+      assetAuthorizationStatusHasSignal(trace.assetAuthorizationStatus)) {
+      fields.push('sourceTrace');
+    }
+  }
   if (spec.annotations && spec.annotations.length) fields.push('annotations');
   if (spec.matrix) fields.push('matrix');
   if (spec.table) fields.push('table');

@@ -2,7 +2,7 @@ const { chartSpecToComponentId } = require('../chart-spec');
 const { renderBarChart } = require('./bar-chart');
 const { renderFunnelChart } = require('./funnel-chart');
 const { renderHeatmapChart } = require('./heatmap-chart');
-const { renderInformationGap } = require('./chart-layout');
+const { renderInformationGap, sourceText } = require('./chart-layout');
 const { renderKpiStrip } = require('./kpi-strip');
 const { renderLineChart } = require('./line-chart');
 const { renderMatrixChart } = require('./matrix-chart');
@@ -49,7 +49,7 @@ function renderChartSpec(ctx, spec = {}, opts = {}) {
   if (byComponent[componentId]) return byComponent[componentId](ctx, spec, opts);
   if (spec.kind === 'kpi') {
     const metrics = kpiMetricsFromSpec(spec);
-    return Object.assign(renderKpiStrip(ctx, metrics, opts), {
+    return Object.assign(renderKpiStrip(ctx, metrics, Object.assign({}, opts, { sourceNote: sourceText(spec, opts) })), {
       componentId: 'kpi-strip',
       rendererModule: 'components/kpi-strip'
     });

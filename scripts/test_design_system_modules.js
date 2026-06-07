@@ -1,5 +1,10 @@
 const assert = require('assert/strict');
+const fs = require('fs');
+const path = require('path');
 const designSystem = require('./design-system');
+const {
+  bindGeneratedAssets
+} = require('./assets/binder');
 const {
   copyPolicyList,
   copyPolicyText,
@@ -131,6 +136,14 @@ const {
   COMPONENT_DATA_REQUIREMENTS: COMPONENT_DATA_REQUIREMENTS_SHARD
 } = require('./render/component-capability-contracts');
 const {
+  createRenderMetaHelpers
+} = require('./render/render-meta');
+const {
+  effectiveImageAuthorizationStatus,
+  imageProvenanceCanSatisfyFactualProof,
+  imageProvenanceClass
+} = require('./design/source-evidence');
+const {
   createCompositionPlanningHelpers
 } = require('./design/composition-planning');
 const {
@@ -209,12 +222,145 @@ assert.deepEqual(
   }).sourceIds,
   ['src-a', 'src-b']
 );
+assert.deepEqual(
+  sourceTraceCore.sourceEntriesForSlide({
+    proof:{ sourceIds:['src-a'] },
+    sourceTrace:{ sourceIds:['src-a'], sources:[{ sourceId:'src-a', page:'1', excerpt:'source excerpt' }] }
+  }),
+  [{ sourceId:'src-a', page:'1', excerpt:'source excerpt' }],
+  'sourceEntriesForSlide should not add placeholder entries when sourceId alias already has page/excerpt'
+);
+assert.deepEqual(
+  sourceTraceCore.sourceEntriesForSlide({
+    proof:{ sourceIds:'src-scalar' },
+    sourceTrace:{ sources:[{ id:'src-scalar', page:'1', excerpt:'source excerpt' }] }
+  }),
+  [{ id:'src-scalar', page:'1', excerpt:'source excerpt' }],
+  'sourceEntriesForSlide should treat scalar sourceIds as one id instead of character placeholders'
+);
+assert.deepEqual(
+  sourceTraceCore.sourceEntriesForSlide({
+    proof:{ sourceIds:['src-name'] },
+    sourceTrace:{ sourceIds:['src-name'], sources:[{ name:'src-name', page:'1', excerpt:'source excerpt' }] }
+  }),
+  [{ name:'src-name', page:'1', excerpt:'source excerpt' }, { id:'src-name' }],
+  'sourceEntriesForSlide should keep name-only entries anonymous and add a placeholder for unmatched sourceIds'
+);
+const imageOnlyBoundarySlide = {
+  type:'content',
+  title:'Customer screenshot',
+  sourceTrace:{
+    imageProvenance:[{
+      id:'img-boundary',
+      proofEligibility:'factual-proof',
+      provenanceClass:'user-owned',
+      authorizationStatus:'cleared'
+    }]
+  }
+};
+assert.equal(
+  sourceTraceCore.slideHasSourceBoundary(imageOnlyBoundarySlide),
+  true,
+  'image provenance should count as a source boundary before applying plan-authored fallback trace'
+);
+assert.equal(
+  sourceTraceCore.applyPlanAuthoredSourceTrace(
+    { title:'Fixture', sourceTracePolicy:{ mode:'plan-authored', authorizationStatus:'cleared' } },
+    imageOnlyBoundarySlide,
+    0
+  ),
+  imageOnlyBoundarySlide,
+  'plan-authored fallback should not overwrite image-only provenance'
+);
 const sourceTraceAuditHelpers = createSourceTraceAuditHelpers(Object.assign({
   compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
   normalizeDeckPlan: plan => plan,
   slideProofObject: slide => slide.proof || { factual:false, sourceIds:[] }
 }, sourceTraceCore));
 assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('not authorized'), 'blocked');
+assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('denied'), 'blocked');
+assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('unresolved'), 'unknown');
+assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('pending'), 'unknown');
+assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('needs-review'), 'unknown');
+const renderMetaHelpers = createRenderMetaHelpers();
+assert.equal(
+  effectiveImageAuthorizationStatus({ authorizationStatus:'cleared' }, { assetAuthorizationStatus:'blocked' }),
+  'blocked',
+  'effective image authorization should let aggregate blocked override item-level cleared'
+);
+assert.equal(
+  effectiveImageAuthorizationStatus({ authorizationStatus:'cleared' }, { assetAuthorizationStatuses:['unknown'] }),
+  'unknown',
+  'effective image authorization should keep unknown stricter than cleared'
+);
+assert.equal(
+  effectiveImageAuthorizationStatus({ authorizationStatus:'cleared' }, {}),
+  'cleared',
+  'effective image authorization should preserve cleared when no stricter status exists'
+);
+const unauthorizedRenderDecision = renderMetaHelpers.assetDecisionForMeta({}, {
+  type:'content',
+  sourceTrace:{
+    imageProvenance:[{
+      id:'img-render-unauthorized',
+      proofEligibility:'factual-proof',
+      provenanceClass:'user-owned',
+      authorizationStatus:'unauthorized'
+    }]
+  }
+});
+assert.equal(
+  unauthorizedRenderDecision.riskLevel,
+  'high',
+  'render meta should reuse canonical authorization normalization for unauthorized assets'
+);
+assert.equal(
+  unauthorizedRenderDecision.reviewRequired,
+  true,
+  'render meta should require review for unauthorized asset provenance'
+);
+assert.equal(
+  unauthorizedRenderDecision.authorizationStatus,
+  'unauthorized',
+  'render meta should retain raw authorization status for traceability'
+);
+assert.equal(
+  unauthorizedRenderDecision.authorizationStatusNormalized,
+  'blocked',
+  'render meta should expose canonical authorization status for QA and summaries'
+);
+const snakeCaseRenderDecision = renderMetaHelpers.assetDecisionForMeta({}, {
+  type:'content',
+  image:'assets/customer-screenshot.png',
+  source_trace:{
+    image_provenance:[{
+      source_id:'img-render-snake',
+      proof_eligibility:'factual-proof',
+      provenance_class:'client-supplied',
+      authorization_status:'licensed'
+    }]
+  }
+});
+assert.deepEqual(
+  snakeCaseRenderDecision.proofEligibility,
+  ['factual-proof'],
+  'render meta should read snake_case proof eligibility from image provenance'
+);
+assert.equal(
+  snakeCaseRenderDecision.proofUse,
+  'factual-proof',
+  'render meta proofUse should stay aligned with canonical snake_case image provenance'
+);
+assert.equal(
+  snakeCaseRenderDecision.provenanceClass,
+  'user-owned',
+  'render meta should normalize snake_case client-supplied provenance class'
+);
+assert.equal(
+  snakeCaseRenderDecision.authorizationStatusNormalized,
+  'cleared',
+  'render meta should normalize snake_case image authorization status'
+);
 assert.equal(
   sourceTraceAuditHelpers.sourceTraceAudit({}, {
     slides:[{
@@ -225,18 +371,546 @@ assert.equal(
   }).status,
   'fail'
 );
+const aliasSourceEntryAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'metric-comparison',
+    proof:{ factual:true, sourceIds:['src-ref'] },
+    sourceTrace:{ sourceIds:['src-ref'], sources:[{ ref:'src-ref', page:'1', excerpt:'reference excerpt' }] }
+  }]
+});
+assert.equal(
+  aliasSourceEntryAudit.findings.some(finding => finding.type === 'sourceTraceNotExplainable'),
+  false,
+  'source trace audit should accept ref/sourceId aliases with page and excerpt'
+);
+const sourcePageAliasAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'metric-comparison',
+    proof:{ factual:true, sourceIds:['src-page'] },
+    sourceTrace:{ sourceIds:['src-page'], sources:[{ id:'src-page', sourcePage:'p5', excerpt:'source page excerpt' }] }
+  }]
+});
+assert.equal(
+  sourcePageAliasAudit.findings.some(finding => finding.type === 'sourceTraceNotExplainable'),
+  false,
+  'source trace audit should accept sourcePage as canonical page evidence'
+);
+const nameOnlySourceEntryAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'metric-comparison',
+    proof:{ factual:true, sourceIds:['src-name'] },
+    sourceTrace:{ sourceIds:['src-name'], sources:[{ name:'src-name', page:'1', excerpt:'named label excerpt' }] }
+  }]
+});
+assert.ok(
+  nameOnlySourceEntryAudit.findings.some(finding => finding.type === 'sourceTraceNotExplainable' && /src-name/.test(finding.message)),
+  'source trace audit should not treat name as a stable source identity'
+);
+const metricAliasAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'metric-comparison',
+    proof:{ factual:true, sourceIds:['src-metric'] },
+    sourceTrace:{ sourceIds:['src-metric'], sources:[{ sourceId:'src-metric', page:'4', excerpt:'metric source excerpt' }] },
+    metrics:[{ label:'ARR', value:'42%', sourceId:'src-metric' }]
+  }]
+});
+assert.equal(
+  metricAliasAudit.findings.some(finding => /^metricSourceTrace/.test(finding.type)),
+  false,
+  'metric source trace should inherit slide-level source entries by sourceId alias'
+);
+const blockedImageAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ factual:true },
+    sourceTrace:{
+      sources:[{ id:'img-1', kind:'image', page:'1', excerpt:'screenshot evidence' }],
+      imageProvenance:[{ sourceId:'img-1', authorizationStatus:'blocked' }]
+    }
+  }]
+});
+assert.equal(
+  blockedImageAudit.findings.filter(finding => finding.type === 'assetAuthorizationBlocked' && /img-1/.test(finding.message)).length,
+  1,
+  'matched blocked image provenance should produce one blocked authorization finding'
+);
+assert.equal(
+  blockedImageAudit.findings.some(finding => finding.type === 'assetAuthorizationUnknown' && /img-1/.test(finding.message)),
+  false,
+  'matched blocked image provenance should not also report unknown authorization'
+);
+const deniedImageAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ factual:true },
+    sourceTrace:{ imageProvenance:[{ id:'img-denied', authorizationStatus:'denied' }] }
+  }]
+});
+assert.ok(
+  deniedImageAudit.findings.some(finding => finding.type === 'assetAuthorizationBlocked' && /img-denied/.test(finding.message)),
+  'denied image provenance should be normalized to blocked in source trace audit'
+);
+const pendingImageAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ factual:true },
+    sourceTrace:{ imageProvenance:[{ id:'img-pending', authorizationStatus:'pending' }] }
+  }]
+});
+assert.ok(
+  pendingImageAudit.findings.some(finding => finding.type === 'assetAuthorizationUnknown' && /img-pending/.test(finding.message)),
+  'pending image provenance should be normalized to unknown in source trace audit'
+);
+const aggregateBlockedImageAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ version:'proof-object/v1', factual:true, sourceIds:[] },
+    sourceTrace:{
+      assetAuthorizationStatus:'blocked',
+      imageProvenance:[{
+        id:'img-aggregate-blocked',
+        proofEligibility:'factual-proof',
+        provenanceClass:'user-owned',
+        authorizationStatus:'cleared'
+      }]
+    }
+  }]
+});
+assert.equal(aggregateBlockedImageAudit.status, 'fail');
+assert.ok(
+  aggregateBlockedImageAudit.findings.some(finding => finding.type === 'assetAuthorizationBlocked' && /img-aggregate-blocked/.test(finding.message)),
+  'source trace audit should fail when aggregate authorization is blocked even if image provenance is cleared'
+);
+const factualImageOnlyAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ version:'proof-object/v1', factual:true, sourceIds:[] },
+    sourceTrace:{
+      imageProvenance:[{
+        id:'img-owned-proof',
+        proofEligibility:'factual-proof',
+        provenanceClass:'user-owned',
+        authorizationStatus:'cleared'
+      }]
+    }
+  }]
+});
+assert.equal(
+  factualImageOnlyAudit.findings.some(finding => finding.type === 'sourceTraceMissing'),
+  false,
+  'factual image provenance should satisfy source-trace presence for image-only factual proof'
+);
+assert.equal(
+  imageProvenanceCanSatisfyFactualProof({
+    proofEligibility:'factual-proof',
+    provenanceClass:'client-supplied'
+  }),
+  true,
+  'client-supplied factual image provenance should use the canonical factual proof predicate'
+);
+assert.equal(
+  imageProvenanceClass({ provenanceClass:'not-provided' }),
+  'unknown',
+  'not-provided image provenance should not be normalized to user-owned'
+);
+assert.equal(
+  imageProvenanceCanSatisfyFactualProof({
+    proofEligibility:'factual-proof',
+    provenanceClass:'not-provided'
+  }),
+  false,
+  'not-provided image provenance should not satisfy factual proof even with factual-proof eligibility'
+);
+const clientSuppliedFactualImageOnlyAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ version:'proof-object/v1', factual:true, sourceIds:[] },
+    sourceTrace:{
+      imageProvenance:[{
+        id:'img-client-proof',
+        proofEligibility:'factual-proof',
+        provenanceClass:'client-supplied',
+        authorizationStatus:'cleared'
+      }]
+    }
+  }]
+});
+assert.equal(
+  clientSuppliedFactualImageOnlyAudit.findings.some(finding => finding.type === 'sourceTraceMissing'),
+  false,
+  'client-supplied factual image provenance should satisfy image-only factual proof'
+);
+const typeAliasFactualImageOnlyAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ version:'proof-object/v1', factual:true, sourceIds:[] },
+    sourceTrace:{
+      imageProvenance:[{
+        id:'img-type-proof',
+        proofEligibility:'factual-proof',
+        type:'user-owned',
+        authorizationStatus:'cleared'
+      }]
+    }
+  }]
+});
+assert.equal(
+  typeAliasFactualImageOnlyAudit.findings.some(finding => finding.type === 'sourceTraceMissing'),
+  false,
+  'image provenance type aliases should satisfy image-only factual proof when proofEligibility is factual-proof'
+);
+const syntheticOnlyFactualProofAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ version:'proof-object/v1', factual:true, sourceIds:[] },
+    sourceTrace:{
+      imageProvenance:[{
+        id:'img-synthetic-proof',
+        proofEligibility:'synthetic-only',
+        provenanceClass:'model-generated',
+        authorizationStatus:'cleared'
+      }]
+    }
+  }]
+});
+assert.ok(
+  syntheticOnlyFactualProofAudit.findings.some(finding => finding.type === 'generatedAssetCannotSatisfyFactualProof'),
+  'synthetic-only image provenance should not satisfy factual proof'
+);
+const snakeCaseSyntheticOnlyFactualProofAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ version:'proof-object/v1', factual:true, sourceIds:[] },
+    source_trace:{
+      image_provenance:[{
+        source_id:'img-snake-synthetic-proof',
+        proof_eligibility:'synthetic-only',
+        provenance_class:'model-generated',
+        authorization_status:'cleared'
+      }]
+    }
+  }]
+});
+assert.ok(
+  snakeCaseSyntheticOnlyFactualProofAudit.findings.some(finding => finding.type === 'generatedAssetCannotSatisfyFactualProof'),
+  'snake_case synthetic-only image provenance should keep the explicit factual-proof failure finding'
+);
+const idMatchedImageAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ factual:true },
+    sourceTrace:{
+      sources:[{ id:'img-id-only', kind:'image', page:'1', excerpt:'screenshot evidence' }],
+      imageProvenance:[{ id:'img-id-only', authorizationStatus:'cleared' }]
+    }
+  }]
+});
+assert.equal(
+  idMatchedImageAudit.findings.some(finding => finding.type === 'imageProvenanceMissing' && /img-id-only/.test(finding.message)),
+  false,
+  'image provenance id should match image source entry ids'
+);
+const aliasMatchedImageAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ factual:true },
+    sourceTrace:{
+      sources:[{ id:'img-entry', kind:'image', page:'1', excerpt:'screenshot evidence' }],
+      imageProvenance:[{ sourceId:'img-file', id:'img-entry', authorizationStatus:'blocked' }]
+    }
+  }]
+});
+assert.equal(
+  aliasMatchedImageAudit.findings.filter(finding => finding.type === 'assetAuthorizationBlocked' && /img-entry/.test(finding.message)).length,
+  1,
+  'matched image provenance aliases should keep one blocked finding under the source entry id'
+);
+assert.equal(
+  aliasMatchedImageAudit.findings.some(finding => finding.type === 'assetAuthorizationBlocked' && /img-file/.test(finding.message)),
+  false,
+  'matched image provenance aliases should not report a second blocked finding under the provenance sourceId'
+);
+assert.equal(
+  aliasMatchedImageAudit.findings.some(finding => finding.type === 'imageProvenanceMissing' && /img-entry/.test(finding.message)),
+  false,
+  'matched image provenance aliases should not be treated as missing provenance'
+);
+const duplicateImageAuthorizationAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ factual:true },
+    sourceTrace:{
+      sources:[{ id:'img-dup', kind:'image', page:'1', excerpt:'screenshot evidence' }],
+      imageProvenance:[
+        { id:'img-dup', authorizationStatus:'unknown' },
+        { source_id:'img-dup', authorizationStatus:'blocked' }
+      ]
+    }
+  }]
+});
+assert.equal(
+  duplicateImageAuthorizationAudit.findings.filter(finding => finding.type === 'assetAuthorizationBlocked' && /img-dup/.test(finding.message)).length,
+  1,
+  'duplicate image provenance should keep the blocked finding for the image'
+);
+assert.equal(
+  duplicateImageAuthorizationAudit.findings.some(finding => finding.type === 'assetAuthorizationUnknown' && /img-dup/.test(finding.message)),
+  false,
+  'duplicate image provenance should not keep unknown when the same image is blocked'
+);
+const missingImageProvenanceAudit = sourceTraceAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'content',
+    proof:{ factual:true },
+    sourceTrace:{
+      sources:[{ id:'img-2', kind:'image', page:'1', excerpt:'screenshot evidence' }]
+    }
+  }]
+});
+assert.ok(
+  missingImageProvenanceAudit.findings.some(finding => finding.type === 'imageProvenanceMissing' && /img-2/.test(finding.message)),
+  'image source entries without matching image provenance should still be flagged'
+);
+const blockedAuthorizationGate = sourceTraceAuditHelpers.assetAuthorizationGate({ outputIntent:'formal' }, {
+  slides:[{
+    type:'content',
+    image:'assets/blocked.png',
+    sourceTrace:{ imageProvenance:[{ id:'img-gate-blocked', authorizationStatus:'blocked' }] }
+  }]
+});
+assert.equal(blockedAuthorizationGate.canRenderFormal, false);
+assert.ok(
+  blockedAuthorizationGate.findings.some(finding => finding.type === 'assetAuthorizationBlocked' && /img-gate-blocked/.test(finding.message)),
+  'formal asset gate should fail blocked image provenance and keep the canonical image id'
+);
+const deniedAuthorizationGate = sourceTraceAuditHelpers.assetAuthorizationGate({ outputIntent:'formal' }, {
+  slides:[{
+    type:'content',
+    image:'assets/denied.png',
+    sourceTrace:{ imageProvenance:[{ id:'img-gate-denied', authorizationStatus:'denied' }] }
+  }]
+});
+assert.equal(deniedAuthorizationGate.canRenderFormal, false);
+assert.ok(
+  deniedAuthorizationGate.findings.some(finding => finding.type === 'assetAuthorizationBlocked' && /img-gate-denied/.test(finding.message)),
+  'formal asset gate should normalize denied image provenance to blocked'
+);
+const unresolvedAuthorizationGate = sourceTraceAuditHelpers.assetAuthorizationGate({ outputIntent:'formal' }, {
+  slides:[{
+    type:'content',
+    image:'assets/unresolved.png',
+    sourceTrace:{ imageProvenance:[{ source_id:'img-gate-unresolved', authorizationStatus:'unknown' }] }
+  }]
+});
+assert.equal(unresolvedAuthorizationGate.canRenderFormal, false);
+assert.ok(
+  unresolvedAuthorizationGate.findings.some(finding => finding.type === 'assetAuthorizationUnresolved' && /img-gate-unresolved/.test(finding.message)),
+  'formal asset gate should fail unresolved image provenance and keep source_id as the image id'
+);
+const clearedStatusWithoutProvenanceGate = sourceTraceAuditHelpers.assetAuthorizationGate({ outputIntent:'formal' }, {
+  slides:[{
+    type:'content',
+    image:'assets/customer-screenshot.png',
+    sourceTrace:{ assetAuthorizationStatus:'cleared' }
+  }]
+});
+assert.equal(
+  clearedStatusWithoutProvenanceGate.canRenderFormal,
+  false,
+  'formal asset gate should require per-image provenance when a slide binds an image'
+);
+assert.ok(
+  clearedStatusWithoutProvenanceGate.findings.some(finding => finding.type === 'assetAuthorizationGateMissing'),
+  'formal asset gate should report missing image provenance even if aggregate authorization is cleared'
+);
+const aggregateBlockedAuthorizationGate = sourceTraceAuditHelpers.assetAuthorizationGate({ outputIntent:'formal' }, {
+  slides:[{
+    type:'content',
+    image:'assets/aggregate-blocked.png',
+    sourceTrace:{
+      assetAuthorizationStatus:'blocked',
+      imageProvenance:[{ id:'img-gate-aggregate-blocked', authorizationStatus:'cleared' }]
+    }
+  }]
+});
+assert.equal(
+  aggregateBlockedAuthorizationGate.canRenderFormal,
+  false,
+  'formal asset gate should fail aggregate blocked authorization even if image provenance is cleared'
+);
+assert.ok(
+  aggregateBlockedAuthorizationGate.findings.some(finding => finding.type === 'assetAuthorizationBlocked' && /img-gate-aggregate-blocked/.test(finding.message)),
+  'formal asset gate should report aggregate blocked authorization under the image id'
+);
+const aggregateBlockedRenderDecision = renderMetaHelpers.assetDecisionForMeta({}, {
+  type:'content',
+  image:'assets/aggregate-blocked.png',
+  sourceTrace:{
+    assetAuthorizationStatus:'blocked',
+    imageProvenance:[{
+      id:'img-render-aggregate-blocked',
+      proofEligibility:'factual-proof',
+      provenanceClass:'user-owned',
+      authorizationStatus:'cleared'
+    }]
+  }
+});
+assert.equal(
+  aggregateBlockedRenderDecision.riskLevel,
+  'high',
+  'render meta should keep aggregate blocked authorization at high risk'
+);
+assert.equal(
+  aggregateBlockedRenderDecision.reviewRequired,
+  true,
+  'render meta should still require review for aggregate blocked authorization'
+);
+const duplicateAuthorizationGate = sourceTraceAuditHelpers.assetAuthorizationGate({ outputIntent:'formal' }, {
+  slides:[{
+    type:'content',
+    image:'assets/duplicate.png',
+    sourceTrace:{
+      imageProvenance:[
+        { sourceId:'img-gate-unknown', file:'same-image.png', authorizationStatus:'unknown' },
+        { id:'img-gate-blocked', file:'same-image.png', authorizationStatus:'blocked' }
+      ]
+    }
+  }]
+});
+assert.equal(
+  duplicateAuthorizationGate.findings.filter(finding => finding.type === 'assetAuthorizationBlocked').length,
+  1,
+  'formal asset gate should keep only one blocked finding for the same image alias set'
+);
+assert.equal(
+  duplicateAuthorizationGate.findings.some(finding => finding.type === 'assetAuthorizationUnresolved'),
+  false,
+  'formal asset gate should drop unresolved when the same image alias set is blocked'
+);
+const distinctAuthorizationGate = sourceTraceAuditHelpers.assetAuthorizationGate({ outputIntent:'formal' }, {
+  slides:[{
+    type:'content',
+    image:'assets/distinct.png',
+    sourceTrace:{
+      imageProvenance:[
+        { sourceId:'img-gate-one', file:'one.png', authorizationStatus:'unknown' },
+        { id:'img-gate-two', file:'two.png', authorizationStatus:'blocked' }
+      ]
+    }
+  }]
+});
+assert.ok(
+  distinctAuthorizationGate.findings.some(finding => finding.type === 'assetAuthorizationUnresolved' && /img-gate-one/.test(finding.message)),
+  'formal asset gate should keep unresolved findings for distinct images'
+);
+assert.ok(
+  distinctAuthorizationGate.findings.some(finding => finding.type === 'assetAuthorizationBlocked' && /img-gate-two/.test(finding.message)),
+  'formal asset gate should keep blocked findings for distinct images'
+);
+const assetBinderOutDir = path.join(__dirname, '..', 'outputs', 'test-asset-binder');
+fs.mkdirSync(assetBinderOutDir, { recursive:true });
+const assetBinderPng = path.join(assetBinderOutDir, 'tiny.png');
+fs.writeFileSync(assetBinderPng, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=', 'base64'));
+const blockedBinderPlan = {
+  outputIntent:'formal',
+  slides:[{
+    type:'content',
+    sourceTrace:{
+      assetAuthorizationStatus:'blocked',
+      assetAuthorizationStatuses:['blocked'],
+      imageProvenance:[{ id:'existing-blocked-image', authorizationStatus:'blocked', proofEligibility:'factual-proof' }]
+    }
+  }]
+};
+const blockedBinderResult = bindGeneratedAssets(blockedBinderPlan, {
+  1:{ path:assetBinderPng, type:'user-owned', provenanceClass:'user-owned', proofEligibility:'factual-proof', authorizationStatus:'cleared' }
+});
+assert.deepEqual(blockedBinderResult.errors, []);
+assert.equal(blockedBinderResult.plan.slides[0].sourceTrace.assetAuthorizationStatus, 'blocked');
+const blockedBinderGate = sourceTraceAuditHelpers.assetAuthorizationGate({ outputIntent:'formal' }, blockedBinderResult.plan);
+assert.equal(blockedBinderGate.canRenderFormal, false);
+assert.ok(
+  blockedBinderGate.findings.some(finding => finding.type === 'assetAuthorizationBlocked' && /existing-blocked-image/.test(finding.message)),
+  'asset binder should not downgrade blocked provenance before formal asset gate'
+);
+const topLevelBlockedBinderResult = bindGeneratedAssets({
+  outputIntent:'formal',
+  slides:[{
+    type:'content',
+    assetAuthorizationStatus:'blocked'
+  }]
+}, {
+  1:{ path:assetBinderPng, type:'user-owned', provenanceClass:'user-owned', proofEligibility:'factual-proof', authorizationStatus:'cleared' }
+});
+assert.deepEqual(topLevelBlockedBinderResult.errors, []);
+assert.equal(
+  topLevelBlockedBinderResult.plan.slides[0].sourceTrace.assetAuthorizationStatus,
+  'blocked',
+  'asset binder should absorb top-level blocked authorization into sourceTrace writeback'
+);
+const reviewBinderResult = bindGeneratedAssets({
+  slides:[{
+    type:'content',
+    sourceTrace:{ assetAuthorizationStatuses:['needs-review'] }
+  }]
+}, {
+  1:{ path:assetBinderPng, type:'generated-image', generated:true, authorizationStatus:'synthetic-only' }
+});
+assert.deepEqual(reviewBinderResult.errors, []);
+assert.equal(reviewBinderResult.plan.slides[0].sourceTrace.assetAuthorizationStatus, 'needs-review');
+const proofReviewBinderResult = bindGeneratedAssets({
+  slides:[{
+    type:'content',
+    proof:{
+      assetAuthorizationStatuses:['needs-review'],
+      sourceTrace:{ assetAuthorizationStatus:'cleared' }
+    }
+  }]
+}, {
+  1:{ path:assetBinderPng, type:'generated-image', generated:true, authorizationStatus:'synthetic-only' }
+});
+assert.deepEqual(proofReviewBinderResult.errors, []);
+assert.equal(
+  proofReviewBinderResult.plan.slides[0].sourceTrace.assetAuthorizationStatus,
+  'needs-review',
+  'asset binder should absorb proof-level needs-review authorization into sourceTrace writeback'
+);
+const unknownBinderResult = bindGeneratedAssets({
+  outputIntent:'formal',
+  slides:[{
+    type:'content',
+    sourceTrace:{
+      assetAuthorizationStatus:'unknown',
+      imageProvenance:[{ id:'existing-unknown-image', authorizationStatus:'unknown' }]
+    }
+  }]
+}, {
+  1:{ path:assetBinderPng, type:'user-owned', provenanceClass:'user-owned', proofEligibility:'factual-proof', authorizationStatus:'cleared' }
+});
+assert.deepEqual(unknownBinderResult.errors, []);
+assert.equal(unknownBinderResult.plan.slides[0].sourceTrace.assetAuthorizationStatus, 'unknown');
+assert.equal(sourceTraceAuditHelpers.assetAuthorizationGate({ outputIntent:'formal' }, unknownBinderResult.plan).canRenderFormal, false);
 const sourceTraceAuditPrimitives = createSourceTraceAuditPrimitives({
   compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
   sourceTraceIsPlanAuthored: () => true
 });
 assert.equal(sourceTraceAuditPrimitives.sourceEntryHasPage({ pageRef:'deck-plan' }), true);
+assert.equal(sourceTraceAuditPrimitives.sourceEntryHasPage({ sourcePage:'deck-plan' }), true);
 assert.equal(sourceTraceAuditPrimitives.sourceEntryHasExcerpt({ source_excerpt:'claim text' }), true);
 assert.equal(sourceTraceAuditPrimitives.normalizeAuthorizationStatus('未授权'), 'blocked');
+assert.equal(sourceTraceAuditPrimitives.normalizeAuthorizationStatus('needs-review'), 'unknown');
 assert.deepEqual(
   sourceTraceAuditPrimitives.metricTraceEntries({}, {
     sources:[{ id:'brief-slide', page:'deck-plan', excerpt:'Plan-authored claim' }]
   }),
   [{ id:'brief-slide', page:'deck-plan', excerpt:'Plan-authored claim' }]
+);
+assert.deepEqual(
+  sourceTraceAuditPrimitives.metricTraceEntries({ sourceId:'metric-src' }, {
+    sources:[{ sourceId:'metric-src', page:'6', excerpt:'Metric alias source excerpt.' }]
+  }),
+  [{ sourceId:'metric-src', page:'6', excerpt:'Metric alias source excerpt.' }],
+  'metricTraceEntries should inherit slide source entries through sourceId aliases'
 );
 assert.equal(designSystem.INDUSTRY_KNOWLEDGE_BASE, INDUSTRY_KNOWLEDGE_BASE);
 assert.ok(INDUSTRY_EXPRESSION_RULES['brand-retail'].requiredRoutes.includes('industry-chart:waterfall-bridge'));
@@ -256,6 +930,40 @@ const proofHelpers = createProofObjectHelpers({
 });
 assert.equal(proofHelpers.proofObjectIdForSlide({ type:'cover', proofObject:'case-gallery', variant:'cover-safe' }), 'cover-safe');
 assert.equal(proofHelpers.slideProofObject({ sourceIds:['S1'], generatedAssetPrompt:'real photo' }).provenance, 'source-derived-evidence');
+const rawProofObject = proofHelpers.slideProofObject({
+  proof:{
+    id:'raw-proof',
+    factual:true,
+    generatedIllustration:false,
+    sourceIds:[],
+    provenance:'raw-proof-provenance',
+    evidenceMode:'raw-proof-mode'
+  }
+});
+assert.equal(rawProofObject.factual, true);
+assert.equal(rawProofObject.generatedIllustration, false);
+assert.equal(rawProofObject.provenance, 'raw-proof-provenance');
+assert.equal(rawProofObject.evidenceMode, 'raw-proof-mode');
+assert.equal(
+  createProofObjectHelpers().proofObjectIdForSlide({ type:'content', proofObject:'case-gallery' }),
+  'case-gallery',
+  'proof helpers should be safe to construct without optional page-family dependencies'
+);
+const rawProofAuditHelpers = createSourceTraceAuditHelpers(Object.assign({
+  compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
+  normalizeDeckPlan: plan => plan,
+  slideProofObject: proofHelpers.slideProofObject
+}, sourceTraceCore));
+const rawProofAudit = rawProofAuditHelpers.sourceTraceAudit({}, {
+  slides:[{
+    type:'metric-comparison',
+    proof:{ id:'raw-proof', factual:true }
+  }]
+});
+assert.ok(
+  rawProofAudit.findings.some(finding => finding.type === 'sourceTraceMissing'),
+  'raw proof.factual should survive proof-object upgrade and fail when source trace is absent'
+);
 const policyHelpers = createIndustryPolicyHelpers({
   compactUnique: values => Array.from(new Set(values.filter(Boolean))),
   flattenText: value => JSON.stringify(value),
@@ -638,7 +1346,7 @@ const compositionHelpers = createCompositionPlanningHelpers({
 });
 assert.deepEqual(
   compositionHelpers.zonePlanFor({}, { type:'case-gallery', layoutVariant:'evidence-board' }, {}, {}),
-  { primaryZone:'evidence-grid', secondaryZone:'caption-system', proofZone:'source-note' }
+  { primaryZone:'evidence-grid', secondaryZone:'caption-system', proofZone:'evidence-boundary' }
 );
 const fixtureComposition = compositionHelpers.compositionPlan({}, { type:'metric-comparison' }, 0, 1, { isDenseText:false }, { id:'recipe-1', componentHints:['caption-bar'] }, { wantsImage:true });
 assert.equal(fixtureComposition.version, 'composition-plan/v1');

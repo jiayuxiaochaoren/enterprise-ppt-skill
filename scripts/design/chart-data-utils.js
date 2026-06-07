@@ -1,3 +1,8 @@
+const {
+  sourceTraceForSlide: canonicalSourceTraceForSlide,
+  sourceTraceObjectIsExplainable
+} = require('./source-evidence');
+
 function compactUnique(values = []) {
   const out = [];
   const seen = new Set();
@@ -150,41 +155,30 @@ function proofObjectId(slide = {}) {
 }
 
 function sourceTraceForSlide(slide = {}) {
-  const proof = slide.proof || {};
-  const proofTrace = proof.sourceTrace || {};
-  const slideTrace = slide.sourceTrace || {};
-  const sourceIds = compactUnique([
-    ...(proof.sourceIds || []),
-    ...((proofTrace.sourceIds) || []),
-    ...((slideTrace.sourceIds) || []),
-    ...(slide.sourceIds || []),
-    ...(slide.source_ids || [])
-  ]);
-  const sources = [];
-  [...((proof.sources) || []), ...((proofTrace.sources) || []), ...((slideTrace.sources) || [])].forEach(source => {
-    if (!source) return;
-    const id = source.id || source.name || JSON.stringify(source);
-    if (!sources.some(item => (item.id || item.name) === id)) sources.push(source);
-  });
-  sourceIds.forEach(id => {
-    if (!sources.some(source => source && source.id === id)) sources.push({ id });
-  });
-  return {
-    sourceIds,
-    sources,
-    imageProvenance: [
-      ...((proofTrace.imageProvenance) || []),
-      ...((slideTrace.imageProvenance) || [])
-    ],
-    sourceNote: slide.sourceNote || slide.source_note || proof.sourceNote || ''
-  };
+  return canonicalSourceTraceForSlide(slide);
+}
+
+function sourceClassForTrace(sourceTrace = {}) {
+  if (sourceTraceObjectIsExplainable(sourceTrace, { requireSourceId:true })) return 'source-traced';
+  if (sourceTrace.sourceIds && sourceTrace.sourceIds.length) return 'source-id-only';
+  return 'user-provided-or-untraced';
 }
 
 function evidenceModeForSlide(slide = {}, sourceTrace = sourceTraceForSlide(slide)) {
   const proof = slide.proof || {};
-  if (proof.generatedIllustration || /generated|synthetic|model|illustration/i.test(flattenText(slide.assetGeneration || slide.generatedAssetPrompt))) {
+  const generation = slide.assetGeneration || {};
+  const generationStatus = String(generation.status || '').toLowerCase();
+  const generatedAssetText = flattenText([
+    slide.generatedAssetPrompt,
+    generation.prompt,
+    generation.provenance,
+    generation.mode,
+    generationStatus && generationStatus !== 'none' ? generationStatus : ''
+  ]);
+  if (proof.generatedIllustration || /generated|synthetic|model|illustration/i.test(generatedAssetText)) {
     return 'model-generated-illustration';
   }
+  if (!sourceTraceObjectIsExplainable(sourceTrace, { requireSourceId:true })) return 'untraced';
   if ((sourceTrace.sources || []).some(source => /image|screenshot|png|jpg|jpeg/i.test(`${source.kind || ''} ${source.name || ''} ${source.relativePath || ''}`))) {
     return 'real-screenshot-or-image';
   }
@@ -209,6 +203,7 @@ module.exports = {
   metricsFromSlide,
   normalizeSeries,
   proofObjectId,
+  sourceClassForTrace,
   sourceTraceForSlide,
   unitOf
 };

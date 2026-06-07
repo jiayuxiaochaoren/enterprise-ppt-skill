@@ -1,3 +1,10 @@
+const {
+  assetAuthorizationStatusHasSignal,
+  sourceEntryIds,
+  sourceIdValues,
+  sourceTraceForSlide: canonicalSourceTraceForSlide
+} = require('./source-evidence');
+
 function createSourceTraceCoreHelpers({
   clampText,
   compactUnique,
@@ -15,39 +22,26 @@ function createSourceTraceCoreHelpers({
   }
 
   function sourceTraceForSlide(slide = {}) {
-    const proofTrace = (slide.proof && slide.proof.sourceTrace) || {};
-    const slideTrace = slide.sourceTrace || {};
-    if (!Object.keys(proofTrace).length) return slideTrace;
-    if (!Object.keys(slideTrace).length) return proofTrace;
-    const sourceIds = compactUnique([
-      ...((proofTrace.sourceIds) || []),
-      ...((slideTrace.sourceIds) || [])
-    ]);
-    const sourceMap = new Map();
-    [...(proofTrace.sources || []), ...(slideTrace.sources || [])].forEach(entry => {
-      if (entry && entry.id) sourceMap.set(entry.id, Object.assign({}, sourceMap.get(entry.id) || {}, entry));
-    });
-    return Object.assign({}, proofTrace, slideTrace, {
-      sourceIds,
-      sources: [...sourceMap.values()],
-      imageProvenance: [
-        ...((proofTrace.imageProvenance) || []),
-        ...((slideTrace.imageProvenance) || [])
-      ]
-    });
+    return canonicalSourceTraceForSlide(slide);
   }
 
   function slideHasSourceBoundary(slide = {}) {
     const trace = sourceTraceForSlide(slide);
     const proof = slide.proof || {};
-    const sourceIds = compactUnique([
-      ...((trace.sourceIds) || []),
-      ...((proof.sourceIds) || []),
-      ...(slide.sourceIds || []),
-      ...(slide.source_ids || [])
-    ]);
+    const sourceIds = sourceIdValues(
+      trace.sourceIds,
+      trace.source_ids,
+      proof.sourceIds,
+      proof.source_ids,
+      slide.sourceIds,
+      slide.source_ids
+    );
     return Boolean(
       sourceIds.length ||
+      (Array.isArray(trace.sources) && trace.sources.length) ||
+      (Array.isArray(trace.imageProvenance) && trace.imageProvenance.length) ||
+      assetAuthorizationStatusHasSignal(trace.assetAuthorizationStatus) ||
+      (trace.assetAuthorizationStatuses || []).some(assetAuthorizationStatusHasSignal) ||
       trace.sourceNote ||
       trace.source_note ||
       proof.provenance ||
@@ -74,17 +68,33 @@ function createSourceTraceCoreHelpers({
   function sourceEntriesForSlide(slide = {}) {
     const trace = sourceTraceForSlide(slide);
     const entries = Array.isArray(trace.sources) ? trace.sources : [];
-    const sourceIds = compactUnique([
-      ...((trace.sourceIds) || []),
-      ...(((slide.proof || {}).sourceIds) || []),
-      ...(slide.sourceIds || []),
-      ...(slide.source_ids || [])
-    ]);
-    const byId = new Map(entries.map(entry => [entry.id, entry]));
+    const sourceIds = sourceIdValues(
+      trace.sourceIds,
+      trace.source_ids,
+      (slide.proof || {}).sourceIds,
+      (slide.proof || {}).source_ids,
+      slide.sourceIds,
+      slide.source_ids
+    );
+    const byId = new Map();
+    const ordered = [];
+    const rememberEntry = entry => {
+      if (!entry || typeof entry !== 'object') return;
+      const aliases = sourceEntryIds(entry);
+      const existing = aliases.map(alias => byId.get(alias)).find(Boolean);
+      if (existing) {
+        Object.assign(existing, entry);
+        aliases.forEach(alias => byId.set(alias, existing));
+        return;
+      }
+      ordered.push(entry);
+      aliases.forEach(alias => byId.set(alias, entry));
+    };
+    entries.forEach(rememberEntry);
     sourceIds.forEach(id => {
-      if (!byId.has(id)) byId.set(id, { id });
+      if (!byId.has(id)) rememberEntry({ id });
     });
-    return [...byId.values()];
+    return ordered;
   }
 
   function planAuthoredSourceTrace(plan = {}, slide = {}, index = 0) {

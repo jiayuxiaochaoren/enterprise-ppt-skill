@@ -1,3 +1,5 @@
+const { sourceIdValues } = require('./source-evidence');
+
 function createDeckRhythmHelpers(deps = {}) {
   const {
     accentRoleFor,
@@ -26,10 +28,12 @@ function createDeckRhythmHelpers(deps = {}) {
         title: slide.title || '',
         claim: slide.claim || slide.subtitle || slide.intro || slide.title || '',
         proofObject: preferredProofObjectIdForTrace(slide) || '',
-        sourceIds: compactUnique([
-          ...(((slide.sourceTrace || {}).sourceIds) || []),
-          ...(((slide.proof || {}).sourceIds) || [])
-        ])
+        sourceIds: sourceIdValues(
+          (slide.sourceTrace || {}).sourceIds,
+          (slide.sourceTrace || {}).source_ids,
+          (slide.proof || {}).sourceIds,
+          (slide.proof || {}).source_ids
+        )
       }));
   }
 

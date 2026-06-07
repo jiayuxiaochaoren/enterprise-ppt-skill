@@ -22,6 +22,7 @@ function renderKpiStrip(ctx, metrics = [], opts = {}) {
   const gap = opts.gap == null ? 0.18 : opts.gap;
   const fill = opts.fill || ctx.panelFill();
   const cellW = (w - gap * Math.max(0, list.length - 1)) / Math.max(1, list.length);
+  const sourceNote = String(opts.sourceNote || opts.source || '').trim();
 
   list.forEach((metric, i) => {
     const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : (i === 2 ? C.violet : C.muted));
@@ -65,11 +66,28 @@ function renderKpiStrip(ctx, metrics = [], opts = {}) {
     }
   });
 
+  if (sourceNote) {
+    ctx.addText(ctx.slide, sourceNote, {
+      x,
+      y: y + h + 0.08,
+      w,
+      h: 0.11,
+      typeRole: 'sourceNote',
+      fontSize: 6.3,
+      color: C.muted,
+      fit: 'shrink'
+    });
+  }
+
   return {
     rendered: true,
     rendererModule: 'components/kpi-strip',
     bbox: { x, y, w, h },
-    itemCount: list.length
+    itemCount: list.length,
+    visualChecks: {
+      sourceVisible: Boolean(sourceNote),
+      unitVisible: list.some(metric => metric.unit || /%|％|bps|bp|pt|pts|x|倍|w|万|亿|bn|m|mn|JPY|RMB|USD|CNY|¥|\$|min|分钟|天|月|年/i.test(String(metricValue(metric))))
+    }
   };
 }
 

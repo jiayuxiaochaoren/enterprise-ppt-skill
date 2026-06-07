@@ -8,12 +8,14 @@ const {
   coerceItems,
   evidenceModeForSlide,
   proofObjectId,
+  sourceClassForTrace,
   sourceTraceForSlide
 } = require('./chart-data-utils');
 const {
   dataForKind,
   dataSufficiency,
-  primaryUnit
+  primaryUnit,
+  valuesForSpec
 } = require('./chart-data-shape');
 const {
   beautyTemplateRoute,
@@ -59,14 +61,30 @@ function informationGapSpec(base = {}, sufficiency = {}) {
   });
 }
 
+function dataQualityForSpec(spec = {}, slide = {}, sourceTrace = {}, sufficiency = { ok:true }) {
+  const values = valuesForSpec(spec);
+  const numeric = values.filter(v => v.value != null);
+  return Object.assign({}, spec.dataQuality || {}, {
+    sufficient: sufficiency.ok !== false,
+    sourceClass: sourceClassForTrace(sourceTrace),
+    evidenceMode: evidenceModeForSlide(slide, sourceTrace),
+    realSeries: numeric.length >= 2,
+    pointCount: values.length,
+    numericPointCount: numeric.length
+  });
+}
+
 function normalizeExistingChartSpec(slide = {}) {
   const spec = Object.assign({}, slide.chartSpec);
   if (!spec.source) spec.source = spec.kind === 'informationGap' ? 'explicit-gap' : 'planner';
+  const sourceTrace = sourceTraceForSlide(slide);
   if (spec.kind === 'informationGap') {
     return Object.assign({}, spec, {
       source: spec.source || 'explicit-gap',
       requestedKind: spec.requestedKind || spec.requested_kind || '',
       componentId: spec.componentId || CHART_COMPONENTS.informationGap,
+      sourceTrace,
+      dataQuality: dataQualityForSpec(spec, slide, sourceTrace, { ok:false }),
       informationGap: spec.informationGap || {
         reason: spec.reason || 'Planner explicitly requested a visible chart information gap.',
         missingFields: spec.missingFields || [],
@@ -77,6 +95,8 @@ function normalizeExistingChartSpec(slide = {}) {
   if (!KNOWN_CHART_KINDS.has(spec.kind)) {
     return Object.assign({}, spec, {
       componentId: spec.componentId || '',
+      sourceTrace,
+      dataQuality: dataQualityForSpec(spec, slide, sourceTrace, { ok:false }),
       chartContractError: {
         type: 'unknownChartKind',
         kind: spec.kind || '',
@@ -85,7 +105,11 @@ function normalizeExistingChartSpec(slide = {}) {
     });
   }
   const sufficiency = dataSufficiency(spec);
-  return sufficiency.ok ? spec : informationGapSpec(spec, sufficiency);
+  const enriched = Object.assign({}, spec, {
+    sourceTrace,
+    dataQuality: dataQualityForSpec(spec, slide, sourceTrace, sufficiency)
+  });
+  return sufficiency.ok ? enriched : informationGapSpec(enriched, sufficiency);
 }
 
 function normalizeChartSpec(plan = {}, slide = {}, options = {}) {
@@ -122,7 +146,7 @@ function normalizeChartSpec(plan = {}, slide = {}, options = {}) {
     annotations: slide.annotations || slide.callouts || [],
     dataQuality: {
       sufficient: true,
-      sourceClass: sourceTrace.sourceIds.length ? 'source-traced' : 'user-provided-or-untraced',
+      sourceClass: sourceClassForTrace(sourceTrace),
       evidenceMode: evidenceModeForSlide(slide, sourceTrace),
       realSeries: values.filter(v => v.value != null).length >= 2,
       pointCount: values.length,

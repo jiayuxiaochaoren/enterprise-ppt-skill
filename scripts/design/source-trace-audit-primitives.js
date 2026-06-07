@@ -1,19 +1,13 @@
-function sourceEntryHasPage(entry = {}) {
-  return Boolean(entry.page || entry.pageNumber || entry.pageRef || entry.page_ref);
-}
+const {
+  normalizeAuthorizationStatus,
+  sourceEntryHasExcerpt,
+  sourceEntryHasPage,
+  sourceEntryIds
+} = require('./source-evidence');
 
-function sourceEntryHasExcerpt(entry = {}) {
-  return Boolean(entry.excerpt || entry.sourceExcerpt || entry.source_excerpt || entry.originalExcerpt || entry.original_excerpt);
-}
-
-function normalizeAuthorizationStatus(value = '') {
-  const text = String(value || '').toLowerCase();
-  if (!text) return 'unknown';
-  if (/blocked|forbidden|not authorized|未授权|禁止|不可外发/.test(text)) return 'blocked';
-  if (/needs authorization|need authorization|unknown|待确认|不明确|未确认/.test(text)) return 'unknown';
-  if (/internal|draft|内审|内部/.test(text)) return 'internal-only';
-  if (/user-owned|owned|licensed|authorized|public|公开|授权|可外发/.test(text)) return 'cleared';
-  return text;
+function toArray(value) {
+  if (value == null || value === '') return [];
+  return Array.isArray(value) ? value : [value];
 }
 
 function createMetricTraceEntries({
@@ -25,9 +19,10 @@ function createMetricTraceEntries({
     const ids = compactUnique([
       metric.sourceId,
       metric.source_id,
-      ...((metric.sourceIds) || []),
-      ...((metric.source_ids) || []),
-      ...((trace.sourceIds) || [])
+      ...toArray(metric.sourceIds),
+      ...toArray(metric.source_ids),
+      ...toArray(trace.sourceIds),
+      ...toArray(trace.source_ids)
     ].filter(Boolean));
     const slideEntries = Array.isArray(slideTrace.sources) ? slideTrace.sources : [];
     const entries = Array.isArray(trace.sources) ? trace.sources.slice() : [];
@@ -35,8 +30,9 @@ function createMetricTraceEntries({
       return slideEntries.slice();
     }
     ids.forEach(id => {
-      if (!entries.some(entry => entry && entry.id === id)) {
-        const inherited = slideEntries.find(entry => entry && entry.id === id);
+      const matchesId = entry => sourceEntryIds(entry || {}).includes(String(id));
+      if (!entries.some(entry => entry && matchesId(entry))) {
+        const inherited = slideEntries.find(entry => entry && matchesId(entry));
         entries.push(inherited || { id });
       }
     });

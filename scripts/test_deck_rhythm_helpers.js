@@ -22,7 +22,7 @@ const helpers = createDeckRhythmHelpers({
 
 const spine = helpers.claimSpineForSlides({}, [
   { type:'cover', title:'封面' },
-  { type:'metric-comparison', title:'增长', subtitle:'收入提升', proofObject:'financial-kpi-snapshot', sourceTrace:{ sourceIds:['src-1'] }, proof:{ sourceIds:['src-1', 'src-2'] } },
+  { type:'metric-comparison', title:'增长', subtitle:'收入提升', proofObject:'financial-kpi-snapshot', sourceTrace:{ sourceIds:'src-1' }, proof:{ sourceIds:['src-1', 'src-2'] } },
   { type:'closing', title:'结束' }
 ]);
 assert.deepEqual(spine, [{

@@ -64,7 +64,7 @@ function renderLineChart(ctx, spec = {}, opts = {}) {
     visualChecks: {
       axisLabels: true,
       unitVisible: Boolean(spec.unit),
-      sourceVisible: Boolean((spec.sourceTrace || {}).sourceNote || ((spec.sourceTrace || {}).sourceIds || []).length),
+      sourceVisible: frame.sourceVisible,
       labelCollision: values.length > 8,
       valueOverflow: false
     }

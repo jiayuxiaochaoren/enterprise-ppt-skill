@@ -10,6 +10,9 @@ const {
 const {
   slideHasChartIntent
 } = require('./chart-intent');
+const {
+  sourceTraceObjectIsExplainable
+} = require('./source-evidence');
 
 function issueCategoryForFinding(finding = {}) {
   if (finding.issueCategory) return finding.issueCategory;
@@ -72,12 +75,18 @@ function createChartAcceptanceGate(deps = {}) {
           findings.push({ slide: slide.slide, level: 'fail', type: 'acceptanceComponentNotConsumed', issueCategory: 'component_gap', message: `required component not consumed: ${id}` });
         });
         const chart = slide.chartConsumption;
-        if (chart && chart.spec && chart.spec.kind !== 'informationGap') {
-          if (!chart.spec.unit && ['bar', 'line', 'waterfall', 'funnel', 'pareto', 'kpi', 'scorecard'].includes(chart.spec.kind)) {
+        const slideIndex = Number(slide.slide || 0) - 1;
+        const normalizedSlide = slides[slideIndex] || null;
+        const routedSpec = normalizedSlide && slideHasChartIntent(normalizedSlide)
+          ? routeChartSpec(normalized, normalizedSlide, { index: slideIndex + 1, total: slides.length })
+          : null;
+        const chartSpec = chart && (routedSpec || chart.spec || null);
+        if (chart && chartSpec && chartSpec.kind !== 'informationGap') {
+          if (!chartSpec.unit && ['bar', 'line', 'waterfall', 'funnel', 'pareto', 'kpi', 'scorecard'].includes(chartSpec.kind)) {
             findings.push({ slide: slide.slide, level: 'review', type: 'acceptanceChartUnitMissing', issueCategory: 'data_contract_gap', message: 'chart lacks unit' });
           }
-          const trace = chart.spec.sourceTrace || {};
-          if (!((trace.sourceIds || []).length || trace.sourceNote)) {
+          const trace = chartSpec.sourceTrace || {};
+          if (!sourceTraceObjectIsExplainable(trace, { requireSourceId:true })) {
             findings.push({ slide: slide.slide, level: 'review', type: 'acceptanceChartSourceMissing', issueCategory: 'data_contract_gap', message: 'chart lacks source' });
           }
         }

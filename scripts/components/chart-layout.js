@@ -1,4 +1,5 @@
 const { asNumber, valuesForSpec } = require('../chart-spec');
+const { sourceTraceNoteText } = require('../design/source-evidence');
 
 function cleanColor(color = '') {
   return String(color || '').replace('#', '') || '64748B';
@@ -51,10 +52,9 @@ function rawValueLabel(value = {}, spec = {}) {
   return unit && !rawText.includes(unit) ? `${rawText}${unit}` : rawText;
 }
 
-function sourceText(spec = {}) {
-  const trace = spec.sourceTrace || {};
-  if (trace.sourceNote) return trace.sourceNote;
-  return '';
+function sourceText(spec = {}, opts = {}) {
+  if (!(opts.showSourceNote || opts.visibleSourceNotes)) return '';
+  return sourceTraceNoteText(spec);
 }
 
 function chartColors(ctx) {
@@ -98,7 +98,7 @@ function renderChartFrame(ctx, spec = {}, opts = {}) {
       fit: 'shrink'
     });
   }
-  const source = sourceText(spec);
+  const source = sourceText(spec, opts);
   if (source) {
     text(ctx, source, {
       x: x + 0.30,
@@ -116,6 +116,7 @@ function renderChartFrame(ctx, spec = {}, opts = {}) {
     y,
     w,
     h,
+    sourceVisible: Boolean(source),
     plot: {
       x: x + 0.46,
       y: y + (opts.compactHeader ? 0.54 : 0.82),
@@ -173,7 +174,7 @@ function renderInformationGap(ctx, spec = {}, opts = {}) {
     rendererModule: 'components/information-gap',
     componentId: 'information-gap',
     bbox: { x: frame.x, y: frame.y, w: frame.w, h: frame.h },
-    visualChecks: { sourceVisible: Boolean(sourceText(spec)), unitVisible: Boolean(spec.unit) }
+    visualChecks: { sourceVisible: frame.sourceVisible, unitVisible: Boolean(spec.unit) }
   };
 }
 

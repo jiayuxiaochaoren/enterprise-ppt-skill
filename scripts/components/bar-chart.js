@@ -54,7 +54,7 @@ function renderBarChart(ctx, spec = {}, opts = {}) {
     visualChecks: {
       axisLabels: values.length > 1,
       unitVisible: Boolean(spec.unit),
-      sourceVisible: Boolean((spec.sourceTrace || {}).sourceNote || ((spec.sourceTrace || {}).sourceIds || []).length),
+      sourceVisible: frame.sourceVisible,
       labelCollision: values.length > 8,
       valueOverflow: false
     }

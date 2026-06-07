@@ -8,6 +8,9 @@ const {
   routeChartSpec
 } = require('./chart-spec-routing');
 const {
+  sourceTraceObjectIsExplainable
+} = require('./source-evidence');
+const {
   chartEvidenceQA
 } = require('./chart-evidence-qa');
 const {
@@ -53,7 +56,7 @@ function pageLevelChartScores(plan = {}, normalizedPlan = null, renderMeta = nul
       const fail = findings.filter(f => f.level === 'fail').length;
       const review = findings.filter(f => f.level !== 'fail' && f.level !== 'info').length;
       const sufficiency = dataSufficiency(spec);
-      const sourceIds = spec.sourceTrace ? spec.sourceTrace.sourceIds || [] : [];
+      const sourceTraceExplainable = sourceTraceObjectIsExplainable(spec.sourceTrace || {}, { requireSourceId:true });
       return {
         slide: i + 1,
         applicability: 'applicable',
@@ -62,7 +65,7 @@ function pageLevelChartScores(plan = {}, normalizedPlan = null, renderMeta = nul
         chartFitScore: Math.max(0, 100 - fail * 45 - review * 14),
         dataSufficiencyScore: sufficiency.ok ? 100 : 40,
         visualLegibilityScore: Math.max(0, 100 - findings.filter(f => f.issueCategory === 'renderer_layout_bug').length * 22),
-        evidenceTraceScore: sourceIds.length ? 100 : 64,
+        evidenceTraceScore: sourceTraceExplainable ? 100 : 64,
         findings
       };
     })

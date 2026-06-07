@@ -3,6 +3,7 @@ const path = require('path');
 
 const ASSET_BINDER_DECISION_SOURCE = 'asset-binder/v1';
 const { imageDimensions } = require('../design-system');
+const { preferredAuthorizationStatus } = require('../design/source-evidence');
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(path.resolve(file), 'utf8'));
@@ -82,6 +83,44 @@ function imageProvenanceFor(attr = {}, slideNo = 0, index = 0) {
   };
 }
 
+function compactUnique(values = []) {
+  return [...new Set((values || []).filter(value => value != null && String(value).trim() !== '').map(value => String(value)))];
+}
+
+function toArray(value) {
+  if (value == null || value === '') return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+function updateTraceAuthorizationStatus(trace = {}, slide = {}) {
+  const proof = slide.proof || {};
+  const proofTrace = proof.sourceTrace || {};
+  const imageProvenance = Array.isArray(trace.imageProvenance) ? trace.imageProvenance : [];
+  const statuses = compactUnique([
+    proof.assetAuthorizationStatus,
+    proof.asset_authorization_status,
+    ...toArray(proof.assetAuthorizationStatuses),
+    ...toArray(proof.asset_authorization_statuses),
+    proofTrace.assetAuthorizationStatus,
+    proofTrace.asset_authorization_status,
+    ...toArray(proofTrace.assetAuthorizationStatuses),
+    ...toArray(proofTrace.asset_authorization_statuses),
+    slide.assetAuthorizationStatus,
+    slide.asset_authorization_status,
+    ...toArray(slide.assetAuthorizationStatuses),
+    ...toArray(slide.asset_authorization_statuses),
+    trace.assetAuthorizationStatus,
+    trace.asset_authorization_status,
+    ...toArray(trace.assetAuthorizationStatuses),
+    ...toArray(trace.asset_authorization_statuses),
+    ...imageProvenance.map(item => item && (item.authorizationStatus || item.authorization_status))
+  ]);
+  const preferred = preferredAuthorizationStatus(statuses);
+  if (preferred) trace.assetAuthorizationStatus = preferred;
+  trace.assetAuthorizationStatuses = statuses;
+  return trace.assetAuthorizationStatus || '';
+}
+
 function validateAssetSpec(asset, slideNo, position, errors, cwd) {
   const spec = normalizeAssetSpec(asset, cwd);
   if (!spec) {
@@ -151,7 +190,7 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
         slide.assetAttribution.push(attr);
         trace.imageProvenance.push(imageProvenanceFor(attr, slideNo, i));
       });
-      slide.sourceTrace.assetAuthorizationStatus = trace.imageProvenance.every(item => item.proofEligibility === 'factual-proof') ? 'cleared' : 'synthetic-only';
+      updateTraceAuthorizationStatus(trace, slide);
       boundSlides += 1;
       return;
     }
@@ -173,7 +212,7 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
     slide.assetAttribution.push(attr);
     const trace = ensureSourceTrace(slide);
     trace.imageProvenance.push(imageProvenanceFor(attr, slideNo, 0));
-    slide.sourceTrace.assetAuthorizationStatus = attr.proofEligibility === 'factual-proof' ? 'cleared' : 'synthetic-only';
+    updateTraceAuthorizationStatus(trace, slide);
     boundSlides += 1;
   });
 
@@ -198,6 +237,7 @@ module.exports = {
   normalizeAssetSpec,
   proofEligibilityFor,
   provenanceClassFor,
+  updateTraceAuthorizationStatus,
   readJson,
   writeJson
 };

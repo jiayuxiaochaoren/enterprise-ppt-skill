@@ -1,6 +1,8 @@
 const assert = require('assert/strict');
 const {
   chartAcceptanceGate,
+  chartConsumedFields,
+  chartEvidenceQA,
   issueCategoryForFinding,
   chartSemanticQA,
   chartSpecToComponentId,
@@ -8,7 +10,12 @@ const {
   pageLevelChartScores,
   routeChartSpec
 } = require('./chart-spec');
-const { normalizeDeckPlan } = require('./design-system');
+const { renderChartSpec } = require('./components/chart-renderer');
+const { acceptanceAudit, normalizeDeckPlan } = require('./design-system');
+const {
+  sourceTraceNoteText,
+  sourceTraceObjectIsExplainable
+} = require('./design/source-evidence');
 
 function spec(plan, slide) {
   return routeChartSpec(plan, normalizeDeckPlan({ ...plan, slides: [slide] }).slides[0], { index: 1, total: 1 });
@@ -61,6 +68,210 @@ const explicitPlannerSpec = spec({ industry: 'general-operations' }, {
   }
 });
 assert.equal(explicitPlannerSpec.source, 'planner');
+
+const explicitPlannerWithSlideTracePlan = normalizeDeckPlan({
+  industry: 'general-operations',
+  outputIntent: 'formal',
+  requestedSlideCount: 1,
+  slides: [{
+    type: 'metric-comparison',
+    title: 'Planner supplied chart with slide trace',
+    claim: 'Planner chart should inherit slide-level sourceTrace.',
+    chartSpec: {
+      version: 'chartSpec/v1',
+      kind: 'bar',
+      title: 'Planner supplied chart with slide trace',
+      categories: ['A', 'B'],
+      series: [{ name: 'Series', values: [{ category: 'A', value: 1 }, { category: 'B', value: 2 }] }]
+    },
+    sourceTrace: {
+      sourceIds: ['src-a'],
+      sources: [{ id:'src-a', page:2, excerpt:'Planner chart source excerpt.' }]
+    }
+  }]
+});
+const explicitPlannerWithSlideTrace = routeChartSpec(explicitPlannerWithSlideTracePlan, explicitPlannerWithSlideTracePlan.slides[0], { index:1, total:1 });
+assert.ok(explicitPlannerWithSlideTrace.sourceTrace, 'explicit chartSpec should inherit canonical sourceTrace');
+assert.deepEqual(explicitPlannerWithSlideTrace.sourceTrace.sourceIds, ['src-a']);
+assert.equal(explicitPlannerWithSlideTrace.sourceTrace.sources[0].excerpt, 'Planner chart source excerpt.');
+assert.equal(explicitPlannerWithSlideTrace.dataQuality.sourceClass, 'source-traced');
+assert.equal(chartVisualQA(explicitPlannerWithSlideTracePlan, explicitPlannerWithSlideTracePlan, {
+  slides: [{ slide:1, chartConsumption:{ rendered:true, spec:explicitPlannerWithSlideTrace, visualChecks:{} } }]
+}).findings.some(finding => finding.type === 'chartSourceMissing'), false);
+assert.equal(chartEvidenceQA(explicitPlannerWithSlideTracePlan, explicitPlannerWithSlideTracePlan).findings.some(finding => finding.type === 'chartEvidenceUntraced'), false);
+assert.equal(acceptanceAudit(explicitPlannerWithSlideTracePlan, explicitPlannerWithSlideTracePlan, {
+  strict:true,
+  renderMeta:{ slides:[{ slide:1, missingRequiredComponents:[], chartConsumption:{ rendered:true, spec:explicitPlannerWithSlideTrace } }] }
+}).findings.some(finding => finding.type === 'chartSourceMissing' || finding.type === 'acceptanceChartSourceMissing'), false);
+
+const explicitPlannerNoteOnlyPlan = normalizeDeckPlan({
+  industry: 'general-operations',
+  outputIntent: 'formal',
+  requestedSlideCount: 1,
+  slides: [{
+    type: 'metric-comparison',
+    title: 'Planner supplied chart with source note only',
+    claim: 'Planner chart source note is display text only.',
+    chartSpec: {
+      version: 'chartSpec/v1',
+      kind: 'bar',
+      title: 'Planner supplied chart with source note only',
+      categories: ['A', 'B'],
+      series: [{ name: 'Series', values: [{ category: 'A', value: 1 }, { category: 'B', value: 2 }] }]
+    },
+    sourceTrace: { sourceNote:'Display source note only' }
+  }]
+});
+const explicitPlannerNoteOnlySpec = routeChartSpec(explicitPlannerNoteOnlyPlan, explicitPlannerNoteOnlyPlan.slides[0], { index:1, total:1 });
+assert.ok(
+  chartVisualQA(explicitPlannerNoteOnlyPlan, explicitPlannerNoteOnlyPlan, {
+    slides: [{ slide:1, chartConsumption:{ rendered:true, spec:explicitPlannerNoteOnlySpec, visualChecks:{} } }]
+  }).findings.some(finding => finding.type === 'chartSourceMissing'),
+  'explicit chartSpec should not pass source QA with sourceNote text only'
+);
+assert.ok(
+  chartEvidenceQA(explicitPlannerNoteOnlyPlan, explicitPlannerNoteOnlyPlan).findings.some(finding => finding.type === 'chartEvidenceUntraced'),
+  'explicit chartSpec evidence QA should require structured source trace'
+);
+assert.notEqual(acceptanceAudit(explicitPlannerNoteOnlyPlan, explicitPlannerNoteOnlyPlan, {
+  strict:true,
+  renderMeta:{ slides:[{ slide:1, missingRequiredComponents:[], chartConsumption:{ rendered:true, spec:explicitPlannerNoteOnlySpec } }] }
+}).status, 'pass');
+
+const explicitPlannerRefOnlyPlan = normalizeDeckPlan({
+  industry: 'general-operations',
+  outputIntent: 'formal',
+  requestedSlideCount: 1,
+  slides: [{
+    type: 'metric-comparison',
+    title: 'Planner supplied chart with ref-only source entry',
+    claim: 'Planner chart source note may render, but QA still requires sourceIds.',
+    chartSpec: {
+      version: 'chartSpec/v1',
+      kind: 'bar',
+      title: 'Planner supplied chart with ref-only source entry',
+      categories: ['A', 'B'],
+      series: [{ name: 'Series', values: [{ category: 'A', value: 1 }, { category: 'B', value: 2 }] }]
+    },
+    sourceTrace: {
+      sources:[{ ref:'chart-doc', page:7, excerpt:'Chart source excerpt.' }]
+    }
+  }]
+});
+const explicitPlannerRefOnlySpec = routeChartSpec(explicitPlannerRefOnlyPlan, explicitPlannerRefOnlyPlan.slides[0], { index:1, total:1 });
+assert.ok(
+  /^Source chart-doc/.test(sourceTraceNoteText({ sourceTrace:explicitPlannerRefOnlySpec.sourceTrace })),
+  'visible chart source note fallback can render ref/page/excerpt when explicitly requested'
+);
+assert.ok(
+  sourceTraceObjectIsExplainable({ sourceIds:'chart-doc', sources:{ ref:'chart-doc', page:7, excerpt:'Chart source excerpt.' } }, { requireSourceId:true }),
+  'source trace explainability should accept a single source object with scalar sourceIds'
+);
+assert.ok(
+  /^Source chart-doc/.test(sourceTraceNoteText({ sourceTrace:{ sourceIds:'chart-doc', sources:{ ref:'chart-doc', page:7, excerpt:'Chart source excerpt.' } } })),
+  'visible chart source note fallback should accept a single source object'
+);
+assert.ok(
+  chartEvidenceQA(explicitPlannerRefOnlyPlan, explicitPlannerRefOnlyPlan).findings.some(finding => finding.type === 'chartEvidenceUntraced'),
+  'chart evidence QA should still require sourceIds that match source entries'
+);
+const explicitPlannerRefOnlyGate = chartAcceptanceGate(explicitPlannerRefOnlyPlan, explicitPlannerRefOnlyPlan, {
+  slides:[{ slide:1, missingRequiredComponents:[], chartConsumption:{ rendered:true, spec:explicitPlannerRefOnlySpec } }]
+}, { strict:false });
+assert.ok(
+  explicitPlannerRefOnlyGate.findings.some(finding => finding.type === 'acceptanceChartSourceMissing'),
+  'chart acceptance should stay stricter than visible source note fallback for ref-only source entries'
+);
+
+const explicitPlannerSourceIdsOnlyPlan = normalizeDeckPlan({
+  industry: 'general-operations',
+  outputIntent: 'formal',
+  requestedSlideCount: 1,
+  slides: [{
+    type: 'metric-comparison',
+    title: 'Planner supplied chart with source id only',
+    chartSpec: {
+      version: 'chartSpec/v1',
+      kind: 'bar',
+      title: 'Planner supplied chart with source id only',
+      categories: ['A', 'B'],
+      series: [{ name: 'Series', values: [{ category: 'A', value: 1 }, { category: 'B', value: 2 }] }]
+    },
+    sourceTrace: { sourceIds:['src-only'] }
+  }]
+});
+const explicitPlannerSourceIdsOnlySpec = routeChartSpec(explicitPlannerSourceIdsOnlyPlan, explicitPlannerSourceIdsOnlyPlan.slides[0], { index:1, total:1 });
+assert.equal(explicitPlannerSourceIdsOnlySpec.dataQuality.sourceClass, 'source-id-only');
+assert.equal(explicitPlannerSourceIdsOnlySpec.dataQuality.evidenceMode, 'untraced');
+assert.ok(
+  chartEvidenceQA(explicitPlannerSourceIdsOnlyPlan, explicitPlannerSourceIdsOnlyPlan).findings.some(finding => finding.type === 'chartEvidenceUntraced'),
+  'chart source ids without page/excerpt should keep chart evidence QA findings'
+);
+
+const explicitPlannerNameOnlyPlan = normalizeDeckPlan({
+  industry: 'general-operations',
+  outputIntent: 'formal',
+  requestedSlideCount: 1,
+  slides: [{
+    type: 'metric-comparison',
+    title: 'Planner supplied chart with name-only source',
+    chartSpec: {
+      version: 'chartSpec/v1',
+      kind: 'bar',
+      title: 'Planner supplied chart with name-only source',
+      categories: ['A', 'B'],
+      series: [{ name: 'Series', values: [{ category: 'A', value: 1 }, { category: 'B', value: 2 }] }]
+    },
+    sourceTrace: { sources:[{ name:'report.pdf', page:2, excerpt:'Report excerpt.' }] }
+  }]
+});
+const explicitPlannerNameOnlySpec = routeChartSpec(explicitPlannerNameOnlyPlan, explicitPlannerNameOnlyPlan.slides[0], { index:1, total:1 });
+assert.equal(explicitPlannerNameOnlySpec.dataQuality.sourceClass, 'user-provided-or-untraced');
+assert.equal(explicitPlannerNameOnlySpec.dataQuality.evidenceMode, 'untraced');
+assert.ok(
+  chartEvidenceQA(explicitPlannerNameOnlyPlan, explicitPlannerNameOnlyPlan).findings.some(finding => finding.type === 'chartEvidenceUntraced'),
+  'chart name-only source entries should not be treated as structured chart source trace'
+);
+
+const explicitPlannerMergedTrace = spec({ industry: 'general-operations' }, {
+  type: 'metric-comparison',
+  title: 'Planner supplied chart with merged trace',
+  chartSpec: {
+    version: 'chartSpec/v1',
+    kind: 'bar',
+    title: 'Planner supplied chart with merged trace',
+    categories: ['A', 'B'],
+    series: [{ name: 'Series', values: [{ category: 'A', value: 1 }, { category: 'B', value: 2 }] }],
+    sourceTrace: {
+      source_ids: 'src-chart',
+      sources: [{ id:'src-chart', page:3, excerpt:'Chart spec source excerpt.' }],
+      imageProvenance: [{ id:'chart-img', authorizationStatus:'blocked', proofEligibility:'factual-proof' }],
+      assetAuthorizationStatus: 'blocked'
+    }
+  },
+  sourceTrace: {
+    sourceIds: ['src-slide'],
+    sources: [{ id:'src-slide', page:4, excerpt:'Slide source excerpt.' }],
+    imageProvenance: [{ id:'slide-img', authorizationStatus:'cleared', proofEligibility:'factual-proof' }],
+    assetAuthorizationStatuses: ['needs-review']
+  }
+});
+assert.deepEqual([...explicitPlannerMergedTrace.sourceTrace.sourceIds].sort(), ['src-chart', 'src-slide']);
+assert.equal(explicitPlannerMergedTrace.sourceTrace.sources.length, 2);
+assert.equal(explicitPlannerMergedTrace.sourceTrace.imageProvenance.length, 2);
+assert.equal(explicitPlannerMergedTrace.sourceTrace.assetAuthorizationStatus, 'blocked');
+assert.ok(chartConsumedFields({
+  kind:'bar',
+  sourceTrace:{ source_ids:'src-consumed', sources:[{ id:'src-consumed', page:1, excerpt:'Consumed source.' }] }
+}).includes('sourceTrace'));
+assert.equal(
+  chartConsumedFields({
+    kind:'bar',
+    sourceTrace:{ assetAuthorizationStatus:'none' }
+  }).includes('sourceTrace'),
+  false,
+  'assetAuthorizationStatus none should not count as chart sourceTrace consumption'
+);
 
 const unknownKindAudit = chartSemanticQA({ industry: 'general-operations' }, normalizeDeckPlan({
   industry: 'general-operations',
@@ -248,7 +459,10 @@ const normalized = normalizeDeckPlan({
         { label: 'Tmall', value: '42%' },
         { label: 'Douyin', value: '21%' }
       ],
-      sourceTrace: { sourceIds: ['src-channel'] }
+      sourceTrace: {
+        sourceIds: ['src-channel'],
+        sources: [{ id:'src-channel', page:1, excerpt:'Channel structure source excerpt.' }]
+      }
     }
   ]
 });
@@ -256,8 +470,95 @@ const visual = chartVisualQA(normalized, normalized, {
   slides: [{ slide: 1, chartConsumption: { rendered: true, spec: normalized.slides[0].chartSpec, visualChecks: {} } }]
 });
 assert.equal(visual.status, 'pass');
+const chartEvidencePass = chartEvidenceQA(normalized, normalized);
+assert.equal(
+  chartEvidencePass.findings.some(finding => finding.type === 'chartEvidenceUntraced'),
+  false,
+  'chart evidence QA should accept matching sourceIds with page/excerpt sources'
+);
+const chartSourceMessagePlan = normalizeDeckPlan({
+  industry: 'beauty-consumer',
+  requestedSlideCount: 1,
+  slides: [{
+    type: 'content',
+    title: 'Channel structure without source',
+    claim: 'Channel data is structured.',
+    proofObject: 'channel-structure',
+    dataComponent: 'bar',
+    channelStructure: [
+      { label: 'Tmall', value: '42%' },
+      { label: 'Douyin', value: '21%' }
+    ]
+  }]
+});
+const chartSourceMessageQA = chartVisualQA(chartSourceMessagePlan, chartSourceMessagePlan, {
+  slides: [{ slide: 1, chartConsumption: { rendered: true, spec: chartSourceMessagePlan.slides[0].chartSpec, visualChecks: {} } }]
+});
+const chartSourceMessage = chartSourceMessageQA.findings.find(finding => finding.type === 'chartSourceMissing');
+assert.equal(chartSourceMessage.message, 'chart lacks source trace');
+assert.equal(/visible/i.test(chartSourceMessage.message), false);
+const chartSourceNoteOnlyPlan = normalizeDeckPlan({
+  industry: 'beauty-consumer',
+  requestedSlideCount: 1,
+  slides: [{
+    type: 'content',
+    title: 'Channel structure with note only',
+    claim: 'Channel data is structured.',
+    proofObject: 'channel-structure',
+    dataComponent: 'bar',
+    channelStructure: [
+      { label: 'Tmall', value: '42%' },
+      { label: 'Douyin', value: '21%' }
+    ],
+    sourceTrace:{ sourceNote:'Chart source note only' }
+  }]
+});
+const chartSourceNoteOnlyQA = chartVisualQA(chartSourceNoteOnlyPlan, chartSourceNoteOnlyPlan, {
+  slides: [{ slide: 1, chartConsumption: { rendered: true, spec: chartSourceNoteOnlyPlan.slides[0].chartSpec, visualChecks: {} } }]
+});
+assert.ok(
+  chartSourceNoteOnlyQA.findings.some(finding => finding.type === 'chartSourceMissing'),
+  'chart source QA should require structured source trace, not only sourceNote text'
+);
+const chartSourceNoteOnlyEvidence = chartEvidenceQA(chartSourceNoteOnlyPlan, chartSourceNoteOnlyPlan);
+assert.ok(
+  chartSourceNoteOnlyEvidence.findings.some(finding => finding.type === 'chartEvidenceUntraced'),
+  'chart evidence QA should require structured source trace, not only sourceNote text'
+);
+const chartSourceMismatchPlan = normalizeDeckPlan({
+  industry: 'beauty-consumer',
+  requestedSlideCount: 1,
+  slides: [{
+    type: 'content',
+    title: 'Channel structure with mismatched source',
+    claim: 'Channel data is structured.',
+    proofObject: 'channel-structure',
+    dataComponent: 'bar',
+    channelStructure: [
+      { label: 'Tmall', value: '42%' },
+      { label: 'Douyin', value: '21%' }
+    ],
+    sourceTrace:{
+      sourceIds:['src-a'],
+      sources:[{ id:'src-b', page:1, excerpt:'Mismatched source entry.' }]
+    }
+  }]
+});
+const chartSourceMismatchQA = chartVisualQA(chartSourceMismatchPlan, chartSourceMismatchPlan, {
+  slides: [{ slide: 1, chartConsumption: { rendered: true, spec: chartSourceMismatchPlan.slides[0].chartSpec, visualChecks: {} } }]
+});
+assert.ok(
+  chartSourceMismatchQA.findings.some(finding => finding.type === 'chartSourceMissing'),
+  'chart source QA should require sourceIds to match page/excerpt source entries'
+);
+assert.ok(
+  chartEvidenceQA(chartSourceMismatchPlan, chartSourceMismatchPlan).findings.some(finding => finding.type === 'chartEvidenceUntraced'),
+  'chart evidence QA should reject mismatched sourceIds and source entries'
+);
 const scores = pageLevelChartScores(normalized, normalized, null);
 assert.equal(scores.slides[0].chartKind, 'bar');
+assert.equal(scores.slides[0].evidenceTraceScore, 100);
+assert.equal(pageLevelChartScores(chartSourceMismatchPlan, chartSourceMismatchPlan, null).slides[0].evidenceTraceScore, 64);
 const noChartScores = pageLevelChartScores(normalizeDeckPlan({
   industry: 'general-operations',
   slides: [{ type: 'content', title: 'Narrative slide', claim: 'No chart intent here.' }]
@@ -266,5 +567,142 @@ assert.equal(noChartScores.slides[0].applicability, 'not_applicable');
 assert.equal(noChartScores.slides[0].chartFitScore, null);
 const gate = chartAcceptanceGate(normalized, normalized, { slides: [{ slide: 1, missingRequiredComponents: [] }] }, { strict: false });
 assert.notEqual(gate.status, 'fail');
+const sourceNoteOnlyGate = chartAcceptanceGate(chartSourceNoteOnlyPlan, chartSourceNoteOnlyPlan, {
+  slides: [{ slide: 1, missingRequiredComponents: [], chartConsumption: { rendered:true, spec: chartSourceNoteOnlyPlan.slides[0].chartSpec } }]
+}, { strict: false });
+assert.ok(
+  sourceNoteOnlyGate.findings.some(finding => finding.type === 'acceptanceChartSourceMissing'),
+  'chart acceptance should not accept sourceTrace.sourceNote without page/excerpt source evidence'
+);
+const sourceMissingAcceptance = acceptanceAudit(chartSourceMessagePlan, chartSourceMessagePlan, {
+  strict:true,
+  renderMeta:{ slides:[{ slide:1, missingRequiredComponents:[], chartConsumption:{ rendered:true } }] }
+});
+assert.notEqual(sourceMissingAcceptance.status, 'pass');
+assert.ok(
+  sourceMissingAcceptance.findings.some(finding => finding.type === 'chartSourceMissing'),
+  'acceptance audit should retain chart source QA findings in aggregate status'
+);
+assert.ok(
+  sourceMissingAcceptance.findings.some(finding => finding.type === 'acceptanceChartSourceMissing'),
+  'acceptance audit should retain chart gate source findings in aggregate status'
+);
+
+function chartCtx(ops) {
+  const record = (name, args) => ops.push({ name, args });
+  return {
+    slide:{ addShape:(...args) => record('addShape', args) },
+    colors:{
+      accent:'2563EB',
+      body:'334155',
+      cyan:'0891B2',
+      line:'CBD5E1',
+      muted:'64748B',
+      panelAlt:'F1F5F9',
+      risk:'DC2626',
+      text:'111827',
+      violet:'7C3AED',
+      warning:'F59E0B'
+    },
+    addLabel:(...args) => record('addLabel', args),
+    addNumber:(...args) => record('addNumber', args),
+    addRect:(...args) => record('addRect', args),
+    addText:(...args) => record('addText', args),
+    panelFill:() => 'F8FAFC'
+  };
+}
+
+function chartSourceSpec(kind) {
+  const values = [
+    { category:'A', value:1, rawValue:'1%' },
+    { category:'B', value:2, rawValue:'2%' }
+  ];
+  return {
+    kind,
+    title:`${kind} source fixture`,
+    unit:'%',
+    categories:['A', 'B'],
+    series:[{ name:'Series', values }],
+    table:{ rows:[{ title:'A', value:'1%', body:'Alpha' }, { title:'B', value:'2%', body:'Beta' }] },
+    sourceTrace:{
+      sourceNote:'Chart Source A',
+      sourceIds:['src-chart'],
+      sources:[{ id:'src-chart', page:1, excerpt:'Chart source excerpt.' }]
+    }
+  };
+}
+
+['bar', 'line', 'scorecard', 'table', 'kpi'].forEach(kind => {
+  const hiddenOps = [];
+  const hidden = renderChartSpec(chartCtx(hiddenOps), chartSourceSpec(kind), {});
+  assert.equal(hidden.rendered, true, `${kind} chart should render`);
+  assert.equal(hidden.visualChecks.sourceVisible, false, `${kind} chart should hide source text by default`);
+  assert.equal(
+    hiddenOps.some(op => op.name === 'addText' && op.args[1] === 'Chart Source A' && (op.args[2] || {}).typeRole === 'sourceNote'),
+    false,
+    `${kind} chart should not draw sourceNote text by default`
+  );
+
+  const visibleOps = [];
+  const visible = renderChartSpec(chartCtx(visibleOps), chartSourceSpec(kind), { showSourceNote:true });
+  assert.equal(visible.rendered, true, `${kind} opt-in chart should render`);
+  assert.equal(visible.visualChecks.sourceVisible, true, `${kind} chart should report visible source only when opted in`);
+  assert.equal(
+    visibleOps.some(op => op.name === 'addText' && op.args[1] === 'Chart Source A' && (op.args[2] || {}).typeRole === 'sourceNote'),
+    true,
+    `${kind} chart should draw sourceNote text when opted in`
+  );
+});
+
+const sourceAliasOps = [];
+const sourceAliasResult = renderChartSpec(chartCtx(sourceAliasOps), Object.assign({}, chartSourceSpec('bar'), {
+  sourceTrace:{
+    source_note:'Chart Source Alias'
+  }
+}), { showSourceNote:true });
+assert.equal(sourceAliasResult.visualChecks.sourceVisible, true);
+assert.ok(
+  sourceAliasOps.some(op => op.name === 'addText' && op.args[1] === 'Chart Source Alias' && (op.args[2] || {}).typeRole === 'sourceNote'),
+  'opt-in chart source note should support source_note alias'
+);
+
+const sourceFallbackOps = [];
+const sourceFallbackResult = renderChartSpec(chartCtx(sourceFallbackOps), Object.assign({}, chartSourceSpec('bar'), {
+  sourceTrace:{
+    sourceIds:['src-structured'],
+    sources:[{ id:'src-structured', page:7, excerpt:'Structured fallback excerpt for chart source note.' }]
+  }
+}), { showSourceNote:true });
+assert.equal(sourceFallbackResult.visualChecks.sourceVisible, true);
+assert.ok(
+  sourceFallbackOps.some(op => op.name === 'addText' && /Source src-structured/.test(op.args[1]) && (op.args[2] || {}).typeRole === 'sourceNote'),
+  'opt-in chart source note should fall back to structured source trace text'
+);
+
+const sourceRefFallbackOps = [];
+const sourceRefFallbackResult = renderChartSpec(chartCtx(sourceRefFallbackOps), Object.assign({}, chartSourceSpec('bar'), {
+  sourceTrace:{
+    sources:[{ ref:'doc-ref', page:7, excerpt:'Structured ref fallback excerpt for chart source note.' }]
+  }
+}), { showSourceNote:true });
+assert.equal(sourceRefFallbackResult.visualChecks.sourceVisible, true);
+assert.ok(
+  sourceRefFallbackOps.some(op => op.name === 'addText' && /Source doc-ref/.test(op.args[1]) && (op.args[2] || {}).typeRole === 'sourceNote'),
+  'opt-in chart source note should fall back to ref-based structured source trace text'
+);
+
+const sourceNameOnlyFallbackOps = [];
+const sourceNameOnlyFallbackResult = renderChartSpec(chartCtx(sourceNameOnlyFallbackOps), Object.assign({}, chartSourceSpec('bar'), {
+  sourceTrace:{
+    sourceIds:['src-name'],
+    sources:[{ name:'src-name', page:7, excerpt:'Name-only fallback should not render.' }]
+  }
+}), { showSourceNote:true });
+assert.equal(sourceNameOnlyFallbackResult.visualChecks.sourceVisible, false);
+assert.equal(
+  sourceNameOnlyFallbackOps.some(op => op.name === 'addText' && /src-name/.test(op.args[1]) && (op.args[2] || {}).typeRole === 'sourceNote'),
+  false,
+  'opt-in chart source note should not imply sourceIds match name-only source entries'
+);
 
 console.log('chart spec contract ok');

@@ -4,6 +4,9 @@ const {
 const {
   routeChartSpec
 } = require('./chart-spec-routing');
+const {
+  sourceTraceObjectIsExplainable
+} = require('./source-evidence');
 
 function chartVisualQA(plan = {}, normalizedPlan = null, renderMeta = null) {
   const normalized = normalizedPlan || plan;
@@ -25,9 +28,8 @@ function chartVisualQA(plan = {}, normalizedPlan = null, renderMeta = null) {
     if (needsUnit && !spec.unit) {
       findings.push({ slide: i + 1, level: 'review', type: 'chartUnitMissing', issueCategory: 'data_contract_gap', message: `${spec.kind} chart lacks unit` });
     }
-    const sourceIds = (spec.sourceTrace && spec.sourceTrace.sourceIds) || [];
-    if (!sourceIds.length && !((spec.sourceTrace && spec.sourceTrace.sourceNote) || '').trim()) {
-      findings.push({ slide: i + 1, level: 'review', type: 'chartSourceMissing', issueCategory: 'data_contract_gap', message: 'chart lacks visible source trace' });
+    if (!sourceTraceObjectIsExplainable(spec.sourceTrace || {}, { requireSourceId:true })) {
+      findings.push({ slide: i + 1, level: 'review', type: 'chartSourceMissing', issueCategory: 'data_contract_gap', message: 'chart lacks source trace' });
     }
     if (visual.labelCollision) {
       findings.push({ slide: i + 1, level: 'review', type: 'chartLabelOverlap', issueCategory: 'renderer_layout_bug', message: 'renderer reported possible chart label overlap' });

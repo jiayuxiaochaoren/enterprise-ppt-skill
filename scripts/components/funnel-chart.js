@@ -50,7 +50,7 @@ function renderFunnelChart(ctx, spec = {}, opts = {}) {
     visualChecks: {
       axisLabels: true,
       unitVisible: Boolean(spec.unit),
-      sourceVisible: Boolean((spec.sourceTrace || {}).sourceNote || ((spec.sourceTrace || {}).sourceIds || []).length),
+      sourceVisible: frame.sourceVisible,
       labelCollision: values.length > 6,
       valueOverflow: false
     }

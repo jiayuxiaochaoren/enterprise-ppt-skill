@@ -153,12 +153,13 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
     slides.push(...bodySlides);
   }
   const decision = bodyClaims.find(c => c.narrative_role === 'decision') || claims.find(c => c.narrative_role === 'decision');
+  const decisionSourceTrace = decision ? sourceTraceForClaim(decision, extraction, bundle) : undefined;
   slides.push({
     type: 'closing',
     title: companyIntro ? '谢谢观看' : (decision ? decision.claim : '下一步行动'),
     subtitle: companyIntro ? (doc.organization || displayTitle) : (decision ? decision.support || '' : doc.decision_goal || '确认范围、事实口径和评审节奏。'),
     proofObject: companyIntro ? undefined : (decision ? (decision.proof_object || decision.proofObject || 'premium-closing-anchor') : 'premium-closing-anchor'),
-    proof: companyIntro || !decision ? undefined : proofObjectForClaim(decision, extraction, bundle),
+    proof: companyIntro || !decision ? undefined : proofObjectForClaim(decision, extraction, bundle, { sourceTrace: decisionSourceTrace }),
     closingVariant: companyIntro ? 'company-thanks' : undefined,
     label: companyIntro ? '致谢' : undefined,
     showMeta: companyIntro ? false : undefined,
@@ -171,7 +172,7 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
         ])
       : (decision ? textItems(decision.bullets, ['确认范围', '补齐事实', '进入评审']) : [{ title: '确认范围', body: '对齐受众与决策目标。' }, { title: '补齐事实', body: '补充缺失数据与素材授权。' }, { title: '进入评审', body: '生成 PPTX 并完成 QA。' }]),
     visual: firstImage && companyIntro ? { mode: 'photo', role: 'closing', image: firstImage } : undefined,
-    sourceTrace: decision ? sourceTraceForClaim(decision, extraction, bundle) : undefined
+    sourceTrace: decisionSourceTrace
   });
 
   const plan = {

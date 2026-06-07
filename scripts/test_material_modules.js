@@ -37,7 +37,10 @@ const {
   shouldSuppressCompanyIntroClaim
 } = require('./material/company-intro-planning');
 const { targetSlideContract } = require('./material/slide-contract');
-const { sourceTraceForClaim } = require('./material/source-trace');
+const {
+  proofObjectForClaim,
+  sourceTraceForClaim
+} = require('./material/source-trace');
 const { detectStructuredTables } = require('./material/tables');
 const {
   normalizeOcrResults,
@@ -144,6 +147,70 @@ const trace = sourceTraceForClaim(
 );
 assert.equal(trace.version, 'source-trace/v2');
 assert.equal(trace.sources[0].page, 2);
+const scalarTraceInput = {
+  id:'claim-scalar',
+  claim:'Scalar source evidence',
+  evidence_ids:'ev1',
+  source_ids:'src-a',
+  source_pages:{ 'src-a':3 },
+  source_excerpts:{ 'src-a':'scalar source excerpt' }
+};
+const scalarExtraction = {
+  evidence:[{ id:'ev1', type:'metric', sourceIds:['src-a'], summary:'camelCase evidence summary' }]
+};
+const scalarBundle = {
+  sources:[{ id:'src-a', kind:'text', name:'brief.md', relativePath:'brief.md' }]
+};
+const scalarTrace = sourceTraceForClaim(scalarTraceInput, scalarExtraction, scalarBundle);
+assert.deepEqual(scalarTrace.evidenceIds, ['ev1']);
+assert.deepEqual(scalarTrace.sourceIds, ['src-a']);
+const scalarProof = proofObjectForClaim(scalarTraceInput, scalarExtraction, scalarBundle);
+assert.equal(scalarProof.factual, true);
+assert.deepEqual(scalarProof.sourceIds, scalarTrace.sourceIds);
+const scalarSlide = slideFromClaim(scalarTraceInput, scalarExtraction, scalarBundle);
+assert.deepEqual(
+  scalarSlide.proof.sourceIds,
+  scalarSlide.sourceTrace.sourceIds,
+  'slide proof sourceIds should come from canonical sourceTrace'
+);
+const assetOnlyClaim = { id:'claim-asset-only', claim:'Asset-only evidence', evidenceIds:'ev-asset' };
+const assetOnlyExtraction = {
+  evidence:[{ id:'ev-asset', type:'image', assetSourceId:'img-asset', summary:'asset evidence', authorizationStatus:'cleared' }]
+};
+const assetOnlyBundle = {
+  sources:[{ id:'img-asset', kind:'image', path:'/tmp/asset.png', relativePath:'asset.png', name:'asset.png', authorizationStatus:'cleared' }]
+};
+const assetOnlyTrace = sourceTraceForClaim(assetOnlyClaim, assetOnlyExtraction, assetOnlyBundle);
+assert.deepEqual(assetOnlyTrace.sourceIds, ['img-asset']);
+assert.equal(assetOnlyTrace.imageProvenance[0].sourceId, 'img-asset');
+assert.equal(assetOnlyTrace.imageProvenance[0].authorizationStatus, 'cleared');
+const assetOnlyProof = proofObjectForClaim(assetOnlyClaim, assetOnlyExtraction, assetOnlyBundle);
+assert.equal(assetOnlyProof.factual, true);
+assert.equal(assetOnlyProof.provenance, 'real-asset-evidence');
+assert.equal(assetOnlyProof.sourceTrace.imageProvenance[0].sourceId, 'img-asset');
+assert.deepEqual(
+  imagesForClaim(assetOnlyClaim, assetOnlyExtraction, assetOnlyBundle),
+  [{ path:'/tmp/asset.png', caption:'asset evidence', role:'image' }],
+  'imagesForClaim should consume scalar camelCase evidenceIds and assetSourceId'
+);
+const reviewTrace = sourceTraceForClaim(
+  { id:'claim-review', source_ids:['src-cleared'], evidence_ids:['ev-review'], source_pages:{ 'src-cleared':1, 'img-review':2 }, source_excerpts:{ 'src-cleared':'文本来源', 'img-review':'图片来源' } },
+  { evidence:[{ id:'ev-review', asset_source_id:'img-review', authorizationStatus:'needs-review' }] },
+  { sources:[
+    { id:'src-cleared', kind:'text', name:'brief.md', authorizationStatus:'cleared' },
+    { id:'img-review', kind:'image', relativePath:'review.png', authorizationStatus:'cleared' }
+  ] }
+);
+assert.equal(reviewTrace.assetAuthorizationStatus, 'needs-review');
+const blockedTrace = sourceTraceForClaim(
+  { id:'claim-blocked', source_ids:['src-cleared'], evidence_ids:['ev-blocked'], source_pages:{ 'src-cleared':1, 'img-blocked':2 }, source_excerpts:{ 'src-cleared':'文本来源', 'img-blocked':'图片来源' } },
+  { evidence:[{ id:'ev-blocked', asset_source_id:'img-blocked', authorizationStatus:'blocked' }] },
+  { sources:[
+    { id:'src-cleared', kind:'text', name:'brief.md', authorizationStatus:'cleared' },
+    { id:'img-blocked', kind:'image', relativePath:'blocked.png', authorizationStatus:'cleared' }
+  ] }
+);
+assert.equal(blockedTrace.assetAuthorizationStatus, 'blocked');
 
 const gate = buildClarificationGate(
   { images: [], textSummary: { numbers: [] }, sources: [{ text:'客户案例授权不明确，缺少联系人。' }] },

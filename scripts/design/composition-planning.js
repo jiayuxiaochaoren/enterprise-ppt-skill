@@ -33,7 +33,7 @@ function createCompositionPlanningHelpers(deps = {}) {
     }
     if (type === 'case-gallery') {
       if (variant === 'case-hero') return { primaryZone: 'left-hero-image', secondaryZone: 'right-evidence-list', proofZone: 'image-caption-bar' };
-      if (variant === 'evidence-board') return { primaryZone: 'evidence-grid', secondaryZone: 'caption-system', proofZone: 'source-note' };
+      if (variant === 'evidence-board') return { primaryZone: 'evidence-grid', secondaryZone: 'caption-system', proofZone: 'evidence-boundary' };
       return { primaryZone: 'image-story', secondaryZone: 'caption-and-context', proofZone: 'evidence-labels' };
     }
     if (['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type)) {
@@ -48,7 +48,7 @@ function createCompositionPlanningHelpers(deps = {}) {
     if (['risk-table', 'table'].includes(type)) {
       return { primaryZone: 'risk-or-control-board', secondaryZone: 'owner/action-detail', proofZone: 'priority-signal' };
     }
-    if (signals.isDenseText) return { primaryZone: 'editorial-summary', secondaryZone: 'structured-evidence', proofZone: 'source-note' };
+    if (signals.isDenseText) return { primaryZone: 'editorial-summary', secondaryZone: 'structured-evidence', proofZone: 'audit-trace' };
     return { primaryZone: 'claim', secondaryZone: 'supporting-points', proofZone: design && design.wantsImage ? 'proof-image' : 'accent-rail' };
   }
 

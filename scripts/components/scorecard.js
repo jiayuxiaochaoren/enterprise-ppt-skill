@@ -64,7 +64,7 @@ function renderScorecard(ctx, spec = {}, opts = {}) {
     visualChecks: {
       axisLabels: false,
       unitVisible: Boolean(spec.unit),
-      sourceVisible: Boolean((spec.sourceTrace || {}).sourceNote || ((spec.sourceTrace || {}).sourceIds || []).length),
+      sourceVisible: frame.sourceVisible,
       labelCollision: values.length > 6,
       valueOverflow: false
     }
