@@ -110,6 +110,11 @@ const profileMappingChange = profileSummaryForChangedFiles(['scripts/test-profil
 assert.deepEqual(profileMappingChange.groups, ['unit']);
 assert.deepEqual(profileMappingChange.matchedRules.map(rule => rule.id), ['test-profile']);
 
+[
+  'scripts/component-id-normalization.js',
+  'scripts/test_component_id_normalization.js'
+].forEach(file => assertProfile(file, ['unit', 'pipeline', 'render', 'visual'], ['component-normalization']));
+
 const mixed = groupsForChangedFiles([
   'scripts/qa/quality-severity-policy.js',
   'scripts/qa/quality-severity-matrix.js',
@@ -144,6 +149,11 @@ assert.deepEqual(validatePptx.matchedRules.map(rule => rule.id), ['visual-qa']);
   'scripts/test_density_strategy.js',
   'scripts/test_image_layout_strategy.js',
   'scripts/test_industry_evidence_chain.js',
+  'scripts/test_industry_evidence_component_contracts.js',
+  'scripts/test_industry_evidence_coverage_policy.js',
+  'scripts/test_industry_evidence_fixtures.js',
+  'scripts/test_industry_evidence_registry.js',
+  'scripts/test_industry_evidence_source_trace.js',
   'scripts/test_industry_evidence_chain_smoke.js',
   'scripts/test_industry_pack_depth.js',
   'scripts/test_intelligence_layers.js',

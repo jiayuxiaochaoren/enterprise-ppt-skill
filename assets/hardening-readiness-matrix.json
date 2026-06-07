@@ -245,6 +245,7 @@
         "scripts/qa/render-meta-audits.js"
       ],
       "files": [
+        "scripts/component-id-normalization.js",
         "scripts/design-system.js",
         "scripts/chart-spec.js",
         "scripts/visual_qa.js",

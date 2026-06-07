@@ -20,6 +20,13 @@ module.exports = {
           "value-chain",
           "caption-bar"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "value-chain",
+            "caption-bar"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "culture-cover-with-soft-geometry",
           "mission-statement-stage",
@@ -53,6 +60,13 @@ module.exports = {
           "proof-gallery",
           "caption-bar"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "proof-gallery",
+            "caption-bar"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "people-proof-mosaic",
           "company-profile-proof"
@@ -87,6 +101,13 @@ module.exports = {
           "kpi-strip",
           "source-note"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "kpi-strip",
+            "source-note"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "company-profile-proof",
           "premium-closing-anchor"

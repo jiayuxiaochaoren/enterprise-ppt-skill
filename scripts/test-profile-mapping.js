@@ -4,6 +4,16 @@ const ALL_TEST_GROUPS = ['unit', 'pipeline', 'render', 'visual', 'delivery'];
 
 const TEST_PROFILE_RULES = [
   {
+    id: 'component-normalization',
+    label: 'Shared component id normalization change',
+    patterns: [
+      /^scripts\/component-id-normalization\.js$/,
+      /^scripts\/test_component_id_normalization\.js$/
+    ],
+    groups: ['unit', 'pipeline', 'render', 'visual'],
+    commands: ['npm run test:unit', 'npm run test:pipeline', 'npm run test:render', 'npm run test:visual']
+  },
+  {
     id: 'render-text',
     label: 'Text rendering/readability metadata change',
     patterns: [
@@ -126,7 +136,7 @@ const TEST_PROFILE_RULES = [
       /^scripts\/design\/(?!asset-generation\.js$|image-assets\.js$|visual-media\.js$|chart-.*qa.*\.js$|chart-spec-normalization\.js$)/,
       /^scripts\/design-system\.js$/,
       /^scripts\/chart-spec\.js$/,
-      /^scripts\/test_(acceptance_briefs|art_direction|composition_planner|composition_strategy|connector_pages|content_signals|deck_rhythm_helpers|density_strategy|image_layout_strategy|industry_evidence_chain|industry_evidence_chain_smoke|industry_pack_depth|intelligence_layers|reference_recipe_system|rhythm_planner|semantic_model|slide_normalization_helpers|slide_routing_helpers|typography_system)\.js$/,
+      /^scripts\/test_(acceptance_briefs|art_direction|composition_planner|composition_strategy|connector_pages|content_signals|deck_rhythm_helpers|density_strategy|image_layout_strategy|industry_evidence_chain|industry_evidence_component_contracts|industry_evidence_coverage_policy|industry_evidence_fixtures|industry_evidence_registry|industry_evidence_source_trace|industry_evidence_chain_smoke|industry_pack_depth|intelligence_layers|reference_recipe_system|rhythm_planner|semantic_model|slide_normalization_helpers|slide_routing_helpers|typography_system)\.js$/,
       /^scripts\/test_design/,
       /^scripts\/test_chart_spec\.js$/,
       /^scripts\/(build_chart_regression_samples|build_reference_recipes|generate_industry_stress_demos|industry_acceptance_matrix|inspect_design|run_beauty_chart_benchmark|run_industry_acceptance|run_industry_evidence_chain_smoke)\.js$/,

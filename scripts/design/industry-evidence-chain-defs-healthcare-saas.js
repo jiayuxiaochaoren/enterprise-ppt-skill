@@ -19,6 +19,12 @@ module.exports = {
         "components": [
           "patient-journey-band"
         ],
+        "coveragePolicy": {
+          "requiredAll": [
+            "patient-journey-band"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "patient-service-scorecard",
           "service-blueprint"
@@ -53,6 +59,15 @@ module.exports = {
           "patient-journey-band",
           "service-blueprint-lane"
         ],
+        "coveragePolicy": {
+          "requiredAll": [
+            "service-blueprint-lane"
+          ],
+          "requiredAny": [
+            "patient-journey-band"
+          ],
+          "minHits": 2
+        },
         "proofObjects": [
           "service-blueprint",
           "quality-handoff"
@@ -90,6 +105,13 @@ module.exports = {
           "quality-scorecard",
           "risk-register"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "quality-scorecard",
+            "risk-register"
+          ],
+          "minHits": 2
+        },
         "proofObjects": [
           "patient-scorecard",
           "patient-service-scorecard",
@@ -142,6 +164,12 @@ module.exports = {
         "components": [
           "workflow-rail"
         ],
+        "coveragePolicy": {
+          "requiredAll": [
+            "workflow-rail"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "platform-capability-map",
           "automation-workflow"
@@ -174,8 +202,19 @@ module.exports = {
         "label": "工作流落地",
         "components": [
           "prototype-frame",
-          "workflow-rail"
+          "workflow-rail",
+          "caption-bar"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "prototype-frame",
+            "workflow-rail"
+          ],
+          "optional": [
+            "caption-bar"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "prototype-flow",
           "automation-workflow"
@@ -215,6 +254,16 @@ module.exports = {
           "permission-audit-tag",
           "kpi-strip"
         ],
+        "coveragePolicy": {
+          "requiredAll": [
+            "adoption-funnel"
+          ],
+          "requiredAny": [
+            "permission-audit-tag",
+            "kpi-strip"
+          ],
+          "minHits": 2
+        },
         "proofObjects": [
           "adoption-funnel",
           "adoption-revenue-board",

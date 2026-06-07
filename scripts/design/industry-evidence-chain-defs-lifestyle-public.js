@@ -18,6 +18,13 @@ module.exports = {
           "hero-image",
           "caption-bar"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "hero-image",
+            "caption-bar"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "lifestyle-editorial-cover",
           "product-or-place-gallery"
@@ -51,6 +58,16 @@ module.exports = {
           "proof-gallery",
           "caption-bar"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "value-chain",
+            "proof-gallery"
+          ],
+          "optional": [
+            "caption-bar"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "customer-journey-map",
           "experience-proof-grid"
@@ -85,6 +102,16 @@ module.exports = {
           "proof-gallery",
           "caption-bar"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "kpi-strip",
+            "proof-gallery"
+          ],
+          "optional": [
+            "caption-bar"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "conversion-scorecard",
           "experience-proof-grid"
@@ -130,6 +157,13 @@ module.exports = {
           "source-note",
           "commentary-panel"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "source-note",
+            "commentary-panel"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "policy-context-board",
           "governance-operating-model"
@@ -161,6 +195,13 @@ module.exports = {
           "value-chain",
           "governance-table"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "value-chain",
+            "governance-table"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "resource-map",
           "governance-operating-model"
@@ -194,6 +235,14 @@ module.exports = {
           "risk-register",
           "source-note"
         ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "kpi-strip",
+            "risk-register",
+            "source-note"
+          ],
+          "minHits": 1
+        },
         "proofObjects": [
           "milestone-scorecard",
           "risk-and-assurance-board"

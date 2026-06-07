@@ -1,16 +1,9 @@
 const {
   canonicalComponentId
 } = require('../render/component-capability-manifest');
-
-function normalizeComponentId(value = '') {
-  return String(value || '')
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/[_+\s/]+/g, '-')
-    .replace(/[^a-zA-Z0-9-]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .toLowerCase();
-}
+const {
+  normalizeComponentId
+} = require('../component-id-normalization');
 
 function componentIdFromHint(value = '') {
   const id = normalizeComponentId(value);
