@@ -26,8 +26,11 @@ const COMPONENT_ALIASES = {
   'value-chain-connector': 'value-chain'
 };
 
-const COMPONENT_DATA_REQUIREMENTS = {
-  'bar-chart': ['chartSpec|metrics|rows|series'],
+const {
+  COMPONENT_DATA_REQUIREMENTS: COMPONENT_EVIDENCE_DATA_REQUIREMENTS
+} = require('../design/component-evidence-contracts');
+
+const COMPONENT_DATA_REQUIREMENTS = Object.assign({}, COMPONENT_EVIDENCE_DATA_REQUIREMENTS, {
   'beauty-channel-structure': ['chartSpec|channelStructure|channelEfficiency'],
   'beauty-efficacy-table': ['chartSpec|rows|products'],
   'beauty-member-repurchase': ['chartSpec|metrics|memberCohorts'],
@@ -36,46 +39,8 @@ const COMPONENT_DATA_REQUIREMENTS = {
   'beauty-review-sentiment': ['chartSpec|reviews|sentiment'],
   'beauty-sku-matrix': ['chartSpec|products|productStory'],
   'beauty-social-funnel': ['chartSpec|funnel|socialFunnel'],
-  'beauty-sustainability-matrix': ['chartSpec|rows|sustainability'],
-  'caption-bar': ['caption|subtitle|claim|proof.explanation'],
-  'chart-commentary-panel': ['claim|subtitle|note|businessLogic'],
-  'commentary-panel': ['claim|note|businessLogic|decision'],
-  'content-card-grid': ['cards|items|modules|values|sections'],
-  'adoption-funnel': ['adoptionFunnel|activationFunnel|cohortFunnel|metrics'],
-  'disclosure-footnote': ['sourceNote|source_note|proof.sourceNote|disclosure|assumptions'],
-  'equipment-nameplate': ['equipment|productionLine|topology|layers|metrics'],
-  'funnel-chart': ['chartSpec|funnel|steps'],
-  'governance-table': ['rows|risks|controls|responsibilities'],
-  'heatmap-chart': ['chartSpec|matrix|rows'],
-  'hero-image': ['image|images|visual.image|visual.images|visual.mode|product'],
-  'information-gap': ['chartSpec.informationGap|informationGap'],
-  'inspection-matrix': ['inspectionMatrix|inspectionRecords|rows|controls|qualityHandoff'],
-  'kpi-primary-metric': ['metrics'],
-  'kpi-strip': ['metrics'],
-  'line-chart': ['chartSpec|monthlyPulse|monthlyTrend|trend'],
-  'matrix-chart': ['chartSpec|matrix|rows'],
-  'navigation-sequence': ['items|sections'],
-  'pareto-chart': ['chartSpec|pareto|rows'],
-  'patient-journey-band': ['journeyMap|serviceBlueprint|touchpoints|phases|metrics'],
-  'permission-audit-tag': ['permissionGovernance|permissions|auditLog|risks|rows'],
-  'process-rail': ['phases|actions|steps|timeline|milestones'],
-  'product-matrix': ['products|productStory|product|cards'],
-  'proof-gallery': ['images|visual.images|cards|image|visual.image'],
-  'proof-gallery-grid': ['images|visual.images|cards|image|visual.image'],
-  'prototype-frame': ['prototype|prototypeFlow|images|visual.image|visual.images'],
-  'quality-scorecard': ['metrics|qualityScorecard|oee|oeeComponents'],
-  'risk-matrix': ['matrix|rows|risks|controls'],
-  'risk-register': ['rows|risks|controls|riskRegister|riskMatrix'],
-  'scorecard': ['chartSpec|metrics'],
-  'service-blueprint-lane': ['serviceBlueprint|touchpoints|journeyMap|handoffs|qualityHandoff'],
-  'site-evidence-frame': ['siteEvidence|assetReadout|images|visual.image|visual.images'],
-  'source-note': ['sourceNote|source_note|proof.sourceNote|sourceTrace.sourceIds|sourceTrace.sources|proof.sourceTrace.sourceIds|proof.sourceTrace.sources'],
-  'system-rail': ['layers|architecture|systemMap|topology|capabilityMap|platformCapabilities|valueChain|capitals'],
-  'table-with-commentary': ['rows|headers|table'],
-  'value-chain': ['drivers|actions|outcomes|valueChain|layers|capitals'],
-  'waterfall-chart': ['chartSpec|bridge|waterfallBridge|targetBridge'],
-  'workflow-rail': ['workflow|workflows|automationWorkflow|steps|phases|platformCapabilities']
-};
+  'beauty-sustainability-matrix': ['chartSpec|rows|sustainability']
+});
 
 const CHART_COMPONENT_ID_LIST = [
   'bar-chart',

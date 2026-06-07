@@ -1260,7 +1260,7 @@ assert.equal(COMPONENT_ALIASES, COMPONENT_ALIAS_SHARD);
 assert.equal(COMPONENT_DATA_REQUIREMENTS, COMPONENT_DATA_REQUIREMENTS_SHARD);
 assert.equal(CHART_COMPONENT_ID_LIST, CHART_COMPONENT_ID_LIST_SHARD);
 assert.ok(CAPABILITY_ROWS.some(row => row[0] === 'proof-gallery' && row[1].includes('overlay')));
-assert.deepEqual(COMPONENT_DATA_REQUIREMENTS['risk-register'], ['rows|risks|controls|riskRegister|riskMatrix']);
+assert.deepEqual(COMPONENT_DATA_REQUIREMENTS['risk-register'], ['rows|risks|controls|riskRegister|riskMatrix|matrix']);
 assert.equal(
   componentManifestAudit({ aliases:{ 'bad-alias':'missing-widget' } }).findings.some(f => f.type === 'componentAliasTargetMissing'),
   true

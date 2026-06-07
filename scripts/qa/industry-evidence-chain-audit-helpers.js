@@ -36,10 +36,10 @@ function hasFieldPath(source = {}, field = '') {
 
 function plannedIdsForSlide(slide = {}) {
   const componentPlan = slide.componentPlan || {};
-  return [
+  return [...new Set([
     ...(Array.isArray(componentPlan.componentIds) ? componentPlan.componentIds : []),
     ...(Array.isArray(componentPlan.components) ? componentPlan.components.map(component => component && component.id) : [])
-  ].filter(Boolean);
+  ].filter(Boolean))];
 }
 
 function plannedComponentsForSlide(slide = {}) {

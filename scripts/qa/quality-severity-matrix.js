@@ -96,7 +96,9 @@ const QUALITY_SEVERITY_MATRIX = {
   industryEvidenceComponentBboxMissing: entry('industry_evidence_chain', FAIL_ALL, 'industry evidence components need a visible render-meta bbox'),
   industryEvidenceComponentDrawCountMissing: entry('industry_evidence_chain', FAIL_ALL, 'industry evidence components need drawnCount or itemCount evidence'),
   industryEvidenceComponentNotConsumed: entry('industry_evidence_chain', FAIL_ALL, 'planned industry evidence components must be consumed by the renderer'),
+  // Legacy compatibility for pre-coveragePolicy reports; current audits emit requiredAll/requiredAny/minHits findings instead.
   industryEvidenceComponentPartial: entry('industry_evidence_chain', { draft:'review', formal:'review', delivery:'fail' }, 'partial industry component coverage needs delivery review'),
+  industryEvidenceCoverageBelowMinimum: entry('industry_evidence_chain', FAIL_ALL, 'industry evidence coverage must satisfy the stage minimum hit count'),
   industryEvidenceComponentsMissing: entry('industry_evidence_chain', FAIL_ALL, 'industry evidence stages need at least one mapped evidence component'),
   industryEvidenceChainComponentMismatch: entry('industry_evidence_chain', FORMAL_FAIL, 'input industry chain component lists must match the canonical chain before formal review'),
   industryEvidenceChainInputSuppressed: entry('industry_evidence_chain', FORMAL_FAIL, 'input industry chain metadata cannot supply current chain authority'),
@@ -105,6 +107,8 @@ const QUALITY_SEVERITY_MATRIX = {
   industryEvidenceChainStale: entry('industry_evidence_chain', FORMAL_FAIL, 'stale input industry chain metadata must remain suppressed and reviewed'),
   industryEvidenceRenderMetaFieldMissing: entry('industry_evidence_chain', FAIL_ALL, 'industry evidence render-meta must carry chainStage, label, reason, and chain ids'),
   industryNativeDrawnEvidenceMissing: entry('industry_evidence_chain', FAIL_ALL, 'native-owned industry components need drawnComponents evidence from nativeDrawnEvidenceFor'),
+  industryEvidenceRequiredAnyMissing: entry('industry_evidence_chain', FAIL_ALL, 'industry evidence stages must satisfy at least one required-any component'),
+  industryEvidenceRequiredComponentMissing: entry('industry_evidence_chain', FAIL_ALL, 'industry evidence stages must satisfy required-all components'),
   previousIndustryEvidenceChainComponentMismatch: entry('industry_evidence_chain', FORMAL_FAIL, 'suppressed previous chain component lists must be audited against canonical components'),
   previousIndustryEvidenceChainInvalid: entry('industry_evidence_chain', FORMAL_FAIL, 'suppressed previous chain metadata still needs a valid auditable shape'),
   prototypeEvidenceMissing: entry('industry_evidence_chain', FORMAL_FAIL, 'SaaS prototype components require screenshot, image, or prototype screen evidence'),

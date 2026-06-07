@@ -62,7 +62,8 @@ const {
   industryVisualGrammarDecisionFor
 } = require('./render/industry-visual-grammar');
 const {
-  canonicalIndustryEvidenceChainForSlide
+  canonicalIndustryEvidenceChainForSlide,
+  coverageStatusForComponents
 } = require('./design/industry-evidence-chain');
 
 const pptxgen = requirePptxGen();
@@ -357,9 +358,20 @@ function consumeComponentPlan(slide, plan, s, idx) {
     return Object.assign({
       id: component.id,
       required: component.required !== false,
-      role: component.role || ''
+      role: component.role || '',
+      coverageRole: component.coverageRole || component.coverage_role || '',
+      coveragePolicy: component.coveragePolicy || component.coverage_policy || null
     }, result, industryEvidenceForComponent(component.id, result));
   });
+  const industryEvidenceCoverage = industryEvidenceChain ? {
+    version: 'industry-evidence-coverage/v1',
+    coveragePolicy: industryEvidenceChain.coveragePolicy || null,
+    plannedStatus: coverageStatusForComponents(industryEvidenceChain.coveragePolicy || {}, planned.map(component => component.id)),
+    consumedStatus: coverageStatusForComponents(
+      industryEvidenceChain.coveragePolicy || {},
+      consumed.filter(component => component.rendered).map(component => component.id)
+    )
+  } : null;
   const plannedChartSpec = !nativeVariantSuppressesChartMeta(s) && slideHasChartSpecIntent(s)
     ? (s.chartSpec || routeChartSpec(plan, s, { index:idx, total:(plan.slides || []).length }) || null)
     : null;
@@ -371,6 +383,7 @@ function consumeComponentPlan(slide, plan, s, idx) {
     sourceTrace: s.sourceTrace || null,
     proof: s.proof || null,
     industryEvidenceChain,
+    industryEvidenceCoverage,
     industryVisualGrammar: industryVisualGrammarDecisionFor(plan, s),
     renderRoute: slide.__codexRenderRoute || s.renderRoute || null,
     assetDecision: assetDecisionForMeta(plan, s),
@@ -392,7 +405,9 @@ function consumeComponentPlan(slide, plan, s, idx) {
       dataRequirements:c.dataRequirements || [],
       slotPolicy:c.slotPolicy || c.slot_policy || '',
       repairPolicy:c.repairPolicy || c.repair_policy || '',
-      priority:c.priority || (c.required === false ? 'optional' : 'required')
+      priority:c.priority || (c.required === false ? 'optional' : 'required'),
+      coverageRole:c.coverageRole || c.coverage_role || '',
+      coveragePolicy:c.coveragePolicy || c.coverage_policy || null
     })),
     unknownComponents: (s.componentPlan && Array.isArray(s.componentPlan.unknownComponents)) ? s.componentPlan.unknownComponents : [],
     drawnComponents: consumed

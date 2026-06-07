@@ -124,6 +124,9 @@ function assertSeverityMatrix() {
   assert.equal(policyRow('captionCoverageLow').formal, 'review');
   assert.equal(policyRow('componentHintEvidenceMissing').formal, 'fail');
   assert.equal(policyRow('industryEvidenceChainInputSuppressed').formal, 'fail');
+  assert.equal(policyRow('industryEvidenceRequiredComponentMissing').formal, 'fail');
+  assert.equal(policyRow('industryEvidenceRequiredAnyMissing').delivery, 'fail');
+  assert.equal(policyRow('industryEvidenceCoverageBelowMinimum').delivery, 'fail');
   assert.equal(policyRow('previousIndustryEvidenceChainInvalid').formal, 'fail');
   assert.equal(policyRow('previousIndustryEvidenceChainComponentMismatch').delivery, 'fail');
   assert.equal(policyRow('sourceCoverageLow').delivery, 'fail');
@@ -144,6 +147,9 @@ function assertSeverityMatrix() {
     { level:'review', type:'captionCoverageLow', message:'caption' },
     { level:'review', type:'componentHintEvidenceMissing', message:'hint' },
     { level:'review', type:'industryEvidenceChainInputSuppressed', message:'suppressed chain' },
+    { level:'review', type:'industryEvidenceRequiredComponentMissing', message:'required all' },
+    { level:'review', type:'industryEvidenceRequiredAnyMissing', message:'required any' },
+    { level:'review', type:'industryEvidenceCoverageBelowMinimum', message:'minimum hits' },
     { level:'review', type:'previousIndustryEvidenceChainInvalid', message:'previous invalid' },
     { level:'review', type:'previousIndustryEvidenceChainComponentMismatch', message:'previous components' },
     { level:'review', type:'sourceCoverageLow', message:'source' },
@@ -170,6 +176,9 @@ function assertSeverityMatrix() {
   assert.equal(formal.findings.find(f => f.type === 'captionCoverageLow').level, 'review');
   assert.equal(formal.findings.find(f => f.type === 'componentHintEvidenceMissing').level, 'fail');
   assert.equal(formal.findings.find(f => f.type === 'industryEvidenceChainInputSuppressed').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'industryEvidenceRequiredComponentMissing').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'industryEvidenceRequiredAnyMissing').level, 'fail');
+  assert.equal(formal.findings.find(f => f.type === 'industryEvidenceCoverageBelowMinimum').level, 'fail');
   assert.equal(formal.findings.find(f => f.type === 'previousIndustryEvidenceChainInvalid').level, 'fail');
   assert.equal(formal.findings.find(f => f.type === 'previousIndustryEvidenceChainComponentMismatch').level, 'fail');
   assert.equal(formal.findings.find(f => f.type === 'sourceCoverageLow').level, 'fail');

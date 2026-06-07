@@ -1,5 +1,8 @@
+const {
+  componentHasEvidence
+} = require('../design/component-evidence-contracts');
+
 function componentEvidenceFieldFindings({
-  hasFieldPath,
   slideNo,
   chain = {},
   slide = {},
@@ -7,20 +10,7 @@ function componentEvidenceFieldFindings({
 } = {}) {
   const findings = [];
   const plannedSet = new Set(planned);
-  const hasAny = fields => fields.some(field => hasFieldPath(slide, field));
-  if (chain.chainId === 'saas-technology' && plannedSet.has('prototype-frame') && !hasAny([
-    'images',
-    'visual.image',
-    'visual.images',
-    'prototypeFlow.screenshot',
-    'prototypeFlow.screen',
-    'prototypeFlow.image',
-    'prototypeFlow.images',
-    'prototype.screenshot',
-    'prototype.screen',
-    'prototype.image',
-    'prototype.images'
-  ])) {
+  if (chain.chainId === 'saas-technology' && plannedSet.has('prototype-frame') && !componentHasEvidence('prototype-frame', slide, { strict:true })) {
     findings.push({
       slide: slideNo,
       level: 'review',
@@ -28,13 +18,7 @@ function componentEvidenceFieldFindings({
       message: 'SaaS prototype-frame requires real screenshot/image/prototype screen evidence; do not draw a prototype shell from workflow text alone'
     });
   }
-  if (chain.chainId === 'healthcare-operations' && plannedSet.has('service-blueprint-lane') && !hasAny([
-    'serviceBlueprint',
-    'touchpoints',
-    'handoffs',
-    'qualityHandoff',
-    'journeyMap'
-  ])) {
+  if (chain.chainId === 'healthcare-operations' && plannedSet.has('service-blueprint-lane') && !componentHasEvidence('service-blueprint-lane', slide)) {
     findings.push({
       slide: slideNo,
       level: 'review',

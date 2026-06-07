@@ -13,6 +13,7 @@ const {
   filterComponentPlanCandidates
 } = require('./component-planning-filters');
 const {
+  coverageRoleForComponent,
   inferIndustryEvidenceChain
 } = require('./industry-evidence-chain');
 const {
@@ -110,8 +111,8 @@ function createComponentPlanHelpers(deps = {}) {
 
     explicitComponentEntries(s).forEach(entry => addComponent(components, entry, entry.source || 'explicit'));
 
-    const addRule = (id, role, rule, required = true) => {
-      addComponent(components, { id, role, required }, rule);
+    const addRule = (id, role, rule, required = true, meta = {}) => {
+      addComponent(components, Object.assign({ id, role, required }, meta), rule);
       rulesApplied.push(rule);
     };
     const pack = typeof industryPackFor === 'function' ? industryPackFor(plan) : null;
@@ -120,20 +121,16 @@ function createComponentPlanHelpers(deps = {}) {
     });
     if (industryEvidenceChain.stageId !== 'neutral-general') {
       (industryEvidenceChain.components || []).forEach(id => {
+        const coverageRole = coverageRoleForComponent(industryEvidenceChain.coveragePolicy || {}, id);
         if (!industryChainComponentAllowed(id, {
-          directImageCount,
-          evidenceChain: industryEvidenceChain,
-          plan,
-          productProofSignal,
-          signals,
-          slide: s,
-          type
+          directImageCount, evidenceChain: industryEvidenceChain, plan, productProofSignal, signals, slide: s, type
         })) return;
         addRule(
           id,
           `industry evidence chain: ${industryEvidenceChain.stageLabel}`,
           `industry-evidence-chain:${industryEvidenceChain.stageId}`,
-          true
+          coverageRole !== 'optional',
+          { coverageRole, coveragePolicy: industryEvidenceChain.coveragePolicy || null }
         );
       });
     }
@@ -247,11 +244,7 @@ function createComponentPlanHelpers(deps = {}) {
       .map(component => {
         const capability = componentCapabilityFor(component.id);
         if (!capability) {
-          unknownComponents.push({
-            id: component.id,
-            source: component.source || '',
-            required: component.required !== false
-          });
+          unknownComponents.push({ id: component.id, source: component.source || '', required: component.required !== false });
           return null;
         }
         return Object.assign({}, component, {
@@ -262,7 +255,9 @@ function createComponentPlanHelpers(deps = {}) {
           dataRequirements: component.dataRequirements || capability.dataRequirements || [],
           slotPolicy: component.slotPolicy || component.slot_policy || (capability.supportedModes.includes('overlay') ? 'declared-safe-slot-required' : 'native-evidence-required'),
           repairPolicy: component.repairPolicy || component.repair_policy || (component.required === false ? 'optional-drop-allowed' : 'no-unplanned-repair'),
-          priority: component.priority || (component.required === false ? 'optional' : 'required')
+          priority: component.priority || (component.required === false ? 'optional' : 'required'),
+          coverageRole: component.coverageRole || component.coverage_role || '',
+          coveragePolicy: component.coveragePolicy || component.coverage_policy || null
         });
       })
       .filter(Boolean);

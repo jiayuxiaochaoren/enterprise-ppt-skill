@@ -59,6 +59,7 @@
     "test:acceptance": "node scripts/test_acceptance_briefs.js",
     "audit:templates": "node scripts/audit_template_readiness.js",
     "audit:hardening": "node scripts/audit_hardening_readiness.js",
+    "audit:industry-chain": "node scripts/audit_industry_chain.js",
     "fixtures:templates": "node scripts/run_template_page_family_fixtures.js",
     "baselines:templates": "node scripts/run_template_novelty_baselines.js",
     "test:template-fixtures": "node scripts/test_template_page_family_fixtures.js",

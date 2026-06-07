@@ -1,24 +1,9 @@
 const INDUSTRY_CHAIN_VERSION = 'industry-evidence-chain/v1';
-const CHAIN_TEXT_OMIT_KEYS = new Set([
-  'componentPlan',
-  'compositionPlan',
-  'assetGeneration',
-  'previousComponentPlan',
-  'previousComponentHints',
-  'previousComponentSuggestions',
-  'previousCompositionPlan',
-  'previousAssetGeneration',
-  'previousVisualMode',
-  'previousAssetMode',
-  'previousIndustryEvidenceChain',
-  'previousGeneratedAssetPrompt',
-  'proofObjectInferred',
-  'proofObjectSource',
-  'industryEvidenceChainConflict',
-  'routeSanitization',
-  'normalizationAudit',
-  'generatedAssetPrompt'
-]);
+const {
+  TEXT_METADATA_OMIT_KEYS
+} = require('./text-utils');
+
+const CHAIN_TEXT_OMIT_KEYS = new Set(TEXT_METADATA_OMIT_KEYS);
 
 function compactUnique(values = []) {
   return [...new Set((values || []).filter(value => value != null && String(value).trim() !== '').map(value => String(value)))];
@@ -41,35 +26,22 @@ function flattenText(value) {
   return '';
 }
 
-function hasValue(value) {
-  if (value == null) return false;
-  if (Array.isArray(value)) return value.length > 0;
-  if (typeof value === 'object') return Object.keys(value).length > 0;
-  return String(value).trim() !== '';
-}
-
-function hasFieldPath(source = {}, path = '') {
-  const parts = String(path || '').split('.').filter(Boolean);
-  if (!parts.length) return false;
-  let current = source;
-  for (const part of parts) {
-    if (Array.isArray(current)) {
-      current = current.map(item => item && item[part]).filter(hasValue);
-      if (!current.length) return false;
-      continue;
-    }
-    if (!current || typeof current !== 'object' || !hasValue(current[part])) return false;
-    current = current[part];
-  }
-  return hasValue(current);
-}
-
 const COMMON_SOURCE_FIELDS = ['sourceNote', 'source_note', 'proof.sourceNote', 'proof.source'];
 const COMMON_CAPTION_FIELDS = ['caption', 'subtitle', 'claim', 'proof.explanation', 'visual.caption'];
 const {
   hasSourceEvidence,
   visibleSourceNotesEnabled
 } = require('./source-evidence');
+const {
+  coveragePolicyShapeIssues,
+  coverageRoleForComponent,
+  coverageStatusForComponents,
+  filterStageCoveragePolicy,
+  normalizeStageCoveragePolicy
+} = require('./industry-evidence-coverage');
+const {
+  hasFieldPath
+} = require('./component-evidence-contracts');
 
 const INDUSTRY_EVIDENCE_CHAINS = require('./industry-evidence-chain-definitions');
 
@@ -167,6 +139,7 @@ function neutralEvidenceChain(reason = 'industry evidence chain was not inferred
     position: 0,
     confidence: 'neutral',
     components: [],
+    coveragePolicy: normalizeStageCoveragePolicy({ components: [] }),
     avoidComponents: [],
     matchedFields: [],
     matchedKeywords: [],
@@ -180,13 +153,18 @@ function neutralEvidenceChain(reason = 'industry evidence chain was not inferred
 
 function normalizeIndustryEvidenceChainShape(chain = null) {
   if (!chain || typeof chain !== 'object' || Array.isArray(chain)) return null;
+  const coveragePolicy = normalizeStageCoveragePolicy({
+    coveragePolicy: chain.coveragePolicy || chain.coverage_policy,
+    components: chain.components
+  });
   return Object.assign({}, chain, {
     version: chain.version || INDUSTRY_CHAIN_VERSION,
     chainId: String(chain.chainId || '').trim(),
     chainLabel: chain.chainLabel || '',
     stageId: String(chain.stageId || '').trim(),
     stageLabel: chain.stageLabel || '',
-    components: compactUnique(Array.isArray(chain.components) ? chain.components : []),
+    components: compactUnique(Array.isArray(chain.components) ? chain.components : coveragePolicy.components),
+    coveragePolicy,
     avoidComponents: compactUnique(Array.isArray(chain.avoidComponents) ? chain.avoidComponents : []),
     matchedFields: compactUnique(Array.isArray(chain.matchedFields) ? chain.matchedFields : []),
     matchedKeywords: compactUnique(Array.isArray(chain.matchedKeywords) ? chain.matchedKeywords : []),
@@ -206,6 +184,12 @@ function industryEvidenceChainShapeIssues(chain = null) {
   ['components', 'matchedFields', 'matchedProofObjects'].forEach(field => {
     if (!Array.isArray(chain[field])) issues.push(`${field} must be an array`);
   });
+  const coveragePolicy = chain.coveragePolicy != null ? chain.coveragePolicy : chain.coverage_policy;
+  if (coveragePolicy != null && (typeof coveragePolicy !== 'object' || Array.isArray(coveragePolicy))) {
+    issues.push('coveragePolicy must be an object when present');
+  } else if (coveragePolicy) {
+    issues.push(...coveragePolicyShapeIssues(coveragePolicy));
+  }
   ['matchedKeywords', 'matchedRoutes', 'evidenceReasons'].forEach(field => {
     if (chain[field] != null && !Array.isArray(chain[field])) issues.push(`${field} must be an array when present`);
   });
@@ -228,9 +212,11 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
     return neutralEvidenceChain(`${chain.label} chain has insufficient route/proof/field evidence`);
   }
   const stage = best.stage;
-  const rawComponents = compactUnique(stage.components || []);
+  const rawCoveragePolicy = normalizeStageCoveragePolicy(stage);
   const visibleSources = visibleSourceNotesEnabled(plan, opts);
-  const components = rawComponents.filter(id => id !== 'source-note' || visibleSources);
+  const coveragePolicy = filterStageCoveragePolicy(rawCoveragePolicy, id => id !== 'source-note' || visibleSources);
+  const rawComponents = rawCoveragePolicy.components;
+  const components = coveragePolicy.components;
   const sourceEvidence = hasSourceEvidence(slide);
   const evidenceReasons = compactUnique([
     ...best.matchedProofObjects.map(value => `proofObject:${value}`),
@@ -250,6 +236,7 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
     confidence: confidenceForScore(best.score),
     score: best.score,
     components,
+    coveragePolicy,
     avoidComponents: compactUnique(chain.avoidComponents || []),
     matchedFields: best.matchedFields,
     matchedKeywords: best.matchedKeywords,
@@ -282,13 +269,18 @@ module.exports = {
   INDUSTRY_EVIDENCE_CHAINS,
   COMMON_CAPTION_FIELDS,
   COMMON_SOURCE_FIELDS,
+  CHAIN_TEXT_OMIT_KEYS,
   canonicalIndustryEvidenceChainForSlide,
   chainsShareIdentity,
   componentsForIndustryEvidenceChain,
+  coverageRoleForComponent,
+  coverageStatusForComponents,
+  filterStageCoveragePolicy,
   industryEvidenceChainFor,
   industryEvidenceChainShapeIssues,
   inferIndustryEvidenceChain,
   normalizeIndustryEvidenceChainShape,
   normalizeIndustryEvidenceChainId,
+  normalizeStageCoveragePolicy,
   neutralEvidenceChain
 };

@@ -165,15 +165,16 @@ function createSlideNormalizationHelpers(deps = {}) {
     const previousIndustryEvidenceChain = previousInputComponentPlan && previousInputComponentPlan.industryEvidenceChain
       ? previousInputComponentPlan.industryEvidenceChain
       : null;
+    const normalizedSignals = contentSignals(plan, out, index, total);
 
-    out.compositionPlan = compositionPlan(plan, out, index, total, contentSignals(plan, out, index, total), recipe, design);
+    out.compositionPlan = compositionPlan(plan, out, index, total, normalizedSignals, recipe, design);
     if (previousInputCompositionPlan) {
       routeSanitization.recomputed.push({
         field: 'compositionPlan',
         reason: 'composition plan recomputed after executable metadata normalization'
       });
     }
-    const plannedComponents = componentPlanFor(plan, out, index, total, contentSignals(plan, out, index, total), out.compositionPlan);
+    const plannedComponents = componentPlanFor(plan, out, index, total, normalizedSignals, out.compositionPlan);
     if (routeChanged || previousInputComponentPlan) {
       routeSanitization.recomputed.push({
         field: 'componentPlan',

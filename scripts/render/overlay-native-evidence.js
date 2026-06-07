@@ -2,6 +2,44 @@ const {
   hasSourceEvidence
 } = require('../design/source-evidence');
 
+const NATIVE_EVIDENCE_COMPONENT_IDS = new Set([
+  'adoption-funnel',
+  'caption-bar',
+  'chart-commentary-panel',
+  'commentary-panel',
+  'content-card-grid',
+  'decision-panel',
+  'disclosure-footnote',
+  'editorial-end-card',
+  'equipment-nameplate',
+  'governance-table',
+  'hero-image',
+  'inspection-matrix',
+  'kpi-primary-metric',
+  'kpi-strip',
+  'load-curve-band',
+  'metric-strip',
+  'navigation-sequence',
+  'page-number',
+  'patient-journey-band',
+  'permission-audit-tag',
+  'process-rail',
+  'product-matrix',
+  'proof-gallery',
+  'proof-gallery-grid',
+  'prototype-frame',
+  'quality-scorecard',
+  'risk-matrix',
+  'risk-register',
+  'section-kicker',
+  'service-blueprint-lane',
+  'site-evidence-frame',
+  'system-rail',
+  'value-chain',
+  'value-chain-connector',
+  'workflow-rail'
+]);
+
 function createOverlayNativeEvidence(deps = {}) {
   const chartComponentIds = deps.chartComponentIds || deps.CHART_COMPONENT_IDS || new Set();
   const nativeRendererModule = deps.nativeRendererModule || deps.nativeDrawnEvidenceRendererModule || 'generate_pptx/native-page-renderer';
@@ -123,5 +161,6 @@ function createOverlayNativeEvidence(deps = {}) {
 }
 
 module.exports = {
+  NATIVE_EVIDENCE_COMPONENT_IDS,
   createOverlayNativeEvidence
 };

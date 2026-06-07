@@ -40,6 +40,7 @@ const {
   reportBoardNeedsRightOverlayRail: reportBoardNeedsRightOverlayRailDirect
 } = require('./render/overlay-component-planning');
 const {
+  INDUSTRY_NATIVE_COMPONENTS,
   createNativeComponentIdHelpers,
   energyNativeOwnedComponentIds: energyNativeOwnedComponentIdsDirect,
   isEnergyNativeRenderer: isEnergyNativeRendererDirect,
@@ -59,6 +60,7 @@ const {
   createOverlayRenderGuardHelpers
 } = require('./render/overlay-renderer-guards');
 const {
+  NATIVE_EVIDENCE_COMPONENT_IDS,
   createOverlayNativeEvidence
 } = require('./render/overlay-native-evidence');
 const {
@@ -171,6 +173,13 @@ assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'product-show
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'closing' }).has('decision-panel'), true);
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'closing' }).has('source-note'), false);
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'report-board' }).has('source-note'), false);
+INDUSTRY_NATIVE_COMPONENTS.forEach(id => {
+  assert.equal(
+    NATIVE_EVIDENCE_COMPONENT_IDS.has(id),
+    true,
+    `industry native-owned component needs a nativeDrawnEvidenceFor path: ${id}`
+  );
+});
 const overlayHelpers = createOverlayContractHelpers({
   canvasWidth: () => 13.333,
   canvasHeight: () => 7.5

@@ -1,5 +1,6 @@
 const assert = require('assert/strict');
 const {
+  TEXT_METADATA_OMIT_KEYS,
   TEXT_FLATTEN_OMIT_KEYS,
   clampText,
   compactUnique,
@@ -8,8 +9,14 @@ const {
   matchKeywordList,
   textKeywords
 } = require('./design/text-utils');
+const {
+  CHAIN_TEXT_OMIT_KEYS
+} = require('./design/industry-evidence-chain');
 
 assert.ok(TEXT_FLATTEN_OMIT_KEYS.has('image'));
+assert.ok(TEXT_METADATA_OMIT_KEYS.has('componentPlan'));
+assert.ok(TEXT_METADATA_OMIT_KEYS.has('previousIndustryEvidenceChain'));
+assert.deepEqual([...TEXT_METADATA_OMIT_KEYS].filter(key => !CHAIN_TEXT_OMIT_KEYS.has(key)), []);
 assert.deepEqual(compactUnique(['a', '', 'a', null, 'b']), ['a', 'b']);
 assert.equal(flattenText(null), '');
 assert.equal(flattenText(['业务', 42, { title: '增长' }]), '业务 42 增长');

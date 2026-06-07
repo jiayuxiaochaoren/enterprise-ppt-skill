@@ -46,6 +46,11 @@ function buildIndustryEvidenceChainSummary({
     stageCoverage: metrics.stageCoverage || {},
     componentHits: metrics.componentHits || 0,
     consumedHits: metrics.consumedHits || 0,
+    coverage: {
+      passSlides: slideAudits.filter(slide => slide.coverageStatus && slide.coverageStatus.status === 'pass').length,
+      failSlides: slideAudits.filter(slide => slide.coverageStatus && slide.coverageStatus.status === 'fail').length,
+      minHitGaps: slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && slide.coverageStatus.minimumHitsMissing) || 0), 0)
+    },
     keyComponents: unique(slideAudits.flatMap(slide => slide.expectedComponents.filter(id => slide.plannedComponents.includes(id)))),
     consumedComponents: unique(slideAudits.flatMap(slide => slide.expectedComponents.filter(id => slide.consumedComponents.includes(id)))),
     neutralFallbackSlides: metrics.neutralFallbackSlides || 0,

@@ -1,13 +1,4 @@
-const TEXT_FLATTEN_OMIT_KEYS = new Set([
-  'image',
-  'images',
-  'visual',
-  'media',
-  'referenceRecipe',
-  'previousLayoutVariant',
-  'previousVariant',
-  'previousProofObject',
-  'previousChartSpec',
+const TEXT_METADATA_OMIT_KEYS = new Set([
   'previousComponentPlan',
   'previousComponentHints',
   'previousComponentSuggestions',
@@ -23,6 +14,22 @@ const TEXT_FLATTEN_OMIT_KEYS = new Set([
   'routeSanitization',
   'normalizationAudit',
   'generatedAssetPrompt',
+  'assetGeneration',
+  'compositionPlan',
+  'componentPlan'
+]);
+
+const TEXT_FLATTEN_OMIT_KEYS = new Set([
+  'image',
+  'images',
+  'visual',
+  'media',
+  'referenceRecipe',
+  'previousLayoutVariant',
+  'previousVariant',
+  'previousProofObject',
+  'previousChartSpec',
+  ...TEXT_METADATA_OMIT_KEYS,
   'semanticIntent',
   'semanticConfidence',
   'semanticPurpose',
@@ -33,9 +40,6 @@ const TEXT_FLATTEN_OMIT_KEYS = new Set([
   'narrativeRole',
   'proofObject',
   'proof',
-  'assetGeneration',
-  'compositionPlan',
-  'componentPlan',
   'layoutPlan',
   'sourceTrace',
   'sourceIds',
@@ -87,6 +91,7 @@ function clampText(text, maxChars) {
 }
 
 module.exports = {
+  TEXT_METADATA_OMIT_KEYS,
   TEXT_FLATTEN_OMIT_KEYS,
   clampText,
   compactUnique,

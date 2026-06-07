@@ -2,9 +2,13 @@ const {
   COMMON_CAPTION_FIELDS,
   INDUSTRY_EVIDENCE_CHAINS,
   canonicalIndustryEvidenceChainForSlide,
+  coverageStatusForComponents,
   inferIndustryEvidenceChain,
   normalizeIndustryEvidenceChainShape
 } = require('../design/industry-evidence-chain');
+const {
+  componentHasEvidence
+} = require('../design/component-evidence-contracts');
 const { industryRenderMetaFindingsForComponent } = require('./industry-evidence-render-meta');
 const { componentEvidenceFieldFindings } = require('./industry-evidence-chain-field-gaps');
 const { buildIndustryEvidenceChainSummary, statusForFindings } = require('./industry-evidence-chain-summary');
@@ -22,42 +26,7 @@ const {
 } = require('./industry-evidence-chain-audit-helpers');
 
 function componentHintHasEvidence(id = '', slide = {}) {
-  const any = fields => fields.some(field => hasFieldPath(slide, field));
-  const imageFields = ['image', 'images', 'visual.image', 'visual.images'];
-  const visibleSourceFields = ['sourceNote', 'source_note', 'proof.sourceNote', 'proof.source'];
-  const structuredSourceFields = [
-    'sourceTrace.sourceIds',
-    'sourceTrace.source_ids',
-    'sourceTrace.sources',
-    'sourceTrace.metricSources',
-    'proof.sourceTrace.sourceIds',
-    'proof.sourceTrace.source_ids',
-    'proof.sourceTrace.sources'
-  ];
-  const commonEvidenceFields = [...imageFields, ...structuredSourceFields];
-  if (['hero-image', 'proof-gallery'].includes(id)) return any(commonEvidenceFields);
-  if (id === 'caption-bar') return any([...commonEvidenceFields, 'caption', 'visual.caption', 'proof.explanation']);
-  if (id === 'product-matrix') return any(['product', 'products', 'productStory', ...commonEvidenceFields]);
-  if (id === 'prototype-frame') return any([
-    ...imageFields,
-    'prototypeFlow.screenshot',
-    'prototypeFlow.screen',
-    'prototypeFlow.image',
-    'prototypeFlow.images',
-    'prototype.screenshot',
-    'prototype.screen',
-    'prototype.image',
-    'prototype.images'
-  ]);
-  if (id === 'workflow-rail') return any(['workflow', 'prototypeFlow', 'steps', 'phases']);
-  if (['risk-register', 'risk-matrix'].includes(id)) return any(['rows', 'risks', 'controls', 'riskRegister', 'riskMatrix', 'matrix']);
-  if (id === 'governance-table') return any(['rows', 'controls', 'governance', 'responsibilityLoop']);
-  if (id === 'source-note') return any([...visibleSourceFields, ...structuredSourceFields]);
-  if (id === 'service-blueprint-lane') return any(['serviceBlueprint', 'touchpoints', 'handoffs', 'qualityHandoff', 'journeyMap']);
-  if (id === 'patient-journey-band') return any(['journeyMap', 'patientJourney', 'touchpoints', 'handoffs']);
-  if (['equipment-nameplate', 'inspection-matrix', 'quality-scorecard'].includes(id)) return any(['equipment', 'equipmentNameplate', 'inspectionMatrix', 'oee', 'metrics', ...structuredSourceFields]);
-  if (id === 'adoption-funnel') return any(['adoptionFunnel', 'funnel', 'metrics']);
-  return any(commonEvidenceFields);
+  return componentHasEvidence(id, slide, { plan:{ visibleSourceNotes:true } });
 }
 
 function componentHintFindings(slideNo, chain = {}, slide = {}) {
@@ -87,6 +56,7 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
     : inferIndustryEvidenceChain(plan, slide);
   const planned = plannedIdsForSlide(slide);
   const expected = Array.isArray(chain.components) ? chain.components : [];
+  const coverageStatus = coverageStatusForComponents(chain.coveragePolicy || { components: expected }, planned);
   const plannedExpected = expected.filter(id => planned.includes(id));
   const findings = [];
   const rendered = renderedSlideFor(renderMeta, slideNo);
@@ -104,23 +74,29 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
       });
     }
   } else {
-    if (expected.length && !plannedExpected.length) {
+    if (coverageStatus.requiredAllMissing.length) {
       findings.push({
         slide: slideNo,
         level: 'fail',
-        type: 'industryEvidenceComponentsMissing',
-        message: `${chain.stageLabel} did not hit any expected evidence-chain components`
+        type: 'industryEvidenceRequiredComponentMissing',
+        message: `${chain.stageLabel} missing required component(s): ${coverageStatus.requiredAllMissing.join(', ')}`
       });
-    } else {
-      const missing = expected.filter(id => !planned.includes(id));
-      if (missing.length) {
-        findings.push({
-          slide: slideNo,
-          level: 'review',
-          type: 'industryEvidenceComponentPartial',
-          message: `${chain.stageLabel} missing expected component(s): ${missing.join(', ')}`
-        });
-      }
+    }
+    if (coverageStatus.requiredAnyMissing.length) {
+      findings.push({
+        slide: slideNo,
+        level: 'fail',
+        type: 'industryEvidenceRequiredAnyMissing',
+        message: `${chain.stageLabel} needs at least one of: ${coverageStatus.requiredAnyMissing.join(', ')}`
+      });
+    }
+    if (coverageStatus.minimumHitsMissing) {
+      findings.push({
+        slide: slideNo,
+        level: 'fail',
+        type: 'industryEvidenceCoverageBelowMinimum',
+        message: `${chain.stageLabel} hit ${coverageStatus.hitCount}/${coverageStatus.minHits} required evidence-chain component(s)`
+      });
     }
     if (!chain.matchedFields.length && !chain.matchedProofObjects.length) {
       findings.push({
@@ -199,6 +175,8 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
     position: chain.position,
     confidence: chain.confidence,
     expectedComponents: expected,
+    coveragePolicy: chain.coveragePolicy || null,
+    coverageStatus,
     plannedComponents: planned,
     consumedComponents: consumed,
     matchedFields: chain.matchedFields || [],
