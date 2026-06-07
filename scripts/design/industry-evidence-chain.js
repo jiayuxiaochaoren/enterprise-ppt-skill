@@ -205,6 +205,11 @@ function chainsShareIdentity(a = null, b = null) {
 function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
   const chain = industryEvidenceChainFor(plan, slide);
   if (!chain) return neutralEvidenceChain('missing or unsupported industry; defaulted to neutral/general');
+  const type = normalizeKey(slide.type);
+  const explicitProofRoute = Boolean(slide.proofObject || slide.proof_object || slide.layoutVariant || slide.layout_variant);
+  if (['cover', 'cover-dark', 'closing'].includes(type) && (!explicitProofRoute || slide.proofObjectInferred)) {
+    return neutralEvidenceChain(`${type} slide has no explicit proof route; skipped industry evidence-chain inference`);
+  }
   const scored = chain.stages.map(stage => Object.assign({ stage }, scoreStage(stage, slide)))
     .sort((a, b) => b.score - a.score || a.stage.position - b.stage.position);
   const best = scored[0] || {};

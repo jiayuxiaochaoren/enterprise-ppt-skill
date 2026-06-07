@@ -42,6 +42,12 @@ const COMPONENT_DATA_REQUIREMENTS = Object.assign({}, COMPONENT_EVIDENCE_DATA_RE
   'beauty-sustainability-matrix': ['chartSpec|rows|sustainability']
 });
 
+Object.entries(COMPONENT_ALIASES).forEach(([alias, target]) => {
+  if (!COMPONENT_DATA_REQUIREMENTS[alias] && COMPONENT_DATA_REQUIREMENTS[target]) {
+    COMPONENT_DATA_REQUIREMENTS[alias] = COMPONENT_DATA_REQUIREMENTS[target];
+  }
+});
+
 const CHART_COMPONENT_ID_LIST = [
   'bar-chart',
   'beauty-channel-structure',

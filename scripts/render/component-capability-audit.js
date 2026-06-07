@@ -32,6 +32,19 @@ function auditComponentManifest(manifest = {}, defaults = {}) {
     if (aliases[target] && aliases[target] !== target) {
       findings.push({ level:'fail', type:'componentAliasChainInvalid', message:`component alias ${alias} points to another alias ${target}` });
     }
+    const aliasCapability = capabilities[alias];
+    const targetCapability = capabilities[target];
+    if (aliasCapability && targetCapability) {
+      const aliasRequirements = aliasCapability.dataRequirements || [];
+      const targetRequirements = targetCapability.dataRequirements || [];
+      if (!aliasRequirements.length && targetRequirements.length) {
+        findings.push({
+          level:'fail',
+          type:'componentAliasCapabilityDataRequirementDrift',
+          message:`component alias ${alias} has its own capability but does not inherit dataRequirements from ${target}`
+        });
+      }
+    }
   });
   return {
     version:'component-capability-manifest-audit/v1',

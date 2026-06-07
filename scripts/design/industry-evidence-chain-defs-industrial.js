@@ -74,11 +74,11 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "inspection-matrix",
-            "value-chain"
+          "requiredAll": [
+            "inspection-matrix"
           ],
           "optional": [
+            "value-chain",
             "proof-gallery",
             "caption-bar"
           ],
@@ -129,15 +129,17 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
+          "requiredAll": [
+            "quality-scorecard"
+          ],
           "requiredAny": [
-            "quality-scorecard",
             "kpi-strip",
             "proof-gallery"
           ],
           "optional": [
             "caption-bar"
           ],
-          "minHits": 1
+          "minHits": 2
         },
         "proofObjects": [
           "oee-board",

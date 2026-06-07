@@ -70,13 +70,13 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "value-chain",
-            "workflow-rail",
-            "caption-bar"
+          "requiredAll": [
+            "value-chain"
           ],
           "optional": [
-            "proof-gallery"
+            "workflow-rail",
+            "proof-gallery",
+            "caption-bar"
           ],
           "minHits": 1
         },
@@ -120,11 +120,11 @@ module.exports = {
           "risk-register"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "quality-scorecard",
+          "requiredAll": [
             "risk-register"
           ],
           "optional": [
+            "quality-scorecard",
             "kpi-strip"
           ],
           "minHits": 1

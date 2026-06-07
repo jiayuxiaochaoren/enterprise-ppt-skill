@@ -206,14 +206,10 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "prototype-frame",
-            "workflow-rail"
-          ],
-          "optional": [
-            "caption-bar"
-          ],
-          "minHits": 1
+          "requiredAll": ["workflow-rail"],
+          "requiredAny": ["prototype-frame"],
+          "optional": ["caption-bar"],
+          "minHits": 2
         },
         "proofObjects": [
           "prototype-flow",

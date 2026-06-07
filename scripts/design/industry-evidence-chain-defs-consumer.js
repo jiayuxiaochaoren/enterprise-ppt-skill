@@ -76,11 +76,11 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "product-matrix",
-            "proof-gallery"
+          "requiredAll": [
+            "product-matrix"
           ],
           "optional": [
+            "proof-gallery",
             "caption-bar"
           ],
           "minHits": 1
@@ -127,11 +127,11 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "kpi-strip",
-            "proof-gallery"
+          "requiredAll": [
+            "kpi-strip"
           ],
           "optional": [
+            "proof-gallery",
             "caption-bar"
           ],
           "minHits": 1

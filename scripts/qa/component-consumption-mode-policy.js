@@ -1,5 +1,5 @@
 const {
-  componentCapabilityFor
+  effectiveComponentModesFor
 } = require('../render/component-capability-manifest');
 const {
   componentHasRenderPath
@@ -15,8 +15,7 @@ function modeFindingsForComponent(slideNo, component = {}, planned = {}) {
   const findings = [];
   const allowedModes = planned.allowedModes || planned.supportedModes || [];
   const actualMode = actualComponentMode(component);
-  const capability = componentCapabilityFor(component.id);
-  const manifestModes = capability && Array.isArray(capability.supportedModes) ? capability.supportedModes : [];
+  const manifestModes = effectiveComponentModesFor(component.id);
   if (component.rendered && actualMode && !componentHasRenderPath(component.id, actualMode)) {
     findings.push({
       slide: slideNo,

@@ -31,6 +31,7 @@ function createComponentPlanHelpers(deps = {}) {
     componentCapabilityFor,
     contentSignals,
     dialectComponentsFor,
+    effectiveComponentModesFor,
     flattenText,
     hasExplicitChartSignal,
     industryDesignDialect,
@@ -247,13 +248,16 @@ function createComponentPlanHelpers(deps = {}) {
           unknownComponents.push({ id: component.id, source: component.source || '', required: component.required !== false });
           return null;
         }
+        const supportedModes = typeof effectiveComponentModesFor === 'function' ? effectiveComponentModesFor(component.id) : capability.supportedModes;
+        const requestedModes = component.allowedModes || component.allowed_modes || component.supportedModes;
+        const allowedModes = Array.isArray(requestedModes) && requestedModes.length ? requestedModes.filter(mode => supportedModes.includes(mode)) : supportedModes;
         return Object.assign({}, component, {
-          supportedModes: capability.supportedModes,
-          allowedModes: component.allowedModes || component.allowed_modes || capability.supportedModes,
+          supportedModes,
+          allowedModes: allowedModes.length ? allowedModes : supportedModes,
           ownershipPolicy: capability.ownershipPolicy,
           componentFamily: capability.family,
           dataRequirements: component.dataRequirements || capability.dataRequirements || [],
-          slotPolicy: component.slotPolicy || component.slot_policy || (capability.supportedModes.includes('overlay') ? 'declared-safe-slot-required' : 'native-evidence-required'),
+          slotPolicy: component.slotPolicy || component.slot_policy || (supportedModes.includes('overlay') ? 'declared-safe-slot-required' : 'native-evidence-required'),
           repairPolicy: component.repairPolicy || component.repair_policy || (component.required === false ? 'optional-drop-allowed' : 'no-unplanned-repair'),
           priority: component.priority || (component.required === false ? 'optional' : 'required'),
           coverageRole: component.coverageRole || component.coverage_role || '',

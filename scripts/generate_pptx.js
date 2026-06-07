@@ -93,6 +93,7 @@ const {
 } = require('./design-system');
 const {
   componentCapabilityFor,
+  effectiveComponentModesFor,
   renderKpiStrip,
   renderChartSpec,
   renderProductMatrix,
@@ -394,21 +395,30 @@ function consumeComponentPlan(slide, plan, s, idx) {
     chartConsumption: slide.__codexChartConsumption || null,
     nativeRendererContract: contract,
     decorations: slide.__codexDecorations || [],
-    plannedComponents: planned.map(c => ({
-      id:c.id,
-      required:c.required !== false,
-      role:c.role || '',
-      source:c.source || '',
-      supportedModes:c.supportedModes || ((componentCapabilityFor(c.id) || {}).supportedModes) || [],
-      allowedModes:c.allowedModes || c.allowed_modes || c.supportedModes || ((componentCapabilityFor(c.id) || {}).supportedModes) || [],
-      ownershipPolicy:c.ownershipPolicy || ((componentCapabilityFor(c.id) || {}).ownershipPolicy) || '',
-      dataRequirements:c.dataRequirements || [],
-      slotPolicy:c.slotPolicy || c.slot_policy || '',
-      repairPolicy:c.repairPolicy || c.repair_policy || '',
-      priority:c.priority || (c.required === false ? 'optional' : 'required'),
-      coverageRole:c.coverageRole || c.coverage_role || '',
-      coveragePolicy:c.coveragePolicy || c.coverage_policy || null
-    })),
+    plannedComponents: planned.map(c => {
+      const capability = componentCapabilityFor(c.id) || {};
+      const effectiveModes = effectiveComponentModesFor(c.id);
+      const supportedModes = effectiveModes.length ? effectiveModes : (c.supportedModes || capability.supportedModes || []);
+      const requestedAllowedModes = c.allowedModes || c.allowed_modes || c.supportedModes;
+      const allowedModes = Array.isArray(requestedAllowedModes) && requestedAllowedModes.length
+        ? requestedAllowedModes.filter(mode => supportedModes.includes(mode))
+        : supportedModes;
+      return {
+        id:c.id,
+        required:c.required !== false,
+        role:c.role || '',
+        source:c.source || '',
+        supportedModes,
+        allowedModes: allowedModes.length ? allowedModes : supportedModes,
+        ownershipPolicy:c.ownershipPolicy || capability.ownershipPolicy || '',
+        dataRequirements:c.dataRequirements || [],
+        slotPolicy:c.slotPolicy || c.slot_policy || '',
+        repairPolicy:c.repairPolicy || c.repair_policy || '',
+        priority:c.priority || (c.required === false ? 'optional' : 'required'),
+        coverageRole:c.coverageRole || c.coverage_role || '',
+        coveragePolicy:c.coveragePolicy || c.coverage_policy || null
+      };
+    }),
     unknownComponents: (s.componentPlan && Array.isArray(s.componentPlan.unknownComponents)) ? s.componentPlan.unknownComponents : [],
     drawnComponents: consumed
       .filter(c => c.rendered && c.mode === 'native-renderer')

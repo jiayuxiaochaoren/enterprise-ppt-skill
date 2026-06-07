@@ -119,6 +119,7 @@ const {
 const {
   canonicalComponentId,
   componentCapabilityFor,
+  effectiveComponentModesFor,
   componentManifestAudit
 } = require('./render/component-capability-manifest');
 const {
@@ -1255,6 +1256,8 @@ assert.equal(componentPlanningNormalization.addComponent, addComponent);
 assert.equal(componentManifestAudit().status, 'pass');
 assert.equal(canonicalComponentId('hero_kpis', { preferAlias:true }), 'kpi-strip');
 assert.equal(componentCapabilityFor('gallery-grid').id, 'proof-gallery');
+assert.deepEqual(effectiveComponentModesFor('source-note'), ['overlay']);
+assert.deepEqual(componentCapabilityFor('metric-strip').dataRequirements, ['metrics']);
 assert.equal(CAPABILITY_ROWS, CAPABILITY_ROW_SHARD);
 assert.equal(COMPONENT_ALIASES, COMPONENT_ALIAS_SHARD);
 assert.equal(COMPONENT_DATA_REQUIREMENTS, COMPONENT_DATA_REQUIREMENTS_SHARD);
@@ -1263,6 +1266,28 @@ assert.ok(CAPABILITY_ROWS.some(row => row[0] === 'proof-gallery' && row[1].inclu
 assert.deepEqual(COMPONENT_DATA_REQUIREMENTS['risk-register'], ['rows|risks|controls|riskRegister|riskMatrix|matrix']);
 assert.equal(
   componentManifestAudit({ aliases:{ 'bad-alias':'missing-widget' } }).findings.some(f => f.type === 'componentAliasTargetMissing'),
+  true
+);
+assert.equal(
+  componentManifestAudit({
+    aliases:{ 'alias-widget':'target-widget' },
+    capabilities:{
+      'alias-widget': {
+        supportedModes:['native'],
+        ownershipPolicy:'native-only',
+        overlayPolicy:'blocked',
+        repairPolicy:'no-unplanned-repair',
+        dataRequirements:[]
+      },
+      'target-widget': {
+        supportedModes:['native'],
+        ownershipPolicy:'native-only',
+        overlayPolicy:'blocked',
+        repairPolicy:'no-unplanned-repair',
+        dataRequirements:['metrics']
+      }
+    }
+  }).findings.some(f => f.type === 'componentAliasCapabilityDataRequirementDrift'),
   true
 );
 assert.deepEqual(

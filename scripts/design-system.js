@@ -36,6 +36,7 @@ const {
 } = require('./chart-spec');
 const {
   componentCapabilityFor,
+  effectiveComponentModesFor,
   hasComponentCapability
 } = require('./components');
 
@@ -59,6 +60,7 @@ const chartRuntime = {
 };
 const componentRuntime = {
   componentCapabilityFor,
+  effectiveComponentModesFor,
   hasComponentCapability
 };
 const languageRuntime = {

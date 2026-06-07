@@ -7,6 +7,9 @@ const {
 } = require('./component-capability-data');
 const { auditComponentManifest } = require('./component-capability-audit');
 const { normalizeComponentId } = require('./component-capability-normalization');
+const {
+  componentRenderPathsFor
+} = require('./component-render-path-registry');
 
 function capabilityFromRow(row = []) {
   const [id, supportedModes, family] = row;
@@ -54,6 +57,15 @@ function componentCapabilityFor(id = '') {
   return COMPONENT_CAPABILITIES[key] || COMPONENT_CAPABILITIES[COMPONENT_ALIASES[key]] || null;
 }
 
+function effectiveComponentModesFor(id = '') {
+  const capability = componentCapabilityFor(id);
+  const capabilityModes = capability && Array.isArray(capability.supportedModes) ? capability.supportedModes : [];
+  const renderModes = componentRenderPathsFor(id).filter(mode => mode === 'native' || mode === 'overlay');
+  if (!renderModes.length) return capabilityModes;
+  if (!capabilityModes.length) return renderModes;
+  return capabilityModes.filter(mode => renderModes.includes(mode));
+}
+
 function hasComponentCapability(id = '') {
   return Boolean(componentCapabilityFor(id));
 }
@@ -78,6 +90,7 @@ module.exports = {
   componentAliasTargetFor,
   componentCapabilityFor,
   componentManifestAudit,
+  effectiveComponentModesFor,
   hasComponentCapability,
   isComponentAlias,
   normalizeComponentId

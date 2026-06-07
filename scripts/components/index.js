@@ -37,6 +37,7 @@ module.exports = {
   componentAliasTargetFor: componentManifest.componentAliasTargetFor,
   componentCapabilityFor: componentManifest.componentCapabilityFor,
   componentManifestAudit: componentManifest.componentManifestAudit,
+  effectiveComponentModesFor: componentManifest.effectiveComponentModesFor,
   hasComponentCapability: componentManifest.hasComponentCapability,
   isComponentAlias: componentManifest.isComponentAlias,
   normalizeComponentId: componentManifest.normalizeComponentId,

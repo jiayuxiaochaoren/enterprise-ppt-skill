@@ -47,7 +47,7 @@ function componentHintFindings(slideNo, chain = {}, slide = {}) {
 function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
   const slideNo = index + 1;
   const type = String(slide.type || '');
-  const neutralStageAllowed = ['toc', 'toc-clean', 'chapter-divider'].includes(type);
+  const neutralStageAllowed = ['cover', 'cover-dark', 'closing', 'toc', 'toc-clean', 'chapter-divider'].includes(type);
   const suppliedRaw = slide.componentPlan && slide.componentPlan.industryEvidenceChain;
   const supplied = normalizeIndustryEvidenceChainShape(suppliedRaw);
   const canonical = canonicalIndustryEvidenceChainForSlide(plan, slide);
