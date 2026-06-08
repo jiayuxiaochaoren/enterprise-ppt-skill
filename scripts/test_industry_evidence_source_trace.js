@@ -214,6 +214,32 @@ const financeVisibleSourceOptIn = normalizeDeckPlan({
 });
 assert.ok(financeVisibleSourceOptIn.slides[0].componentPlan.componentIds.includes('source-note'));
 
+const publicVisibleSourceOptIn = normalizeDeckPlan({
+  industry:'government-public-sector',
+  visibleSourceNotes:true,
+  slides:[{
+    type:'report-board',
+    proofObject:'policy-context-board',
+    title:'公共治理主张与政策来源',
+    policy:'园区治理模型来自公开政策文件。',
+    policySource:'市级公开政策文件',
+    sourceTrace:{
+      version:'source-trace/v2',
+      sourceIds:['src-public-1'],
+      sources:[{ id:'src-public-1', page:2, excerpt:'公开政策文件说明园区治理模型。' }]
+    }
+  }]
+});
+assert.equal(publicVisibleSourceOptIn.slides[0].componentPlan.industryEvidenceChain.chainId, 'public-sector');
+assert.equal(publicVisibleSourceOptIn.slides[0].componentPlan.industryEvidenceChain.stageId, 'governance-claim');
+assert.ok(publicVisibleSourceOptIn.slides[0].componentPlan.componentIds.includes('source-note'));
+assert.ok(publicVisibleSourceOptIn.slides[0].componentPlan.componentIds.includes('commentary-panel'));
+assert.deepEqual(publicVisibleSourceOptIn.slides[0].componentPlan.industryEvidenceChain.coveragePolicy.requiredAll, ['source-note']);
+assert.equal(
+  auditIndustryEvidenceChain({ industry:'government-public-sector' }, publicVisibleSourceOptIn).findings.some(finding => finding.type === 'industryEvidenceCoverageBelowMinimum'),
+  false
+);
+
 ['no visible source notes', 'do not render source notes'].forEach(policy => {
   const hiddenByPolicy = normalizeDeckPlan({
     industry:'finance-investment',

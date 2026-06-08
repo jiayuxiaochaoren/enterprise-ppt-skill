@@ -160,13 +160,13 @@ module.exports = {
           "commentary-panel"
         ],
         "coveragePolicy": {
+          "requiredAll": [
+            "source-note"
+          ],
           "requiredAny": [
             "commentary-panel"
           ],
-          "optional": [
-            "source-note"
-          ],
-          "minHits": 1
+          "minHits": 2
         },
         "proofObjects": [
           "policy-context-board",

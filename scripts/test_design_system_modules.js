@@ -1290,6 +1290,51 @@ assert.equal(
   }).findings.some(f => f.type === 'componentAliasCapabilityDataRequirementDrift'),
   true
 );
+assert.equal(
+  componentManifestAudit({
+    aliases:{ 'alias-widget':'target-widget' },
+    capabilities:{
+      'alias-widget': {
+        supportedModes:['native'],
+        ownershipPolicy:'native-only',
+        overlayPolicy:'blocked',
+        repairPolicy:'no-unplanned-repair',
+        dataRequirements:['rows']
+      },
+      'target-widget': {
+        supportedModes:['native'],
+        ownershipPolicy:'native-only',
+        overlayPolicy:'blocked',
+        repairPolicy:'no-unplanned-repair',
+        dataRequirements:['metrics']
+      }
+    }
+  }).findings.some(f => f.type === 'componentAliasCapabilityDataRequirementDrift'),
+  true
+);
+assert.equal(
+  componentManifestAudit({
+    aliases:{ 'alias-widget':'target-widget' },
+    capabilities:{
+      'alias-widget': {
+        supportedModes:['native'],
+        ownershipPolicy:'native-only',
+        overlayPolicy:'blocked',
+        repairPolicy:'no-unplanned-repair',
+        dataRequirements:['rows'],
+        dataRequirementsOverride:true
+      },
+      'target-widget': {
+        supportedModes:['native'],
+        ownershipPolicy:'native-only',
+        overlayPolicy:'blocked',
+        repairPolicy:'no-unplanned-repair',
+        dataRequirements:['metrics']
+      }
+    }
+  }).findings.some(f => f.type === 'componentAliasCapabilityDataRequirementDrift'),
+  false
+);
 assert.deepEqual(
   normalizeComponentEntry({ name:'source-caption', required:false }, 'fixture'),
   { id:'caption-bar', role:'', required:false, source:'fixture', renderer:'auto', name:'source-caption' }

@@ -38,6 +38,21 @@ Object.values(INDUSTRY_EVIDENCE_CHAINS).forEach(chain => {
   });
 });
 
+const broadRequiredAnyOnlyStages = [];
+Object.values(INDUSTRY_EVIDENCE_CHAINS).forEach(chain => {
+  (chain.stages || []).forEach(stage => {
+    const policy = normalizeStageCoveragePolicy(stage);
+    if (!policy.requiredAll.length && policy.requiredAny.length && policy.minHits <= 1) {
+      broadRequiredAnyOnlyStages.push(`${chain.id}/${stage.id}`);
+    }
+  });
+});
+assert.deepEqual(
+  broadRequiredAnyOnlyStages,
+  [],
+  'industry stage coveragePolicy should not rely on broad requiredAny/minHits:1 gating'
+);
+
 Object.values(INDUSTRY_EVIDENCE_CHAINS).forEach(chain => {
   (chain.stages || []).forEach(stage => {
     const policy = normalizeStageCoveragePolicy(stage);

@@ -1,6 +1,19 @@
 const { COMPONENT_MANIFEST_VERSION } = require('./component-capability-data');
 const { normalizeComponentId } = require('./component-capability-normalization');
 
+function normalizedRequirementSet(requirements = []) {
+  return [...new Set((Array.isArray(requirements) ? requirements : [])
+    .filter(value => value != null && String(value).trim() !== '')
+    .map(value => String(value)))]
+    .sort();
+}
+
+function requirementSetsMatch(left = [], right = []) {
+  const a = normalizedRequirementSet(left);
+  const b = normalizedRequirementSet(right);
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
 function auditComponentManifest(manifest = {}, defaults = {}) {
   const capabilities = manifest.capabilities || defaults.capabilities || {};
   const aliases = manifest.aliases || defaults.aliases || {};
@@ -37,11 +50,12 @@ function auditComponentManifest(manifest = {}, defaults = {}) {
     if (aliasCapability && targetCapability) {
       const aliasRequirements = aliasCapability.dataRequirements || [];
       const targetRequirements = targetCapability.dataRequirements || [];
-      if (!aliasRequirements.length && targetRequirements.length) {
+      const allowsRequirementOverride = aliasCapability.dataRequirementsOverride === true;
+      if (!allowsRequirementOverride && !requirementSetsMatch(aliasRequirements, targetRequirements)) {
         findings.push({
           level:'fail',
           type:'componentAliasCapabilityDataRequirementDrift',
-          message:`component alias ${alias} has its own capability but does not inherit dataRequirements from ${target}`
+          message:`component alias ${alias} has dataRequirements that drift from ${target}`
         });
       }
     }
