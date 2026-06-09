@@ -3,6 +3,9 @@ const path = require('path');
 
 const ASSET_BINDER_DECISION_SOURCE = 'asset-binder/v1';
 const { imageDimensions } = require('../design-system');
+const {
+  assetTargetContract
+} = require('../design/asset-generation');
 const { preferredAuthorizationStatus } = require('../design/source-evidence');
 
 function readJson(file) {
@@ -47,6 +50,11 @@ function attributionFor(item = {}, parent = {}) {
     url: item.url || parent.url || undefined,
     license: item.license || parent.license || undefined,
     dimensions: item.dimensions || undefined,
+    imageAspectRatio: item.imageAspectRatio || undefined,
+    targetAspectRatio: item.targetAspectRatio || undefined,
+    aspectMismatch: item.aspectMismatch == null ? undefined : item.aspectMismatch,
+    aspectMismatchAllowed: item.aspectMismatchAllowed || undefined,
+    assetTarget: item.assetTarget || parent.assetTarget || undefined,
     provenanceClass,
     proofEligibility,
     authorizationStatus: item.authorizationStatus || parent.authorizationStatus || (proofEligibility === 'factual-proof' ? 'cleared' : 'synthetic-only'),
@@ -76,6 +84,11 @@ function imageProvenanceFor(attr = {}, slideNo = 0, index = 0) {
     url: attr.url,
     license: attr.license,
     dimensions: attr.dimensions,
+    imageAspectRatio: attr.imageAspectRatio,
+    targetAspectRatio: attr.targetAspectRatio,
+    aspectMismatch: attr.aspectMismatch,
+    aspectMismatchAllowed: attr.aspectMismatchAllowed,
+    assetTarget: attr.assetTarget,
     provenanceClass: attr.provenanceClass,
     proofEligibility: attr.proofEligibility,
     authorizationStatus: attr.authorizationStatus,
@@ -121,6 +134,121 @@ function updateTraceAuthorizationStatus(trace = {}, slide = {}) {
   return trace.assetAuthorizationStatus || '';
 }
 
+function imageAspectRatioFor(asset = {}) {
+  const dims = asset.dimensions || {};
+  const w = Number(dims.w);
+  const h = Number(dims.h);
+  return Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0
+    ? Number((w / h).toFixed(3))
+    : null;
+}
+
+function targetForBinding(plan = {}, slide = {}, spec = {}, asset = {}) {
+  const explicitTarget = asset.target || spec.target || (asset.assetGeneration && asset.assetGeneration.target) || null;
+  const targetAspectRatio = asset.targetAspectRatio || spec.targetAspectRatio || (explicitTarget && explicitTarget.aspectRatio);
+  const targetSlot = asset.targetSlot || spec.targetSlot || (explicitTarget && explicitTarget.slot);
+  const targetSlide = Object.assign({}, slide);
+  if (explicitTarget || targetAspectRatio || targetSlot) {
+    targetSlide.assetGeneration = Object.assign({}, targetSlide.assetGeneration || {}, {
+      target: Object.assign({}, explicitTarget || {}, {
+        aspectRatio: targetAspectRatio || (explicitTarget && explicitTarget.aspectRatio),
+        slot: targetSlot || (explicitTarget && explicitTarget.slot),
+        targetSource: (explicitTarget && explicitTarget.targetSource) || (targetSlot ? 'asset-map.targetSlot' : 'asset-map.targetAspectRatio')
+      })
+    });
+  }
+  const generation = targetSlide.assetGeneration || {};
+  const role = asset.role || spec.role || generation.originalRole || generation.role || (targetSlide.visual && targetSlide.visual.role) || '';
+  return assetTargetContract(plan, targetSlide, role, {
+    originalRole: generation.originalRole || role,
+    resolvedRole: generation.resolvedRole || generation.role || role
+  });
+}
+
+function shouldEnforceAspectTarget(slide = {}, spec = {}, asset = {}, target = {}) {
+  const generation = slide.assetGeneration || {};
+  const generatedText = `${asset.type || ''} ${spec.type || ''} ${asset.source || ''} ${spec.source || ''}`.toLowerCase();
+  const generated = asset.generated === true || spec.generated === true || /generated|imagegen|model|synthetic/.test(generatedText);
+  const explicitTarget = Boolean(generation.target || spec.target || asset.target || spec.targetAspectRatio || asset.targetAspectRatio || spec.targetSlot || asset.targetSlot);
+  if (!target || !target.aspectRatio) return false;
+  if (target.reviewRequired && !generation.mustBind && !explicitTarget) return false;
+  return Boolean(explicitTarget || generation.mustBind || generation.status === 'required' || generated);
+}
+
+function applyAssetTargetValidation(plan = {}, slide = {}, spec = {}, asset = {}, errors = [], slideNo = 0, position = '') {
+  const target = targetForBinding(plan, slide, spec, asset);
+  const imageAspectRatio = imageAspectRatioFor(asset);
+  const targetAspectRatio = Number(target.aspectRatio || 0);
+  const aspectMismatch = imageAspectRatio && targetAspectRatio
+    ? Number((Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio).toFixed(3))
+    : null;
+  const allowMismatch = spec.allowAspectMismatch === true || asset.allowAspectMismatch === true;
+  const enriched = Object.assign({}, asset, {
+    assetTarget: target,
+    imageAspectRatio,
+    targetAspectRatio: targetAspectRatio || undefined,
+    aspectMismatch: aspectMismatch == null ? undefined : aspectMismatch,
+    aspectMismatchAllowed: allowMismatch || undefined
+  });
+  if (
+    shouldEnforceAspectTarget(slide, spec, asset, target) &&
+    aspectMismatch != null &&
+    aspectMismatch > 0.25 &&
+    !allowMismatch
+  ) {
+    errors.push({
+      slide: slideNo,
+      position,
+      type: 'assetAspectMismatch',
+      path: asset.assetPath,
+      imageAspectRatio,
+      targetAspectRatio,
+      aspectMismatch,
+      message: `asset aspect ratio ${imageAspectRatio} differs from target ${targetAspectRatio} by ${Math.round(aspectMismatch * 100)}%`
+    });
+  }
+  return enriched;
+}
+
+function boundAssetAuditFor(item = {}) {
+  const target = item.assetTarget || {};
+  return {
+    path: item.assetPath,
+    dimensions: item.dimensions,
+    imageAspectRatio: item.imageAspectRatio,
+    targetAspectRatio: item.targetAspectRatio,
+    aspectMismatch: item.aspectMismatch == null ? undefined : item.aspectMismatch,
+    aspectMismatchAllowed: item.aspectMismatchAllowed || undefined,
+    targetSlot: target.slot || undefined,
+    targetSource: target.targetSource || undefined,
+    fitPolicy: target.fitPolicy || undefined,
+    assetTarget: target
+  };
+}
+
+function assetWithWorstMismatch(assets = []) {
+  return (assets || []).reduce((best, item) => {
+    if (!best) return item;
+    return Number(item && item.aspectMismatch || 0) > Number(best && best.aspectMismatch || 0) ? item : best;
+  }, null);
+}
+
+function boundAssetGenerationFields(assets = []) {
+  const primary = assets[0] || {};
+  const worst = assetWithWorstMismatch(assets) || primary;
+  const boundAssets = assets.map(boundAssetAuditFor);
+  return {
+    target: primary.assetTarget,
+    imageDimensions: primary.dimensions,
+    imageAspectRatio: primary.imageAspectRatio,
+    targetAspectRatio: primary.targetAspectRatio,
+    aspectMismatch: worst && worst.aspectMismatch,
+    worstAspectMismatch: worst && worst.aspectMismatch,
+    aspectMismatchAllowed: assets.some(item => item.aspectMismatchAllowed === true) || undefined,
+    boundAssets
+  };
+}
+
 function validateAssetSpec(asset, slideNo, position, errors, cwd) {
   const spec = normalizeAssetSpec(asset, cwd);
   if (!spec) {
@@ -158,11 +286,14 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
     }
     const spec = typeof asset === 'string' ? { path: asset } : (asset || {});
     if (Array.isArray(spec.images) && spec.images.length) {
-      const assets = spec.images.map((item, i) => validateAssetSpec(item, Number(slideNo), `images[${i}]`, errors, cwd)).filter(Boolean);
+      const assets = spec.images.map((item, i) => {
+        const validated = validateAssetSpec(item, Number(slideNo), `images[${i}]`, errors, cwd);
+        return validated ? applyAssetTargetValidation(plan, slides[idx], spec, validated, errors, Number(slideNo), `images[${i}]`) : null;
+      }).filter(Boolean);
       return { slideNo: Number(slideNo), idx, spec, assets };
     }
     const single = validateAssetSpec(spec, Number(slideNo), 'single', errors, cwd);
-    return single ? { slideNo: Number(slideNo), idx, spec, assets: [single] } : null;
+    return single ? { slideNo: Number(slideNo), idx, spec, assets: [applyAssetTargetValidation(plan, slides[idx], spec, single, errors, Number(slideNo), 'single')] } : null;
   }).filter(Boolean);
 
   if (errors.length) return { plan, boundSlides: 0, errors };
@@ -181,8 +312,9 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
         decisionSource: ASSET_BINDER_DECISION_SOURCE,
         status: 'bound',
         bound: true,
-        boundCount: assets.length
-      });
+        boundCount: assets.length,
+        role: spec.role || 'gallery'
+      }, boundAssetGenerationFields(assets));
       if (!slide.assetAttribution) slide.assetAttribution = [];
       const trace = ensureSourceTrace(slide);
       assets.forEach((item, i) => {
@@ -205,8 +337,9 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
       decisionSource: ASSET_BINDER_DECISION_SOURCE,
       status: 'bound',
       bound: true,
-      boundCount: 1
-    });
+      boundCount: 1,
+      role: single.role || spec.role || (slide.assetGeneration && slide.assetGeneration.role)
+    }, boundAssetGenerationFields(assets));
     if (!slide.assetAttribution) slide.assetAttribution = [];
     const attr = attributionFor(single, spec);
     slide.assetAttribution.push(attr);

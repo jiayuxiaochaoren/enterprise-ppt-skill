@@ -2,11 +2,35 @@ const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+const {
+  assetTargetContract,
+  createAssetGenerationHelpers,
+  generatedPromptAspectConflict,
+  generatedAssetTargetSpec
+} = require('./design/asset-generation');
+const {
+  runPlanAudits
+} = require('./qa/visual-plan-audit');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-asset-decision-gate');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+
+function writePngHeader(file, w, h) {
+  const b = Buffer.alloc(33);
+  b[0] = 0x89;
+  b.write('PNG', 1, 'ascii');
+  b[4] = 0x0d;
+  b[5] = 0x0a;
+  b[6] = 0x1a;
+  b[7] = 0x0a;
+  b.writeUInt32BE(13, 8);
+  b.write('IHDR', 12, 'ascii');
+  b.writeUInt32BE(w, 16);
+  b.writeUInt32BE(h, 20);
+  fs.writeFileSync(file, b);
+}
 
 const planPath = path.join(OUT, 'beauty-plan.json');
 const gatePath = path.join(OUT, 'asset-gate.json');
@@ -22,12 +46,37 @@ const productBlockedPlanPath = path.join(OUT, 'product-blocked-plan.json');
 const productBlockedGatePath = path.join(OUT, 'product-blocked-gate.json');
 const promptPlanPath = path.join(OUT, 'prompt-plan.json');
 const promptOutPath = path.join(OUT, 'asset-prompts.json');
+const splitPromptPlanPath = path.join(OUT, 'split-prompt-plan.json');
+const splitPromptOutPath = path.join(OUT, 'split-asset-prompts.json');
 const bindPlanPath = path.join(OUT, 'bind-plan.json');
 const bindMapPath = path.join(OUT, 'bind-map.json');
 const bindOutPath = path.join(OUT, 'bind-plan.bound.json');
 const bindPptxPath = path.join(OUT, 'bind-plan.pptx');
 const invalidBindMapPath = path.join(OUT, 'bind-map-invalid.json');
 const tinyPngPath = path.join(OUT, 'tiny.png');
+const horizontalPngPath = path.join(OUT, 'wide-16x9.png');
+const verticalPngPath = path.join(OUT, 'vertical-split.png');
+const galleryPngPath = path.join(OUT, 'gallery-wide.png');
+const galleryPngPath2 = path.join(OUT, 'gallery-wide-2.png');
+const aspectBindPlanPath = path.join(OUT, 'aspect-bind-plan.json');
+const aspectBadMapPath = path.join(OUT, 'aspect-bind-wide-map.json');
+const aspectGoodMapPath = path.join(OUT, 'aspect-bind-vertical-map.json');
+const aspectGoodOutPath = path.join(OUT, 'aspect-bind-plan.bound.json');
+const aspectQaMismatchPlanPath = path.join(OUT, 'aspect-qa-mismatch-plan.json');
+const aspectQaBoundMismatchPlanPath = path.join(OUT, 'aspect-qa-bound-mismatch-plan.json');
+const gateProvidePlanPath = path.join(OUT, 'gate-provide-plan.json');
+const gateProvideBadAnswersPath = path.join(OUT, 'gate-provide-bad-answers.json');
+const gateProvideBadPath = path.join(OUT, 'gate-provide-bad.json');
+const gateProvideBadOutPath = path.join(OUT, 'gate-provide-bad.resolved.json');
+const gateProvideGoodAnswersPath = path.join(OUT, 'gate-provide-good-answers.json');
+const gateProvideGoodPath = path.join(OUT, 'gate-provide-good.json');
+const gateProvideGoodOutPath = path.join(OUT, 'gate-provide-good.resolved.json');
+const gateProvideAllowedAnswersPath = path.join(OUT, 'gate-provide-allowed-answers.json');
+const gateProvideAllowedPath = path.join(OUT, 'gate-provide-allowed.json');
+const gateProvideAllowedOutPath = path.join(OUT, 'gate-provide-allowed.resolved.json');
+const galleryBindPlanPath = path.join(OUT, 'gallery-bind-plan.json');
+const galleryBindMapPath = path.join(OUT, 'gallery-bind-map.json');
+const galleryBindOutPath = path.join(OUT, 'gallery-bind-plan.bound.json');
 const bridgeUnavailableDir = path.join(OUT, 'bridge-unavailable');
 const bridgeAvailableDir = path.join(OUT, 'bridge-available');
 const bridgeBlockedDir = path.join(OUT, 'bridge-blocked');
@@ -108,6 +157,9 @@ assert.equal(bridgeAvailablePlan.slides[0].assetGeneration.decisionSource, 'asse
 const bridgePrompts = JSON.parse(fs.readFileSync(path.join(bridgeAvailableDir, 'asset-prompts.json'), 'utf8'));
 assert.equal(bridgePrompts.status, 'ready');
 assert.equal(bridgePrompts.promptCount, bridgeAvailableReport.promptCount);
+assert.ok(bridgePrompts.prompts.every(p => p.target && p.target.version === 'asset-target-contract/v1'));
+assert.ok(bridgePrompts.prompts.every(p => p.targetAspectRatio), 'prompt planner should expose target aspect ratios');
+assert.equal(bridgePrompts.prompts.some(p => p.promptAspectConflict), false, 'planned prompts should not contain target aspect conflicts');
 
 fs.writeFileSync(answersPath, JSON.stringify({
   decisions: {
@@ -123,6 +175,8 @@ const resolvedPlan = JSON.parse(fs.readFileSync(resolvedPlanPath, 'utf8'));
 assert.equal(resolvedPlan.slides[0].visual.mode, 'generated');
 assert.equal(resolvedPlan.slides[0].assetGeneration.status, 'required');
 assert.equal(resolvedPlan.slides[0].assetGeneration.decisionSource, 'asset-decision-gate/v1');
+assert.equal(resolvedPlan.slides[0].assetGeneration.target.version, 'asset-target-contract/v1');
+assert.ok(resolvedPlan.slides[0].assetGeneration.target.aspectRatio);
 assert.equal(resolvedPlan.slides[1].visual.mode, 'solid');
 assert.equal(resolvedPlan.slides[1].assetGeneration.status, 'none');
 assert.equal(resolvedPlan.slides[1].assetGeneration.decisionSource, 'asset-decision-gate/v1');
@@ -247,6 +301,94 @@ assert.equal(promptOut.status, 'blocked');
 assert.equal(promptOut.promptCount, 0);
 assert.equal(promptOut.blockedCount, 1);
 
+const splitContract = assetTargetContract({}, {
+  type: 'executive-blocks',
+  visual: { mode: 'generated', role: 'split' }
+}, 'split');
+fs.writeFileSync(splitPromptPlanPath, JSON.stringify({
+  industry: 'beauty-consumer',
+  title: 'Split target validation',
+  slides: [{
+    type: 'executive-blocks',
+    title: '椿野用夏季控油蓬松打开直播与复购路径',
+    visual: { mode: 'generated', role: 'split' },
+    assetGeneration: {
+      decisionSource: 'asset-decision-gate/v1',
+      status: 'required',
+      role: 'showcase',
+      originalRole: 'split',
+      resolvedRole: 'showcase',
+      mustBind: true,
+      syntheticOnly: true,
+      target: splitContract
+    }
+  }]
+}, null, 2));
+cp.execFileSync(process.execPath, ['scripts/asset_prompt_planner.js', splitPromptPlanPath, '--out', splitPromptOutPath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const splitPromptOut = JSON.parse(fs.readFileSync(splitPromptOutPath, 'utf8'));
+assert.equal(splitPromptOut.promptCount, 1);
+assert.equal(splitPromptOut.prompts[0].targetOrientation, 'vertical');
+assert.equal(splitPromptOut.prompts[0].targetAspectRatio, 0.567);
+assert.match(splitPromptOut.prompts[0].recommendedFilename, /split-vertical-0-567/);
+assert.equal(splitPromptOut.prompts[0].mustBind, true);
+
+const splitTarget = generatedAssetTargetSpec({ visual: { role: 'split', targetSlot: { w: 4.25, h: 7.5 } } }, 'split');
+assert.equal(splitTarget.orientation, 'vertical');
+assert.equal(splitTarget.aspectRatio, 0.567);
+const splitPromptHelpers = createAssetGenerationHelpers({
+  referenceLayoutLibrary: {
+    generatedAssetPromptPatterns: {
+      showcase: 'Create showcase for {industryLabel}: {visualBrief}. Wide 16:9, 16:9 or 4:3 crop. Palette {paletteName}.'
+    }
+  },
+  selectPaletteName: () => 'test palette'
+});
+const splitPrompt = splitPromptHelpers.generatedAssetPrompt(
+  { industry: 'beauty-consumer' },
+  { title: '椿野用夏季控油蓬松打开直播与复购路径', visual: { role: 'split', targetSlot: { w: 4.25, h: 7.5 } } }
+);
+assert.match(splitPrompt, /tall vertical image/i);
+assert.doesNotMatch(splitPrompt, /16\s*:\s*9|4\s*:\s*3|wide landscape/i);
+assert.equal(generatedPromptAspectConflict(splitPrompt, splitTarget), false);
+assert.equal(generatedPromptAspectConflict('4:3 product crop', splitTarget), true);
+assert.equal(generatedPromptAspectConflict('16:9横图，宽屏，4:3。', splitTarget), true);
+const splitPromptZhHelpers = createAssetGenerationHelpers({
+  referenceLayoutLibrary: {
+    generatedAssetPromptPatterns: {
+      showcase: '生成{industryLabel}视觉：{visualBrief}，16:9横图，宽屏，4:3。Palette {paletteName}.'
+    }
+  },
+  selectPaletteName: () => 'test palette'
+});
+const splitPromptZh = splitPromptZhHelpers.generatedAssetPrompt(
+  { industry: 'beauty-consumer' },
+  { title: '椿野用夏季控油蓬松打开直播与复购路径', visual: { role: 'split', targetSlot: { w: 4.25, h: 7.5 } } }
+);
+assert.doesNotMatch(splitPromptZh, /16\s*[:：]\s*9|4\s*[:：]\s*3|横图|宽屏/);
+assert.equal(generatedPromptAspectConflict(splitPromptZh, splitTarget), false);
+const coverTarget = assetTargetContract({}, { type: 'cover', visual: { role: 'background' } }, 'background');
+assert.equal(generatedPromptAspectConflict('竖图，海报图，portrait crop', coverTarget), true);
+
+const rendererSplitTarget = assetTargetContract({}, {
+  type: 'executive-blocks',
+  previousLayoutVariant: 'product-evidence-story',
+  visual: { mode: 'generated', role: 'split' }
+}, 'split');
+assert.equal(rendererSplitTarget.orientation, 'vertical');
+assert.equal(rendererSplitTarget.targetSource, 'renderer-slot:executive-blocks');
+const stalePreviousTarget = assetTargetContract({}, {
+  type: 'industry-chart',
+  layoutVariant: 'channel-efficiency-matrix',
+  previousLayoutVariant: 'product-evidence-story',
+  previousProofObject: 'product-evidence-story',
+  visual: { mode: 'generated', role: 'evidence' }
+}, 'evidence');
+assert.notEqual(stalePreviousTarget.orientation, 'vertical');
+assert.notEqual(stalePreviousTarget.targetSource, 'renderer-slot:split-full-height');
+
 fs.writeFileSync(tinyPngPath, Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
   'base64'
@@ -263,6 +405,7 @@ fs.writeFileSync(bindMapPath, JSON.stringify({
     path: path.relative(ROOT, tinyPngPath),
     type: 'generated-image',
     role: 'evidence',
+    allowAspectMismatch: true,
     source: 'Codex imagegen test'
   }
 }, null, 2));
@@ -275,6 +418,7 @@ assert.equal(bindResult.boundSlides, 1);
 const boundPlan = JSON.parse(fs.readFileSync(bindOutPath, 'utf8'));
 assert.equal(boundPlan.slides[1].visual.image, path.relative(ROOT, tinyPngPath));
 assert.equal(boundPlan.slides[1].assetGeneration.decisionSource, 'asset-binder/v1');
+assert.equal(boundPlan.slides[1].assetGeneration.aspectMismatchAllowed, true);
 assert.equal(boundPlan.slides[1].sourceTrace.imageProvenance.length, 1);
 assert.equal(boundPlan.slides[1].sourceTrace.imageProvenance[0].provenanceClass, 'model-generated-preview');
 assert.equal(boundPlan.slides[1].sourceTrace.imageProvenance[0].proofEligibility, 'synthetic-only');
@@ -295,12 +439,225 @@ assert.equal(renderMeta.slides[1].assetDecision.provenanceClass, 'model-generate
 assert.deepEqual(renderMeta.slides[1].assetDecision.proofEligibility, ['synthetic-only']);
 assert.equal(renderMeta.slides[1].assetDecision.boundAssetCount, 1);
 assert.equal(renderMeta.slides[1].assetDecision.proofUse, 'synthetic-only');
+assert.equal(renderMeta.slides[1].assetDecision.aspectMismatchAllowed, true);
+assert.ok(renderMeta.slides[1].assetDecision.assetTarget);
+assert.ok(renderMeta.slides[1].assetDecision.imageDimensions);
+assert.ok(renderMeta.slides[1].assetDecision.fitDecision);
 const visualQaRun = cp.spawnSync(process.execPath, ['scripts/visual_qa.js', bindPptxPath, '--json'], {
   cwd: ROOT,
   encoding: 'utf8'
 });
 const visualQa = JSON.parse(visualQaRun.stdout);
 assert.equal(visualQa.render_meta_schema_qa.status, 'pass');
+
+writePngHeader(horizontalPngPath, 1600, 900);
+writePngHeader(verticalPngPath, 581, 1024);
+writePngHeader(galleryPngPath, 1600, 989);
+writePngHeader(galleryPngPath2, 1200, 742);
+fs.writeFileSync(aspectBindPlanPath, JSON.stringify({
+  title: 'Aspect bind validation',
+  slides: [{
+    type: 'executive-blocks',
+    title: '竖向分栏生图绑定',
+    visual: { mode: 'generated', role: 'split' },
+    assetGeneration: {
+      decisionSource: 'asset-decision-gate/v1',
+      status: 'required',
+      role: 'showcase',
+      originalRole: 'split',
+      resolvedRole: 'showcase',
+      mustBind: true,
+      syntheticOnly: true,
+      target: splitContract
+    }
+  }]
+}, null, 2));
+fs.writeFileSync(gateProvidePlanPath, JSON.stringify({
+  title: 'Gate provide assets validation',
+  slides: [{
+    type: 'executive-blocks',
+    title: 'provide_assets 竖槽校验',
+    visual: { mode: 'generated', role: 'split' },
+    assetGeneration: {
+      decisionSource: 'asset-decision-gate/v1',
+      status: 'required',
+      role: 'showcase',
+      originalRole: 'split',
+      resolvedRole: 'showcase',
+      mustBind: true,
+      syntheticOnly: true,
+      target: splitContract
+    }
+  }]
+}, null, 2));
+fs.writeFileSync(gateProvideBadAnswersPath, JSON.stringify({
+  decisions: {
+    '1': { action: 'provide_assets', asset: path.relative(ROOT, horizontalPngPath) }
+  }
+}, null, 2));
+cp.execFileSync(process.execPath, ['scripts/deck_asset_decision_gate.js', gateProvidePlanPath, '--answers', gateProvideBadAnswersPath, '--out', gateProvideBadPath, '--out-plan', gateProvideBadOutPath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const gateProvideBad = JSON.parse(fs.readFileSync(gateProvideBadPath, 'utf8'));
+assert.equal(gateProvideBad.status, 'needs_user_input');
+assert.equal(gateProvideBad.questions[0].status, 'error');
+assert.equal(gateProvideBad.questions[0].errors.some(e => e.type === 'assetAspectMismatch'), true);
+const gateProvideBadPlan = JSON.parse(fs.readFileSync(gateProvideBadOutPath, 'utf8'));
+assert.equal(gateProvideBadPlan.slides[0].visual && gateProvideBadPlan.slides[0].visual.image, undefined);
+
+fs.writeFileSync(gateProvideGoodAnswersPath, JSON.stringify({
+  decisions: {
+    '1': { action: 'provide_assets', asset: path.relative(ROOT, verticalPngPath) }
+  }
+}, null, 2));
+cp.execFileSync(process.execPath, ['scripts/deck_asset_decision_gate.js', gateProvidePlanPath, '--answers', gateProvideGoodAnswersPath, '--out', gateProvideGoodPath, '--out-plan', gateProvideGoodOutPath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const gateProvideGood = JSON.parse(fs.readFileSync(gateProvideGoodPath, 'utf8'));
+assert.equal(gateProvideGood.status, 'ready');
+const gateProvideGoodPlan = JSON.parse(fs.readFileSync(gateProvideGoodOutPath, 'utf8'));
+assert.equal(gateProvideGoodPlan.slides[0].assetGeneration.decisionSource, 'asset-binder/v1');
+assert.equal(gateProvideGoodPlan.slides[0].assetGeneration.gateDecisionSource, 'asset-decision-gate/v1');
+assert.equal(gateProvideGoodPlan.slides[0].assetGeneration.targetAspectRatio, 0.567);
+assert.equal(gateProvideGoodPlan.slides[0].assetGeneration.boundAssets.length, 1);
+assert.equal(gateProvideGoodPlan.slides[0].sourceTrace.imageProvenance[0].targetAspectRatio, 0.567);
+
+fs.writeFileSync(gateProvideAllowedAnswersPath, JSON.stringify({
+  decisions: {
+    '1': { action: 'provide_assets', asset: path.relative(ROOT, horizontalPngPath), allowAspectMismatch: true }
+  }
+}, null, 2));
+cp.execFileSync(process.execPath, ['scripts/deck_asset_decision_gate.js', gateProvidePlanPath, '--answers', gateProvideAllowedAnswersPath, '--out', gateProvideAllowedPath, '--out-plan', gateProvideAllowedOutPath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const gateProvideAllowed = JSON.parse(fs.readFileSync(gateProvideAllowedPath, 'utf8'));
+assert.equal(gateProvideAllowed.status, 'ready');
+const gateProvideAllowedPlan = JSON.parse(fs.readFileSync(gateProvideAllowedOutPath, 'utf8'));
+assert.equal(gateProvideAllowedPlan.slides[0].assetGeneration.aspectMismatchAllowed, true);
+assert.ok(gateProvideAllowedPlan.slides[0].assetGeneration.aspectMismatch > 0.25);
+
+const galleryTarget = assetTargetContract({}, { type: 'case-gallery', visual: { role: 'gallery' } }, 'gallery');
+fs.writeFileSync(galleryBindPlanPath, JSON.stringify({
+  title: 'Gallery bind validation',
+  slides: [{
+    type: 'case-gallery',
+    title: 'gallery 多图绑定',
+    visual: { mode: 'generated', role: 'gallery' },
+    assetGeneration: {
+      decisionSource: 'asset-decision-gate/v1',
+      status: 'required',
+      role: 'gallery',
+      originalRole: 'gallery',
+      resolvedRole: 'gallery',
+      mustBind: true,
+      syntheticOnly: true,
+      target: galleryTarget
+    }
+  }]
+}, null, 2));
+fs.writeFileSync(galleryBindMapPath, JSON.stringify({
+  '1': {
+    role: 'gallery',
+    images: [
+      { path: path.relative(ROOT, galleryPngPath), type: 'generated-image' },
+      { path: path.relative(ROOT, galleryPngPath2), type: 'generated-image' }
+    ]
+  }
+}, null, 2));
+const galleryBindResult = JSON.parse(cp.execFileSync(process.execPath, ['scripts/bind_generated_assets.js', galleryBindPlanPath, galleryBindMapPath, galleryBindOutPath], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}));
+assert.equal(galleryBindResult.success, true);
+const galleryBoundPlan = JSON.parse(fs.readFileSync(galleryBindOutPath, 'utf8'));
+assert.equal(galleryBoundPlan.slides[0].assetGeneration.boundAssets.length, 2);
+assert.equal(galleryBoundPlan.slides[0].sourceTrace.imageProvenance.length, 2);
+assert.equal(galleryBoundPlan.slides[0].assetGeneration.worstAspectMismatch, galleryBoundPlan.slides[0].assetGeneration.aspectMismatch);
+fs.writeFileSync(aspectBadMapPath, JSON.stringify({
+  '1': {
+    path: path.relative(ROOT, horizontalPngPath),
+    type: 'generated-image',
+    role: 'split',
+    source: 'Codex imagegen test'
+  }
+}, null, 2));
+const badAspectBind = cp.spawnSync(process.execPath, ['scripts/bind_generated_assets.js', aspectBindPlanPath, aspectBadMapPath, path.join(OUT, 'aspect-bind-bad.bound.json')], {
+  cwd: ROOT,
+  encoding: 'utf8'
+});
+assert.notEqual(badAspectBind.status, 0, '16:9 generated image should not bind into a vertical split target');
+const badAspectPayload = JSON.parse(badAspectBind.stderr || badAspectBind.stdout);
+assert.equal(badAspectPayload.errors.some(e => e.type === 'assetAspectMismatch'), true);
+fs.writeFileSync(aspectQaMismatchPlanPath, JSON.stringify({
+  title: 'Aspect QA validation',
+  slides: [{
+    type: 'executive-blocks',
+    title: '竖向分栏 QA 负例',
+    visual: {
+      image: path.basename(horizontalPngPath),
+      mode: 'hybrid',
+      role: 'split',
+      generated: true
+    },
+    assetGeneration: {
+      decisionSource: 'asset-binder/v1',
+      status: 'bound',
+      role: 'showcase',
+      originalRole: 'split',
+      resolvedRole: 'showcase',
+      mustBind: true,
+      syntheticOnly: true,
+      target: splitContract
+    }
+  }]
+}, null, 2));
+const mismatchAudit = runPlanAudits({ planPath: aspectQaMismatchPlanPath, renderMetaResult: {} });
+assert.equal(mismatchAudit.findings.some(f => f.type === 'assetAspectMismatch'), true, 'visual plan QA should fail aspect mismatches even if a bad asset bypasses binder');
+
+fs.writeFileSync(aspectQaBoundMismatchPlanPath, JSON.stringify({
+  title: 'Bound aspect QA validation',
+  slides: [{
+    type: 'executive-blocks',
+    title: '竖向分栏 bound QA 负例',
+    visual: {
+      image: path.basename(horizontalPngPath),
+      mode: 'photo',
+      role: 'split'
+    },
+    assetGeneration: {
+      decisionSource: 'asset-binder/v1',
+      status: 'bound',
+      role: 'split',
+      originalRole: 'split',
+      resolvedRole: 'split',
+      target: splitContract
+    }
+  }]
+}, null, 2));
+const boundMismatchAudit = runPlanAudits({ planPath: aspectQaBoundMismatchPlanPath, renderMetaResult: {} });
+assert.equal(boundMismatchAudit.findings.some(f => f.type === 'assetAspectMismatch'), true, 'visual plan QA should fail bound aspect mismatches even when the asset is not marked generated');
+
+fs.writeFileSync(aspectGoodMapPath, JSON.stringify({
+  '1': {
+    path: path.relative(ROOT, verticalPngPath),
+    type: 'generated-image',
+    role: 'split',
+    source: 'Codex imagegen test'
+  }
+}, null, 2));
+const goodAspectBind = JSON.parse(cp.execFileSync(process.execPath, ['scripts/bind_generated_assets.js', aspectBindPlanPath, aspectGoodMapPath, aspectGoodOutPath], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}));
+assert.equal(goodAspectBind.success, true);
+const aspectBoundPlan = JSON.parse(fs.readFileSync(aspectGoodOutPath, 'utf8'));
+assert.equal(aspectBoundPlan.slides[0].assetGeneration.targetAspectRatio, 0.567);
+assert.ok(aspectBoundPlan.slides[0].assetGeneration.aspectMismatch <= 0.25);
+assert.equal(aspectBoundPlan.slides[0].sourceTrace.imageProvenance[0].targetAspectRatio, 0.567);
+assert.ok(aspectBoundPlan.slides[0].sourceTrace.imageProvenance[0].aspectMismatch <= 0.25);
 
 fs.writeFileSync(invalidBindMapPath, JSON.stringify({
   '99': { path: 'missing.png' },

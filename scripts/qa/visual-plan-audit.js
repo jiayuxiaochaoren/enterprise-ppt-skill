@@ -32,6 +32,10 @@ const {
 const {
   auditIndustryEvidenceChain
 } = require('./industry-evidence-chain-audit');
+const {
+  assetTargetContract,
+  generatedPromptAspectConflict
+} = require('../design/asset-generation');
 
 function defaultPlanAuditResult() {
   return {
@@ -66,6 +70,48 @@ function resolvePlanAssetPath(value, baseDir) {
   const fromPlan = path.resolve(baseDir, value);
   if (fs.existsSync(fromPlan)) return fromPlan;
   return resolveAssetPath(value);
+}
+
+function aspectMismatch(imageAspectRatio, targetAspectRatio) {
+  const image = Number(imageAspectRatio);
+  const target = Number(targetAspectRatio);
+  if (!Number.isFinite(image) || !Number.isFinite(target) || image <= 0 || target <= 0) return null;
+  return Number((Math.abs(image - target) / target).toFixed(3));
+}
+
+function refMatchesAudit(ref = '', audit = {}) {
+  const a = String(ref || '');
+  const candidates = [audit.path, audit.file, audit.sourceId].map(value => String(value || '')).filter(Boolean);
+  return candidates.some(candidate => candidate === a || path.basename(candidate) === path.basename(a));
+}
+
+function auditForAssetRef(ref = '', generation = {}, trace = {}) {
+  const candidates = [
+    ...(Array.isArray(generation.boundAssets) ? generation.boundAssets : []),
+    ...(Array.isArray(trace.imageProvenance) ? trace.imageProvenance : [])
+  ];
+  return candidates.find(item => item && refMatchesAudit(ref, item)) || null;
+}
+
+function generatedOrSynthetic(slide = {}) {
+  const generation = slide.assetGeneration || {};
+  const visual = slide.visual || {};
+  return generation.syntheticOnly === true ||
+    visual.generated === true ||
+    /generated|imagegen|model|synthetic/i.test(`${visual.mode || ''} ${generation.reason || ''} ${generation.decisionSource || ''}`);
+}
+
+function factualSyntheticRisk(slide = {}) {
+  const text = [
+    slide.title,
+    slide.subtitle,
+    slide.claim,
+    slide.proofObject,
+    slide.assetBrief,
+    slide.visual && slide.visual.caption,
+    slide.visual && slide.visual.prompt
+  ].filter(Boolean).join(' ');
+  return /真实客户|客户截图|真实截图|授权截图|证书|条码|门店陈列|现场实拍|真实SKU|真实产品包装|真实门店|真实数据截图/i.test(text);
 }
 
 function runPlanAudits(options = {}) {
@@ -153,15 +199,74 @@ function runPlanAudits(options = {}) {
       const assetRefs = [imageValue, ...(Array.isArray(slide.images) ? slide.images : []), ...((slide.visual && Array.isArray(slide.visual.images)) ? slide.visual.images : [])]
         .map(String)
         .filter(Boolean);
+      const generation = slide.assetGeneration || {};
+      const trace = slide.sourceTrace || {};
+      const target = generation.target || assetTargetContract(normalized, slide, generation.originalRole || generation.role || (slide.visual && slide.visual.role) || '');
+      const mustBindGenerated = generation.mustBind === true || generation.status === 'required';
+      if (mustBindGenerated && (!target || !target.aspectRatio)) {
+        findings.push({
+          slide:i+1,
+          level:'fail',
+          type:'generatedTargetMissing',
+          message:'required generated asset is missing an auditable target aspect contract'
+        });
+      } else if (mustBindGenerated && target.reviewRequired) {
+        findings.push({
+          slide:i+1,
+          level:'review',
+          type:'generatedTargetMissing',
+          message:`required generated asset relies on ${target.targetSource || 'fallback'} instead of an explicit or renderer slot target`
+        });
+      }
+      if (generatedOrSynthetic(slide) && factualSyntheticRisk(slide)) {
+        findings.push({
+          slide:i+1,
+          level:'fail',
+          type:'generatedAssetCannotSatisfyFactualProof',
+          message:'synthetic generated image is requested for copy that implies real customer/site/product proof'
+        });
+      }
       assetRefs.forEach(ref => {
         const resolved = resolvePlanAssetPath(ref, baseDir);
-        const quality = scoreImageAsset(resolved, 'evidence');
+        const assetAudit = auditForAssetRef(ref, generation, trace);
+        const assetTarget = (assetAudit && (assetAudit.assetTarget || assetAudit.target)) || target;
+        const qualityRole = (assetTarget && (assetTarget.resolvedRole || assetTarget.role)) ||
+          generation.resolvedRole ||
+          generation.role ||
+          (slide.visual && slide.visual.role) ||
+          'evidence';
+        const quality = scoreImageAsset(resolved, qualityRole);
         if (quality.exists && quality.verdict === 'reject' && !rawPlan.allowDirtyAssets && !slide.allowDirtyAssets) {
           findings.push({
             slide:i+1,
             level:'review',
             type:'weakImageAsset',
             message:`image asset needs review: ${path.basename(resolved)} (${quality.issues.join('; ')})`
+          });
+        }
+        const imageAspect = assetAudit && assetAudit.imageAspectRatio ? assetAudit.imageAspectRatio : quality.aspectRatio;
+        const targetAspect = assetAudit && assetAudit.targetAspectRatio ? assetAudit.targetAspectRatio : (assetTarget && assetTarget.aspectRatio);
+        const mismatch = quality.exists && targetAspect
+          ? aspectMismatch(imageAspect, targetAspect)
+          : null;
+        const enforceTarget = Boolean(
+          (generation.status === 'bound' && targetAspect) ||
+          mustBindGenerated ||
+          generatedOrSynthetic(slide)
+        );
+        if (
+          enforceTarget &&
+          mismatch != null &&
+          mismatch > 0.25 &&
+          generation.aspectMismatchAllowed !== true &&
+          !(assetAudit && assetAudit.aspectMismatchAllowed === true) &&
+          slide.allowAspectMismatch !== true
+        ) {
+          findings.push({
+            slide:i+1,
+            level:'fail',
+            type:'assetAspectMismatch',
+            message:`image asset ${path.basename(resolved)} aspect ${imageAspect} differs from target ${targetAspect} by ${Math.round(mismatch * 100)}%`
           });
         }
       });
@@ -174,6 +279,14 @@ function runPlanAudits(options = {}) {
         });
       }
       const prompt = slide.generatedAssetPrompt || '';
+      if (prompt && generatedPromptAspectConflict(prompt, target)) {
+        findings.push({
+          slide:i+1,
+          level:'fail',
+          type:'generatedPromptAspectConflict',
+          message:'generated asset prompt contains aspect instructions that conflict with the target asset contract'
+        });
+      }
       if (prompt && !hasBoundAsset) {
         findings.push({
           slide:i+1,
@@ -186,7 +299,8 @@ function runPlanAudits(options = {}) {
         slide:i+1,
         generatedAssetPrompt: Boolean(prompt),
         boundAsset: Boolean(hasBoundAsset),
-        image: imageValue || null
+        image: imageValue || null,
+        assetTarget: target || null
       };
     });
   } catch (e) {

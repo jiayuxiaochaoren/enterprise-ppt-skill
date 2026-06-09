@@ -6,6 +6,10 @@ const {
   mediaForRole,
   scoreImageAsset
 } = require('../design-system');
+const {
+  assetTargetContract,
+  generatedPromptAspectConflict
+} = require('../design/asset-generation');
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(path.resolve(file), 'utf8'));
@@ -21,6 +25,20 @@ function assetRoleNeedsImage(role = '') {
   if (!r || ['none', 'diagram', 'structure', 'comparison'].includes(r)) return false;
   if (r.includes('none-or') || r.includes('or-none')) return false;
   return true;
+}
+
+function targetForPrompt(plan = {}, slide = {}, role = '') {
+  const generation = slide.assetGeneration || {};
+  if (generation.target && generation.target.version) return generation.target;
+  return assetTargetContract(plan, slide, role);
+}
+
+function filenamePart(value = '') {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'asset';
 }
 
 function planAssetPrompts(plan = {}, opts = {}) {
@@ -59,21 +77,35 @@ function planAssetPrompts(plan = {}, opts = {}) {
     const role = generation.role || (slide.visual && slide.visual.role) || design.imageRole || (slide.referenceRecipe && slide.referenceRecipe.assetRole) || 'abstract';
     const prompt = slide.generatedAssetPrompt || generatedAssetPrompt(normalized, slide);
     if (!prompt) return;
+    const target = targetForPrompt(normalized, slide, role);
+    const aspectPart = target.aspectRatio ? String(target.aspectRatio).replace(/\./g, '-') : 'flex';
+    const orientationPart = target.orientation && target.orientation !== 'flexible' ? target.orientation : 'flexible';
     prompts.push({
       slide: i + 1,
       title: slide.title || '',
       type: slide.type || '',
       referenceRecipe: slide.referenceRecipe ? slide.referenceRecipe.id : '',
       role,
+      originalRole: target.originalRole || generation.originalRole || role,
+      resolvedRole: target.resolvedRole || generation.resolvedRole || role,
+      target,
+      targetAspectRatio: target.aspectRatio || undefined,
+      targetOrientation: target.orientation === 'flexible' ? undefined : target.orientation,
+      targetSlot: target.slot || undefined,
+      targetSource: target.targetSource || undefined,
+      targetPixelSize: target.targetPixelSize || undefined,
+      sizeHint: target.sizeHint || undefined,
+      imagegenSizeHint: target.imagegenSizeHint || undefined,
+      promptAspectConflict: generatedPromptAspectConflict(prompt, target),
       status: generation.status || (needsGenerated ? 'required' : 'optional'),
       syntheticOnly: generation.syntheticOnly !== false,
       mustBind: generation.mustBind === true || needsGenerated,
       reason: generation.reason || '',
-      recommendedFilename: `generated-slide-${String(i + 1).padStart(2, '0')}-${role}.png`,
+      recommendedFilename: `generated-slide-${String(i + 1).padStart(2, '0')}-${filenamePart(target.originalRole || role)}-${filenamePart(orientationPart)}-${aspectPart}.png`,
       prompt,
       usage: role === 'background'
         ? 'Use only if the generated image has a clean text-safe zone; otherwise place it as a framed evidence/showcase panel.'
-        : 'Place as a framed panel or gallery image; keep slide text outside the bitmap.',
+        : `${target.instruction ? `${target.instruction} ` : ''}Place as a framed panel or gallery image; keep slide text outside the bitmap.`,
       avoid: ['text inside image', 'logos', 'fake charts', 'fake UI labels', 'named customer evidence', 'busy background behind paragraphs']
     });
   });

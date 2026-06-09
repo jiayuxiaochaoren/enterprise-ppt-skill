@@ -9,6 +9,12 @@ const {
   slideWantsImage,
   visualRole
 } = require('../design-system');
+const {
+  assetTargetContract
+} = require('../design/asset-generation');
+const {
+  bindGeneratedAssets
+} = require('./binder');
 const { MATRIX_VERSION, POLICY_VERSION, policyRowsForTypes } = require('../qa/quality-severity-policy');
 
 const ASSET_POLICY_TYPES = [
@@ -20,6 +26,45 @@ const ASSET_POLICY_TYPES = [
   'generatedAssetCannotSatisfyFactualProof'
 ];
 const ASSET_DECISION_GATE_SOURCE = 'asset-decision-gate/v1';
+
+function providedAssetsForAnswer(answer = {}) {
+  const assets = Array.isArray(answer.assets)
+    ? answer.assets.filter(Boolean)
+    : [answer.asset || answer.path].filter(Boolean);
+  return assets;
+}
+
+function decorateProvidedAsset(item, question = {}, answer = {}) {
+  const spec = typeof item === 'string' ? { path: item } : Object.assign({}, item || {});
+  return Object.assign({
+    type: answer.type || 'user-owned',
+    source: answer.source || 'user-provided asset via asset decision gate',
+    role: question.role,
+    target: question.assetTarget,
+    allowAspectMismatch: answer.allowAspectMismatch === true || spec.allowAspectMismatch === true || undefined
+  }, spec);
+}
+
+function bindingSpecForAnswer(question = {}, answer = {}) {
+  const assets = providedAssetsForAnswer(answer);
+  if (!assets.length) return null;
+  const common = {
+    type: answer.type || 'user-owned',
+    source: answer.source || 'user-provided asset via asset decision gate',
+    role: question.role,
+    target: question.assetTarget,
+    targetAspectRatio: question.assetTarget && question.assetTarget.aspectRatio,
+    targetSlot: question.assetTarget && question.assetTarget.slot,
+    allowAspectMismatch: answer.allowAspectMismatch === true || undefined
+  };
+  if (assets.length > 1 || question.role === 'gallery') {
+    return Object.assign({}, common, {
+      mode: 'photo',
+      images: assets.map(item => decorateProvidedAsset(item, question, answer))
+    });
+  }
+  return Object.assign({}, common, decorateProvidedAsset(assets[0], question, answer));
+}
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(path.resolve(file), 'utf8'));
@@ -59,6 +104,10 @@ function questionFor(plan = {}, slide = {}, idx = 0) {
   const generation = slide.assetGeneration || {};
   const refRole = slide.referenceRecipe && slide.referenceRecipe.assetRole;
   const prompt = promptForSlide(plan, slide);
+  const target = generation.target || assetTargetContract(plan, slide, generation.originalRole || role || refRole || 'showcase', {
+    resolvedRole: generation.resolvedRole || generation.role || role
+  });
+  const effectiveRole = role === 'structure' && target.originalRole ? target.originalRole : (role || refRole || 'showcase');
   const required = generation.status === 'required' || generation.mustBind === true;
   const title = slide.title || slide.claim || `第 ${idx + 1} 页`;
   const isFactualBlocked = generation.status === 'blocked';
@@ -86,7 +135,10 @@ function questionFor(plan = {}, slide = {}, idx = 0) {
     title,
     type: slide.type || '',
     layoutVariant: slide.layoutVariant || slide.variant || '',
-    role: role || refRole || 'showcase',
+    role: effectiveRole,
+    originalRole: target.originalRole || generation.originalRole || effectiveRole,
+    resolvedRole: target.resolvedRole || generation.resolvedRole || generation.role || role || refRole || 'showcase',
+    assetTarget: target,
     priority: required || isFactualBlocked ? 'blocking' : 'recommended',
     status: 'unresolved',
     blocked: isFactualBlocked,
@@ -103,7 +155,7 @@ function questionFor(plan = {}, slide = {}, idx = 0) {
   };
 }
 
-function buildGate(planPath, answersPath = '') {
+function buildGate(planPath, answersPath = '', opts = {}) {
   const rawPlan = readJson(planPath);
   const normalized = normalizeDeckPlan(rawPlan);
   makeDeckContext(rawPlan);
@@ -140,22 +192,26 @@ function buildGate(planPath, answersPath = '') {
         return;
       }
       if (answer.action === 'provide_assets') {
-        const assets = Array.isArray(answer.assets) ? answer.assets.filter(Boolean) : [answer.asset || answer.path].filter(Boolean);
-        if (!assets.length) {
+        const bindSpec = bindingSpecForAnswer(q, answer);
+        if (!bindSpec) {
           unresolved.push(Object.assign({}, q, { reason: 'provide_assets selected but no asset path was supplied' }));
           return;
         }
-        if (assets.length > 1 || q.role === 'gallery') {
-          slide.images = assets;
-          slide.visual = Object.assign({}, slide.visual || {}, { mode: 'photo', role: q.role === 'abstract' ? 'gallery' : q.role });
-        } else {
-          slide.visual = Object.assign({}, slide.visual || {}, { mode: 'photo', role: q.role, image: assets[0] });
+        const bindResult = bindGeneratedAssets(Object.assign({}, rawPlan, { slides: resolvedSlides }), {
+          [String(q.slide)]: bindSpec
+        }, {
+          cwd: opts.cwd || process.cwd()
+        });
+        if (bindResult.errors && bindResult.errors.length) {
+          unresolved.push(Object.assign({}, q, {
+            status: 'error',
+            reason: 'provide_assets failed asset binding validation',
+            errors: bindResult.errors
+          }));
+          return;
         }
         slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, {
-          decisionSource: ASSET_DECISION_GATE_SOURCE,
-          status: 'bound',
-          bound: true,
-          boundCount: assets.length
+          gateDecisionSource: ASSET_DECISION_GATE_SOURCE
         });
       } else if (answer.action === 'auto_generate') {
         slide.visual = Object.assign({}, slide.visual || {}, { mode: 'generated', role: q.role });
@@ -164,6 +220,9 @@ function buildGate(planPath, answersPath = '') {
           decisionSource: ASSET_DECISION_GATE_SOURCE,
           status: 'required',
           role: q.role,
+          originalRole: q.originalRole || q.role,
+          resolvedRole: q.resolvedRole || q.role,
+          target: q.assetTarget,
           mustBind: true,
           syntheticOnly: true,
           reason: 'user chose automatic synthetic asset generation'
@@ -215,8 +274,8 @@ function buildGate(planPath, answersPath = '') {
   };
 }
 
-function buildGateFromFiles({ planPath, answersPath = '', outPath = '', outPlanPath = '' }) {
-  const gate = buildGate(planPath, answersPath);
+function buildGateFromFiles({ planPath, answersPath = '', outPath = '', outPlanPath = '', cwd = process.cwd() }) {
+  const gate = buildGate(planPath, answersPath, { cwd });
   if (outPath) writeJson(outPath, gate);
   if (outPlanPath && gate.resolvedPlan) writeJson(outPlanPath, gate.resolvedPlan);
   return gate;
