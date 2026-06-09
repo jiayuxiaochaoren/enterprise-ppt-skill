@@ -160,7 +160,7 @@ module.exports = {
           "commentary-panel"
         ],
         "coveragePolicy": {
-          "requiredAll": [
+          "requiredWhenVisible": [
             "source-note"
           ],
           "requiredAny": [

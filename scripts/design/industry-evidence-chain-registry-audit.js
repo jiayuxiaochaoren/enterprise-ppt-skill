@@ -32,6 +32,7 @@ function auditStageCoveragePolicy(findings, chainId, stage = {}) {
   const policy = normalizeStageCoveragePolicy(stage);
   const bucketEntries = [
     ...((policy.requiredAll || []).map(id => [id, 'requiredAll'])),
+    ...((policy.requiredWhenVisible || []).map(id => [id, 'requiredWhenVisible'])),
     ...((policy.requiredAny || []).map(id => [id, 'requiredAny'])),
     ...((policy.optional || []).map(id => [id, 'optional']))
   ];

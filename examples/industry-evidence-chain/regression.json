@@ -342,8 +342,8 @@
             "sourceNote": "公开政策摘要，2026-05。"
           },
           {
-            "type": "risk-table",
-            "layoutVariant": "governance-operating-model",
+            "type": "strategy-map",
+            "layoutVariant": "resource",
             "proofObject": "governance-operating-model",
             "title": "资源与责任机制需要看到责任人、资源和保障动作",
             "resources": [

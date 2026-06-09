@@ -11,6 +11,9 @@ const {
 const {
   auditIndustryEvidenceChain
 } = require('./qa/industry-evidence-chain-audit');
+const {
+  industryVisualGrammarDecisionFor
+} = require('./render/industry-visual-grammar');
 
 const ROOT = path.resolve(__dirname, '..');
 const fixture = JSON.parse(fs.readFileSync(path.join(ROOT, 'examples', 'industry-evidence-chain', 'regression.json'), 'utf8'));
@@ -118,9 +121,40 @@ fixture.samples.forEach(sample => {
   assert.ok(report.industry_evidence_chain_summary, `${sample.id} should expose compact chain summary`);
   assert.equal(report.industry_evidence_chain_summary.status, 'pass', `${sample.id} compact summary status`);
   assert.equal(report.industry_evidence_chain_summary.blockingGap, null, `${sample.id} compact summary should not carry a blocking gap`);
+  assert.equal(report.industry_evidence_chain_summary.coverage.averageScore, 1, `${sample.id} compact summary should score complete consumed coverage`);
   assert.equal(report.metrics.recognizedSlides, 3);
   assert.ok(report.metrics.componentHits >= 3, `${sample.id} should hit evidence components`);
   assert.ok(report.metrics.consumedHits >= 3, `${sample.id} should consume evidence components`);
 });
+
+const publicGrammarPlan = { industry:'government-public-sector' };
+const publicStageGrammar = [
+  {
+    type:'report-board',
+    proofObject:'policy-context-board',
+    policy:'公开政策文件说明治理模型。'
+  },
+  {
+    type:'strategy-map',
+    layoutVariant:'resource',
+    proofObject:'resource-map',
+    resources:[{ label:'资金' }],
+    responsibilities:[{ label:'主管单位' }]
+  },
+  {
+    type:'risk-table',
+    proofObject:'risk-and-assurance-board',
+    metrics:[{ label:'覆盖率', value:'92%' }],
+    risks:[{ label:'交付风险' }]
+  }
+].map(slide => industryVisualGrammarDecisionFor(publicGrammarPlan, slide));
+assert.deepEqual(publicStageGrammar.map(item => item.stageId), [
+  'governance-claim',
+  'resource-accountability-system',
+  'public-result-risk-evidence'
+]);
+assert.equal(new Set(publicStageGrammar.map(item => item.evidenceRegion)).size, 3);
+assert.equal(new Set(publicStageGrammar.map(item => item.compositionBias)).size, 3);
+assert.equal(publicStageGrammar.every(item => item.productMatrixLabel === ''), true);
 
 console.log('industry evidence fixtures ok');

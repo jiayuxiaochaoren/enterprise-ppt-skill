@@ -161,6 +161,36 @@ const GEOMETRY_BY_CHAIN = {
     }
   }
 };
+
+const GEOMETRY_BY_CHAIN_STAGE = {
+  'public-sector': {
+    'governance-claim': {
+      evidenceRegion: 'policy-source-claim-panel',
+      compositionBias: 'official-source-claim-board',
+      componentSlots: {
+        'source-note': 'source-note-footer-right',
+        'commentary-panel': 'commentary-panel-upper-right'
+      }
+    },
+    'resource-accountability-system': {
+      evidenceRegion: 'resource-accountability-map-table',
+      compositionBias: 'resource-owner-governance-grid',
+      componentSlots: {
+        'value-chain': 'value-chain-left-rail',
+        'governance-table': 'governance-table-upper-right'
+      }
+    },
+    'public-result-risk-evidence': {
+      evidenceRegion: 'public-result-risk-register',
+      compositionBias: 'outcome-risk-assurance-board',
+      componentSlots: {
+        'kpi-strip': 'kpi-strip-bottom-band',
+        'risk-register': 'risk-register-lower-right',
+        'source-note': 'source-note-footer-right'
+      }
+    }
+  }
+};
 const {
   canonicalIndustryEvidenceChainForSlide
 } = require('../design/industry-evidence-chain');
@@ -173,7 +203,11 @@ function industryVisualGrammarDecisionFor(plan = {}, slide = {}) {
   const chain = canonicalIndustryEvidenceChainForSlide(plan, slide);
   if (!chain || chain.stageId === 'neutral-general') return null;
   const labels = LABELS_BY_CHAIN[chain.chainId] || {};
-  const geometry = GEOMETRY_BY_CHAIN[chain.chainId] || {};
+  const chainGeometry = GEOMETRY_BY_CHAIN[chain.chainId] || {};
+  const stageGeometry = (GEOMETRY_BY_CHAIN_STAGE[chain.chainId] || {})[chain.stageId] || {};
+  const geometry = Object.assign({}, chainGeometry, stageGeometry, {
+    componentSlots: Object.assign({}, chainGeometry.componentSlots || {}, stageGeometry.componentSlots || {})
+  });
   const hasPackGrammar = Boolean(chain.visualGrammar);
   const grammar = chain.visualGrammar || {};
   return {
@@ -182,7 +216,7 @@ function industryVisualGrammarDecisionFor(plan = {}, slide = {}) {
     stageId: chain.stageId,
     captionLabel: labels.captionLabel || 'PROOF',
     proofLabel: labels.proofLabel || 'PROOF',
-    productMatrixLabel: labels.productMatrixLabel || 'PRODUCT PROOF MATRIX',
+    productMatrixLabel: labels.productMatrixLabel != null ? labels.productMatrixLabel : 'PRODUCT PROOF MATRIX',
     grammarTone: labels.grammarTone || 'evidence-proof',
     evidenceRegion: geometry.evidenceRegion || 'generic-evidence-region',
     captionDensity: geometry.captionDensity || 'standard-caption-density',

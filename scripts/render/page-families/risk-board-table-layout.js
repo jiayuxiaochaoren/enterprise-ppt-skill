@@ -47,7 +47,7 @@ function createRiskBoardTableRenderer(ctx = {}, deps = {}) {
       addNumber(slide, String(i+1).padStart(2,'0'), { x:4.86, y:y+0.20, w:0.32, h:0.10, fontSize:6.8, color:meta.color });
       addText(slide, risk, { x:5.36, y:y+0.14, w:1.80, h:0.15, fontSize:9.2, bold:true, color:C.text, fit:'shrink' });
       addRect(slide, 7.46, y+0.18, 0.76, 0.20, meta.color, meta.color, { fill:{color:meta.color, transparency:8}, line:{color:meta.color, transparency:100} });
-      addText(slide, meta.zh, { x:7.46, y:y+0.235, w:0.76, h:0.08, fontSize:5.8, bold:true, color:C.onAccent || C.white, align:'center', fit:'shrink' });
+      addText(slide, meta.zh, { x:7.46, y:y+0.18, w:0.76, h:0.20, fontSize:6.2, bold:true, color:C.onAccent || C.white, align:'center', valign:'mid', fit:'shrink', margin:0 });
       addText(slide, response || '明确责任人与处置节奏。', { x:8.56, y:y+0.14, w:2.34, h:0.15, fontSize:8.2, color:C.body, fit:'shrink' });
     });
     addRect(slide, 4.58, 5.92, 6.82, 0.46, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:16, width:0.42} });

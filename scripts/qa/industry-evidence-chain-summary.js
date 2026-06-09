@@ -49,7 +49,12 @@ function buildIndustryEvidenceChainSummary({
     coverage: {
       passSlides: slideAudits.filter(slide => slide.coverageStatus && slide.coverageStatus.status === 'pass').length,
       failSlides: slideAudits.filter(slide => slide.coverageStatus && slide.coverageStatus.status === 'fail').length,
-      minHitGaps: slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && slide.coverageStatus.minimumHitsMissing) || 0), 0)
+      minHitGaps: slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && slide.coverageStatus.minimumHitsMissing) || 0), 0),
+      optionalHits: slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && slide.coverageStatus.optionalHitCount) || 0), 0),
+      optionalMissing: slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && slide.coverageStatus.optionalMissingCount) || 0), 0),
+      averageScore: slideAudits.length
+        ? slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && Number(slide.coverageStatus.coverageScore)) || 0), 0) / slideAudits.length
+        : 1
     },
     keyComponents: unique(slideAudits.flatMap(slide => slide.expectedComponents.filter(id => slide.plannedComponents.includes(id)))),
     consumedComponents: unique(slideAudits.flatMap(slide => slide.expectedComponents.filter(id => slide.consumedComponents.includes(id)))),

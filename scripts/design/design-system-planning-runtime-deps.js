@@ -93,8 +93,10 @@ function planningRuntimeExports(resolved = {}) {
     selectReferenceRecipe
   } = resolved;
   return Object.assign({}, normalizationRuntime, {
+    assetTargetContract: assetRuntime.assetTargetContract,
     generatedAssetPolicy: assetRuntime.generatedAssetPolicy,
     generatedAssetPrompt: assetRuntime.generatedAssetPrompt,
+    generatedPromptAspectConflict: assetRuntime.generatedPromptAspectConflict,
     pickLayoutVariant: routingRuntime.pickLayoutVariant,
     recipeAutoRouteAllowed: routingRuntime.recipeAutoRouteAllowed,
     recipeCompatibleWithSlideType: referenceRuntime.recipeCompatibleWithSlideType,

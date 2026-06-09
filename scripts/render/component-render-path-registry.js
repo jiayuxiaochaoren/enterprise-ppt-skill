@@ -1,11 +1,45 @@
 const {
   normalizeComponentId
 } = require('../component-id-normalization');
+const {
+  CAPABILITY_ROWS
+} = require('./component-capability-rows');
 
 const VALID_COMPONENT_RENDER_PATHS = new Set(['native', 'overlay', 'suppressed-by-policy']);
 const VALID_COMPONENT_RENDER_KINDS = new Set(['evidence', 'chrome', 'utility']);
 
-const COMPONENT_RENDER_PATHS = {
+const COMPONENT_RENDER_KIND_BY_CAPABILITY_FAMILY = {
+  caption: 'evidence',
+  chart: 'evidence',
+  chrome: 'chrome',
+  closing: 'utility',
+  commentary: 'evidence',
+  content: 'utility',
+  flow: 'utility',
+  governance: 'evidence',
+  metric: 'evidence',
+  'native-decoration': 'utility',
+  product: 'evidence',
+  source: 'evidence',
+  table: 'evidence',
+  visual: 'evidence'
+};
+
+const COMPONENT_RENDER_PATH_DEFAULTS = Object.fromEntries(
+  CAPABILITY_ROWS.map(([id, supportedModes = []]) => [
+    id,
+    supportedModes.filter(mode => VALID_COMPONENT_RENDER_PATHS.has(mode))
+  ])
+);
+
+const COMPONENT_RENDER_KIND_DEFAULTS = Object.fromEntries(
+  CAPABILITY_ROWS.map(([id, , family]) => [
+    id,
+    COMPONENT_RENDER_KIND_BY_CAPABILITY_FAMILY[family] || 'utility'
+  ])
+);
+
+const COMPONENT_RENDER_PATH_OVERRIDES = {
   'adoption-funnel': ['native'],
   'bar-chart': ['native', 'overlay'],
   'beauty-channel-structure': ['native', 'overlay'],
@@ -67,7 +101,9 @@ const COMPONENT_RENDER_PATHS = {
   'workflow-rail': ['native']
 };
 
-const COMPONENT_RENDER_PATH_KINDS = {
+const COMPONENT_RENDER_PATHS = Object.assign({}, COMPONENT_RENDER_PATH_DEFAULTS, COMPONENT_RENDER_PATH_OVERRIDES);
+
+const COMPONENT_RENDER_KIND_OVERRIDES = {
   'adoption-funnel': 'evidence',
   'bar-chart': 'evidence',
   'beauty-channel-structure': 'evidence',
@@ -129,8 +165,10 @@ const COMPONENT_RENDER_PATH_KINDS = {
   'workflow-rail': 'evidence'
 };
 
+const COMPONENT_RENDER_PATH_KINDS = Object.assign({}, COMPONENT_RENDER_KIND_DEFAULTS, COMPONENT_RENDER_KIND_OVERRIDES);
+
 const NATIVE_EVIDENCE_COMPONENT_IDS = new Set(
-  Object.entries(COMPONENT_RENDER_PATHS)
+  Object.entries(COMPONENT_RENDER_PATH_OVERRIDES)
     .filter(([id, paths]) => paths.includes('native') && COMPONENT_RENDER_PATH_KINDS[id] === 'evidence')
     .map(([id]) => id)
 );

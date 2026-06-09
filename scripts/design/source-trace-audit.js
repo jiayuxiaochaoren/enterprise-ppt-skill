@@ -91,7 +91,7 @@ function createSourceTraceAuditHelpers({
     const slides = normalized.slides || [];
     const findings = [];
     slides.forEach((slide, i) => {
-      if (['cover', 'closing', 'toc', 'toc-clean', 'chapter-divider'].includes(slide.type || '')) return;
+      if (['cover', 'cover-dark', 'closing', 'closing-dark', 'toc', 'toc-clean', 'chapter-divider'].includes(slide.type || '')) return;
       const entries = sourceEntriesForSlide(slide);
       const trace = sourceTraceForSlide(slide);
       const authorizationTrace = explicitAssetAuthorizationTraceForSlide(slide);
@@ -106,7 +106,8 @@ function createSourceTraceAuditHelpers({
       }
       const imageProvenance = Array.isArray(trace.imageProvenance) ? trace.imageProvenance : [];
       const hasFactualProofImage = imageProvenance.some(imageProvenanceCanSatisfyFactualProof);
-      const hasSource = entries.length || (proof.sourceIds || []).length || hasFactualProofImage;
+      const hasTextSourceEvidence = entries.length || (proof.sourceIds || []).length;
+      const hasSource = hasTextSourceEvidence || hasFactualProofImage;
       if (!hasSource && proof.factual) {
         findings.push({
           slide: i + 1,
@@ -201,7 +202,7 @@ function createSourceTraceAuditHelpers({
         }
       });
       const generatedOnly = imageProvenance.length > 0 && imageProvenance.every(imageProvenanceIsSyntheticOnly);
-      if (proof.factual && imageProvenance.length && generatedOnly && !hasFactualProofImage) {
+      if (proof.factual && imageProvenance.length && generatedOnly && !hasFactualProofImage && !hasTextSourceEvidence) {
         findings.push({
           slide: i + 1,
           level: 'fail',

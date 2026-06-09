@@ -9,7 +9,9 @@ const {
 } = require('./qa/industry-evidence-chain-audit');
 const {
   INDUSTRY_EVIDENCE_CHAINS,
+  activateCoveragePolicyConditions,
   coverageStatusForComponents,
+  filterStageCoveragePolicy,
   industryEvidenceChainShapeIssues,
   normalizeStageCoveragePolicy
 } = require('./design/industry-evidence-chain');
@@ -28,6 +30,33 @@ assert.deepEqual(legacyCoveragePolicy.requiredAny, ['equipment-nameplate', 'site
 assert.equal(legacyCoveragePolicy.minHits, 1);
 assert.equal(coverageStatusForComponents(legacyCoveragePolicy, ['equipment-nameplate']).status, 'pass');
 assert.equal(coverageStatusForComponents(legacyCoveragePolicy, []).status, 'fail');
+assert.equal(coverageStatusForComponents(legacyCoveragePolicy, ['equipment-nameplate', 'kpi-strip']).coverageScore, 2 / 3);
+
+const conditionalSourcePolicy = normalizeStageCoveragePolicy({
+  components:['source-note', 'commentary-panel'],
+  coveragePolicy:{
+    requiredWhenVisible:['source-note'],
+    requiredAny:['commentary-panel'],
+    minHits:2
+  }
+});
+assert.deepEqual(conditionalSourcePolicy.requiredWhenVisible, ['source-note']);
+const visibleConditionalSourcePolicy = filterStageCoveragePolicy(
+  activateCoveragePolicyConditions(conditionalSourcePolicy, { visibleSources:true }),
+  () => true
+);
+assert.deepEqual(visibleConditionalSourcePolicy.requiredAll, ['source-note']);
+assert.deepEqual(visibleConditionalSourcePolicy.activeConditionalRequirements.visibleSources, ['source-note']);
+assert.equal(coverageStatusForComponents(visibleConditionalSourcePolicy, ['commentary-panel']).status, 'fail');
+assert.equal(coverageStatusForComponents(visibleConditionalSourcePolicy, ['source-note', 'commentary-panel']).coverageScore, 1);
+const hiddenConditionalSourcePolicy = filterStageCoveragePolicy(
+  activateCoveragePolicyConditions(conditionalSourcePolicy, { visibleSources:false }),
+  id => id !== 'source-note'
+);
+assert.deepEqual(hiddenConditionalSourcePolicy.requiredAll, []);
+assert.deepEqual(hiddenConditionalSourcePolicy.inactiveConditionalRequirements.visibleSources, ['source-note']);
+assert.equal(hiddenConditionalSourcePolicy.minHits, 1);
+assert.equal(coverageStatusForComponents(hiddenConditionalSourcePolicy, ['commentary-panel']).status, 'pass');
 
 Object.values(INDUSTRY_EVIDENCE_CHAINS).forEach(chain => {
   (chain.stages || []).forEach(stage => {
@@ -78,6 +107,7 @@ Object.values(INDUSTRY_EVIDENCE_CHAINS).forEach(chain => {
     matchedProofObjects:[],
     coveragePolicy:{
       requiredAll:'equipment-nameplate',
+      requiredWhenVisible:[false],
       requiredAny:['kpi-strip', 12],
       optional:[{}],
       minHits:-1
@@ -85,6 +115,7 @@ Object.values(INDUSTRY_EVIDENCE_CHAINS).forEach(chain => {
   };
   const issues = industryEvidenceChainShapeIssues(malformedPolicyChain);
   assert.ok(issues.some(issue => /coveragePolicy\.requiredAll/.test(issue)));
+  assert.ok(issues.some(issue => /coveragePolicy\.requiredWhenVisible/.test(issue)));
   assert.ok(issues.some(issue => /coveragePolicy\.requiredAny/.test(issue)));
   assert.ok(issues.some(issue => /coveragePolicy\.optional/.test(issue)));
   assert.ok(issues.some(issue => /coveragePolicy\.minHits/.test(issue)));

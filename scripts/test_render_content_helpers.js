@@ -47,6 +47,7 @@ assert.ok(semantic.includes('字符串项'));
 assert.ok(semantic.includes('阶段 动作'));
 
 assert.equal(publicSlideNote('本页仅用于测试'), '');
+assert.equal(publicSlideNote('选择逻辑来自会议纪要、别名口径备注和财务测算碎片。'), '');
 assert.equal(publicSlideNote('需补充真实客户授权材料'), '需补充真实客户授权材料');
 
 console.log('render content helpers ok');

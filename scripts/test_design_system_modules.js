@@ -1842,10 +1842,9 @@ const assetGenerationHelpers = createAssetGenerationHelpers({
 assert.equal(assetGenerationHelpers.normalizeAssetRole('product showcase'), 'showcase');
 assert.equal(assetGenerationHelpers.assetRoleNeedsImage('diagram'), false);
 assert.equal(assetGenerationHelpers.recipeGenerationRule({ generatedAsset:'optional generated asset' }), 'optional');
-assert.equal(
-  assetGenerationHelpers.generatedAssetPrompt({}, { title:'Risk dashboard', visual:{ role:'evidence' } }, null),
-  'Finance evidence: Risk dashboard in boardroom-ink'
-);
+const evidencePrompt = assetGenerationHelpers.generatedAssetPrompt({}, { title:'Risk dashboard', visual:{ role:'evidence' } }, null);
+assert.match(evidencePrompt, /^Finance evidence: Risk dashboard in boardroom-ink/);
+assert.match(evidencePrompt, /Target composition: wide landscape image, aspect ratio about 1\.516:1/);
 const requestedRiskPolicy = assetGenerationHelpers.generatedAssetPolicy(
   {},
   { title:'真实客户现场证据', visual:{ mode:'generated', role:'evidence' } },

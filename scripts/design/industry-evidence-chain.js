@@ -33,6 +33,7 @@ const {
   visibleSourceNotesEnabled
 } = require('./source-evidence');
 const {
+  activateCoveragePolicyConditions,
   coveragePolicyShapeIssues,
   coverageRoleForComponent,
   coverageStatusForComponents,
@@ -219,7 +220,8 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
   const stage = best.stage;
   const rawCoveragePolicy = normalizeStageCoveragePolicy(stage);
   const visibleSources = visibleSourceNotesEnabled(plan, opts);
-  const coveragePolicy = filterStageCoveragePolicy(rawCoveragePolicy, id => id !== 'source-note' || visibleSources);
+  const activeCoveragePolicy = activateCoveragePolicyConditions(rawCoveragePolicy, { visibleSources });
+  const coveragePolicy = filterStageCoveragePolicy(activeCoveragePolicy, id => id !== 'source-note' || visibleSources);
   const rawComponents = rawCoveragePolicy.components;
   const components = coveragePolicy.components;
   const sourceEvidence = hasSourceEvidence(slide);
@@ -275,6 +277,7 @@ module.exports = {
   COMMON_CAPTION_FIELDS,
   COMMON_SOURCE_FIELDS,
   CHAIN_TEXT_OMIT_KEYS,
+  activateCoveragePolicyConditions,
   canonicalIndustryEvidenceChainForSlide,
   chainsShareIdentity,
   componentsForIndustryEvidenceChain,

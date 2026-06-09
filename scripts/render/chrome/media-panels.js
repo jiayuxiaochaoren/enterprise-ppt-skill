@@ -41,13 +41,38 @@ function createMediaPanelHelpers(core = {}, helpers = {}) {
     if (!imagePath || !fs.existsSync(imagePath)) return 'cover';
     const slotAspect = slot.w && slot.h ? slot.w / Math.max(0.01, slot.h) : 1.5;
     const aspect = imageAspect(imagePath);
+    const normalizedRole = String(role || '').toLowerCase();
+    if (normalizedRole.includes('split') && (aspect > slotAspect * 1.45 || aspect < slotAspect * 0.68)) return 'contain';
+    if (slotAspect < 0.85 && aspect > slotAspect * 1.70) return 'contain';
     if (role === 'showcase' && (aspect > slotAspect * 1.45 || aspect < slotAspect * 0.68)) return 'contain';
     if (role === 'evidence' && (aspect > slotAspect * 2.10 || aspect < slotAspect * 0.45)) return 'contain';
     return 'cover';
   }
+  function recordImageFit(slide, imagePath, slot = {}, role = 'evidence', fit = 'cover') {
+    if (!slide || !imagePath) return;
+    const dims = deps.imageDimensions(imagePath);
+    const slotAspect = slot.w && slot.h ? slot.w / Math.max(0.01, slot.h) : null;
+    const imageAspectRatio = dims ? dims.w / Math.max(1, dims.h) : null;
+    const aspectMismatch = slotAspect && imageAspectRatio
+      ? Math.abs(imageAspectRatio - slotAspect) / slotAspect
+      : null;
+    slide.__codexImageFits = slide.__codexImageFits || [];
+    slide.__codexImageFits.push({
+      path: imagePath,
+      role,
+      fit,
+      fallbackContain: fit === 'contain',
+      slot: { w:slot.w, h:slot.h },
+      slotAspectRatio: slotAspect == null ? undefined : Number(slotAspect.toFixed(3)),
+      imageDimensions: dims ? { w:dims.w, h:dims.h, type:dims.type } : undefined,
+      imageAspectRatio: imageAspectRatio == null ? undefined : Number(imageAspectRatio.toFixed(3)),
+      aspectMismatch: aspectMismatch == null ? undefined : Number(aspectMismatch.toFixed(3))
+    });
+  }
   function addSmartPhotoPanel(slide, imagePath, x, y, w, hgt, opts = {}) {
     const role = opts.role || 'evidence';
     const fit = opts.fit || smartPhotoFit(imagePath, { w, h:hgt }, role);
+    recordImageFit(slide, imagePath, { w, h:hgt }, role, fit);
     return addPhotoPanel(slide, imagePath, x, y, w, hgt, Object.assign({}, opts, { fit }));
   }
   function addCaptionBar(slide, x, y, w, hgt, opts = {}) {
@@ -141,12 +166,12 @@ function createMediaPanelHelpers(core = {}, helpers = {}) {
   function addVisualPhotoPanel(slide, plan, s, role, x, y, w, hgt, opts = {}) {
     const designState = designForSlide(plan, s, role);
     if (!designState.wantsImage) return false;
-    return addPhotoPanel(slide, designState.imagePath, x, y, w, hgt, opts);
+    return addSmartPhotoPanel(slide, designState.imagePath, x, y, w, hgt, Object.assign({ role }, opts));
   }
   function addVisualPhotoBackdrop(slide, plan, s, role = 'cover', opts = {}) {
     const designState = designForSlide(plan, s, role);
     if (!designState.wantsImage) return false;
-    return addPhotoPanel(slide, designState.imagePath, 0, 0, W, H, Object.assign({ transparency:68 }, opts));
+    return addSmartPhotoPanel(slide, designState.imagePath, 0, 0, W, H, Object.assign({ role, transparency:68 }, opts));
   }
   function addEnergyPhotoBackdrop(slide) {
     if (!addImageIfExists(slide, MEDIA_ASSETS.energyStorageCover, { x:0, y:0, w:W, h:H })) {

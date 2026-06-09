@@ -119,7 +119,12 @@ function createNativeComponentIdHelpers({
       chartComponentIds.forEach(id => ids.add(id));
     }
     if (type === 'toc' || type === 'toc-clean') ids.add('navigation-sequence');
-    if (['two-column', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks'].includes(type)) ids.add('content-card-grid');
+    if (['two-column', 'two-column-clean', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks'].includes(type)) {
+      ids.add('content-card-grid');
+      if ((s.visual && s.visual.image) || s.image || (Array.isArray(s.images) && s.images.length) || (s.visual && Array.isArray(s.visual.images) && s.visual.images.length)) {
+        ['hero-image', 'proof-gallery', 'caption-bar'].forEach(id => ids.add(id));
+      }
+    }
     if (type === 'portfolio-table') {
       ['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'product-matrix', 'table-with-commentary', 'scorecard'].forEach(id => ids.add(id));
     }

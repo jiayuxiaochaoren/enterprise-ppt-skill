@@ -166,7 +166,29 @@ const unknownPlan = normalizeDeckPlan(unknownAsset);
 assert.equal(assetAuthorizationGate(unknownAsset, unknownPlan).status, 'needs_authorization');
 assert.equal(commercialReadinessAudit(unknownAsset, unknownPlan).level, 'client-final-blocked');
 
+const generatedDecorativeWithTextSources = JSON.parse(JSON.stringify(basePlan));
+generatedDecorativeWithTextSources.slides[1].visual = { mode: 'hybrid', role: 'supporting-visual', image: 'assets/generated/category-visual.png' };
+generatedDecorativeWithTextSources.slides[1].sourceTrace.imageProvenance = [{
+  sourceId: 'gen-supporting-img',
+  file: 'assets/generated/category-visual.png',
+  provenanceClass: 'model-generated-preview',
+  proofEligibility: 'synthetic-only',
+  authorizationStatus: 'synthetic-only'
+}];
+generatedDecorativeWithTextSources.slides[1].proof.sourceTrace.imageProvenance = generatedDecorativeWithTextSources.slides[1].sourceTrace.imageProvenance;
+const generatedDecorativePlan = normalizeDeckPlan(generatedDecorativeWithTextSources);
+assert.equal(
+  sourceTraceAudit(generatedDecorativeWithTextSources, generatedDecorativePlan).findings.some(f => f.type === 'generatedAssetCannotSatisfyFactualProof'),
+  false
+);
+
 const generatedOnlyProof = JSON.parse(JSON.stringify(basePlan));
+generatedOnlyProof.slides[1].metrics = [];
+generatedOnlyProof.slides[1].sourceTrace.sourceIds = [];
+generatedOnlyProof.slides[1].sourceTrace.sources = [];
+generatedOnlyProof.slides[1].proof.sourceIds = [];
+generatedOnlyProof.slides[1].proof.sourceTrace.sourceIds = [];
+generatedOnlyProof.slides[1].proof.sourceTrace.sources = [];
 generatedOnlyProof.slides[1].sourceTrace.imageProvenance = [{
   sourceId: 'gen-img',
   file: 'assets/generated/fake-proof.png',

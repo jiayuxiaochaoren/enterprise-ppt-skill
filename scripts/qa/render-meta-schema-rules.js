@@ -149,6 +149,26 @@ function auditAssetDecision(slide = {}, slideNo, findings = []) {
   if (asset.generatedAssetPrompt && Number(asset.boundAssetCount || 0) < 1 && !['pending-generation', 'needs-generation'].includes(asset.mode)) {
     findings.push({ slide:slideNo, level:'fail', type:'renderMetaGeneratedPromptModeInvalid', message:'unbound generated prompts must remain auditable as pending generation' });
   }
+  if ((asset.mustBind === true || asset.status === 'required') && !asset.targetAspectRatio) {
+    findings.push({
+      slide:slideNo,
+      level:'fail',
+      type:'generatedTargetMissing',
+      message:'required generated asset decision must expose targetAspectRatio in render-meta'
+    });
+  }
+  if (
+    asset.aspectMismatch != null &&
+    Number(asset.aspectMismatch) > 0.25 &&
+    asset.aspectMismatchAllowed !== true
+  ) {
+    findings.push({
+      slide:slideNo,
+      level:'fail',
+      type:'assetAspectMismatch',
+      message:`render-meta asset aspect mismatch exceeds 25% (${asset.aspectMismatch})`
+    });
+  }
   if (asset.skippedCriticalVisual === true) {
     findings.push({
       slide: slideNo,

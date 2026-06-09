@@ -4,10 +4,15 @@ const {
 } = require('./design/industry-evidence-chain-registry-audit');
 const chains = require('./design/industry-evidence-chain-definitions');
 const {
+  VALID_COMPONENT_RENDER_KINDS,
+  VALID_COMPONENT_RENDER_PATHS,
   NATIVE_EVIDENCE_COMPONENT_IDS,
   componentRenderKindFor,
   componentRenderPathsFor
 } = require('./render/component-render-path-registry');
+const {
+  CAPABILITY_ROWS
+} = require('./render/component-capability-rows');
 const {
   CHART_COMPONENT_ID_LIST
 } = require('./render/component-capability-contracts');
@@ -35,6 +40,16 @@ assert.equal(NATIVE_EVIDENCE_COMPONENT_IDS.has('page-number'), false);
 assert.equal(NATIVE_EVIDENCE_COMPONENT_IDS.has('contact-block'), false);
 assert.equal(componentRenderPathsFor('caption-bar').includes('native'), true);
 assert.deepEqual(componentRenderPathsFor('value-chain'), ['native', 'overlay']);
+CAPABILITY_ROWS.forEach(([id]) => {
+  const paths = componentRenderPathsFor(id);
+  assert.ok(paths.length, `${id} should have a declared render path`);
+  paths.forEach(path => assert.ok(VALID_COMPONENT_RENDER_PATHS.has(path), `${id} render path should be valid: ${path}`));
+  assert.ok(VALID_COMPONENT_RENDER_KINDS.has(componentRenderKindFor(id)), `${id} should have a valid render kind`);
+});
+assert.equal(componentRenderKindFor('decorative-orb'), 'utility');
+assert.equal(componentRenderKindFor('brand-world-hero'), 'evidence');
+assert.deepEqual(componentRenderPathsFor('brand-world-hero'), ['native']);
+assert.equal(NATIVE_EVIDENCE_COMPONENT_IDS.has('brand-world-hero'), false, 'default render paths should not automatically become native evidence');
 CHART_COMPONENT_ID_LIST.forEach(id => {
   assert.deepEqual(componentRenderPathsFor(id), ['native', 'overlay'], `${id} should declare native and overlay render paths`);
   assert.equal(componentRenderKindFor(id), 'evidence', `${id} should be evidence render kind`);

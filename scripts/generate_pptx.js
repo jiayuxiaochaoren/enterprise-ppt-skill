@@ -387,7 +387,7 @@ function consumeComponentPlan(slide, plan, s, idx) {
     industryEvidenceCoverage,
     industryVisualGrammar: industryVisualGrammarDecisionFor(plan, s),
     renderRoute: slide.__codexRenderRoute || s.renderRoute || null,
-    assetDecision: assetDecisionForMeta(plan, s),
+    assetDecision: assetDecisionForMeta(plan, s, slide),
     rendererMatch: slide.__codexRendererMatch || null,
     routeSanitization: s.routeSanitization || s.normalizationAudit || null,
     textBoxes: slide.__codexTextBoxes || [],
