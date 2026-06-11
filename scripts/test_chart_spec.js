@@ -705,4 +705,54 @@ assert.equal(
   'opt-in chart source note should not imply sourceIds match name-only source entries'
 );
 
+const beautyFunnelOps = [];
+const beautyFunnel = renderChartSpec(chartCtx(beautyFunnelOps), {
+  kind:'funnel',
+  componentId:'beauty-social-funnel',
+  title:'活动转化漏斗',
+  unit:'万',
+  series:[{ values:[
+    { category:'曝光触达', value:2743.9, rawValue:'2743.9万' },
+    { category:'点击咨询', value:104.5, rawValue:'104.5万' },
+    { category:'线索', value:11.6, rawValue:'11.6万' },
+    { category:'成交', value:3.6, rawValue:'3.6万' }
+  ] }]
+}, { noFrame:true, showTitle:false, compactHeader:true });
+assert.equal(beautyFunnel.rendered, true);
+assert.equal(beautyFunnel.componentId, 'beauty-social-funnel');
+assert.ok(
+  beautyFunnelOps.some(op => op.name === 'addLabel' && op.args[1] === '转化漏斗'),
+  'beauty social funnel should label the stage rail instead of showing unlabeled color blocks'
+);
+assert.ok(
+  beautyFunnelOps.some(op => op.name === 'addText' && /转化/.test(op.args[1])),
+  'beauty social funnel should expose conversion context for downstream stages'
+);
+
+const beautyReviewOps = [];
+const beautyReview = renderChartSpec(chartCtx(beautyReviewOps), {
+  kind:'pareto',
+  componentId:'beauty-review-sentiment',
+  title:'顾虑频次',
+  unit:'次',
+  series:[{ values:[
+    { category:'肤质匹配困难', value:18, rawValue:'18' },
+    { category:'活动价格不稳定', value:11, rawValue:'11' },
+    { category:'担心刺激过敏', value:11, rawValue:'11' },
+    { category:'包装质感一般', value:11, rawValue:'11' },
+    { category:'功效见效慢', value:9, rawValue:'9' }
+  ] }]
+}, { noFrame:true, showTitle:false, compactHeader:true });
+assert.equal(beautyReview.rendered, true);
+assert.equal(beautyReview.componentId, 'beauty-review-sentiment');
+assert.ok(
+  beautyReviewOps.some(op => op.name === 'addLabel' && op.args[1] === '顾虑频次排序'),
+  'beauty review sentiment should render as a labeled concern ranking'
+);
+assert.equal(
+  beautyReviewOps.some(op => op.name === 'addShape' && ['line', 'lineInv'].includes(op.args[0])),
+  false,
+  'beauty review sentiment should not draw an unexplained Pareto cumulative line'
+);
+
 console.log('chart spec contract ok');

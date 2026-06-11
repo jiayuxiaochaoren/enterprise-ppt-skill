@@ -63,7 +63,8 @@ function renderRiskRegister(ctx, rows = [], opts = {}) {
       fontSize: 6.6,
       bold: true,
       color: dark ? C.captionOnImage : C.text,
-      fit: 'shrink'
+      fit: 'shrink',
+      valign: 'mid'
     });
     const level = riskLevel(row);
     if (level) {
@@ -76,7 +77,8 @@ function renderRiskRegister(ctx, rows = [], opts = {}) {
         fontSize: 6.2,
         bold: true,
         color: accent,
-        fit: 'shrink'
+        fit: 'shrink',
+        valign: 'mid'
       });
     }
     const action = riskAction(row);
@@ -89,7 +91,8 @@ function renderRiskRegister(ctx, rows = [], opts = {}) {
         typeRole: 'tableBody',
         fontSize: 6.2,
         color: dark ? C.darkMuted : C.body,
-        fit: 'shrink'
+        fit: 'shrink',
+        valign: 'mid'
       });
     }
   });

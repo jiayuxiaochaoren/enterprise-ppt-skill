@@ -71,13 +71,7 @@ function createTextRenderHelpers(deps = {}) {
       textOptionWithReadabilityFloor(displayText, opts)
     );
     const resolvedTypeRole = textOpts.__typeRole || textOpts.typeRole || textOpts.textRole || '';
-    if (
-      currentPlan().industry === 'energy-utility' &&
-      containsCjk(displayText) &&
-      textOpts.fit === 'shrink' &&
-      !textOpts.allowTiny &&
-      !['microLabel', 'pageFolio', 'sourceNote'].includes(resolvedTypeRole)
-    ) {
+    if (containsCjk(displayText) && textOpts.fit === 'shrink') {
       textOpts.fit = false;
     }
     const folio = isPageFolioText(displayText, textOpts);
@@ -102,6 +96,7 @@ function createTextRenderHelpers(deps = {}) {
     delete textOpts.markerColor;
     delete textOpts.__typeRole;
     delete textOpts.allowTiny;
+    delete textOpts.allowCjkShrink;
     delete textOpts.allowNarrowCjk;
     slide.addText(displayText || '', textOpts);
     return true;

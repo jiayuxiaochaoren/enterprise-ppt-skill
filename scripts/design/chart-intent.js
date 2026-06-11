@@ -31,6 +31,7 @@ function hasChartFieldData(slide = {}) {
 function slideHasChartIntent(slide = {}) {
   if (slide.chartSpec || slide.chartKind || slide.chart_kind) return true;
   if (slide.type === 'risk-table') return false;
+  if (slide.type === 'report-board') return false;
   if (isChartDataComponent(slide.dataComponent || slide.data_component || slide.previousDataComponent || slide.previous_data_component)) return true;
   if (hasChartFieldData(slide)) return true;
   const type = String(slide.type || '');

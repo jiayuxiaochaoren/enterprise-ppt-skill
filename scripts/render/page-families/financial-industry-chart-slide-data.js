@@ -1,15 +1,15 @@
 const INDUSTRY_CHART_VARIANT_LABELS = {
-  'downtime-pareto': 'DOWNTIME PARETO',
-  'valuation-sensitivity': 'VALUATION SENSITIVITY',
-  'quality-handoff': 'QUALITY HANDOFF',
-  'patient-bottleneck': 'PATIENT BOTTLENECK',
-  'member-cohort-ladder': 'MEMBER COHORTS',
-  'channel-efficiency-matrix': 'CHANNEL EFFICIENCY',
-  'monthly-pulse-trend': 'MONTHLY PULSE',
-  'waterfall-bridge': 'TARGET BRIDGE',
-  'dispatch-map': 'DISPATCH MAP',
-  'adoption-funnel': 'ADOPTION FUNNEL',
-  'evidence-readout': 'INDUSTRY READOUT'
+  'downtime-pareto': '停机帕累托',
+  'valuation-sensitivity': '估值敏感性',
+  'quality-handoff': '质量交接',
+  'patient-bottleneck': '服务瓶颈',
+  'member-cohort-ladder': '会员分层',
+  'channel-efficiency-matrix': '渠道效率',
+  'monthly-pulse-trend': '月度脉冲',
+  'waterfall-bridge': '目标桥',
+  'dispatch-map': '调度地图',
+  'adoption-funnel': '采用漏斗',
+  'evidence-readout': '行业读数'
 };
 
 function industryChartVariantLabel(variant) {

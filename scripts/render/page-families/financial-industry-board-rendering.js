@@ -59,8 +59,8 @@ function createFinancialIndustryBoardRenderer(ctx = {}, drawers = {}) {
   }
 
   return function renderFinancialIndustryBoard(slide, plan, s, idx, variant, board) {
-    return renderRoutedChartSpec(slide, plan, s, idx, board)
-      || renderNativeChartBoard(slide, board, s, variant);
+    return renderNativeChartBoard(slide, board, s, variant)
+      || renderRoutedChartSpec(slide, plan, s, idx, board);
   };
 }
 

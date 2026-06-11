@@ -15,7 +15,7 @@ function createMediaPanelHelpers(core = {}, helpers = {}) {
       return false;
     }
     const fit = opts.fit || 'cover';
-    slide.addImage({ path:imagePath, x, y, w, h:hgt, sizing:{ type:fit, w, h:hgt } });
+    slide.addImage({ path:imagePath, x, y, w, h:hgt, sizing:{ type:fit, x, y, w, h:hgt } });
     const overlay = opts.overlay || (opts.tone === 'light' ? 'FFFFFF' : C.ink);
     h.addRect(slide, x, y, w, hgt, overlay, overlay, {
       fill:{ color:overlay, transparency:opts.transparency ?? (opts.tone === 'light' ? 42 : 48) },

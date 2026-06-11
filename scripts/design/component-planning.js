@@ -52,6 +52,17 @@ function createComponentPlanHelpers(deps = {}) {
     proofObjectIdForSlide
   });
 
+  function hasExplicitRiskMatrixData(s = {}) {
+    if (s.riskMatrix || s.risk_matrix || s.controlsMatrix || s.controls_matrix) return true;
+    const matrix = s.matrix;
+    if (!matrix) return false;
+    if (matrix === true) return true;
+    if (Array.isArray(matrix)) return matrix.length > 0;
+    if (typeof matrix !== 'object') return Boolean(matrix);
+    return ['items', 'points', 'cells', 'quadrants', 'rows', 'data', 'risks']
+      .some(field => Array.isArray(matrix[field]) && matrix[field].length);
+  }
+
   function componentPlanFor(plan = {}, s = {}, index = 0, total = 1, signals = contentSignals(plan, s, index, total), composition = null) {
     const type = s.type || '';
     const variant = String(s.layoutVariant || s.variant || '');
@@ -136,7 +147,8 @@ function createComponentPlanHelpers(deps = {}) {
       });
     }
 
-    const proofObjectVisualAnchor = /hero|cover|brand-world|(?:^|[-_])product(?:$|[-_])|image/i.test(proofObjectForVisualRules);
+    const activeBrandWorldHero = /brand-world/i.test(proofObjectForVisualRules) && /brand-world/i.test(variant);
+    const proofObjectVisualAnchor = activeBrandWorldHero || /hero|cover|(?:^|[-_])product(?:$|[-_])|image/i.test(proofObjectForVisualRules);
     const heroImageRouteEligible = ['cover', 'cover-dark', 'case-gallery', 'gallery', 'portfolio', 'product-showcase', 'company-profile-spread'].includes(type) ||
       proofObjectVisualAnchor ||
       /hero|cover|brand|showcase|lookbook|gallery|photo|image/i.test(variant);
@@ -146,10 +158,17 @@ function createComponentPlanHelpers(deps = {}) {
     if (['toc', 'toc-clean'].includes(type)) {
       addRule('navigation-sequence', 'native navigation path or agenda sequence', 'toc-navigation');
     }
+    if (type === 'chapter-divider' && (Array.isArray(s.items) || /sequence|agenda|path|路径|目录/i.test(`${variant} ${proofObject} ${s.title || ''}`))) {
+      addRule('navigation-sequence', 'native navigation path or agenda sequence', 'chapter-navigation');
+    }
     if (['two-column', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks'].includes(type)) {
       addRule('content-card-grid', 'native card grid or editorial content body', 'native-content-grid');
     }
-    const metricEligible = !['cover', 'cover-dark', 'closing', 'chapter-divider', 'toc', 'toc-clean', 'risk-table', 'portfolio-table', 'timeline', 'timeline-dark'].includes(type);
+    if (type === 'report-board') {
+      addRule('commentary-panel', 'executive read or management judgment panel', 'report-board-native');
+      addRule('content-card-grid', 'structured evidence sections', 'report-board-native');
+    }
+    const metricEligible = !['cover', 'cover-dark', 'closing', 'chapter-divider', 'toc', 'toc-clean', 'risk-table', 'portfolio-table', 'timeline', 'timeline-dark', 'report-board'].includes(type);
     if ((metricEligible && signals.hasMetrics) || ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type)) {
       addRule('kpi-strip', 'metric evidence readout', 'metric-signal');
       if (!brandWorldStrategySignal) {
@@ -201,7 +220,7 @@ function createComponentPlanHelpers(deps = {}) {
       addRule('process-rail', 'sequence or operating loop', 'process-signal');
     }
     const riskEligible = !['cover', 'cover-dark', 'closing', 'closing-dark', 'chapter-divider', 'toc', 'toc-clean'].includes(type);
-    const riskMatrixExplicit = riskEligible && (Boolean(s.matrix) || /risk-matrix|materiality-matrix/i.test(variant) || /risk-matrix|materiality-matrix/i.test(proofObject));
+    const riskMatrixExplicit = riskEligible && (hasExplicitRiskMatrixData(s) || /risk-matrix|materiality-matrix/i.test(variant) || /risk-matrix|materiality-matrix/i.test(proofObject));
     if (riskMatrixExplicit) {
       addRule('risk-matrix', 'rank risk by impact and likelihood or materiality', 'explicit-risk-matrix');
     } else if (riskEligible && (type === 'risk-table' || signals.hasRisk || signals.hasResponsibilityLoop)) {

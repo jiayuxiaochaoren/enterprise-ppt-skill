@@ -380,7 +380,7 @@ function consumeComponentPlan(slide, plan, s, idx) {
     slide: idx,
     type: s.type || '',
     layoutVariant: s.layoutVariant || s.variant || '',
-    proofObject: (s.proof && s.proof.id) || s.proofObject || '',
+    proofObject: s.proofObject || s.proof_object || (s.proof && s.proof.id) || '',
     sourceTrace: s.sourceTrace || null,
     proof: s.proof || null,
     industryEvidenceChain,

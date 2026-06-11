@@ -1,8 +1,8 @@
 const LABELS_BY_CHAIN = {
   'consumer-beauty': {
-    captionLabel: 'PRODUCT PROOF',
-    proofLabel: 'PRODUCT',
-    productMatrixLabel: 'PRODUCT PROOF MATRIX',
+    captionLabel: '产品证据',
+    proofLabel: '产品',
+    productMatrixLabel: '产品证据矩阵',
     grammarTone: 'product-scene-proof'
   },
   'industrial-manufacturing': {
@@ -36,10 +36,10 @@ const LABELS_BY_CHAIN = {
     grammarTone: 'workflow-adoption-proof'
   },
   'lifestyle-experience': {
-    captionLabel: 'EXPERIENCE PROOF',
-    proofLabel: 'EXPERIENCE',
-    productMatrixLabel: 'EXPERIENCE PROOF MATRIX',
-    grammarTone: 'journey-conversion-proof'
+    captionLabel: '场景说明',
+    proofLabel: '场景',
+    productMatrixLabel: '场景经营矩阵',
+    grammarTone: 'journey-conversion-readout'
   },
   'public-sector': {
     captionLabel: 'PUBLIC SOURCE',
@@ -128,10 +128,10 @@ const GEOMETRY_BY_CHAIN = {
     }
   },
   'lifestyle-experience': {
-    evidenceRegion: 'place-journey-caption-band',
-    captionDensity: 'high-experience-caption',
+    evidenceRegion: 'place-journey-readout-band',
+    captionDensity: 'explicit-scene-caption',
     sourceDensity: 'light-source-footer',
-    compositionBias: 'place-journey-conversion',
+    compositionBias: 'place-journey-conversion-readout',
     componentSlots: {
       'hero-image': 'hero-image-side-pocket',
       'proof-gallery': 'proof-gallery-lower-right',

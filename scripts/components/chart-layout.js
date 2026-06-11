@@ -26,11 +26,12 @@ function rect(ctx, x, y, w, h, fill, line, opts = {}) {
 }
 
 function line(ctx, x, y, w, h, color, opts = {}) {
-  ctx.slide.addShape('line', {
+  const shape = h < 0 ? 'lineInv' : 'line';
+  ctx.slide.addShape(shape, {
     x,
-    y,
+    y: h < 0 ? y + h : y,
     w,
-    h,
+    h: Math.abs(h),
     line: Object.assign({ color: cleanColor(color), transparency: 18, width: 0.36 }, opts)
   });
 }

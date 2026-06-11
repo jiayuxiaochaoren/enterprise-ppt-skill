@@ -87,6 +87,9 @@ const explicitXml = slideXml(generate('explicit-meta', {
   audience: '董事会',
   date: '2026年5月',
   footer: '明示页脚',
+  showMeta: true,
+  metaFields: ['organization', 'audience', 'date'],
+  showFooter: true,
   slides: [
     { type: 'cover', title: '元信息显式展示', subtitle: '材料给了才展示。' },
     { type: 'closing', title: '谢谢观看', subtitle: '期待继续交流。', closingVariant: 'simple-end' }

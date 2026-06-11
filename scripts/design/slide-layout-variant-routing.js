@@ -8,6 +8,17 @@ function createLayoutVariantPicker(deps = {}) {
     visualIndustryId
   } = deps;
 
+  function hasExplicitRiskMatrixData(s = {}) {
+    if (s.riskMatrix || s.risk_matrix || s.controlsMatrix || s.controls_matrix) return true;
+    const matrix = s.matrix;
+    if (!matrix) return false;
+    if (matrix === true) return true;
+    if (Array.isArray(matrix)) return matrix.length > 0;
+    if (typeof matrix !== 'object') return Boolean(matrix);
+    return ['items', 'points', 'cells', 'quadrants', 'rows', 'data', 'risks']
+      .some(field => Array.isArray(matrix[field]) && matrix[field].length);
+  }
+
   function pickLayoutVariant(plan = {}, s = {}, type = s.type, signals = contentSignals(plan, s)) {
     if (s.layoutVariant || s.variant) return s.layoutVariant || s.variant;
     const industry = plan.industry || '';
@@ -100,9 +111,12 @@ function createLayoutVariantPicker(deps = {}) {
       if (s.responsibilities || s.owners || s.raci || s.accountabilities || (/责任闭环|责任矩阵|RACI/i.test(flattenText(s)))) return 'responsibility-loop';
       if (/materiality|重要性|双重重要性|议题矩阵/i.test(text)) return 'materiality-matrix-board';
       if (/guidance|指引|业绩指引|风险看板|risk board/i.test(text)) return 'guidance-and-risk-board';
-      if (s.matrix || /矩阵|matrix|概率|可能性|影响等级|影响程度|impact|likelihood/i.test(flattenText(s))) return 'risk-matrix';
+      const riskVariantText = `${s.layoutVariant || ''} ${s.variant || ''} ${s.proofObject || s.proof_object || ''}`;
+      const explicitRiskMatrix = /(^|[\s:_-])risk-matrix($|[\s:_-])|materiality-matrix/i.test(riskVariantText);
+      const riskRegisterIntent = /(^|[\s:_-])risk-register($|[\s:_-])/i.test(riskVariantText);
+      if (hasExplicitRiskMatrixData(s) || explicitRiskMatrix || (!riskRegisterIntent && /风险矩阵|概率|可能性|影响等级|影响程度|impact|likelihood/i.test(text))) return 'risk-matrix';
       if (/governance|治理|董事会|委员会|合规/i.test(text)) return 'governance-table-editorial';
-      if (signals.hasResponsibilityLoop && !s.matrix) return 'responsibility-loop';
+      if (signals.hasResponsibilityLoop && !hasExplicitRiskMatrixData(s)) return 'responsibility-loop';
       if (rowCount >= 5 || signals.hasGovernance) return 'control-stack';
       return 'governance-board';
     }

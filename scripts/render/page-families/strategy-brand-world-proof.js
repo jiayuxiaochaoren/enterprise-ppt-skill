@@ -5,9 +5,6 @@ const {
   createBrandWorldHeroRenderer
 } = require('./strategy-brand-world-hero');
 const {
-  createBrandWorldProofLinkRenderer
-} = require('./strategy-brand-world-proof-link');
-const {
   createPageFamilyPrimitives
 } = require('./primitives');
 
@@ -18,7 +15,6 @@ function createBrandWorldBusinessProofRenderer(ctx = {}) {
   } = createPageFamilyPrimitives(ctx);
   const { drawBrandWorldBoard } = createBrandWorldBoardRenderer(ctx);
   const { drawBrandWorldHero } = createBrandWorldHeroRenderer(ctx);
-  const { drawBrandWorldProofLink } = createBrandWorldProofLinkRenderer(ctx);
 
   return function brandWorldBusinessProof(slide, plan, s, idx) {
     drawLightPageHeader(slide, {
@@ -50,11 +46,10 @@ function createBrandWorldBusinessProofRenderer(ctx = {}) {
       { title: 'Regional growth review' }
     ]).slice(0, 3);
     const hero = { x:0.92, y:2.04, w:4.72, h:4.02 };
-    drawBrandWorldHero(slide, hero, s, drivers, images[0]);
+    drawBrandWorldHero(slide, hero, s, drivers, images[0], metrics);
 
     const board = { x:6.18, y:2.04, w:5.26, h:4.02 };
     drawBrandWorldBoard(slide, board, { drivers, actions, outcomes });
-    drawBrandWorldProofLink(slide, s, metrics);
     drawFooter(slide, plan);
   };
 }

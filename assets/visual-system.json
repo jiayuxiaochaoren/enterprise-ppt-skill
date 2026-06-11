@@ -17,7 +17,7 @@
     },
     "scale": [43.5, 41, 34, 31, 28.5, 25.5, 22.5, 16.5, 13.5, 11.25, 10.5, 9.2, 8.25, 7.5, 6.8],
     "coverHeroTitle": { "size": 41, "min": 32, "weight": "bold", "lineHeight": 1.04, "role": "display" },
-    "coverTitle": { "size": 33, "min": 24, "weight": "bold", "lineHeight": 1.08, "breakAt": 22, "role": "display" },
+    "coverTitle": { "size": 33, "min": 24, "weight": "bold", "lineHeight": 1.08, "breakAt": 30, "role": "display" },
     "sectionTitle": { "size": 24, "min": 20, "weight": "bold", "lineHeight": 1.12, "role": "title" },
     "pageTitle": { "size": 22.5, "min": 18, "weight": "bold", "lineHeight": 1.12, "role": "title" },
     "subtitle": { "size": 11.25, "min": 9.6, "weight": "regular", "lineHeight": 1.28, "role": "supporting" },
@@ -241,6 +241,8 @@
     "minFontSize": 6.8,
     "preferredBodyMin": 8.8,
     "preferredCaptionMin": 7.2,
+    "preferredCjkCaptionMin": 8.0,
+    "minRenderedCjkSize": 8.0,
     "minReadableCjkWidth": 1.15,
     "maxReadableCharsPerInch": 14,
     "maxSmallChineseRunsPerSlide": 2,
@@ -444,6 +446,35 @@
         "surfaceFill": "F7FAFD"
       },
       "intent": "Default premium business palette for technology, operations, and client proposals."
+    },
+    "energy-ops-clean": {
+      "background": "F4F8FC",
+      "text": "0B1322",
+      "body": "35465D",
+      "muted": "66758B",
+      "line": "D5E2F1",
+      "panel": "FFFFFF",
+      "dark": "08111F",
+      "darkPanel": "101C2C",
+      "darkText": "F8FBFF",
+      "darkMuted": "9AAABE",
+      "accent": "2F6FED",
+      "secondary": "19BFD1",
+      "tertiary": "20B77A",
+      "soft": "EAF4FF",
+      "panelAlt": "EEF6FF",
+      "dataHighlight": "E9A23B",
+      "warning": "E9A23B",
+      "risk": "E05252",
+      "onAccent": "FFFFFF",
+      "presentation": {
+        "coverTone": "dark",
+        "coverMotif": "energy-lens",
+        "metaStyle": "folio",
+        "panelFill": "FFFFFF",
+        "surfaceFill": "F4F8FC"
+      },
+      "intent": "Clean EV charging and energy-operations palette: white operating surfaces, thin cool borders, dispatch blue, telemetry cyan, service green, and amber action signals."
     },
     "japan-editorial-navy": {
       "background": "F8F9FB",
@@ -701,7 +732,7 @@
     },
     "industries": {
       "energy-utility": {
-        "defaultPalette": "boardroom-ink",
+        "defaultPalette": "energy-ops-clean",
         "visualMode": "hybrid",
         "photoRoles": ["cover", "closing"],
         "optionalPhotoRoles": ["situation", "value", "timeline", "case-gallery"],
@@ -994,7 +1025,7 @@
     },
     "energy-utility": {
       "name": "site-dispatch-system",
-      "defaultPalette": "boardroom-ink",
+      "defaultPalette": "energy-ops-clean",
       "principle": "Tie site evidence to dispatch logic: assets, alerts, load, SOC, and operating actions form the visual grammar.",
       "motif": "energy-lens",
       "primaryColorLogic": "Blue marks dispatch state, cyan marks asset telemetry, amber marks alerts or commercial action.",

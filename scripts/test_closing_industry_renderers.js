@@ -134,6 +134,33 @@ function assertIndustryHeaders(ops) {
   });
 }
 
+function assertRightSideCards(ops) {
+  const rects = ops.filter(op => op.name === 'addRect').map(op => op.args.slice(1, 5));
+  const near = (value, expected) => Math.abs(value - expected) < 0.001;
+  const hasRect = (x, y, w, h) => rects.some(([rx, ry, rw, rh]) =>
+    near(rx, x) && near(ry, y) && near(rw, w) && near(rh, h)
+  );
+
+  [
+    ['manufacturing card', 8.42, 1.34, 2.98, 4.86],
+    ['manufacturing rail', 8.255, 1.34, 0.035, 4.86],
+    ['finance card', 8.34, 1.34, 3.06, 4.86],
+    ['finance rail', 8.175, 1.34, 0.035, 4.86],
+    ['saas card', 8.50, 1.34, 2.90, 4.86],
+    ['saas rail', 8.335, 1.34, 0.035, 4.86]
+  ].forEach(([label, x, y, w, h]) => {
+    assert(hasRect(x, y, w, h), `expected aligned right side ${label}`);
+  });
+}
+
+function assertRightCardPagesDisableDefaultMotif(ops) {
+  const lightCanvasCalls = ops.filter(op => op.name === 'lightCanvas');
+  assert.strictEqual(lightCanvasCalls.length, 4, 'expected one light canvas call per industry closing');
+  lightCanvasCalls.forEach((op, i) => {
+    assert.deepStrictEqual(op.args[1], { motif:'none' }, `expected industry closing ${i + 1} to disable default right circle motif`);
+  });
+}
+
 function main() {
   const ops = [];
   const helpers = {
@@ -161,6 +188,8 @@ function main() {
   assert(ops.some(op => op.name === 'addArrowLine'), 'expected closing flow arrows');
   assert(ops.some(op => op.name === 'addShape'), 'expected native timeline node shapes');
   assertIndustryHeaders(ops);
+  assertRightSideCards(ops);
+  assertRightCardPagesDisableDefaultMotif(ops);
   assertIndustryFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 30, 'expected renderer text output');
 

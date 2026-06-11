@@ -62,11 +62,33 @@ function dataForKind(kind, slide = {}) {
   return { categories: [], series: [] };
 }
 
-function primaryUnit(data = {}, slide = {}) {
+function inferUnitFromSlide(kind = '', slide = {}) {
+  const text = [
+    kind,
+    slide.dataComponent,
+    slide.data_component,
+    slide.previousDataComponent,
+    slide.previous_data_component,
+    slide.proofObject,
+    slide.proof_object,
+    slide.title,
+    slide.subtitle,
+    slide.claim,
+    slide.insight
+  ].filter(Boolean).join(' ').toLowerCase();
+  if (/营收|收入|销售额|金额|毛利|利润|回款|现金|revenue|sales|gross|profit|cash/.test(text)) return '万元';
+  if (/反馈|顾虑|投诉|排队|故障|问题|次数|count|pareto|帕累托/.test(text)) return '次';
+  if (/订单|服务单|工单/.test(text)) return '单';
+  if (/客户|用户|员工|人数|规模/.test(text)) return '人';
+  return '';
+}
+
+function primaryUnit(data = {}, slide = {}, kind = '') {
   const explicit = slide.unit || slide.metricUnit || slide.unitLabel || '';
   if (explicit) return explicit;
   const values = (data.series || []).flatMap(series => series.values || []);
-  return compactUnique(values.map(v => v.unit || unitOf(v.rawValue))).filter(unit => unit !== 'x')[0] || compactUnique(values.map(v => v.unit || unitOf(v.rawValue)))[0] || '';
+  const fromValues = compactUnique(values.map(v => v.unit || unitOf(v.rawValue)));
+  return fromValues.filter(unit => unit !== 'x')[0] || fromValues[0] || inferUnitFromSlide(kind, slide);
 }
 
 function valuesForSpec(spec = {}) {
@@ -152,6 +174,7 @@ function dataSufficiency(spec = {}) {
 module.exports = {
   dataForKind,
   dataSufficiency,
+  inferUnitFromSlide,
   primaryUnit,
   valuesForSpec
 };

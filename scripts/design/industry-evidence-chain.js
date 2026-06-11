@@ -64,7 +64,7 @@ function routeTextForSlide(slide = {}) {
 }
 
 function proofObjectIdForSlide(slide = {}) {
-  return String((slide.proof && slide.proof.id) || slide.proofObject || slide.proof_object || '').trim();
+  return String(slide.proofObject || slide.proof_object || (slide.proof && slide.proof.id) || '').trim();
 }
 
 function normalizeIndustryEvidenceChainId(industry = '', slide = {}) {
@@ -126,6 +126,24 @@ function confidenceForScore(score = 0) {
   if (score >= 4) return 'medium';
   if (score >= 2) return 'low';
   return 'neutral';
+}
+
+function genericCardJudgmentWithoutEvidence(slide = {}) {
+  const type = normalizeKey(slide.type);
+  if (!['cards', 'value-tiles', 'executive-blocks', 'two-column', 'two-column-clean'].includes(type)) return false;
+  return ![
+    'visual.image',
+    'visual.images',
+    'image',
+    'images',
+    'product',
+    'products',
+    'productStory',
+    'metrics',
+    'rows',
+    'reviews',
+    'sales'
+  ].some(field => hasFieldPath(slide, field));
 }
 
 function neutralEvidenceChain(reason = 'industry evidence chain was not inferred') {
@@ -207,9 +225,20 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
   const chain = industryEvidenceChainFor(plan, slide);
   if (!chain) return neutralEvidenceChain('missing or unsupported industry; defaulted to neutral/general');
   const type = normalizeKey(slide.type);
+  const chainMode = normalizeKey(slide.industryEvidenceChainMode || slide.industry_evidence_chain_mode || slide.industryEvidenceMode || slide.industry_evidence_mode);
+  if (slide.disableIndustryEvidenceChain === true || slide.disable_industry_evidence_chain === true || ['neutral', 'none', 'off', 'native-only', 'native'].includes(chainMode)) {
+    return neutralEvidenceChain(`${type || 'slide'} requested native-only industry evidence-chain mode`);
+  }
   const explicitProofRoute = Boolean(slide.proofObject || slide.proof_object || slide.layoutVariant || slide.layout_variant);
   if (['cover', 'cover-dark', 'closing'].includes(type) && (!explicitProofRoute || slide.proofObjectInferred)) {
     return neutralEvidenceChain(`${type} slide has no explicit proof route; skipped industry evidence-chain inference`);
+  }
+  const layoutVariant = normalizeKey(slide.layoutVariant || slide.layout_variant || slide.variant);
+  if (type === 'strategy-map' && /value-creation-process-map/.test(layoutVariant)) {
+    return neutralEvidenceChain('value-creation-process-map is owned by the native strategy/value-chain renderer');
+  }
+  if (genericCardJudgmentWithoutEvidence(slide)) {
+    return neutralEvidenceChain(`${type} slide is a judgment/card page without structured evidence fields; skipped industry evidence-chain inference`);
   }
   const scored = chain.stages.map(stage => Object.assign({ stage }, scoreStage(stage, slide)))
     .sort((a, b) => b.score - a.score || a.stage.position - b.stage.position);

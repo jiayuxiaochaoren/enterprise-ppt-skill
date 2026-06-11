@@ -30,13 +30,13 @@ function createProductEvidenceProofList(ctx = {}) {
       fill:{color:panelFill(), transparency:0},
       line:{color:C.line, transparency:14, width:0.46}
     });
-    addLabel(slide, 'PRODUCT PROOF MATRIX', {
-      x:proof.x+0.28, y:proof.y+0.34, w:1.56, h:0.09,
-      fontSize:5.8, color:C.accent, charSpace:0.7
+    addLabel(slide, '产品证据矩阵', {
+      x:proof.x+0.28, y:proof.y+0.34, w:1.30, h:0.09,
+      fontSize:5.8, color:C.accent, charSpace:0
     });
-    addLabel(slide, 'PRODUCT / SCENE / PROOF / BUSINESS', {
-      x:proof.x+0.28, y:proof.y+0.74, w:3.10, h:0.09,
-      fontSize:5.2, color:C.cyan, charSpace:0.55
+    addLabel(slide, '产品 / 场景 / 证据 / 经营', {
+      x:proof.x+0.28, y:proof.y+0.74, w:2.18, h:0.09,
+      fontSize:5.2, color:C.cyan, charSpace:0
     });
     const visibleRows = rows.length ? rows : matrixRows(items && items.length ? items : [{ title:'明星单品', body:'产品图解释购买理由和功效边界。' }]);
     visibleRows.slice(0, 4).forEach((row, rowIndex) => {

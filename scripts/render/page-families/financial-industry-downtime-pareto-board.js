@@ -19,7 +19,9 @@ function createDowntimeParetoBoardRenderer(ctx = {}) {
       { title:'巡检遗漏', value:14, body:'停机分钟' }
     ]).slice(0,5);
     const max = Math.max(...items.map(it => Number(it.value) || 1), 1);
-    addLabel(slide, 'LOSS SOURCES', { x:board.x+0.30, y:board.y+0.32, w:1.30, h:0.10, fontSize:6.8, color:C.accent, charSpace:0.8 });
+    const unit = (s.chartSpec && s.chartSpec.unit) || s.unit || s.metricUnit || '次';
+    addLabel(slide, '短板排行', { x:board.x+0.30, y:board.y+0.32, w:1.30, h:0.10, fontSize:6.8, color:C.accent, charSpace:0 });
+    addLabel(slide, `单位：${unit}`, { x:board.x+board.w-1.06, y:board.y+0.32, w:0.82, h:0.10, fontSize:5.8, color:C.muted, charSpace:0 });
     items.forEach((it,i)=>{
       const y = board.y + 0.86 + i*0.56;
       const val = Number(it.value) || (max - i*5);
@@ -28,7 +30,7 @@ function createDowntimeParetoBoardRenderer(ctx = {}) {
       addText(slide, itemTitle(it, `损失 ${i+1}`), { x:board.x+0.34, y:y-0.02, w:1.28, h:0.16, fontSize:8.8, bold:true, color:C.text, fit:'shrink' });
       addRect(slide, board.x+1.86, y+0.02, board.w-2.60, 0.16, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:8}, line:{color:C.line, transparency:100} });
       addRect(slide, board.x+1.86, y+0.02, w, 0.16, color, color, { fill:{color, transparency:i===0?0:10}, line:{color, transparency:100} });
-      addText(slide, `${val}${it.unit || '%'}`, { x:board.x+board.w-0.78, y:y-0.01, w:0.46, h:0.12, fontSize:7.2, bold:true, color:color, align:'right', fit:'shrink' });
+      addText(slide, `${val}${it.unit || unit}`, { x:board.x+board.w-0.78, y:y-0.01, w:0.46, h:0.12, fontSize:7.2, bold:true, color:color, align:'right', fit:'shrink' });
     });
     return true;
   }

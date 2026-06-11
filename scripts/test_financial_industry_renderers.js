@@ -6,6 +6,9 @@ const {
 const {
   createFinancialIndustryRenderers
 } = require('./render/page-families/financial-industry');
+const {
+  createChannelEfficiencyMatrixDrawer
+} = require('./render/page-families/financial-industry-channel-efficiency');
 
 function createSlide(ops) {
   return {
@@ -239,6 +242,21 @@ function main() {
         `expected generic metric business logic label ${label}`
       );
     });
+    const firstLogicCard = ops.find(op => op.name === 'addRect'
+      && op.args[1] === 1.00
+      && op.args[2] === 6.20
+      && Math.abs(op.args[4] - 0.46) < 0.001);
+    assert(firstLogicCard, 'expected generic metric logic to render centered cards');
+    const firstLogicLabel = ops.find(op => op.name === 'addLabel'
+      && op.args[1] === '现状'
+      && (op.args[2] || {}).x === 1.12);
+    const firstLogicBody = ops.find(op => op.name === 'addText'
+      && op.args[1] === 'Revenue improved after campaign mix shift');
+    assert(firstLogicLabel && firstLogicBody, 'expected generic metric first logic label/body');
+    const labelBox = firstLogicLabel.args[2] || {};
+    const bodyBox = firstLogicBody.args[2] || {};
+    assertNear((labelBox.y + bodyBox.y + bodyBox.h) / 2, 6.20 + 0.46 / 2, 'generic logic card stack center');
+    assert.strictEqual(bodyBox.valign, 'mid');
   }
 
   function assertOperationalBoards() {
@@ -282,11 +300,11 @@ function main() {
       'expected one chart board shell per industry chart slide'
     );
     assert.strictEqual(
-      ops.filter(op => op.name === 'addLabel' && op.args[1] === 'PROOF OBJECT').length,
+      ops.filter(op => op.name === 'addLabel' && op.args[1] === '证据对象').length,
       6,
       'expected proof object label on each industry chart slide'
     );
-    ['MONTHLY PULSE', 'TARGET BRIDGE', 'CHANNEL EFFICIENCY', 'DOWNTIME PARETO', 'QUALITY HANDOFF', 'DISPATCH MAP'].forEach(text => {
+    ['月度脉冲', '目标桥', '渠道效率', '停机帕累托', '质量交接', '调度地图'].forEach(text => {
       assert(
         ops.some(op => op.name === 'addText' && op.args[1] === text),
         `expected proof object title ${text}`
@@ -295,19 +313,34 @@ function main() {
   }
 
   assert(
-    ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'MONTHLY PULSE'),
+    ops.some(op => op.name === 'sectionKicker' && op.args[1] === '月度脉冲'),
     'expected monthly pulse branch'
   );
   assert(
-    ops.some(op => op.name === 'addLabel' && op.args[1] === 'MONTHLY NET SALES TREND'),
+    ops.some(op => op.name === 'addLabel' && op.args[1] === '月度营收趋势'),
     'expected monthly trend chart renderer'
   );
+  const trendSegments = ops.filter(op =>
+    op.name === 'addShape' &&
+    ['line', 'lineInv'].includes(op.args[0]) &&
+    (op.args[1] && op.args[1].line && op.args[1].line.width) === 1.15
+  );
   assert(
-    ops.some(op => op.name === 'addLabel' && op.args[1] === 'CONTRIBUTION BRIDGE'),
+    trendSegments.some(op => op.args[0] === 'lineInv'),
+    'expected upward monthly trend segments to use lineInv instead of negative-height line'
+  );
+  trendSegments.forEach(op => {
+    assert(
+      (op.args[1] || {}).h >= 0,
+      'monthly trend segment should not use negative height'
+    );
+  });
+  assert(
+    ops.some(op => op.name === 'addLabel' && op.args[1] === '贡献桥'),
     'expected waterfall chart renderer'
   );
   assert(
-    ops.some(op => op.name === 'addLabel' && op.args[1] === 'ROAS × SPEND MATRIX'),
+    ops.some(op => op.name === 'addLabel' && op.args[1] === '渠道效率矩阵'),
     'expected channel efficiency chart renderer'
   );
   assertOperationalBoards();
@@ -328,6 +361,109 @@ function main() {
     assert.strictEqual(op.args[2].w, 7.8);
     assert.strictEqual(op.args[2].h, 0.16);
     assert.strictEqual(op.args[2].fontSize, 7.8);
+  });
+
+  const rankOps = [];
+  const rankCtx = createFakeCtx(rankOps);
+  createChannelEfficiencyMatrixDrawer(rankCtx)(
+    createSlide(rankOps),
+    { x:3.92, y:2.10, w:7.76, h:3.96 },
+    {
+      title:'活动投放要按场景复盘ROI',
+      metrics:[
+        { label:'C009', value:'8.74', unit:'ROI', note:'堂食' },
+        { label:'C008', value:'8.22', unit:'ROI', note:'团餐' }
+      ]
+    }
+  );
+  assert(
+    rankOps.some(op => op.name === 'addLabel' && op.args[1] === '活动ROI排行'),
+    'expected activity rank board title to be content-specific'
+  );
+  assert(
+    !rankOps.some(op => op.name === 'addLabel' && op.args[1] === '渠道效率排行'),
+    'activity rank board should not reuse generic channel title'
+  );
+  const unitOps = [];
+  const unitCtx = createFakeCtx(unitOps);
+  createChannelEfficiencyMatrixDrawer(unitCtx)(
+    createSlide(unitOps),
+    { x:3.92, y:2.10, w:7.76, h:3.96 },
+    {
+      title:'活动ROI排行',
+      metrics:[
+        { label:'抖音直播间', value:'5605.1万', unit:'万', note:'月度经营明细' },
+        { label:'线下专柜', value:'5602.5万', unit:'万', note:'月度经营明细' }
+      ]
+    }
+  );
+  assert(
+    unitOps.some(op => op.name === 'addText' && op.args[1] === '5605.1万'),
+    'rank board should preserve values that already include 万'
+  );
+  assert(
+    !unitOps.some(op => op.name === 'addText' && /万\s+万/.test(String(op.args[1]))),
+    'rank board should not append duplicate 万 units'
+  );
+
+  const beautyOps = [];
+  const beautyRenderers = createFinancialRenderers(createFakeCtx(beautyOps));
+  beautyRenderers.metricComparison(createSlide(beautyOps), { slides:[{}], industry:'beauty-consumer' }, {
+    title:'利润弹性先于放量修复',
+    layoutVariant:'financial-kpi-snapshot',
+    proofObject:'monthly-pulse-trend',
+    businessLogic:{
+      currentState:'Q4 利润转负，Q1 回正。',
+      cause:'费用投放增加。',
+      action:'预算审批加入利润率和回款。',
+      metric:'经营利润率、现金回款'
+    },
+    chartSpec:{
+      kind:'line',
+      componentId:'line-chart',
+      series:[{
+        values:[
+          { category:'2025Q4', value:-7.7, rawValue:'-7.7%', note:'转负' },
+          { category:'2026Q1', value:2.8, rawValue:'2.8%', note:'回正' }
+        ]
+      }]
+    },
+    metrics:[
+      { label:'Q4利润', value:'-7.7%', note:'已回正' },
+      { label:'Q1利润', value:'2.8%', note:'现金口径' }
+    ]
+  }, 1);
+  assert(
+    beautyOps.some(op => op.name === 'sectionKicker' && op.args[1] === '月度脉冲'),
+    'beauty chart evidence should route metric-comparison through industry chart slide'
+  );
+  assert(
+    !beautyOps.some(op => op.name === 'addLabel' && op.args[1] === 'PRIMARY KPI'),
+    'beauty chart evidence should not fall back to the financial KPI snapshot template'
+  );
+  const currentStateLabel = beautyOps.find(op => op.name === 'addLabel' && op.args[1] === '现状');
+  assert(
+    currentStateLabel &&
+      (currentStateLabel.args[2] || {}).x >= 3.90 &&
+      (currentStateLabel.args[2] || {}).y >= 5.50 &&
+      (currentStateLabel.args[2] || {}).y <= 6.20,
+    'beauty chart evidence should place business logic inside the main content area'
+  );
+  const currentStateText = beautyOps.find(op => op.name === 'addText' && op.args[1] === 'Q4 利润转负，Q1 回正。');
+  assert(currentStateText, 'expected beauty chart business logic body');
+  const currentStateBox = currentStateLabel.args[2] || {};
+  const currentStateTextBox = currentStateText.args[2] || {};
+  assertNear(
+    (currentStateBox.y + currentStateTextBox.y + currentStateTextBox.h) / 2,
+    5.78 + 0.74 / 2,
+    'beauty chart logic card stack center'
+  );
+  assert.strictEqual(currentStateTextBox.valign, 'mid');
+  ['现状', '原因', '动作', '衡量'].forEach(label => {
+    assert(
+      beautyOps.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `expected beauty chart business logic label ${label}`
+    );
   });
 
   console.log('financial industry renderers ok');

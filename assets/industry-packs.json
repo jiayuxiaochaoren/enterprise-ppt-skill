@@ -58,13 +58,18 @@
         "12": ["封面", "执行摘要", "目录", "现场对象", "损失诊断", "产线/站点拓扑", "数据接入", "工单闭环", "现场证据", "OEE/响应指标", "风险保障", "下一步"],
         "20": ["封面", "管理层摘要", "目录", "现场对象", "现状问题", "损失帕累托", "设备拓扑", "数据链路", "点检/工单", "备件/维修", "现场图册", "试点范围", "OEE 拆解", "价值测算", "推广路径", "安全与授权", "风险台账", "责任机制", "下一步", "封底"]
       },
-      "proofObjects": ["production-topology", "downtime-pareto", "oee-board", "dispatch-map", "site-evidence", "maintenance-loop"],
+      "proofObjects": ["production-topology", "downtime-pareto", "oee-board", "dispatch-map", "site-evidence", "maintenance-loop", "monthly-pulse-trend", "waterfall-bridge", "channel-efficiency-matrix", "report-board", "quarterly-results-summary", "metric-board"],
       "proofObjectCatalog": [
         {"id": "production-topology", "label": "产线 / 设备 / 站点拓扑", "requires": ["设备对象", "数据节点", "责任边界"]},
         {"id": "downtime-pareto", "label": "停机 / 告警 / 损失帕累托", "requires": ["期间", "损失分类", "根因"]},
         {"id": "maintenance-loop", "label": "发现-派工-处置-复盘闭环", "requires": ["角色", "时限", "复盘指标"]},
         {"id": "site-evidence", "label": "现场 / 设备 / 项目图片证据", "requires": ["图片", "来源", "授权"]},
-        {"id": "oee-board", "label": "OEE / MTTR / MTBF 指标板", "requires": ["指标口径", "来源", "行动"]}
+        {"id": "oee-board", "label": "OEE / MTTR / MTBF 指标板", "requires": ["指标口径", "来源", "行动"]},
+        {"id": "monthly-pulse-trend", "label": "站点 / 业务月度趋势", "requires": ["期间", "指标口径", "来源"]},
+        {"id": "waterfall-bridge", "label": "业务线收入 / 价值桥", "requires": ["业务线", "数值", "单位"]},
+        {"id": "channel-efficiency-matrix", "label": "渠道效率矩阵", "requires": ["渠道", "投入或收入", "转化或ROI"]},
+        {"id": "report-board", "label": "经营动作拆解板", "requires": ["对象", "动作", "管理口径"]},
+        {"id": "quarterly-results-summary", "label": "利润 / 回款 / KPI 质量板", "requires": ["期间", "指标", "行动"]}
       ],
       "visualTone": "factory-or-field-evidence-system",
       "paletteIntent": "factory-steel-amber",

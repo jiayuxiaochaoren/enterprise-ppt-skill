@@ -1,3 +1,7 @@
+const {
+  centeredStackY
+} = require('../layout/card-layout');
+
 function createMetricComparisonLogicRow(ctx = {}) {
   const C = ctx.colors();
 
@@ -13,12 +17,32 @@ function createMetricComparisonLogicRow(ctx = {}) {
       ].filter(item => item.text);
       if (logicItems.length >= 2) {
         ctx.addHairline(slide, 0.94, 6.10, 10.90, C.line, 12, 0.55);
-        const slotW = 10.64 / logicItems.length;
+        const gap = 0.10;
+        const rowY = 6.20;
+        const rowH = 0.46;
+        const cardW = (10.64 - gap * (logicItems.length - 1)) / logicItems.length;
+        const labelH = 0.11;
+        const bodyH = 0.22;
         logicItems.forEach((item, i) => {
-          const x = 1.00 + i * slotW;
+          const x = 1.00 + i * (cardW + gap);
           const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : (i === 2 ? C.violet : C.muted));
-          ctx.addLabel(slide, item.label, { x, y:6.34, w:0.46, h:0.10, fontSize:5.8, color:accent, charSpace:0 });
-          ctx.addText(slide, ctx.compactEvidenceCaption(item.text, 22), { x:x+0.54, y:6.30, w:slotW-0.66, h:0.14, fontSize:7.8, color:C.body, fit:'shrink' });
+          const [labelY, bodyY] = centeredStackY(rowY, rowH, [labelH, bodyH], 0.05);
+          ctx.addRect(slide, x, rowY, cardW, rowH, i === 0 ? C.ink : (C.white || 'FFFFFF'), accent, {
+            fill:{ color:i === 0 ? C.ink : (C.white || 'FFFFFF'), transparency:0 },
+            line:{ color:accent, transparency:i === 0 ? 20 : 42, width:0.30 }
+          });
+          ctx.addRect(slide, x, rowY, cardW, 0.028, accent, accent, {
+            fill:{ color:accent, transparency:i === 0 ? 0 : 16 },
+            line:{ color:accent, transparency:100 }
+          });
+          ctx.addLabel(slide, item.label, {
+            x:x + 0.12, y:labelY, w:0.46, h:labelH,
+            fontSize:5.8, color:accent, charSpace:0
+          });
+          ctx.addText(slide, ctx.compactEvidenceCaption(item.text, 22), {
+            x:x + 0.64, y:bodyY, w:cardW - 0.78, h:bodyH,
+            fontSize:7.2, color:i === 0 ? C.white : C.body, fit:'shrink', breakLine:true, valign:'mid'
+          });
         });
       }
     } else if (foot) {

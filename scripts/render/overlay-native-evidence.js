@@ -29,7 +29,7 @@ function createOverlayNativeEvidence(deps = {}) {
   function nativeDrawnEvidenceFor(plan = {}, s = {}, componentId = '', contract = {}, slide = null) {
     const type = String(s.type || '');
     const variant = String(s.layoutVariant || s.variant || '');
-    const proofObject = String((s.proof && s.proof.id) || s.proofObject || s.proof_object || '');
+    const proofObject = String(s.proofObject || s.proof_object || (s.proof && s.proof.id) || '');
     const hasPlanGallery = Boolean(plan.media && Array.isArray(plan.media.gallery) && plan.media.gallery.length &&
       (['case-gallery', 'gallery', 'portfolio', 'product-showcase', 'strategy-map'].includes(type) || /brand-world|proof|lookbook|mosaic|product/i.test(`${variant} ${proofObject}`)));
     const hasImages = Boolean((Array.isArray(s.images) && s.images.length) ||
@@ -75,8 +75,8 @@ function createOverlayNativeEvidence(deps = {}) {
     };
     if (componentId === 'page-number') return evidence([/footer|folio|stage|native/i], 1, 'final slide chrome writes page number');
     if (componentId === 'section-kicker' && !['cover', 'cover-dark', 'closing', 'closing-dark'].includes(type)) return evidence([/title|stage|native/i], 1, 'native title block writes section kicker');
-    if (componentId === 'navigation-sequence' && ['toc', 'toc-clean'].includes(type)) return evidence([/navigation|path|stage|native/i], Math.max(1, (s.items || s.sections || []).length || 1), 'native TOC renderer draws navigation sequence');
-    if (componentId === 'content-card-grid' && ['two-column', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks'].includes(type)) return evidence([/cards|content|stage|visual|text|native/i], Math.max(1, (s.cards || s.items || s.modules || s.values || []).length || 1), 'native page family draws the main content/card grid');
+    if (componentId === 'navigation-sequence' && ['toc', 'toc-clean', 'chapter-divider'].includes(type)) return evidence([/navigation|path|stage|native/i], Math.max(1, (s.items || s.sections || []).length || 1), 'native TOC renderer draws navigation sequence');
+    if (componentId === 'content-card-grid' && ['two-column', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks', 'report-board'].includes(type)) return evidence([/cards|content|evidence|stage|visual|text|native/i], Math.max(1, (s.cards || s.items || s.modules || s.values || s.sections || []).length || 1), 'native page family draws the main content/card grid');
     if (componentId === 'hero-image' && (['cover', 'cover-dark', 'case-gallery', 'gallery', 'portfolio', 'product-showcase'].includes(type) || hasImages || /hero|cover|brand|product|image/i.test(`${variant} ${proofObject}`))) return evidence([/visual|image|cover|stage|photo/i], hasImages ? 1 : 0.5, 'native renderer draws or reserves primary visual stage');
     if (['kpi-strip', 'metric-strip', 'kpi-primary-metric'].includes(componentId) && (hasMetrics || ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type))) return evidence([/metric|content|stage|board|native/i], hasMetrics ? Math.max(1, s.metrics.length) : 1, 'native metric renderer draws metric readout');
     if (componentId === 'chart-commentary-panel' && ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type)) return evidence([/commentary|content|stage|board|native/i], 1, 'native chart renderer draws commentary/readout panel');

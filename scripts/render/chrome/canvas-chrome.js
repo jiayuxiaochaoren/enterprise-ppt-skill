@@ -59,13 +59,16 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
     });
   }
   function FooterNote(slide, text, x = 0.82, y = 7.05, opts = {}) {
-    h.addText(slide, text || h.footerText(activePlan()), {
+    const footer = text || h.footerText(activePlan());
+    if (!footer) return false;
+    h.addText(slide, footer, {
       x, y, w:opts.w || 7.8, h:opts.h || 0.18,
       fontSize:opts.fontSize || 8.8,
       lockFontSize:true,
       color:opts.color || (opts.dark ? (C.darkMuted || '94A3B8') : C.muted),
       fit:'shrink'
     });
+    return true;
   }
   function DeckFooter(slide, text, x = 0.82, y = 7.05, opts = {}) {
     return FooterNote(slide, text, x, y, opts);

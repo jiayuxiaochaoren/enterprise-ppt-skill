@@ -271,25 +271,20 @@ function assertClosingEditorialLightShell(ops) {
 
   assert(findRect(0, 0, 13.333, 7.5), 'expected editorial light background fill');
   assert(findRect(0, 0, 13.333, 0.10), 'expected editorial light top accent rule');
-  assert(findRect(8.92, 1.10, 2.60, 4.70), 'expected editorial light right rail panel');
+  assert(findRect(8.62, 1.30, 2.78, 4.86), 'expected editorial light right rail panel');
   [
-    [0.86, 4.72, 2.52, 0.98],
-    [3.58, 4.72, 2.52, 0.98],
-    [6.30, 4.72, 2.52, 0.98]
+    [0.86, 4.72, 2.18, 0.98],
+    [3.24, 4.72, 2.18, 0.98],
+    [5.62, 4.72, 2.18, 0.98]
   ].forEach(([x, y, w, h]) => {
     assert(findRect(x, y, w, h), `expected editorial light action card ${x}/${y}`);
   });
 
-  const circle = ops.find(op => {
-    if (op.name !== 'addLightBreathingCircle') return false;
-    const args = op.args;
-    return args[1] === 8.30 && args[2] === 0.34 && args[3] === 4.38 && args[4] === 'EFF6FF' && args[5] === 38;
-  });
-  assert(circle, 'expected editorial light breathing circle');
+  assert(findRect(8.455, 1.30, 0.035, 4.86), 'expected editorial light vertical rail aligned to panel');
 
   [
-    ['FINAL DECISION', { x:0.86, y:1.02, w:1.54, h:0.13, fontSize:6.9, color:'2563EB', charSpace:1.05 }],
-    ['NEXT DECISION', { x:9.28, y:3.12, w:1.12, h:0.10, fontSize:5.8, color:'2563EB', charSpace:0.8 }]
+    ['最终决策', { x:0.86, y:1.02, w:1.54, h:0.13, fontSize:6.9, color:'2563EB', charSpace:0 }],
+    ['下一步', { x:9.00, y:3.08, w:1.12, h:0.10, fontSize:5.8, color:'2563EB', charSpace:0 }]
   ].forEach(([label, expected]) => {
     const op = ops.find(candidate => {
       if (candidate.name !== 'addLabel' || candidate.args[1] !== label) return false;
@@ -300,17 +295,20 @@ function assertClosingEditorialLightShell(ops) {
   });
 
   [
-    ['END', { x:9.20, y:1.42, w:1.92, h:0.48, fontSize:26, bold:true, color:'2563EB', fit:'shrink' }],
+    ['收束', { x:8.90, y:1.66, w:1.92, h:0.48, fontSize:25, bold:true, color:'2563EB', fit:'shrink' }],
     ['Final alignment', { x:0.84, y:1.96, w:6.92, h:0.92, fontSize:31.5, bold:true, color:'111827', fit:'shrink', breakLine:true }],
     ['Move from review to action.', { x:0.88, y:3.12, w:5.92, h:0.22, fontSize:11.4, color:'334155', fit:'shrink' }],
-    ['Confirm final decision and owner.', { x:9.28, y:3.48, w:1.76, h:0.42, fontSize:8.0, color:'CBD5E1', fit:'shrink', breakLine:true }],
+    ['Confirm final decision and owner.', { x:9.00, y:3.42, w:1.76, h:0.42, fontSize:8.0, color:'CBD5E1', fit:'shrink', breakLine:true }],
     ['Example Co | Board | 2026-06-01', { x:0.86, y:6.70, w:7.60, h:0.16, fontSize:7.6, color:'64748B', fit:'shrink' }]
   ].forEach(([text, expected]) => {
     assert(
       ops.some(op => {
         if (op.name !== 'addText' || op.args[1] !== text) return false;
         const opts = op.args[2] || {};
-        return Object.entries(expected).every(([key, value]) => opts[key] === value);
+        return Object.entries(expected).every(([key, value]) => {
+          if (typeof value === 'number') return Math.abs(opts[key] - value) < 0.001;
+          return opts[key] === value;
+        });
       }),
       `expected editorial light text ${text}`
     );
@@ -322,6 +320,98 @@ function assertClosingEditorialLightShell(ops) {
       `expected editorial light action content ${text}`
     );
   });
+  const rowCenter = 4.72 + 0.98 / 2;
+  const editorialNumber = ops.find(op => {
+    if (op.name !== 'addNumber' || op.args[1] !== '01') return false;
+    const opts = op.args[2] || {};
+    return Math.abs(opts.x - 1.04) < 0.001 && Math.abs(opts.w - 0.36) < 0.001;
+  });
+  assert(editorialNumber, 'expected editorial action number to use centered badge geometry');
+  assertNear((editorialNumber.args[2].y || 0) + (editorialNumber.args[2].h || 0) / 2, rowCenter, 'editorial action number center');
+  const editorialTitle = ops.find(op => {
+    if (op.name !== 'addText' || op.args[1] !== 'Scope') return false;
+    const opts = op.args[2] || {};
+    return Math.abs(opts.x - 1.52) < 0.001;
+  });
+  const editorialBody = ops.find(op => {
+    if (op.name !== 'addText' || op.args[1] !== 'Confirm scope.') return false;
+    const opts = op.args[2] || {};
+    return Math.abs(opts.x - 1.52) < 0.001;
+  });
+  assert(editorialTitle && editorialBody, 'expected editorial action title/body text');
+  const titleBox = editorialTitle.args[2] || {};
+  const bodyBox = editorialBody.args[2] || {};
+  assertNear((titleBox.y + bodyBox.y + bodyBox.h) / 2, rowCenter, 'editorial action title/body stack center');
+  assert.equal(bodyBox.valign, 'mid');
+}
+
+function assertRightSideCardAlignment(ops) {
+  const rects = ops.filter(op => op.name === 'addRect').map(op => op.args.slice(1, 5));
+  const near = (value, expected) => Math.abs(value - expected) < 0.001;
+  const findRect = (x, y, w, h) => rects.find(([rx, ry, rw, rh]) =>
+    near(rx, x) && near(ry, y) && near(rw, w) && near(rh, h)
+  );
+
+  const standardCards = rects.filter(([x, y, w, h]) =>
+    near(x, 8.50) && near(y, 1.34) && near(w, 2.90) && near(h, 4.86)
+  );
+  assert(standardCards.length >= 4, 'expected standard right side cards to share one slot');
+
+  const standardRails = rects.filter(([x, y, w, h]) =>
+    near(x, 8.335) && near(y, 1.34) && near(w, 0.035) && near(h, 4.86)
+  );
+  assert(standardRails.length >= 4, 'expected standard right side rails aligned with card height');
+
+  assert(findRect(8.62, 1.30, 2.78, 4.86), 'expected editorial side card slot');
+  assert(findRect(8.455, 1.30, 0.035, 4.86), 'expected editorial rail aligned with side card');
+  assert(
+    ops.some(op => {
+      if (op.name !== 'addText' || op.args[1] !== 'Decision ready') return false;
+      const box = op.args[2] || {};
+      return near(box.x, 8.92) && near(box.y, 5.72) && near(box.h, 0.18);
+    }),
+    'expected decision summary outcome to keep a bottom safety margin inside the right card'
+  );
+  assert(!findRect(8.10, 0.86, 0.030, 5.70), 'old simple-end detached rail should not render');
+  assert(!findRect(8.12, 0.86, 0.030, 5.70), 'old thank-you detached rail should not render');
+  assert(!findRect(8.32, 0.82, 0.030, 5.74), 'old editorial detached rail should not render');
+
+  const motifDisabled = ops.some(op => op.name === 'lightCanvas'
+    && op.args[1]
+    && op.args[1].motif === 'none');
+  assert(motifDisabled, 'expected right-card decision summary to disable the default circle motif');
+}
+
+function assertPremiumClosingActionVerticalCenter(ops) {
+  const near = (value, expected) => Math.abs(value - expected) < 0.001;
+  const firstCard = { x:7.06, y:2.10, w:4.56, h:0.86 };
+  const rowCenter = firstCard.y + firstCard.h / 2;
+
+  const number = ops.find(op => {
+    if (op.name !== 'addNumber' || op.args[1] !== '01') return false;
+    const opts = op.args[2] || {};
+    return near(opts.x, 7.32) && near(opts.w, 0.42) && near(opts.h, 0.42);
+  });
+  assert(number, 'expected premium closing action number to use the centered larger badge');
+  assertNear((number.args[2].y || 0) + (number.args[2].h || 0) / 2, rowCenter, 'premium closing action number center');
+
+  const title = ops.find(op => {
+    if (op.name !== 'addText' || op.args[1] !== 'Scope') return false;
+    const opts = op.args[2] || {};
+    return near(opts.x, 7.82) && near(opts.w, 1.46) && near(opts.h, 0.32);
+  });
+  assert(title, 'expected premium closing action title text');
+  assertNear((title.args[2].y || 0) + (title.args[2].h || 0) / 2, rowCenter, 'premium closing action title center');
+  assert.equal(title.args[2].fit, 'shrink', 'premium closing title should shrink instead of overflowing its card');
+
+  const body = ops.find(op => {
+    if (op.name !== 'addText' || op.args[1] !== 'Confirm scope.') return false;
+    const opts = op.args[2] || {};
+    return near(opts.x, 9.54) && near(opts.w, 1.78) && near(opts.h, 0.36);
+  });
+  assert(body, 'expected premium closing action body text');
+  assertNear((body.args[2].y || 0) + (body.args[2].h || 0) / 2, rowCenter, 'premium closing action body center');
+  assert.equal(body.args[2].fit, 'shrink', 'premium closing body should shrink instead of overflowing its card');
 }
 
 function main() {
@@ -366,8 +456,7 @@ function main() {
   integrated.closingAdaptive(slide, activePlanRef.current, section({ closingVariant:'simple-end' }), 10);
 
   assert(hasOp(ops, 'addLabel', 'FINAL ALIGNMENT'), 'expected dark closing label');
-  assert(hasOp(ops, 'addLabel', 'CLOSING'), 'expected thank-you closing label');
-  assert(hasOp(ops, 'addLabel', 'END'), 'expected simple end label');
+  assert(hasOp(ops, 'addLabel', '结束页'), 'expected localized closing label');
   assert(hasOp(ops, 'addLabel', 'FINAL DECISION'), 'expected decision label');
   assert(hasOp(ops, 'addLabel', 'CLOSING ANCHOR'), 'expected premium anchor label');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'FINAL DECISION'), 'expected decision summary kicker');
@@ -376,6 +465,8 @@ function main() {
   assert(ops.some(op => op.name === 'addPhotoPanel'), 'expected image statement photo panel path');
   assertClosingDarkStageShells(ops);
   assertClosingEditorialLightShell(ops);
+  assertRightSideCardAlignment(ops);
+  assertPremiumClosingActionVerticalCenter(ops);
   assertClosingFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 70, 'expected closing renderer text output');
 

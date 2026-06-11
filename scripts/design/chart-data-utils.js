@@ -151,7 +151,7 @@ function normalizeSeries(items = [], opts = {}) {
 }
 
 function proofObjectId(slide = {}) {
-  return String((slide.proof && slide.proof.id) || slide.proofObject || slide.proof_object || slide.layoutVariant || slide.variant || '').trim();
+  return String(slide.proofObject || slide.proof_object || (slide.proof && slide.proof.id) || slide.layoutVariant || slide.variant || '').trim();
 }
 
 function sourceTraceForSlide(slide = {}) {

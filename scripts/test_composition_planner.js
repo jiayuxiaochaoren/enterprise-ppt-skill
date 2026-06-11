@@ -103,6 +103,52 @@ assert.equal(productStoryMatrixSlide.componentPlan.componentIds.includes('produc
 assert.equal(productStoryMatrixSlide.componentPlan.componentIds.includes('proof-gallery'), true);
 assert.equal(productStoryMatrixSlide.componentPlan.componentIds.includes('caption-bar'), true);
 
+const beautyChartEvidenceSlide = normalizeSlide(
+  { industry:'beauty-consumer', title:'经营图表证据' },
+  {
+    type:'metric-comparison',
+    layoutVariant:'financial-kpi-snapshot',
+    proofObject:'monthly-pulse-trend',
+    title:'利润弹性先于放量修复',
+    metrics:[{ label:'Q4利润', value:'-7.7%' }, { label:'Q1利润', value:'2.8%' }],
+    chartSpec:{
+      version:'chartSpec/v1',
+      kind:'line',
+      componentId:'line-chart',
+      series:[{ values:[{ category:'2025Q4', value:-7.7 }, { category:'2026Q1', value:2.8 }] }]
+    },
+    businessLogic:{ currentState:'Q4 转负', cause:'费用投放', action:'重排预算', metric:'利润率' }
+  },
+  3,
+  5
+);
+assert.equal(beautyChartEvidenceSlide.componentPlan.componentIds.includes('line-chart'), true);
+assert.equal(beautyChartEvidenceSlide.componentPlan.componentIds.includes('kpi-strip'), true);
+assert.equal(beautyChartEvidenceSlide.componentPlan.componentIds.includes('proof-gallery'), false);
+assert.equal(beautyChartEvidenceSlide.componentPlan.componentIds.includes('caption-bar'), false);
+
+const beautyValueCreationWithStaleProof = normalizeSlide(
+  { industry:'beauty-consumer', title:'品牌经营体系' },
+  {
+    type:'strategy-map',
+    layoutVariant:'value-creation-process-map',
+    proofObject:'brand-world-and-business-proof',
+    title:'价值创造必须从品牌心智走到复购经营',
+    valueChain:[
+      { title:'投入', body:'预算、产品和会员资产。' },
+      { title:'动作', body:'渠道、内容和复购路径。' },
+      { title:'产出', body:'毛利、复购和现金回款。' }
+    ],
+    businessLogic:{ currentState:'增长转向质量', cause:'获客成本上升', action:'复购链路共管', metric:'复购率' }
+  },
+  6,
+  11
+);
+assert.equal(beautyValueCreationWithStaleProof.componentPlan.componentIds.includes('value-chain'), true);
+assert.equal(beautyValueCreationWithStaleProof.componentPlan.componentIds.includes('hero-image'), false);
+assert.equal(beautyValueCreationWithStaleProof.componentPlan.componentIds.includes('caption-bar'), false);
+assert.equal(beautyValueCreationWithStaleProof.componentPlan.componentIds.includes('proof-gallery'), false);
+
 const genericProductNarrative = normalizeSlide(
   { industry:'general-operations', title:'产品路线' },
   {

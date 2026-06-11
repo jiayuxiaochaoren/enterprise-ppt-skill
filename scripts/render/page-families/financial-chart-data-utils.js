@@ -5,6 +5,19 @@ function coerceChartItems(value, fallback = []) {
   return fallback;
 }
 
+function chartSpecItems(spec = {}) {
+  const firstSeries = spec && Array.isArray(spec.series) ? spec.series[0] : null;
+  const values = firstSeries && Array.isArray(firstSeries.values) ? firstSeries.values : [];
+  if (!values.length) return [];
+  return values.map((point, i) => ({
+    label:point.category || (Array.isArray(spec.categories) ? spec.categories[i] : '') || point.label || point.title || '',
+    title:point.category || point.label || point.title || '',
+    value:point.rawValue || point.value,
+    unit:point.unit || spec.unit || '',
+    note:point.note || point.body || ''
+  }));
+}
+
 function chartNumber(value, fallback = 0) {
   const n = Number(String(value == null ? '' : value).replace(/[^\d.-]/g, ''));
   return Number.isFinite(n) ? n : fallback;
@@ -29,12 +42,15 @@ function firstChartItems(source = {}, keys = [], fallback = []) {
       if (items.length) return items;
     }
   }
+  const specItems = chartSpecItems(source.chartSpec || source.chart_spec || {});
+  if (specItems.length) return specItems;
   return coerceChartItems(null, fallback);
 }
 
 module.exports = {
   chartBoxesOverlap,
   chartClamp,
+  chartSpecItems,
   chartNumber,
   coerceChartItems,
   firstChartItems

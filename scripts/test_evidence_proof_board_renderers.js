@@ -170,7 +170,7 @@ function assertProductEvidenceStoryShell(ops) {
     ops.some(op => op.name === 'genericShowcaseField' && op.args.includes('HERO PRODUCT')),
     'expected product evidence hero image fallback'
   );
-  ['HERO PRODUCT PROOF', 'PRODUCT PROOF MATRIX', 'PRODUCT / SCENE / PROOF / BUSINESS'].forEach(label => {
+  ['HERO PRODUCT PROOF', '产品证据矩阵', '产品 / 场景 / 证据 / 经营'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected product evidence label ${label}`

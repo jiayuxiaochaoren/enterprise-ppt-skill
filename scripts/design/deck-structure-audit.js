@@ -48,7 +48,13 @@ function createDeckStructureAuditHelpers({
     const proofCount = bodySlides.filter(s => proofObjectIdForSlide(s)).length;
     const logicCount = bodySlides.filter(hasCommercialLogicChain).length;
     const componentPlanCount = bodySlides.filter(s => s.componentPlan && s.componentPlan.version === 'component-plan/v1').length;
-    const routeKinds = new Set(bodySlides.map(s => String(s.type || '')));
+    const routeKinds = new Set(bodySlides.map(s => {
+      const type = String(s.type || '');
+      const variant = String(s.layoutVariant || s.variant || proofObjectIdForSlide(s) || '');
+      return variant && ['industry-chart', 'metric-comparison', 'report-board'].includes(type)
+        ? `${type}:${variant}`
+        : type;
+    }));
     if (slides.length >= 8 && proofCount < Math.ceil(bodySlides.length * 0.75)) {
       findings.push({
         level: 'review',

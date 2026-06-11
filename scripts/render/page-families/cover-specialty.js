@@ -17,6 +17,7 @@ function createSpecialtyCoverRenderers(ctx = {}, helpers = {}) {
   } = createPageFamilyPrimitives(Object.assign({}, ctx, { colors }));
   const specialtyDeps = {
     colors,
+    coverTitleText: helpers.coverTitleText || (value => String(value || '').replace(/\s*\n\s*/g, ' ')),
     drawFooter,
     drawLightCanvasShell,
     fileExists

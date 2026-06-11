@@ -140,11 +140,41 @@ function addSemanticSignalScore(recipe = {}, context = {}) {
   return score;
 }
 
+function addEnergyChargingServiceScore(recipe = {}, context = {}) {
+  const plan = context.plan || {};
+  if (plan.industry !== 'energy-utility') return 0;
+  const deckText = [
+    plan.title,
+    plan.subtitle,
+    plan.organization,
+    context.text
+  ].filter(Boolean).join(' ');
+  if (!/新能源汽车|充电服务|充电枪|快充站|车队|补能|站点|ROI/i.test(deckText)) return 0;
+  const recipeText = [
+    recipe.id,
+    recipe.renderType,
+    recipe.layoutVariant,
+    recipe.proofObject,
+    recipe.themeIntent,
+    ...(recipe.signals || []),
+    ...((recipe.taxonomy && recipe.taxonomy.labels) || []),
+    recipe.taxonomy && recipe.taxonomy.documentType,
+    recipe.source && recipe.source.categoryId
+  ].filter(Boolean).join(' ').toLowerCase();
+  let score = 0;
+  if (/energy|utility|operations|service|运营|站点|site|charging|charge/.test(recipeText)) score += 8;
+  if (/financial|finance|investment|horiba|金融|投资|财务策略|financial-strategy/.test(recipeText)) score -= 30;
+  if (/beauty|consumer|fashion|cosmetic|美妆|美容|时尚/.test(recipeText)) score -= 10;
+  if (/culture|people|healthcare|government|saas/.test(recipeText)) score -= 6;
+  return score;
+}
+
 function scoreReferenceRecipe(recipe = {}, context = {}) {
   return addExplicitRouteScore(recipe, context) +
     addIndustryAndRoleScore(recipe, context) +
     addSignalAndTaxonomyScore(recipe, context) +
-    addSemanticSignalScore(recipe, context);
+    addSemanticSignalScore(recipe, context) +
+    addEnergyChargingServiceScore(recipe, context);
 }
 
 function createReferenceRecipeScoringHelpers(deps = {}) {

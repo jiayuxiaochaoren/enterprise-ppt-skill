@@ -348,7 +348,7 @@ const additionalBriefs = [
       industry: 'lifestyle-food-tourism-fashion',
       documentType: 'experience-growth-plan',
       title: '城市微度假体验增长方案',
-      subtitle: '用真实场景、客群旅程和转化指标证明体验产品价值',
+          subtitle: '用真实场景、客群旅程和转化指标说明经营价值',
       organization: '溪岸文旅',
       audience: '文旅项目管理层 / 商业运营团队',
       footer: 'Lifestyle Experience Growth',
@@ -362,8 +362,8 @@ const additionalBriefs = [
         ]
       },
       slides: [
-        { type: 'auto', layoutVariant: 'airy-concept-opening', title: '城市微度假体验增长方案', subtitle: '用真实场景、客群旅程和转化指标证明体验产品价值' },
-        { type: 'toc-clean', title: '体验增长路径', subtitle: '从空间证据、客群旅程到转化和运营', items: ['体验主张', '场景图册', '客群旅程', '转化指标', '运营保障'] },
+        { type: 'auto', layoutVariant: 'airy-concept-opening', title: '城市微度假体验增长方案', subtitle: '用真实场景、客群旅程和转化指标说明经营价值' },
+        { type: 'toc-clean', title: '体验增长路径', subtitle: '从空间场景、客群旅程到转化和运营', items: ['场景主张', '场景图册', '客群旅程', '转化指标', '运营保障'] },
         {
           type: 'case-gallery',
           layoutVariant: 'product-or-place-gallery',
@@ -421,15 +421,15 @@ const additionalBriefs = [
         },
         {
           type: 'strategy-map',
-          layoutVariant: 'experience-proof-grid',
-          title: '体验证据网把空间、活动、内容和供应链连起来',
+          layoutVariant: 'scene-conversion-board',
+          title: '场景经营看板把空间、活动、内容和供应链连起来',
           drivers: ['空间场景', '主题活动', '社交内容'],
           actions: ['路线设计', '商户联动', '会员权益'],
           outcomes: ['停留变长', '连带提升', '复游改善'],
           businessLogic: {
             currentState: '空间、活动和传播素材分散运营。',
             impact: '分散运营会削弱项目复利和品牌记忆。',
-            cause: '场景、商户和内容没有统一成体验证据网。',
+            cause: '场景、商户和内容没有统一成经营看板。',
             action: '用路线设计和商户联动形成可复盘的体验产品。',
             metric: '停留时长、连带率、复游率'
           }

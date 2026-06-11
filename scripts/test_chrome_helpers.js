@@ -116,7 +116,7 @@ const motifSlide = {};
 assert.ok(shapes.some(op => op.type === 'rect' && op.opts.x === 1 && op.opts.fill.color === 'FFFFFF'), 'addRect should record a rect draw call');
 assert.ok(texts.some(op => op.text === 'LABEL'), 'addLabel should delegate text rendering');
 assert.ok(texts.some(op => op.text === '03' && op.opts._folioInternal), 'PageNumber should render a normalized folio');
-assert.ok(shapes.some(op => op.type === 'ellipse'), 'lightCanvas should add a canvas motif');
+assert.ok(!shapes.some(op => op.type === 'ellipse'), 'lightCanvas should not add a default decorative motif');
 assert.ok(shapes.some(op => op.type === 'line' && op.opts.line.endArrowType === 'triangle'), 'addArrowLine should record arrow styling');
 assert.ok(shapes.some(op => op.type === 'rect' && op.opts.fill.color === 'ABCDEF'), 'missing photo should draw fallback panel');
 assert.ok(texts.some(op => op.text === 'Acme'), 'deck meta should render organization metadata');
@@ -132,12 +132,30 @@ assert.equal(deckMetaPolicy.footerText({
   organization:'Acme',
   footer:'Acme 公司介绍'
 }), 'Acme');
-assert.equal(canvasMotifs.canvasMotifKind({ industry:'beauty-consumer' }, {}, 'light'), 'beauty-editorial-veil');
+assert.equal(deckMetaPolicy.footerText({
+  footer:'栀颜集经营复盘｜脱敏模拟数据'
+}), '栀颜集经营复盘');
+assert.equal(deckMetaPolicy.footerText({
+  footer:'星驿充电 | 新能源汽车充电服务经营复盘 | 来源：用户提供的行业基础数据包'
+}), '星驿充电｜新能源汽车充电服务经营复盘');
+assert.equal(deckMetaPolicy.footerText({
+  footer:'脱敏模拟数据，仅用于 PPT 生成测试，不代表真实公司，外发前需替换为真实授权数据'
+}), '');
+assert.deepEqual(deckMetaPolicy.deckMetaFields({
+  showMeta:true,
+  metaFields:['organization', 'audience'],
+  organization:'客户经营复盘｜脱敏模拟数据',
+  audience:'董事会'
+}), ['客户经营复盘', '董事会']);
+assert.equal(canvasMotifs.canvasMotifKind({ industry:'beauty-consumer' }, {}, 'light'), 'none');
+assert.equal(canvasMotifs.canvasMotifKind({ industry:'beauty-consumer', enableDecorativeMotifs:true }, {}, 'light'), 'beauty-editorial-veil');
 assert.equal(canvasMotifs.canvasMotifKind({}, { compositionPlan:{ backgroundMotif:'none' } }, 'dark'), 'none');
 canvasMotifs.TintedBackground(motifSlide, {});
 assert.equal(motifSlide.background.color, 'F8FAFC');
 assert.equal(motifOps.filter(([kind]) => kind === 'rect').length, 2);
 canvasMotifs.addCanvasMotif(motifSlide, {}, {}, 'dark', { outer:2, inner:1 });
+assert.ok(!motifOps.some(([kind]) => kind === 'darkCircle'));
+canvasMotifs.addCanvasMotif(motifSlide, { enableDecorativeMotifs:true }, {}, 'dark', { outer:2, inner:1 });
 assert.ok(motifOps.some(([kind]) => kind === 'darkCircle'));
 assert.equal(helpers.panelFill(), 'FFFFFF');
 

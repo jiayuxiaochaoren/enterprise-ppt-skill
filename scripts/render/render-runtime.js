@@ -16,6 +16,9 @@ const { createStrategyRenderers, createStrategyEvidenceRenderers } = require('./
 const { createTimelineRenderers } = require('./page-families/timeline');
 const { createTocRenderers } = require('./page-families/toc');
 const { createEnergyIndustryRenderers } = require('./industry/energy');
+const {
+  energyServiceReportRendererNameFor
+} = require('./industry/energy-service-report');
 const { createFallbackRenderers } = require('./fallback-renderer');
 
 function createRenderRuntime(baseRendererApi = {}) {
@@ -67,6 +70,8 @@ function createRenderRuntime(baseRendererApi = {}) {
   }
 
   function industryRendererFor(plan = {}, s = {}) {
+    const energyServiceRendererName = energyServiceReportRendererNameFor(plan, s);
+    if (energyServiceRendererName) return build().industryRenderers[energyServiceRendererName] || null;
     const role = baseRendererApi.designForSlide(plan, s).role;
     const rendererName = ((baseRendererApi.industryProfile(plan).layoutOverrides || {})[role]);
     if (!rendererName) return null;

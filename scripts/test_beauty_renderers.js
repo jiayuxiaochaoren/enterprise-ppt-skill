@@ -195,9 +195,9 @@ function assertTextBox(ops, text, expected) {
 function assertCatalogFeaturedListShell(ops) {
   assert(findRect(ops, { x:0.92, y:2.04, w:4.70, h:3.96 }), 'expected featured lead panel');
   [
-    [6.14, 2.04, 5.42, 1.02],
-    [6.14, 3.32, 5.42, 1.02],
-    [6.14, 4.60, 5.42, 1.02]
+    [6.14, 2.04, 5.42, 1.10],
+    [6.14, 3.40, 5.42, 1.10],
+    [6.14, 4.76, 5.42, 1.10]
   ].forEach(([x, y, w, h]) => {
     assert(findRect(ops, { x, y, w, h }), `expected featured list row ${x}/${y}`);
   });
@@ -216,24 +216,66 @@ function assertCatalogFeaturedListShell(ops) {
   [
     ['Product 1', { x:1.20, y:5.12, w:1.82, h:0.18 }],
     ['Product 1 body', { x:3.16, y:5.10, w:1.86, h:0.22 }],
-    ['Product 2', { x:7.76, y:2.30, w:1.42, h:0.16 }],
-    ['Product 2 body', { x:9.34, y:2.27, w:1.62, h:0.22 }],
-    ['Product 3', { x:7.76, y:3.58, w:1.42, h:0.16 }],
-    ['Product 3 body', { x:9.34, y:3.55, w:1.62, h:0.22 }],
-    ['Product 4', { x:7.76, y:4.86, w:1.42, h:0.16 }],
-    ['Product 4 body', { x:9.34, y:4.83, w:1.62, h:0.22 }]
+    ['Product 2', { x:7.06, y:2.29, w:1.42, h:0.18 }],
+    ['Product 2 body', { x:8.72, y:2.26, w:2.28, h:0.36 }],
+    ['Product 3', { x:7.06, y:3.65, w:1.42, h:0.18 }],
+    ['Product 3 body', { x:8.72, y:3.62, w:2.28, h:0.36 }],
+    ['Product 4', { x:7.06, y:5.01, w:1.42, h:0.18 }],
+    ['Product 4 body', { x:8.72, y:4.98, w:2.28, h:0.36 }]
   ].forEach(([text, expected]) => assertTextBox(ops, text, expected));
 
   [
-    ['02', 6.42, 2.42],
-    ['03', 6.42, 3.70],
-    ['04', 6.42, 4.98]
+    ['02', 6.38, 2.34],
+    ['03', 6.38, 3.70],
+    ['04', 6.38, 5.06]
   ].forEach(([label, x, y]) => {
     const op = ops.find(candidate => candidate.name === 'addNumber'
       && candidate.args[1] === label
       && Math.abs((candidate.args[2] || {}).x - x) < 0.001
       && Math.abs((candidate.args[2] || {}).y - y) < 0.001);
     assert(op, `expected featured row number ${label}`);
+  });
+}
+
+function findTextAt(ops, text, expected) {
+  return ops.find(candidate => {
+    if (candidate.name !== 'addText' || candidate.args[1] !== text) return false;
+    const box = candidate.args[2] || {};
+    return Math.abs(box.x - expected.x) < 0.001
+      && Math.abs(box.y - expected.y) < 0.001
+      && Math.abs(box.w - expected.w) < 0.001
+      && Math.abs(box.h - expected.h) < 0.001;
+  });
+}
+
+function assertFeatureStripInfoRows(ops) {
+  const rowH = 0.74;
+  const gap = 0.22;
+  [1, 2, 3, 4].forEach(i => {
+    const rowY = 2.02 + (i - 1) * (rowH + gap);
+    const rowCenter = rowY + rowH / 2;
+    const titleY = rowY + (rowH - 0.24) / 2;
+    const bodyY = rowY + (rowH - 0.44) / 2;
+    assert(findRect(ops, { x:6.58, y:rowY, w:5.18, h:rowH }), `expected feature strip row ${i}`);
+    const numberOp = ops.find(candidate => candidate.name === 'addNumber'
+      && candidate.args[1] === String(i).padStart(2, '0')
+      && Math.abs((candidate.args[2] || {}).x - 6.82) < 0.001
+      && Math.abs((candidate.args[2] || {}).y - (rowCenter - 0.19)) < 0.001);
+    assert(numberOp, `expected centered feature row number ${i}`);
+    const numberBox = numberOp.args[2] || {};
+    assertNear(numberBox.y + numberBox.h / 2, rowCenter, `feature row ${i} number center`);
+    const titleOp = findTextAt(ops, `Product ${i}`, { x:7.36, y:titleY, w:0.78, h:0.24 });
+    assert(titleOp, `expected centered feature row title ${i}`);
+    const titleBox = titleOp.args[2] || {};
+    assertNear(titleBox.y + titleBox.h / 2, rowCenter, `feature row ${i} title center`);
+    assert.strictEqual(titleBox.valign, 'mid', `feature row ${i} title valign`);
+    assert.strictEqual(titleBox.fit, false, `feature row ${i} title fit disabled`);
+    const bodyOp = findTextAt(ops, `Product ${i} body`, { x:8.32, y:bodyY, w:3.14, h:0.44 });
+    assert(bodyOp, `expected centered feature row body ${i}`);
+    const bodyBox = bodyOp.args[2] || {};
+    assertNear(bodyBox.y + bodyBox.h / 2, rowCenter, `feature row ${i} body center`);
+    assert.strictEqual(bodyBox.valign, 'mid', `feature row ${i} body valign`);
+    assert.strictEqual(bodyBox.fit, false, `feature row ${i} body fit disabled`);
   });
 }
 
@@ -283,6 +325,7 @@ function main() {
   assertBeautyHeaders(ops);
   assertCatalogFeaturedListShell(ops);
   assertCatalogGridCardsShell(ops);
+  assertFeatureStripInfoRows(ops);
   assertProductHeroShell(ops);
   assertBeautyFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 45, 'expected beauty renderer text output');

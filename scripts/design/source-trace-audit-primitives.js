@@ -26,7 +26,7 @@ function createMetricTraceEntries({
     ].filter(Boolean));
     const slideEntries = Array.isArray(slideTrace.sources) ? slideTrace.sources : [];
     const entries = Array.isArray(trace.sources) ? trace.sources.slice() : [];
-    if (!ids.length && !entries.length && sourceTraceIsPlanAuthored(slideTrace)) {
+    if (!ids.length && !entries.length && slideEntries.length) {
       return slideEntries.slice();
     }
     ids.forEach(id => {

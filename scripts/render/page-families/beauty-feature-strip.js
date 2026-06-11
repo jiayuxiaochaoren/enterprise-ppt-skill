@@ -1,12 +1,14 @@
 const {
   productItems
 } = require('./beauty-product-data');
+const {
+  renderNumberedInfoRows
+} = require('../../components/numbered-info-rows');
 
 function createFeatureStripRenderer(ctx = {}, deps = {}) {
   const C = ctx.colors();
   const {
     addLabel,
-    addNumber,
     addRect,
     addSmartPhotoPanel,
     addText,
@@ -42,14 +44,24 @@ function createFeatureStripRenderer(ctx = {}, deps = {}) {
     } else {
       genericShowcaseField(slide, visualPanel.x, visualPanel.y, visualPanel.w, visualPanel.h, 'INSPECTABLE OBJECT');
     }
-    items.slice(0,4).forEach((it,i)=>{
-      const x = 6.76 + (i%2)*2.48;
-      const y = 2.12 + Math.floor(i/2)*1.62;
-      const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : C.muted));
-      addRect(slide, x, y, 2.16, 1.16, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:i===0?accent:C.line, transparency:i===0?22:16, width:0.48} });
-      addNumber(slide, String(i+1).padStart(2,'0'), { x:x+0.22, y:y+0.26, w:0.34, h:0.12, fontSize:7.0, color:accent });
-      addText(slide, itemTitle(it, `能力 ${i+1}`), { x:x+0.68, y:y+0.20, w:1.12, h:0.15, fontSize:9.8, bold:true, color:C.text, fit:'shrink' });
-      addText(slide, itemBody(it), { x:x+0.22, y:y+0.66, w:1.62, h:0.20, fontSize:7.2, color:C.body, fit:'shrink' });
+    renderNumberedInfoRows(Object.assign({}, ctx, { slide, colors:C }), items, {
+      id:'beauty-feature-strip-rows',
+      x:6.58,
+      y:2.02,
+      w:5.18,
+      rowH:0.74,
+      gap:0.22,
+      titleX:7.36,
+      titleW:0.78,
+      bodyX:8.32,
+      bodyW:3.14,
+      titleH:0.24,
+      bodyH:0.44,
+      titleFontSize:10.4,
+      bodyFontSize:9.2,
+      itemTitle,
+      itemBody,
+      panelFill
     });
     addText(slide, s.note || '产品展示页优先让对象可被看清，再用少量卖点解释价值。', { x:0.94, y:6.42, w:8.0, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
     drawFooter(slide, plan);

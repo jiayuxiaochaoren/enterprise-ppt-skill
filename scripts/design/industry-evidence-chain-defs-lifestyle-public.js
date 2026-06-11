@@ -13,18 +13,15 @@ module.exports = {
       {
         "id": "experience-claim",
         "position": 1,
-        "label": "体验主张",
+        "label": "场景主张",
         "components": [
-          "hero-image",
-          "caption-bar"
+          "hero-image"
         ],
         "coveragePolicy": {
           "requiredAll": [
             "hero-image"
           ],
-          "optional": [
-            "caption-bar"
-          ],
+          "optional": [],
           "minHits": 1
         },
         "proofObjects": [
@@ -56,23 +53,18 @@ module.exports = {
         "position": 2,
         "label": "场景/旅程承诺",
         "components": [
-          "value-chain",
-          "proof-gallery",
-          "caption-bar"
+          "value-chain"
         ],
         "coveragePolicy": {
           "requiredAll": [
             "value-chain"
           ],
-          "optional": [
-            "proof-gallery",
-            "caption-bar"
-          ],
+          "optional": [],
           "minHits": 1
         },
         "proofObjects": [
           "customer-journey-map",
-          "experience-proof-grid"
+          "scene-conversion-board"
         ],
         "routes": [
           "timeline:customer-journey",
@@ -98,25 +90,20 @@ module.exports = {
       {
         "id": "conversion-retention-evidence",
         "position": 3,
-        "label": "转化/复访证据",
+        "label": "转化/复访读数",
         "components": [
-          "kpi-strip",
-          "proof-gallery",
-          "caption-bar"
+          "kpi-strip"
         ],
         "coveragePolicy": {
           "requiredAll": [
             "kpi-strip"
           ],
-          "optional": [
-            "proof-gallery",
-            "caption-bar"
-          ],
+          "optional": [],
           "minHits": 1
         },
         "proofObjects": [
           "conversion-scorecard",
-          "experience-proof-grid"
+          "scene-conversion-board"
         ],
         "routes": [
           "metric-comparison:conversion",

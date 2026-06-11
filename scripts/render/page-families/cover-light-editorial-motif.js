@@ -33,14 +33,29 @@ function createCoverLightEditorialMotif(ctx = {}, deps = {}) {
     ctx.addRect(slide, 0.82, 0.76, 2.42, 0.035, C.accent, C.accent);
     if (motif === 'redline-editorial') {
       ctx.addRect(slide, 0, 0, W, 0.10, C.accent, C.accent);
-      ctx.addRect(slide, 8.52, 0, 0.10, H, C.accent, C.accent, {
-        fill:{color:C.accent, transparency:16},
+      ctx.addRect(slide, 0.82, 6.10, 1.72, 0.030, C.accent, C.accent, {
+        fill:{color:C.accent, transparency:18},
         line:{color:C.accent, transparency:100}
       });
+    } else if (motif === 'editorial-rule') {
+      ctx.addRect(slide, 0.82, 6.10, 1.26, 0.030, C.accent, C.accent, {
+        fill:{color:C.accent, transparency:18},
+        line:{color:C.accent, transparency:100}
+      });
+      ctx.addRect(slide, 2.24, 6.10, 0.42, 0.030, C.cyan, C.cyan, {
+        fill:{color:C.cyan, transparency:50},
+        line:{color:C.cyan, transparency:100}
+      });
     } else if (motif === 'calm-field') {
-      ctx.addLightBreathingCircle(slide, 8.92, 0.62, 3.76, C.softBlue, 34);
+      ctx.addRect(slide, 0.82, 6.10, 1.10, 0.030, C.accent, C.accent, {
+        fill:{color:C.accent, transparency:20},
+        line:{color:C.accent, transparency:100}
+      });
     } else {
-      ctx.addLightBreathingCircle(slide, 8.92, 0.62, 3.76, C.softBlue, 44);
+      ctx.addRect(slide, 0.82, 6.10, 1.10, 0.030, C.accent, C.accent, {
+        fill:{color:C.accent, transparency:20},
+        line:{color:C.accent, transparency:100}
+      });
     }
   }
 

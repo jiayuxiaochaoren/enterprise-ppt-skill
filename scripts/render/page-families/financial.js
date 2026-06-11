@@ -46,6 +46,7 @@ function createFinancialRenderers(ctx = {}) {
     chartGridWithCommentary,
     financeMetricDashboard,
     financialKpiSnapshot,
+    industryChartSlide,
     healthcareServiceScorecard,
     manufacturingOeeBoard,
     quarterlyResultsSummary,

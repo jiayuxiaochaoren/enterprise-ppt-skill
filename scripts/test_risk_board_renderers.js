@@ -101,7 +101,7 @@ function assertRiskMatrixShell(ops) {
     && op.args[3] === 3.78
     && op.args[4] === 3.74);
   assert(matrix, 'expected risk matrix grid panel');
-  ['外发门禁', 'MITIGATION QUEUE'].forEach(label => {
+  ['外发门禁', '缓解队列'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected risk matrix label ${label}`
@@ -219,13 +219,13 @@ function main() {
   integrated.riskAdaptive(slide, {}, riskSection({ variant:'risk-matrix' }), 7);
   integrated.riskTable(slide, {}, riskSection(), 8);
 
-  assertKicker(ops, 'RISK MATRIX');
+  assertKicker(ops, '风险矩阵');
   assertKicker(ops, 'CONTROL SYSTEM');
   assertKicker(ops, 'RESPONSIBILITY LOOP');
   assertKicker(ops, 'GUIDANCE AND RISK BOARD');
   assertKicker(ops, 'MATERIALITY MATRIX');
   assertKicker(ops, 'GOVERNANCE TABLE EDITORIAL');
-  assertKicker(ops, 'GOVERNANCE BOARD');
+  assertKicker(ops, '治理看板');
   assertRiskMatrixShell(ops);
   assertGuidanceAndRiskBoardShell(ops);
   assertMaterialityMatrixBoardShell(ops);

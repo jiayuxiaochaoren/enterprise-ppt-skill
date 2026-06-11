@@ -1,3 +1,7 @@
+const {
+  createRightSideCardRenderer
+} = require('./right-side-card');
+
 function createClosingThankYouRenderer(ctx = {}, deps = {}) {
   const { closingMeta, drawFooter } = deps;
   const C = ctx.colors();
@@ -6,7 +10,6 @@ function createClosingThankYouRenderer(ctx = {}, deps = {}) {
   const {
     addHairline,
     addLabel,
-    addLightBreathingCircle,
     addNumber,
     addRect,
     addText,
@@ -16,18 +19,23 @@ function createClosingThankYouRenderer(ctx = {}, deps = {}) {
     surfaceFill,
     typeSize
   } = ctx;
+  const {
+    drawRightSideCard
+  } = createRightSideCardRenderer(ctx);
 
   return function closingThankYou(slide, plan, s, idx) {
     const showMeta = s.showMeta !== false && s.meta !== false;
     const bg = surfaceFill();
     slide.background = { color:bg };
     addRect(slide, 0, 0, W, H, bg, bg);
-    addLightBreathingCircle(slide, 8.20, 0.38, 4.28, C.softBlue, 36);
-    addRect(slide, 8.72, 0.86, 2.86, 5.44, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-    addText(slide, 'THANK', { x:9.04, y:1.26, w:1.86, h:0.38, fontFace:profileFont('latin'), fontSize:22.0, bold:true, color:C.accent, align:'right', fit:'shrink' });
-    addText(slide, 'YOU', { x:9.72, y:1.72, w:1.18, h:0.38, fontFace:profileFont('latin'), fontSize:22.0, bold:true, color:C.cyan, align:'right', fit:'shrink' });
-    addNumber(slide, String(idx || '').padStart(2,'0'), { x:10.82, y:2.34, w:0.36, h:0.12, fontSize:7.6, color:C.darkMuted || 'A8B3C3', align:'right' });
-    addHairline(slide, 9.26, 3.20, 1.16, C.accent, 0, 0.58);
+    addNumber(slide, String(idx || '').padStart(2,'0'), { x:11.54, y:0.72, w:0.62, h:0.20, fontSize:11.2, color:C.accent, align:'right', fit:'shrink' });
+    const side = drawRightSideCard(slide, {}, { fill:C.ink, railColor:C.accent, railTransparency:18 });
+    const sideWords = Array.isArray(s.thankYouWords)
+      ? s.thankYouWords.slice(0, 2)
+      : [s.thankYouWordTop || '谢谢', s.thankYouWordBottom || '交流'];
+    addText(slide, sideWords[0] || '谢谢', { x:side.x+0.36, y:side.y+0.42, w:1.86, h:0.38, fontFace:profileFont('editorial'), fontSize:22.0, bold:true, color:C.accent, align:'right', fit:'shrink' });
+    addText(slide, sideWords[1] || '交流', { x:side.x+0.80, y:side.y+0.88, w:1.42, h:0.38, fontFace:profileFont('editorial'), fontSize:22.0, bold:true, color:C.cyan, align:'right', fit:'shrink' });
+    addHairline(slide, side.x+0.54, side.y+2.06, 1.16, C.accent, 0, 0.58);
     const explicitContacts = s.contacts || s.contact;
     const contacts = explicitContacts || (!showMeta || metaDisabled(plan) ? [] : [
       plan.organization,
@@ -35,13 +43,18 @@ function createClosingThankYouRenderer(ctx = {}, deps = {}) {
       plan.date
     ].filter(Boolean));
     const contactList = Array.isArray(contacts) ? contacts : String(contacts || '').split(/[｜|/]/).map(v => v.trim()).filter(Boolean);
-    contactList.slice(0,3).forEach((v,i)=>{
-      const y = 3.76 + i*0.46;
-      addLabel(slide, ['ORG', 'AUD', 'DATE'][i] || `INFO ${i+1}`, { x:9.26, y, w:0.56, h:0.09, fontSize:5.4, color:i===0?C.accent:(i===1?C.cyan:C.violet), charSpace:0.6 });
-      addText(slide, String(v), { x:10.00, y:y-0.02, w:0.82, h:0.12, fontSize:7.2, color:C.captionOnImage, fit:'shrink', align:'right' });
+    const sideItems = contactList.length ? contactList : [
+      s.note || s.claim || s.subtitle || copyFallback(plan, 'closingSimpleSubtitle'),
+      s.channelNote || '渠道节奏与内容口径确认',
+      s.reviewNote || closingMeta(plan) || '责任人与复盘节点同步'
+    ].filter(Boolean);
+    sideItems.slice(0,3).forEach((v,i)=>{
+      const y = side.y + 2.62 + i*0.46;
+      addLabel(slide, ['信息', '口径', '复盘'][i] || `信息 ${i+1}`, { x:side.x+0.54, y, w:0.56, h:0.09, fontSize:5.4, color:i===0?C.accent:(i===1?C.cyan:C.violet), charSpace:0 });
+      addText(slide, String(v), { x:side.x+1.24, y:y-0.03, w:1.02, h:0.16, fontSize:7.2, color:C.captionOnImage, fit:'shrink', align:'right', breakLine:true });
     });
 
-    addLabel(slide, s.label || 'CLOSING', { x:0.86, y:1.02, w:1.20, h:0.13, fontSize:6.9, color:C.accent, charSpace:1.0 });
+    addLabel(slide, s.label || '结束页', { x:0.86, y:1.02, w:1.20, h:0.13, fontSize:6.9, color:C.accent, charSpace:0 });
     addText(slide, s.title || copyFallback(plan, 'closingSimpleTitle'), {
       x:0.84, y:2.16, w:5.86, h:0.78,
       fontSize:typeSize('coverTitle', 34.0), bold:true, color:C.text, fit:'shrink'

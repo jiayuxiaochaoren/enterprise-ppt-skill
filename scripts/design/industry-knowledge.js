@@ -16,8 +16,31 @@ const INDUSTRY_EXPRESSION_RULES = {
     proofObjects: ['lookbook', 'member-growth-board', 'growth-flywheel', 'member-cohort-ladder', 'channel-efficiency-matrix', 'monthly-pulse-trend', 'waterfall-bridge']
   },
   'energy-utility': {
-    requiredRoutes: ['case-gallery:site-evidence', 'toc-clean:energy-sequence', 'closing:energy-stage', 'industry-chart:dispatch-map'],
-    proofObjects: ['site-evidence', 'dispatch-map', 'asset-readout', 'energy-stage']
+    requiredRoutes: [
+      'case-gallery:site-evidence',
+      'toc-clean:energy-sequence',
+      'chapter-divider:energy-sequence',
+      'closing:energy-stage',
+      'industry-chart:dispatch-map',
+      'industry-chart:monthly-pulse-trend',
+      'industry-chart:waterfall-bridge',
+      'industry-chart:channel-efficiency-matrix',
+      'industry-chart:downtime-pareto',
+      'report-board'
+    ],
+    proofObjects: [
+      'site-evidence',
+      'dispatch-map',
+      'asset-readout',
+      'energy-stage',
+      'metric-board',
+      'monthly-pulse-trend',
+      'waterfall-bridge',
+      'channel-efficiency-matrix',
+      'downtime-pareto',
+      'report-board',
+      'quarterly-results-summary'
+    ]
   },
   'saas-technology': {
     requiredRoutes: ['architecture:platform-capability-map', 'metric-comparison:adoption-revenue-board', 'case-gallery:prototype-flow', 'industry-chart:adoption-funnel'],
@@ -37,7 +60,7 @@ const INDUSTRY_EXPRESSION_RULES = {
   },
   'lifestyle-food-tourism-fashion': {
     requiredRoutes: ['case-gallery:product-or-place-gallery', 'timeline:customer-journey-map', 'metric-comparison:conversion-scorecard'],
-    proofObjects: ['lifestyle-editorial-cover', 'product-or-place-gallery', 'customer-journey-map', 'experience-proof-grid']
+    proofObjects: ['lifestyle-editorial-cover', 'product-or-place-gallery', 'customer-journey-map', 'scene-conversion-board']
   }
 };
 
@@ -131,20 +154,26 @@ const INDUSTRY_KNOWLEDGE_BASE = {
   },
   'energy-utility': {
     label: '能源/站点运营',
-    narrativeArchetype: '站点接入 -> 运行监测 -> 告警处置 -> 调度策略 -> 收益复盘',
+    narrativeArchetype: '站点接入 -> 运行监测 -> 经营分层 -> 体验处置 -> 收益复盘',
     entities: {
-      asset: ['电站', '储能', 'PCS', 'BMS', '逆变器', '站点', '负荷', 'SOC', '告警'],
-      actor: ['调度员', '运维班组', '站长', '资产方', '交易员', '安全负责人'],
-      risk: ['告警', '过载', '温控', 'SOC不足', '弃光', '收益波动', '安全'],
-      metric: ['SOC', '充放电效率', '可用率', '告警时长', '收益', '负荷峰谷']
+      asset: ['电站', '充电站', '充电枪', '快充站', '储能', 'PCS', 'BMS', '逆变器', '站点', '负荷', 'SOC', '告警'],
+      actor: ['调度员', '运维班组', '站长', '区域运营', '车队客户', '渠道负责人', '资产方', '安全负责人'],
+      risk: ['告警', '过载', '温控', 'SOC不足', '排队', '故障', '停车费', '价格规则', '收益波动', '安全'],
+      metric: ['SOC', '充放电效率', '可用率', '在线率', '枪效', '收入', '毛利率', '回款', '复购率', '告警时长', '收益', '负荷峰谷']
     },
     proofObjects: [
       { id: 'dispatch-map', route: 'industry-chart:dispatch-map', fields: ['dispatchMap', 'siteDispatch', 'loadStorageDispatch'], keywords: ['调度地图', '站点调度', 'SOC', '负荷', '储能策略'], depth: 'dispatch-control' },
       { id: 'site-evidence', route: 'case-gallery:site-evidence', fields: ['images', 'visual'], keywords: ['站端', '现场', '电站', '储能', '资产证据'], depth: 'site-proof' },
-      { id: 'asset-readout', route: 'metric-comparison', fields: ['metrics'], keywords: ['可用率', '告警', '充放电', '收益', '负荷曲线'], depth: 'asset-scorecard' },
+      { id: 'asset-readout', route: 'metric-comparison', fields: ['metrics'], keywords: ['可用率', '在线率', '枪效', '告警', '充放电', '收益', '负荷曲线'], depth: 'asset-scorecard' },
+      { id: 'monthly-pulse-trend', route: 'industry-chart:monthly-pulse-trend', fields: ['monthlyPulse', 'monthlyTrend', 'trend'], keywords: ['月度', '同比', '环比', '收入趋势', '增长信号', '1月', '2月', '3月'], depth: 'business-metric' },
+      { id: 'waterfall-bridge', route: 'industry-chart:waterfall-bridge', fields: ['waterfallBridge', 'targetBridge', 'bridge'], keywords: ['业务线', '收入结构', '自营快充站', '车队', '聚合平台', '目的地站', '收入接近均衡'], depth: 'revenue-structure' },
+      { id: 'channel-efficiency-matrix', route: 'industry-chart:channel-efficiency-matrix', fields: ['channelEfficiency', 'mediaEfficiency', 'scatter', 'channels'], keywords: ['渠道', 'ROI', '预算', '新增客户', '获客', '分层'], depth: 'channel-economics' },
+      { id: 'downtime-pareto', route: 'industry-chart:downtime-pareto', fields: ['downtimePareto', 'pareto', 'lossPareto', 'reviewSentiment'], keywords: ['高峰排队', '站点故障', '价格规则', '停车费', '体验短板', '帕累托'], depth: 'operations-quality' },
+      { id: 'report-board', route: 'report-board', fields: ['businessLogic', 'sections'], keywords: ['经营口径', '管理动作', '业务线', '套餐', '复购', '运营质量'], depth: 'operating-loop' },
+      { id: 'quarterly-results-summary', route: 'metric-comparison:quarterly-results-summary', fields: ['metrics'], keywords: ['利润修复', '回款', '毛利率', '现金转换', 'KPI'], depth: 'finance-quality' },
       { id: 'hub-spoke', route: 'architecture:hub-spoke', fields: ['nodes', 'hubs', 'layers'], keywords: ['区域集控', '站点网络', 'hub', 'spoke', '多站'], depth: 'network-architecture' }
     ],
-    depthGates: { minProofObjects: 2, requiredDomains: ['dispatch-control', 'site-proof'] }
+    depthGates: { minProofObjects: 3, requiredDomains: ['business-metric', 'operations-quality'] }
   },
   'saas-technology': {
     label: 'SaaS/科技',

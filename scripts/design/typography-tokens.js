@@ -123,7 +123,8 @@ function createTypographyTokenHelpers({
     const explicitRole = roleOverride || next.typeRole || next.textRole || '';
     const role = explicitRole || typeRoleForSize(next.fontSize || 10.2, next);
     const token = resolveTypeToken(plan, role, next);
-    const allowTiny = next.allowTiny === true;
+    const hasCjk = textHasCjk(text);
+    const allowTiny = next.allowTiny === true && !hasCjk;
     const isFooter = Number(next.y || 0) >= 6.62 || role === 'sourceNote' || role === 'caption';
     const isMicroSlot = Number(next.w || 0) < 0.72 || Number(next.h || 0) < 0.11 || role === 'microLabel';
     let size = next.fontSize == null || !next.lockFontSize ? token.fontSize : Number(next.fontSize);
@@ -131,13 +132,18 @@ function createTypographyTokenHelpers({
       const qa = visualSystem.visualQA || {};
       const bodyToken = resolveTypeToken(plan, 'body');
       const cjkBodyMin = Math.max(Number(qa.preferredBodyMin || 8.8), Number(bodyToken.min || 8.8));
-      const captionMin = Number(qa.preferredCaptionMin || 7.2);
+      const captionMin = hasCjk
+        ? Math.max(Number(qa.preferredCaptionMin || 7.2), Number(qa.preferredCjkCaptionMin || qa.minRenderedCjkSize || 8.0))
+        : Number(qa.preferredCaptionMin || 7.2);
       const roleMin = Number(token.min || (isFooter ? captionMin : cjkBodyMin));
-      const floor = isFooter ? Math.min(roleMin, captionMin) : (textHasCjk(text) ? Math.max(roleMin, cjkBodyMin) : roleMin);
-      if (textHasCjk(text) || role !== 'microLabel') size = Math.max(size, floor);
+      const floor = isFooter
+        ? (hasCjk ? Math.max(roleMin, captionMin) : Math.min(roleMin, captionMin))
+        : (hasCjk ? Math.max(roleMin, cjkBodyMin) : roleMin);
+      if (hasCjk || role !== 'microLabel') size = Math.max(size, floor);
     }
     next.fontSize = Number(size.toFixed ? size.toFixed(2) : size);
     next.fontFace = fontForTypeText(plan, text, token, next);
+    if (hasCjk && next.fit === 'shrink') next.fit = false;
     if (token.tracking != null && next.charSpace == null) next.charSpace = token.tracking;
     if (token.weight === 'bold' && next.bold == null) next.bold = true;
     if (token.fitPolicy && next.fit == null) next.fit = token.fitPolicy;

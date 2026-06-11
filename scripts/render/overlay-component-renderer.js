@@ -109,13 +109,15 @@ function createOverlayComponentRenderer(deps = {}) {
     }
     if (componentId === 'proof-gallery' && !ownedByNative) {
       const items = overlayProofItemsForSlide(plan, s);
+      const images = overlayImagesForSlide(plan, s);
+      if (!items.length && !images.length) return { id:componentId, mode:'not-rendered', rendered:false, reason:'no-explicit-proof-gallery-content' };
       const z = slot || {};
       const proof = s.proof || {};
       const component = drawOverlayProofGallery(slide, items, Object.assign({
         dark,
-        images:overlayImagesForSlide(plan, s),
+        images,
         labelPrefix:grammarDecision.proofLabel,
-        caption:proof.explanation || s.caption || (s.visual && s.visual.caption) || s.subtitle || '',
+        caption:s.caption || (s.visual && s.visual.caption) || proof.caption || proof.sourceNote || proof.source_note || '',
         showSourceNote,
         sourceNote:componentSourceNoteText(plan, s)
       }, z));
@@ -149,11 +151,12 @@ function createOverlayComponentRenderer(deps = {}) {
       }
     }
     if (componentId === 'caption-bar' && !ownedByNative) {
-      const caption = (s.proof && s.proof.explanation) || s.caption || s.subtitle || s.claim || '';
+      const proof = s.proof || {};
+      const caption = s.caption || (s.visual && s.visual.caption) || proof.caption || proof.sourceNote || proof.source_note || '';
       if (caption) {
         const z = slot || { x:0.86, y:6.50, w:4.80, h:0.28 };
         deps.addCaptionBar(slide, z.x, z.y, z.w, z.h, {
-          label:grammarDecision.captionLabel || 'PROOF',
+          label:grammarDecision.captionLabel || '证据',
           caption,
           dark,
           transparency:dark ? 72 : 86

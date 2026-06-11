@@ -29,7 +29,12 @@ function createCoverLightEditorialRenderer(ctx = {}, deps = {}) {
     const x0 = motif === 'ivory-editorial' ? 4.72 : 0.84;
     const metaColor = motif === 'ivory-editorial' ? C.muted : C.muted;
     addCoverKicker(slide, plan, industry, { x:x0, y:1.02, w:3.80, h:0.14, fontSize:7.1, color:metaColor, charSpace:1.1 });
-    ctx.addText(slide, title, { x:x0, y:1.92, w:5.92, h:1.02, fontSize:ctx.typeSize('coverTitle', 31.0), bold:true, color:C.text, breakLine:true, fit:'shrink' });
+    ctx.addText(slide, title, {
+      x:x0, y:1.92, w:5.92, h:1.02,
+      fontFace:ctx.profileFont('editorial'),
+      fontSize:ctx.typeSize('coverTitle', 31.0),
+      bold:true, color:C.text, breakLine:true, fit:'shrink'
+    });
     const insight = s.coverInsight || plan.coverInsight || industry.insight || s.subtitle || plan.subtitle;
     ctx.addText(slide, insight, { x:x0+0.02, y:3.34, w:5.55, h:0.20, fontSize:10.8, color:C.body, fit:'shrink' });
     ctx.addRect(slide, x0+0.02, 3.82, 0.88, 0.045, C.accent, C.accent);

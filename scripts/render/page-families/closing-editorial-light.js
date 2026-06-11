@@ -24,12 +24,12 @@ function createClosingEditorialLightRenderer(ctx = {}, helpers = {}) {
   const { drawClosingEditorialMeta } = createClosingEditorialMetaRenderer(ctx);
 
   return function closingEditorialLight(slide, plan, s, idx) {
-    drawClosingEditorialChrome(slide, idx);
+    const sideBox = drawClosingEditorialChrome(slide, idx, s);
     drawClosingEditorialCopy(slide, plan, s);
 
     const actions = closingActions(s);
     drawClosingEditorialActions(slide, actions);
-    drawClosingEditorialMeta(slide, plan, s, closingMeta);
+    drawClosingEditorialMeta(slide, plan, s, closingMeta, sideBox);
     drawFooter(slide, plan, { x:0.86, y:6.98, w:7.80, h:0.13, fontSize:7.2, fit:'shrink' });
   };
 }

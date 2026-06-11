@@ -35,9 +35,9 @@ function createProofObjectHelpers({
 
   function proofObjectIdForSlide(s = {}) {
     const value = String(
-      (s.proof && s.proof.id) ||
       s.proofObject ||
       s.proof_object ||
+      (s.proof && s.proof.id) ||
       s.layoutVariant ||
       s.variant ||
       ''

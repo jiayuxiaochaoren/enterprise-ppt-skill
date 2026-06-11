@@ -28,7 +28,7 @@ function createRetailMemberGrowthBoard(ctx = {}, deps = {}) {
 
   return function retailMemberGrowthBoard(slide, plan, s, idx) {
     drawScorecardHeader(slide, s, idx, {
-      kicker:'MEMBER GROWTH BOARD',
+      kicker:'会员增长看板',
       title:'会员增长指标',
       titleW:5.8,
       subtitle:'把复购、客单和门店转化放进会员经营节奏，而不是只展示数字。',
@@ -50,7 +50,7 @@ function createRetailMemberGrowthBoard(ctx = {}, deps = {}) {
     drawRetailLoyaltyHero(slide, repurchase, hero);
 
     const cohort = { x:4.08, y:2.48, w:3.34, h:2.76 };
-    drawRetailCohortStory(slide, cohort);
+    drawRetailCohortStory(slide, cohort, metrics);
 
     const right = { x:7.72, y:3.02, w:3.08, h:2.42 };
     drawRetailSignalCards(slide, basket, conversion, right);

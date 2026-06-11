@@ -42,7 +42,7 @@ function createCoverCoreRenderers(ctx = {}) {
   const {
     airyConceptOpening,
     beautyBrandEditorialCover
-  } = createSpecialtyCoverRenderers(ctx, { colors, fileExists });
+  } = createSpecialtyCoverRenderers(ctx, { colors, coverTitleText, fileExists });
   const {
     coverFieldRendererFor
   } = createCoverFieldRenderers(ctx, { colors });

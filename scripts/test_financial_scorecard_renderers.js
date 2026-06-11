@@ -158,13 +158,19 @@ function assertRetailScorecardShell(ops) {
     && op.args[3] === 2.42
     && op.args[4] === 2.94);
   assert(hero, 'expected retail loyalty hero panel');
-  ['LOYALTY SIGNAL', 'COHORT / PRODUCT STORY', 'BASKET', 'STORE CONVERSION'].forEach(label => {
+  ['复购风险信号', '问题分层', '商品信号', '履约信号'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected retail scorecard label ${label}`
     );
   });
-  ['复购率', '活跃会员', '满意度', '41%'].forEach(text => {
+  ['LOYALTY SIGNAL', 'COHORT / PRODUCT STORY', 'BASKET', 'STORE CONVERSION'].forEach(label => {
+    assert(
+      !ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `retail scorecard should not emit English template label ${label}`
+    );
+  });
+  ['复购率', '响应效率', '满意度', '41%'].forEach(text => {
     assert(
       ops.some(op => op.args.includes(text)),
       `expected retail scorecard content ${text}`
@@ -236,7 +242,7 @@ function main() {
 
   assertKicker(ops, 'OEE / LINE READOUT');
   assertKicker(ops, 'PATIENT SERVICE SCORECARD');
-  assertKicker(ops, 'MEMBER GROWTH BOARD');
+  assertKicker(ops, '会员增长看板');
   assertKicker(ops, 'ADOPTION / REVENUE BOARD');
   assert(ops.some(op => op.name === 'addArrowLine'), 'expected flow arrows');
   assert(ops.some(op => op.name === 'addShape'), 'expected native shapes');

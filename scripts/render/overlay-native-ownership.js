@@ -14,7 +14,7 @@ const NATIVE_VARIANT_COMPONENTS = {
   'member-growth-board': ['kpi-strip', 'metric-strip', 'kpi-primary-metric', 'scorecard', 'proof-gallery', 'caption-bar'],
   'mission-statement-stage': ['content-card-grid', 'commentary-panel'],
   'people-proof-mosaic': ['proof-gallery', 'proof-gallery-grid', 'caption-bar', 'hero-image'],
-  'premium-closing-anchor': ['decision-panel', 'contact-block', 'editorial-end-card'],
+  'premium-closing-anchor': ['decision-panel', 'contact-block', 'editorial-end-card', 'hero-image'],
   'process-board': ['process-rail', 'value-chain'],
   'product-evidence-story': ['proof-gallery', 'caption-bar', 'hero-image', 'product-matrix'],
   'quarterly-results-summary': ['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'scorecard'],
@@ -62,6 +62,17 @@ function plannedComponentIdsForSlide(s = {}) {
   ].filter(Boolean);
 }
 
+function hasExplicitRiskMatrixData(s = {}) {
+  if (s.riskMatrix || s.risk_matrix || s.controlsMatrix || s.controls_matrix) return true;
+  const matrix = s.matrix;
+  if (!matrix) return false;
+  if (matrix === true) return true;
+  if (Array.isArray(matrix)) return matrix.length > 0;
+  if (typeof matrix !== 'object') return Boolean(matrix);
+  return ['items', 'points', 'cells', 'quadrants', 'rows', 'data', 'risks']
+    .some(field => Array.isArray(matrix[field]) && matrix[field].length);
+}
+
 function nativeOwnedComponentIdsFor(type = '', variant = '') {
   const ids = new Set();
   (NATIVE_VARIANT_COMPONENTS[variant] || []).forEach(id => ids.add(id));
@@ -80,6 +91,7 @@ function energyNativeOwnedComponentIds() {
   return new Set([
     'commentary-panel',
     'load-curve-band',
+    'navigation-sequence',
     'process-rail',
     'risk-register',
     'system-rail',
@@ -118,7 +130,14 @@ function createNativeComponentIdHelpers({
       ['kpi-strip', 'metric-strip', 'kpi-primary-metric', 'chart-commentary-panel', 'member-ladder', 'basket-metric-strip'].forEach(id => ids.add(id));
       chartComponentIds.forEach(id => ids.add(id));
     }
-    if (type === 'toc' || type === 'toc-clean') ids.add('navigation-sequence');
+    if (
+      type === 'toc' ||
+      type === 'toc-clean' ||
+      (type === 'chapter-divider' && (
+        (Array.isArray(s.items) && s.items.length) ||
+        (Array.isArray(s.sections) && s.sections.length)
+      ))
+    ) ids.add('navigation-sequence');
     if (['two-column', 'two-column-clean', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks'].includes(type)) {
       ids.add('content-card-grid');
       if ((s.visual && s.visual.image) || s.image || (Array.isArray(s.images) && s.images.length) || (s.visual && Array.isArray(s.visual.images) && s.visual.images.length)) {
@@ -146,10 +165,10 @@ function createNativeComponentIdHelpers({
       if (Array.isArray(s.phases) || Array.isArray(s.actions) || Array.isArray(s.steps) || Array.isArray(s.timeline) || Array.isArray(s.milestones)) {
         ids.add('process-rail');
       }
-      if (/risk-matrix|materiality-matrix/.test(variant) || s.matrix) ids.add('risk-matrix');
+      if (/risk-matrix|materiality-matrix/.test(variant) || hasExplicitRiskMatrixData(s)) ids.add('risk-matrix');
     }
     if (type === 'report-board') {
-      ['proof-board', 'commentary-panel'].forEach(id => ids.add(id));
+      ['proof-board', 'commentary-panel', 'content-card-grid'].forEach(id => ids.add(id));
     }
     if (type === 'closing') {
       ['decision-panel', 'contact-block', 'editorial-end-card'].forEach(id => ids.add(id));

@@ -144,10 +144,16 @@ function assertChartGridShell(ops) {
       && candidate.args[4] === h);
     assert(op, `expected chart grid panel ${x}/${y}`);
   });
-  ['CHART 01', 'CHART 02', 'CHART 03', 'COMMENTARY RAIL'].forEach(label => {
+  ['CHART 01', 'CHART 02', 'CHART 03', '经营判断'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected chart grid label ${label}`
+    );
+  });
+  ['COMMENTARY RAIL', '图表评论区必须解释数据为什么改变下一步动作。'].forEach(text => {
+    assert(
+      !ops.some(op => op.args.includes(text)),
+      `chart grid should not leak template copy ${text}`
     );
   });
   ['Revenue', 'Ahead of plan', 'Better mix', 'Hold spend discipline'].forEach(text => {

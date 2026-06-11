@@ -101,6 +101,12 @@ function createOverlayZoneHelpers(deps = {}) {
 
   function energyOccupiedZonesForRenderer(rendererName = '') {
     const base = [z('footer-strip', 0.72, 6.88, 11.10, 0.36, 'native-footer')];
+    if (/^energyServiceReport/.test(String(rendererName || ''))) {
+      return [
+        z('energy-service-report-stage', 0, 0, W(), H(), 'native-stage'),
+        ...base
+      ];
+    }
     const map = {
       energyToc: [
         z('title-block', 0.72, 0.66, 5.30, 1.35, 'native-title'),

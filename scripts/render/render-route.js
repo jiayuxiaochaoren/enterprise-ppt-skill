@@ -51,7 +51,7 @@ function renderRouteForSlide(plan = {}, slide = {}, idx = 0, opts = {}) {
       alias: match.alias || undefined
     },
     layoutVariant: slide.layoutVariant || slide.variant || '',
-    proofObject: (slide.proof && slide.proof.id) || slide.proofObject || slide.proof_object || '',
+    proofObject: slide.proofObject || slide.proof_object || (slide.proof && slide.proof.id) || '',
     componentPlan: compactComponentPlan(slide.componentPlan),
     assetPolicy: assetPolicyForSlide(slide),
     routeSanitization: slide.routeSanitization || slide.normalizationAudit || null,

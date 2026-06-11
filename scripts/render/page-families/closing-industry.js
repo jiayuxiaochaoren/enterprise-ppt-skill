@@ -32,6 +32,7 @@ function createClosingIndustryRenderers(ctx = {}, helpers = {}) {
       subtitleH:0.22,
       subtitleSize:10.6,
       subtitleColor:C.body,
+      canvasOpts:opts.canvasOpts || { motif:'none' },
       idx:idx || ''
     });
   }

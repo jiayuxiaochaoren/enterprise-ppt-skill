@@ -6,6 +6,9 @@ const {
 const {
   createCoverCoreRenderers
 } = require('./render/page-families/cover-core');
+const {
+  createCoverCopyHelpers
+} = require('./render/page-families/cover-copy');
 
 function createSlide(ops) {
   return {
@@ -160,23 +163,24 @@ function hasRect(ops, expected) {
 
 function assertLightEditorialShell(ops) {
   assert(hasRect(ops, { x:0, y:0, w:13.333, h:7.5 }), 'expected light editorial full background');
-  assert(hasRect(ops, { x:8.98, y:1.28, w:2.74, h:3.96 }), 'expected light editorial proof panel');
-  const circle = ops.find(op => op.name === 'addLightBreathingCircle'
-    && op.args[1] === 8.92
-    && op.args[2] === 0.62
-    && op.args[3] === 3.76
-    && op.args[4] === 'EFF6FF'
-    && op.args[5] === 34);
-  assert(circle, 'expected calm-field light editorial breathing circle');
+  assert(hasRect(ops, { x:8.50, y:1.34, w:2.90, h:4.86 }), 'expected light editorial proof panel');
+  assert(hasRect(ops, { x:8.335, y:1.34, w:0.035, h:4.86 }), 'expected light editorial proof rail aligned with panel');
+  const oldDetachedRail = hasRect(ops, { x:8.54, y:0.92, w:0.024, h:4.90 });
+  assert(!oldDetachedRail, 'old detached editorial proof rail should not render');
+  assert(!ops.some(op => op.name === 'addLightBreathingCircle'), 'light editorial proof panel should not add a right-side circle motif');
   [
-    ['01', { x:9.28, y:1.64, w:0.44, h:0.18, fontSize:10, color:'2563EB' }],
-    ['Proof title', { x:9.28, y:2.20, w:1.78, h:0.18, fontSize:11.2, color:'111827' }],
-    ['Industry insight', { x:9.28, y:2.80, w:1.74, h:0.52, fontSize:7.6, color:'334155' }]
+    ['01', { x:8.92, y:1.76, w:0.44, h:0.18, fontSize:10.2, color:'2563EB' }],
+    ['Proof title', { x:8.92, y:2.38, w:2.02, h:0.22, fontSize:12.2, color:'111827' }],
+    ['Industry insight', { x:8.92, y:3.12, w:1.98, h:0.62, fontSize:8.4, color:'334155' }]
   ].forEach(([text, expected]) => {
     const op = ops.find(candidate => {
       if (candidate.name !== 'addText' || candidate.args[1] !== text) return false;
       const opts = candidate.args[2] || {};
-      return Object.entries(expected).every(([key, value]) => opts[key] === value);
+      return Object.entries(expected).every(([key, value]) => (
+        typeof value === 'number'
+          ? Math.abs((opts[key] || 0) - value) < 0.001
+          : opts[key] === value
+      ));
     });
     assert(op, `expected light editorial proof text ${text}`);
   });
@@ -231,6 +235,17 @@ function main() {
   const ops = [];
   const specRef = { current:{ coverTone:'dark', coverMotif:'editorial-rule' } };
   const ctx = createFakeCtx(ops, specRef);
+  const copyHelpers = createCoverCopyHelpers(ctx);
+  assert.strictEqual(
+    copyHelpers.coverTitleText('AI 工作台进入\n团队级采用阶段'),
+    'AI 工作台进入 团队级采用阶段',
+    'short cover titles should not keep manual line breaks'
+  );
+  assert.strictEqual(
+    copyHelpers.coverTitleText('新能源汽车充电服务经营复盘'),
+    '新能源汽车充电服务经营复盘',
+    'medium-length cover titles should prefer one-line rendering'
+  );
   const direct = createCoverCoreRenderers(ctx);
   const integrated = createCoverRenderers(ctx);
   assert.strictEqual(typeof direct.coverDark, 'function');
@@ -246,7 +261,13 @@ function main() {
   specRef.current = { coverTone:'light', coverMotif:'calm-field' };
   renderWith({ title:'Light Cover', date:'2026' }, { title:'Light Cover', subtitle:'Insight' }, specRef, integrated, ops);
   specRef.current = { coverTone:'dark', coverMotif:'editorial-rule' };
-  renderWith({ title:'Beauty Cover' }, { variant:'beauty-brand-editorial-cover', title:'Beauty Cover' }, specRef, direct, ops);
+  renderWith(
+    { title:'栀颜集美妆个护品牌经营复盘', organization:'栀颜集' },
+    { variant:'beauty-brand-editorial-cover', title:'栀颜集美妆个护品牌经营复盘' },
+    specRef,
+    direct,
+    ops
+  );
   renderWith({ title:'Airy Cover' }, { variant:'airy-concept-opening', title:'Airy Cover' }, specRef, direct, ops);
   renderWith({
     title:'Manufacturing Cover',
@@ -265,7 +286,15 @@ function main() {
   assert(ops.some(op => op.name === 'addEnergyPhotoBackdrop'), 'expected energy photo fallback');
   assert(ops.some(op => op.name === 'addArrowLine'), 'expected manufacturing proof flow');
   assert(ops.some(op => op.name === 'addShape'), 'expected airy object shape');
-  assert(hasOp(ops, 'addLabel', 'BEAUTY BRAND WORLD'), 'expected beauty cover branch');
+  assert(hasOp(ops, 'addLabel', '美妆品牌世界'), 'expected localized beauty cover branch');
+  assert(hasOp(ops, 'addLabel', '首发到手价'), 'expected localized launch price label');
+  assert(hasOp(ops, 'addText', '栀颜集'), 'expected beauty cover to use the plan organization as brand mark');
+  ['BEAUTY BRAND WORLD', 'LAUNCH PRICE', 'PRODUCT TEXTURE', 'LUMÉA'].forEach(text => {
+    assert(
+      !ops.some(op => op.args.includes(text)),
+      `beauty cover should not render English fixture label ${text}`
+    );
+  });
   assert(hasOp(ops, 'addLabel', 'CONCEPT OPENING'), 'expected airy cover branch');
   assert(hasOp(ops, 'addLabel', 'MANUFACTURING PROOF'), 'expected manufacturing cover branch');
   assertShowcaseStageShell(ops);

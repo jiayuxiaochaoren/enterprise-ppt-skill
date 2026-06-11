@@ -7,7 +7,7 @@ function createRiskMatrixQueueRenderer(ctx = {}) {
   } = ctx;
 
   function drawRiskMatrixQueue(slide, rows, lineColor, darkRisk) {
-    addLabel(slide, 'MITIGATION QUEUE', { x:8.04, y:2.18, w:1.36, h:0.10, fontSize:6.4, color:C.accent, charSpace:0.8 });
+    addLabel(slide, '缓解队列', { x:8.04, y:2.18, w:1.36, h:0.10, fontSize:6.4, color:C.accent, charSpace:0 });
     rows.slice(0,4).forEach((r,i)=>{
       const y = 2.58 + i*0.70;
       const color = r[1] === '高' ? C.risk : (r[1] === '低' ? C.cyan : C.accent);

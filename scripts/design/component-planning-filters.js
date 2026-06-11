@@ -64,9 +64,15 @@ function filterComponentPlanCandidates(options = {}) {
     Array.isArray(slide.productStory);
   const energyCurveAllowed = plan.industry !== 'energy-utility' || slide.loadCurve || slide.loadCurveBand || slide.curve || slide.trend || slide.monthlyTrend || slide.monthlyPulse ||
     /曲线|趋势|负荷|SOC|load|curve|trend|pulse/i.test(flattenText(slide));
+  const visual = slide.visual || {};
+  const hasRenderableImageEvidence = Boolean(slide.image || visual.image) ||
+    (Array.isArray(slide.images) && slide.images.length > 0) ||
+    (Array.isArray(visual.images) && visual.images.length > 0);
+  const valueCreationSuppressesStaleVisualEvidence = valueCreationMapOwnsProcess && !hasRenderableImageEvidence;
   return components
     .filter(component => !avoid.has(component.id))
     .filter(component => type !== 'portfolio-table' || !['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'product-matrix'].includes(component.id))
+    .filter(component => !valueCreationSuppressesStaleVisualEvidence || !['hero-image', 'caption-bar', 'proof-gallery', 'proof-gallery-grid'].includes(component.id))
     .filter(component => !['risk-register', 'risk-matrix'].includes(component.id) || riskRegisterAllowed)
     .filter(component => component.id !== 'process-rail' || processRailAllowed)
     .filter(component => component.id !== 'system-rail' || systemRailAllowed)

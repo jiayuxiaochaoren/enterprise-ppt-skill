@@ -119,9 +119,14 @@ assert.equal(textHelpers.isPageFolioText('03', { x:11.7, y:0.8, fontSize:12, ali
 const textSlide = { added:[], addText(text, opts) { this.added.push({ text, opts }); } };
 assert.equal(textHelpers.addText(textSlide, '业务增长', { x:1, y:1, w:1.2, h:0.10, fontSize:6, typeRole:'body' }), true);
 assert.equal(textSlide.added[0].opts.fontSize, 8.8);
+assert.equal(textSlide.added[0].opts.fit, undefined);
 assert.equal(textSlide.__codexTextBoxes[0].cjkChars, 4);
 assert.equal(textSlide.__codexTextBoxes[0].region, 'chrome');
 assert.equal(textSlide.__codexTextBoxes[0].shrinkRisk, false);
+const tinyCjkSlide = { added:[], addText(text, opts) { this.added.push({ text, opts }); } };
+assert.equal(textHelpers.addText(tinyCjkSlide, '中文标签', { x:1, y:6.8, w:1.2, h:0.10, fontSize:6, fit:'shrink', allowTiny:true, typeRole:'caption' }), true);
+assert.ok(tinyCjkSlide.added[0].opts.fontSize >= 8.0);
+assert.equal(tinyCjkSlide.added[0].opts.fit, undefined);
 const riskTextSlide = { added:[], addText(text, opts) { this.added.push({ text, opts }); } };
 textHelpers.recordTextBoxMeta(
   riskTextSlide,
@@ -295,7 +300,10 @@ assert.equal(
 );
 assert.equal(overlayRenderer.overlayMetricsForSlide({}, { title:'Revenue +12% YoY' })[0].value, '+12%');
 assert.deepEqual(overlayRenderer.overlayPointsForSlide({ phases:[{ title:'A' }, { title:'B' }] }).map(item => item.title), ['A', 'B']);
-assert.equal(overlayRenderer.overlayProofItemsForSlide({}, { rows:[['Risk', 'Action']] })[0].body, 'Action');
+assert.deepEqual(overlayRenderer.overlayProofItemsForSlide({}, { rows:[['Risk', 'Action']] }), []);
+assert.deepEqual(overlayRenderer.overlayProofItemsForSlide({}, { metrics:[{ label:'ARR', value:'42%' }] }), []);
+assert.deepEqual(overlayRenderer.overlayProofItemsForSlide({}, { proof:{ explanation:'Fallback proof text' } }), []);
+assert.equal(overlayRenderer.overlayProofItemsForSlide({}, { evidenceItems:[{ title:'Proof', body:'Explicit evidence' }] })[0].body, 'Explicit evidence');
 assert.deepEqual(overlayRenderer.overlayProductItemsForSlide({}, {
   products:[{ name:'Serum', scene:'Counter', efficacy:'Hydration', businessMeaning:'Repeat purchase' }]
 })[0], {
@@ -304,6 +312,9 @@ assert.deepEqual(overlayRenderer.overlayProductItemsForSlide({}, {
   benefit:'Hydration',
   businessMeaning:'Repeat purchase'
 });
+assert.deepEqual(overlayRenderer.overlayProductItemsForSlide({}, {
+  cards:[{ title:'Serum', body:'Card copy should not become product matrix content' }]
+}), []);
 function proofGalleryCtx(ops) {
   return {
     slide:{},
@@ -563,7 +574,7 @@ assert.ok(
 assert.ok(directDeploymentSlide.shapes.some(shape => shape.type === 'ellipse'));
 const energySlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };
 energyRenderers.energyToc(energySlide, {}, { title:'运行路径', items:['A', 'B'] }, 2);
-assert.ok(energyCalls.some(([kind, args]) => kind === 'label' && args[1] === 'OPERATING SEQUENCE'));
+assert.ok(energyCalls.some(([kind, args]) => kind === 'label' && args[1] === '运营序列'));
 assert.ok(energySlide.shapes.length > 0);
 let directNavigationFooterDark = null;
 const directNavigation = createEnergyNavigationRenderers(energyCtx, {
@@ -572,11 +583,11 @@ const directNavigation = createEnergyNavigationRenderers(energyCtx, {
   }
 });
 const directEnergySlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };
-const directLabelCountBefore = energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === 'OPERATING SEQUENCE').length;
+const directLabelCountBefore = energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === '运营序列').length;
 directNavigation.energyToc(directEnergySlide, {}, { title:'运行路径', items:['A', 'B'] }, 2);
 assert.equal(directNavigationFooterDark, true);
 assert.ok(
-  energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === 'OPERATING SEQUENCE').length > directLabelCountBefore
+  energyCalls.filter(([kind, args]) => kind === 'label' && args[1] === '运营序列').length > directLabelCountBefore
 );
 assert.ok(directEnergySlide.shapes.length > 0);
 const situationSlide = { shapes:[], addShape(type, opts) { this.shapes.push({ type, opts }); } };

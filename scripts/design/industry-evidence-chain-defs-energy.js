@@ -1,7 +1,7 @@
 module.exports = {
   "energy-infrastructure": {
     "id": "energy-infrastructure",
-    "label": "能源基建",
+    "label": "能源/站点运营",
     "industryIds": [
       "energy-utility",
       "energy-infrastructure"
@@ -34,6 +34,8 @@ module.exports = {
         "proofObjects": [
           "site-evidence",
           "asset-readout",
+          "metric-board",
+          "quarterly-results-summary",
           "energy-stage"
         ],
         "routes": [
@@ -53,6 +55,9 @@ module.exports = {
           "可用率",
           "站点",
           "电站",
+          "充电枪",
+          "在线率",
+          "枪效",
           "储能",
           "SOC",
           "availability",
@@ -65,18 +70,16 @@ module.exports = {
         "label": "工程/调度系统",
         "components": [
           "value-chain",
-          "workflow-rail",
-          "proof-gallery",
-          "caption-bar"
+          "workflow-rail"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "value-chain"
+          "requiredAny": [
+            "value-chain",
+            "workflow-rail"
           ],
           "optional": [
-            "workflow-rail",
-            "proof-gallery",
-            "caption-bar"
+            "value-chain",
+            "workflow-rail"
           ],
           "minHits": 1
         },
@@ -111,37 +114,127 @@ module.exports = {
         ]
       },
       {
+        "id": "navigation-operating-path",
+        "position": 2,
+        "label": "运营路径",
+        "components": [
+          "navigation-sequence"
+        ],
+        "coveragePolicy": {
+          "requiredAll": [
+            "navigation-sequence"
+          ],
+          "optional": [],
+          "minHits": 1
+        },
+        "proofObjects": [
+          "metric-board",
+          "navigation-sequence"
+        ],
+        "routes": [
+          "chapter-divider:energy-sequence",
+          "toc-clean:energy-sequence"
+        ],
+        "fields": [
+          "items",
+          "sections"
+        ],
+        "keywords": [
+          "汇报路径",
+          "运营路径",
+          "接入",
+          "监测",
+          "闭环",
+          "复盘"
+        ]
+      },
+      {
+        "id": "management-action-board",
+        "position": 2,
+        "label": "经营动作拆解",
+        "components": [
+          "content-card-grid",
+          "commentary-panel"
+        ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "content-card-grid",
+            "commentary-panel"
+          ],
+          "optional": [
+            "content-card-grid",
+            "commentary-panel"
+          ],
+          "minHits": 1
+        },
+        "proofObjects": [
+          "report-board"
+        ],
+        "routes": [
+          "report-board"
+        ],
+        "fields": [
+          "businessLogic",
+          "sections",
+          "cards",
+          "items"
+        ],
+        "keywords": [
+          "业务线",
+          "车队",
+          "聚合",
+          "套餐",
+          "渠道",
+          "经营口径",
+          "管理动作",
+          "复购"
+        ]
+      },
+      {
         "id": "operations-return-evidence",
         "position": 3,
         "label": "运行/收益证据",
         "components": [
-          "quality-scorecard",
           "kpi-strip",
-          "risk-register"
+          "chart-commentary-panel"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "risk-register"
+          "requiredAny": [
+            "kpi-strip",
+            "chart-commentary-panel"
           ],
           "optional": [
-            "quality-scorecard",
-            "kpi-strip"
+            "kpi-strip",
+            "chart-commentary-panel"
           ],
           "minHits": 1
         },
         "proofObjects": [
           "asset-readout",
           "load-curve-band",
-          "dispatch-map"
+          "dispatch-map",
+          "monthly-pulse-trend",
+          "waterfall-bridge",
+          "downtime-pareto",
+          "channel-efficiency-matrix",
+          "quarterly-results-summary"
         ],
         "routes": [
           "metric-comparison",
-          "industry-chart:dispatch"
+          "industry-chart:dispatch",
+          "industry-chart:monthly-pulse-trend",
+          "industry-chart:waterfall-bridge",
+          "industry-chart:downtime-pareto",
+          "industry-chart:channel-efficiency-matrix"
         ],
         "fields": [
           "metrics",
           "loadCurve",
           "monthlyTrend",
+          "monthlyPulse",
+          "waterfallBridge",
+          "downtimePareto",
+          "channelEfficiency",
           "revenue",
           "yield",
           "alerts",
@@ -151,6 +244,11 @@ module.exports = {
         "keywords": [
           "运行",
           "收益",
+          "收入",
+          "毛利",
+          "回款",
+          "复购",
+          "高峰排队",
           "告警",
           "充放电",
           "峰谷",

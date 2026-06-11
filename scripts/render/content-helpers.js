@@ -19,6 +19,9 @@ function publicSlideNote(note = '') {
   if (/(第[一二三四五六七八九十0-9]+页|后续页面|后续再|该页|本页仅|用于测试|测试\s*closing|示例|占位|材料显示|企业\s*PDF|模型抽取|用户材料自动整理|proof object|页面族|优先呈现|优先表达|阅读顺序|普通目录|普通简介|closing)/i.test(text)) {
     return '';
   }
+  if (/(脱敏模拟数据|不代表真实|外发前需替换|真实授权数据|仅用于[^，。；\n]{0,24}(?:测试|生成|演示)|simulated data|dummy data|test data|not real|placeholder)/i.test(text)) {
+    return '';
+  }
   if (/(选择逻辑|决策逻辑|生成依据|整理依据|数据来源|材料来源|来源[:：]|来自.*(?:会议纪要|口径|测算|材料|碎片)|会议纪要|口径备注|测算碎片|source trace|provenance|internal note)/i.test(text)) {
     return '';
   }

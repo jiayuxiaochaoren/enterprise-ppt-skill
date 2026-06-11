@@ -1,4 +1,5 @@
 const { renderKpiStrip } = require('./kpi-strip');
+const { renderNumberedInfoRows } = require('./numbered-info-rows');
 const { renderProofGallery } = require('./proof-gallery');
 const { renderProductMatrix } = require('./product-matrix');
 const { renderRiskRegister } = require('./risk-register');
@@ -57,6 +58,7 @@ module.exports = {
   renderKpiStrip,
   renderLineChart,
   renderMatrixChart,
+  renderNumberedInfoRows,
   renderParetoChart,
   renderProofGallery,
   renderProductMatrix,

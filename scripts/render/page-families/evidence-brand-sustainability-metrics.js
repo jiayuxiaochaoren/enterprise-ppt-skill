@@ -1,3 +1,7 @@
+const {
+  centeredStackY
+} = require('../layout/card-layout');
+
 function createSustainabilityMetricsReadout(ctx = {}) {
   const {
     addHairline,
@@ -48,10 +52,23 @@ function createSustainabilityMetricsReadout(ctx = {}) {
     readout.forEach((row, i) => {
       const x = 1.00 + i * 3.38;
       const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : C.violet);
-      addText(slide, row[0], { x, y:6.24, w:0.64, h:0.15, fontSize:8.8, bold:true, color:accent, fit:false });
+      const rowY = 6.16;
+      const rowH = 0.48;
+      const labelH = 0.15;
+      const bodyH = 0.32;
+      const [labelY, bodyY] = centeredStackY(rowY, rowH, [labelH, bodyH], 0.01);
+      addRect(slide, x - 0.08, rowY, 3.14, rowH, panelFill(), accent, {
+        fill:{ color:panelFill(), transparency:0 },
+        line:{ color:accent, transparency:44, width:0.28 }
+      });
+      addRect(slide, x - 0.08, rowY, 3.14, 0.028, accent, accent, {
+        fill:{ color:accent, transparency:i === 0 ? 0 : 18 },
+        line:{ color:accent, transparency:100 }
+      });
+      addText(slide, row[0], { x, y:labelY, w:0.64, h:labelH, fontSize:8.8, bold:true, color:accent, fit:'shrink', valign:'mid' });
       addText(slide, row[1], {
-        x:x+0.74, y:6.22, w:2.36, h:0.36,
-        fontSize:7.6, color:C.body, fit:false, breakLine:true, valign:'top'
+        x:x+0.74, y:bodyY, w:2.20, h:bodyH,
+        fontSize:7.6, color:C.body, fit:'shrink', breakLine:true, valign:'mid'
       });
     });
   }

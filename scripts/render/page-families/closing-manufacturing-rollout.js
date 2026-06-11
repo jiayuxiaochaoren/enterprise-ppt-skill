@@ -1,3 +1,7 @@
+const {
+  createRightSideCardRenderer
+} = require('./right-side-card');
+
 function createClosingManufacturingRolloutRenderer(ctx = {}, helpers = {}) {
   const C = ctx.colors();
   const {
@@ -17,20 +21,26 @@ function createClosingManufacturingRolloutRenderer(ctx = {}, helpers = {}) {
     panelFill,
     profileFont
   } = ctx;
+  const {
+    drawRightSideCard
+  } = createRightSideCardRenderer(ctx);
 
   return function closingManufacturingPilotRollout(slide, plan, s, idx) {
     drawClosingHeader(slide, plan, s, idx, { kicker:'PILOT ROLLOUT', titleW:6.90, titleSize:29.0, subtitleY:2.06, subtitleW:6.40 });
 
-    const core = { x:8.36, y:0.88, w:2.98, h:5.68 };
-    addRect(slide, core.x, core.y, core.w, core.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-    addLabel(slide, 'LINE 01', { x:core.x+0.32, y:1.28, w:0.86, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
-    addText(slide, 'PILOT', { x:core.x+0.32, y:1.72, w:1.78, h:0.36, fontFace:profileFont('latin'), fontSize:23.5, bold:true, color:C.white, fit:'shrink' });
-    addHairline(slide, core.x+0.34, 2.66, 1.16, C.accent, 0, 0.58);
+    const core = drawRightSideCard(slide, { x:8.42, y:1.34, w:2.98, h:4.86 }, {
+      fill:C.ink,
+      railColor:C.accent,
+      railTransparency:18
+    });
+    addLabel(slide, 'LINE 01', { x:core.x+0.32, y:core.y+0.36, w:0.86, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addText(slide, 'PILOT', { x:core.x+0.32, y:core.y+0.82, w:1.78, h:0.36, fontFace:profileFont('latin'), fontSize:23.5, bold:true, color:C.white, fit:'shrink' });
+    addHairline(slide, core.x+0.34, core.y+1.72, 1.16, C.accent, 0, 0.58);
     addText(slide, s.decision || s.note || copyFallback(plan, 'closingNote'), {
-      x:core.x+0.34, y:3.10, w:1.94, h:0.58, fontSize:8.6, bold:true, color:C.captionOnImage, fit:'shrink', breakLine:true
+      x:core.x+0.34, y:core.y+2.16, w:1.94, h:0.58, fontSize:8.6, bold:true, color:C.captionOnImage, fit:'shrink', breakLine:true
     });
     ['设备对象', '工单闭环', 'OEE复盘'].forEach((label,i)=>{
-      const y = 4.42 + i*0.42;
+      const y = core.y + 3.50 + i*0.42;
       addNumber(slide, String(i+1).padStart(2,'0'), { x:core.x+0.34, y, w:0.28, h:0.09, fontSize:5.8, color:i===0?C.accent:(i===1?C.cyan:C.violet) });
       addText(slide, label, { x:core.x+0.76, y:y-0.02, w:0.92, h:0.11, fontSize:7.2, color:'CBD5E1', fit:'shrink' });
     });

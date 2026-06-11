@@ -4,7 +4,9 @@ function pageNumberLabel(idx) {
 
 function createPrimitiveChrome(ctx = {}, C = ctx.colors()) {
   function drawFooter(slide, plan, opts = {}) {
-    ctx.addText(slide, ctx.footerText(plan), {
+    const text = ctx.footerText(plan);
+    if (!text) return false;
+    ctx.addText(slide, text, {
       x:opts.x || 0.82,
       y:opts.y || 7.05,
       w:opts.w || 7.8,
@@ -13,6 +15,7 @@ function createPrimitiveChrome(ctx = {}, C = ctx.colors()) {
       color:opts.color || C.muted,
       fit:opts.fit
     });
+    return true;
   }
 
   function drawLightCanvasShell(slide) {

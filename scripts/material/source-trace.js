@@ -26,6 +26,8 @@ function pageRefForSource(source = {}, claim = {}, evidence = []) {
   const sourcePages = claim.source_pages || claim.sourcePages || {};
   if (sourcePages && typeof sourcePages === 'object' && sourcePages[source.id]) return sourcePages[source.id];
   const ev = evidence.find(item => sourceIdValues(item.source_ids, item.sourceIds).includes(source.id));
+  const evSourcePages = (ev && (ev.source_pages || ev.sourcePages)) || {};
+  if (evSourcePages && typeof evSourcePages === 'object' && evSourcePages[source.id]) return evSourcePages[source.id];
   return ev && (ev.page || ev.pageNumber || ev.source_page || ev.sourcePage || ev.page_ref || ev.pageRef);
 }
 
@@ -35,6 +37,8 @@ function excerptForSource(source = {}, claim = {}, evidence = []) {
   const sourceExcerpts = claim.source_excerpts || claim.sourceExcerpts || {};
   if (sourceExcerpts && typeof sourceExcerpts === 'object' && sourceExcerpts[source.id]) return firstTextExcerpt([sourceExcerpts[source.id]]);
   const ev = evidence.find(item => sourceIdValues(item.source_ids, item.sourceIds).includes(source.id));
+  const evSourceExcerpts = (ev && (ev.source_excerpts || ev.sourceExcerpts)) || {};
+  if (evSourceExcerpts && typeof evSourceExcerpts === 'object' && evSourceExcerpts[source.id]) return firstTextExcerpt([evSourceExcerpts[source.id]]);
   return firstTextExcerpt([
     ev && (ev.excerpt || ev.source_excerpt || ev.original_excerpt || ev.summary || ev.title),
     claim.support,

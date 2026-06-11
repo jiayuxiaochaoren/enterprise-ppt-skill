@@ -24,7 +24,7 @@ function createRiskBoardMatrixRenderer(ctx = {}, helpers = {}) {
 
   function riskMatrixSlide(slide, plan, s, idx) {
     const darkRisk = false;
-    drawRiskLightHeader(slide, s, idx, { kicker:'RISK MATRIX', fallbackTitle:'风险矩阵', titleW:5.5, chrome:true });
+    drawRiskLightHeader(slide, s, idx, { kicker:'风险矩阵', fallbackTitle:'风险矩阵', titleW:5.5, chrome:true });
     const rows = (s.rows || []).slice(0,6);
     const gate = { x:0.92, y:2.12, w:2.48, h:3.96 };
     drawRiskMatrixGate(slide, plan, s, gate, darkRisk);

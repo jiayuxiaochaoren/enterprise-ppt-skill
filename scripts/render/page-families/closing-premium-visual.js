@@ -4,6 +4,8 @@ function createPremiumClosingVisual(ctx = {}, C = ctx.colors()) {
     addLabel,
     addPhotoPanel,
     addRect,
+    canvasHeight,
+    canvasWidth,
     fileExists,
     galleryImages,
     mediaForRole,
@@ -14,25 +16,42 @@ function createPremiumClosingVisual(ctx = {}, C = ctx.colors()) {
     const imagePath = (s.visual && s.visual.image)
       ? resolveAssetPath(s.visual.image)
       : (galleryImages(plan, s)[0] || mediaForRole(plan, s, 'closing'));
-    return imagePath && fileExists(imagePath) ? imagePath : '';
+    if (!imagePath || !fileExists(imagePath)) return '';
+    if (/generated-product-hero\.png$/i.test(String(imagePath))) {
+      const scene = String(imagePath).replace(/generated-product-hero\.png$/i, 'generated-vanity-scene.png');
+      if (scene !== imagePath && fileExists(scene)) return scene;
+      const detail = String(imagePath).replace(/generated-product-hero\.png$/i, 'generated-vanity-detail.png');
+      if (detail !== imagePath && fileExists(detail)) return detail;
+    }
+    return imagePath;
   }
 
   function drawPremiumClosingVisual(slide, plan, s) {
     const imagePath = resolvePremiumClosingImage(plan, s);
+    const W = typeof canvasWidth === 'function' ? canvasWidth() : 13.333;
+    const H = typeof canvasHeight === 'function' ? canvasHeight() : 7.5;
     if (imagePath) {
-      addPhotoPanel(slide, imagePath, 6.22, 0.74, 5.64, 5.82, {
-        tone:'dark',
-        transparency:50,
-        stroke:C.accent,
-        strokeTransparency:62,
-        strokeWidth:0.40,
-        fit:'cover'
+      slide.addImage({
+        path:imagePath,
+        x:0,
+        y:0,
+        w:W,
+        h:2.72,
+        sizing:{ type:'cover', w:W, h:2.72 }
       });
-      addRect(slide, 6.22, 0.74, 5.64, 5.82, C.ink, C.ink, {
-        fill:{color:C.ink, transparency:82},
+      addRect(slide, 0, 0, W, 2.72, C.ink, C.ink, {
+        fill:{color:C.ink, transparency:42},
         line:{color:C.ink, transparency:100}
       });
-      addLabel(slide, 'DECISION MATERIALS', { x:6.54, y:1.02, w:1.76, h:0.10, fontSize:5.8, color:C.cyan, charSpace:0.8 });
+      addRect(slide, 0, 2.68, W, 0.05, C.accent, C.accent, {
+        fill:{color:C.accent, transparency:8},
+        line:{color:C.accent, transparency:100}
+      });
+      addRect(slide, 8.64, 0.56, 3.78, 0.52, C.ink, C.ink, {
+        fill:{color:C.ink, transparency:28},
+        line:{color:C.accent, transparency:58, width:0.36}
+      });
+      addLabel(slide, 'DECISION MATERIALS', { x:8.92, y:0.75, w:1.76, h:0.10, fontSize:5.8, color:C.cyan, charSpace:0.8 });
       return true;
     }
     addDarkBreathingCircle(slide, 8.62, 0.96, 3.70, 2.08, C.accent);

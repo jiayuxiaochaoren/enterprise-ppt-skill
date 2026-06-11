@@ -55,11 +55,43 @@ function validateExtraction(extraction = {}) {
   return errors;
 }
 
+function paletteForIndustry(industry = '', extraction = {}) {
+  const art = extraction.deck_art_direction || extraction.deckArtDirection || {};
+  const requested = art.palette || art.paletteName || '';
+  if ((industry === 'energy-utility' || industry === 'energy-infrastructure') &&
+    (!requested || requested === 'boardroom-ink')) {
+    return 'energy-ops-clean';
+  }
+  return requested || undefined;
+}
+
+function chargingServiceArtDirection(industry = '', extraction = {}, doc = {}) {
+  const art = Object.assign({}, extraction.deck_art_direction || extraction.deckArtDirection || {});
+  const text = [
+    doc.title,
+    doc.subtitle,
+    doc.organization,
+    doc.decision_goal,
+    ...(extraction.facts || []).map(f => f && f.text),
+    ...(extraction.claim_spine || []).map(c => c && (c.claim || c.support || c.proof_object))
+  ].filter(Boolean).join(' ');
+  if (industry !== 'energy-utility' || !/新能源汽车|充电服务|充电枪|快充站|车队|补能|站点|ROI/i.test(text)) return art;
+  return Object.assign({
+    reportType:'ev-charging-service-ops-review',
+    palette:'energy-ops-clean',
+    visualTemperament:'dark-cover-light-data-ops-report',
+    rendererPreference:'energy-service-report',
+    forbiddenReferenceSignals:['financial-strategy', 'beauty', 'consumer', 'saas', 'generic-kpi-deck'],
+    preferredReferenceSignals:['energy-utility', 'operations', 'service-quality', 'site-operations', 'charging-service']
+  }, art);
+}
+
 function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
   const errors = validateExtraction(extraction);
   if (errors.length) usageError(`invalid material extraction:\n- ${errors.join('\n- ')}`);
   const doc = extraction.document || {};
   const industry = doc.industry || ((bundle.textSummary && bundle.textSummary.industryCandidates && bundle.textSummary.industryCandidates[0] || {}).industry) || 'general-operations';
+  const deckArtDirection = chargingServiceArtDirection(industry, extraction, doc);
   const claims = extraction.claim_spine || [];
   const bodyClaims = claims.filter(c => !['cover', 'orientation'].includes(c.narrative_role));
   const title = doc.title || options.title || '材料整理汇报';
@@ -181,8 +213,8 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
     requestedSlideCount: targetContract.requested,
     targetSlides: Object.assign({}, targetContract, { actual: slides.length }),
     claimSpine: claimSpineContract(claims, extraction, bundle),
-    deckArtDirection: extraction.deck_art_direction || extraction.deckArtDirection || {},
-    palette: (extraction.deck_art_direction && extraction.deck_art_direction.palette) || (extraction.deckArtDirection && extraction.deckArtDirection.palette) || undefined,
+    deckArtDirection,
+    palette: paletteForIndustry(industry, extraction),
     visualMode: 'auto',
     visualIntent: (bundle.images || []).length >= 3 ? 'case-led' : 'strategy',
     title: displayTitle,
@@ -209,7 +241,7 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
       clarifications: extraction.clarifications || [],
       claimSpine: claimSpineContract(claims, extraction, bundle),
       targetSlides: Object.assign({}, targetContract, { actual: slides.length }),
-      deckArtDirection: extraction.deck_art_direction || extraction.deckArtDirection || {},
+      deckArtDirection,
       referenceContext: referenceContextForPrompt(bundle, { industry }),
       materialHygiene: materialHygieneSummary(bundle),
       dedupedSlides: dedupeReport,

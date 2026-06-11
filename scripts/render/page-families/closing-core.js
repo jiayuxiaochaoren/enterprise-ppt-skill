@@ -17,7 +17,8 @@ function createClosingCoreRenderers(ctx = {}) {
 
   function closingMeta(plan) {
     if (ctx.isCompanyIntroPlan(plan)) return ctx.footerText(plan);
-    return ctx.coverMetaText(plan) || ctx.footerText(plan);
+    if (ctx.metaDisabled(plan)) return '';
+    return ctx.coverMetaText(plan);
   }
 
   function closingActions(s = {}) {

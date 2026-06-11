@@ -11,15 +11,43 @@ function createMetricComparisonRenderer(ctx = {}, renderers = {}) {
     manufacturingOeeBoard,
     quarterlyResultsSummary,
     retailMemberGrowthBoard,
-    saasAdoptionRevenueBoard
+    saasAdoptionRevenueBoard,
+    industryChartSlide
   } = renderers;
   const {
     isVisualIndustry
   } = ctx;
   const genericMetricComparison = createGenericMetricComparisonRenderer(ctx);
+  const beautyChartVariants = new Set([
+    'monthly-pulse-trend',
+    'channel-efficiency-matrix',
+    'member-cohort-ladder',
+    'social-funnel',
+    'review-sentiment-pareto',
+    'waterfall-bridge'
+  ]);
+
+  function industryChartVariantFor(s = {}) {
+    const proofObject = s.proofObject || s.proof_object || '';
+    const chart = s.chartSpec || s.chart_spec || {};
+    const componentId = chart.componentId || '';
+    const kind = String(chart.kind || '').toLowerCase();
+    const key = [proofObject, componentId].find(value => beautyChartVariants.has(value));
+    if (key) return key;
+    if (kind === 'funnel') return 'social-funnel';
+    if (kind === 'pareto') return 'review-sentiment-pareto';
+    return '';
+  }
 
   return function metricComparison(slide, plan, s, idx) {
     const variant = ctx.variantOf(s, '');
+    const industryChartVariant = industryChartVariantFor(s);
+    if (industryChartSlide && industryChartVariant && (plan.industry === 'beauty-consumer' || isVisualIndustry(plan, 'brand-retail'))) {
+      return industryChartSlide(slide, plan, Object.assign({}, s, {
+        layoutVariant: industryChartVariant,
+        variant: industryChartVariant
+      }), idx);
+    }
     if (variant === 'brand-world-and-business-proof') return ctx.brandWorldBusinessProof(slide, plan, s, idx);
     if (variant === 'product-evidence-story') return ctx.productEvidenceStory(slide, plan, s, idx);
     if (variant === 'consumer-proof-photo-grid') return ctx.consumerProofPhotoGrid(slide, plan, s, idx);

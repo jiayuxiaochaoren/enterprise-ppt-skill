@@ -5,7 +5,7 @@ function createLightPageHeader(ctx = {}, C = ctx.colors(), chrome = {}) {
   } = chrome;
 
   return function drawLightPageHeader(slide, opts = {}) {
-    if (opts.canvas !== false) ctx.lightCanvas(slide);
+    if (opts.canvas !== false) ctx.lightCanvas(slide, opts.canvasOpts || {});
     ctx.sectionKicker(slide, opts.kicker || '', opts.x || 0.86, opts.y || 0.72, false);
     const titleOpts = {
       x:opts.titleX || 0.84,

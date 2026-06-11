@@ -10,8 +10,23 @@ function createCanvasMotifHelpers(core = {}, helpers = {}) {
   function canvasMotifKind(plan = {}, s = {}, tone = 'light', opts = {}) {
     if (opts.motif === 'none' || opts.field === false) return 'none';
     if (opts.motif) return opts.motif;
+    if (
+      plan.decorations === false ||
+      plan.disableDecorations === true ||
+      plan.disableDecorativeMotifs === true ||
+      s.decorations === false ||
+      s.disableDecorations === true ||
+      s.disableDecorativeMotifs === true ||
+      (s.visual && s.visual.decorations === false)
+    ) {
+      return 'none';
+    }
     const cp = compositionFor(s);
     if (cp.backgroundMotif) return cp.backgroundMotif;
+    const wantsDefaultDecor = plan.decorations === true ||
+      plan.enableDecorations === true ||
+      plan.enableDecorativeMotifs === true;
+    if (!wantsDefaultDecor) return 'none';
     if (plan.industry === 'beauty-consumer') return tone === 'dark' ? 'beauty-dark-veil' : 'beauty-editorial-veil';
     return tone === 'dark' ? 'breathing-circle-dark' : 'breathing-circle-light';
   }
@@ -31,7 +46,6 @@ function createCanvasMotifHelpers(core = {}, helpers = {}) {
       line:{ color:C.softBlue || 'FFF1F2', transparency:100 }
     });
     h.addHairline(slide, 8.92, 1.34, 2.02, C.accent, 90, 0.34);
-    h.addHairline(slide, 8.92, 5.72, 1.86, C.cyan, 92, 0.32);
   }
 
   function addCanvasMotif(slide, plan, s, tone = 'light', opts = {}) {

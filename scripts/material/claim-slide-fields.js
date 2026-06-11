@@ -29,21 +29,26 @@ function metricsFromClaim(claim = {}) {
 
 function attachMetricSourceTrace(metric = {}, sourceTrace = {}) {
   if (metric.sourceTrace || metric.source_trace) return metric;
-  const textSource = toArray(sourceTrace.sources).find(entry => entry && entry.kind !== 'image');
+  const hasMetricPage = entry => entry && (entry.page || entry.pageRef || entry.pageNumber || entry.sourcePage);
+  const hasMetricExcerpt = entry => entry && (entry.excerpt || entry.sourceExcerpt || entry.source_excerpt || entry.originalExcerpt);
+  const textSources = toArray(sourceTrace.sources).filter(entry => entry && entry.kind !== 'image');
+  const textSource = textSources.find(entry => hasMetricPage(entry) && hasMetricExcerpt(entry)) || textSources[0];
   if (!textSource) return metric;
   const sourceIds = sourceIdValues(metric.sourceId, metric.source_id, textSource.id);
   const sourceId = sourceIds[0] || '';
+  const page = metric.sourcePage || metric.source_page || textSource.page || textSource.pageRef || textSource.pageNumber || textSource.sourcePage;
+  const excerpt = metric.sourceExcerpt || metric.source_excerpt || textSource.excerpt || textSource.sourceExcerpt || textSource.source_excerpt || textSource.originalExcerpt;
   return Object.assign({}, metric, {
     sourceId,
-    sourcePage: metric.sourcePage || metric.source_page || textSource.page || textSource.pageRef || textSource.pageNumber,
-    sourceExcerpt: metric.sourceExcerpt || metric.source_excerpt || textSource.excerpt,
+    sourcePage: page,
+    sourceExcerpt: excerpt,
     sourceTrace: {
       version: 'metric-source-trace/v1',
       sourceIds,
       sources: [{
         id: sourceId,
-        page: metric.sourcePage || metric.source_page || textSource.page || textSource.pageRef || textSource.pageNumber,
-        excerpt: metric.sourceExcerpt || metric.source_excerpt || textSource.excerpt,
+        page,
+        excerpt,
         provenance: 'metric-source-excerpt'
       }]
     }

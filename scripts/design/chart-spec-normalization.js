@@ -106,6 +106,7 @@ function normalizeExistingChartSpec(slide = {}) {
   }
   const sufficiency = dataSufficiency(spec);
   const enriched = Object.assign({}, spec, {
+    unit: spec.unit || primaryUnit(spec, slide, spec.kind),
     sourceTrace,
     dataQuality: dataQualityForSpec(spec, slide, sourceTrace, sufficiency)
   });
@@ -138,7 +139,7 @@ function normalizeChartSpec(plan = {}, slide = {}, options = {}) {
     categories: data.categories || [],
     matrix: data.matrix || null,
     table: data.table || null,
-    unit: primaryUnit(data, slide),
+    unit: primaryUnit(data, slide, route.kind),
     period: slide.period || slide.timePeriod || slide.time_period || '',
     baseline: slide.baseline || slide.base || '',
     sourceTrace,
@@ -165,7 +166,7 @@ function normalizeChartSpec(plan = {}, slide = {}, options = {}) {
       componentId: CHART_COMPONENTS.kpi,
       series: kpiData.series,
       categories: kpiData.categories,
-      unit: primaryUnit(kpiData, slide),
+      unit: primaryUnit(kpiData, slide, 'kpi'),
       dataQuality: Object.assign({}, spec.dataQuality, {
         sufficient: true,
         downgraded: true,

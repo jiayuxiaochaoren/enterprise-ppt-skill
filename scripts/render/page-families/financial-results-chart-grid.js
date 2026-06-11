@@ -34,7 +34,8 @@ function createChartGridWithCommentary(ctx = {}, helpers = {}) {
     drawFinancialResultsChartCards(slide, metrics);
 
     drawFinancialResultsCommentaryRail(slide, s);
-    addText(slide, s.note || '图表评论区必须解释数据为什么改变下一步动作。', { x:0.94, y:6.42, w:8.8, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
+    const note = s.note || (s.chartSpec && s.chartSpec.insight) || ((s.businessLogic || {}).action) || '';
+    if (note) addText(slide, note, { x:0.94, y:6.42, w:8.8, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
     drawFooter(slide, plan);
   };
 }

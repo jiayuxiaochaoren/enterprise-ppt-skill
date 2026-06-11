@@ -41,7 +41,7 @@ function createValueTilesRenderer(ctx = {}, deps = {}) {
     addText(slide, lead.title, { x:1.18, y:3.04, w:3.65, h:0.38, fontSize:22.5, bold:true, color:C.white, fit:'shrink' });
     addText(slide, lead.body, { x:1.18, y:3.86, w:3.70, h:0.66, fontSize:10.8, color:'CBD5E1', valign:'top', fit:'shrink' });
     addHairline(slide, 1.18, 4.98, 0.90, C.accent, 0, 0.75);
-    addText(slide, 'MANAGEMENT OUTCOME', { x:1.18, y:5.24, w:1.62, h:0.10, fontSize:6.4, color:'64748B', charSpace:1.0 });
+    addText(slide, '经营结果', { x:1.18, y:5.24, w:1.00, h:0.10, fontSize:6.6, color:'64748B' });
     cards.slice(1,4).forEach((c,i)=>{
       const y = 2.22 + i*1.18;
       const accent = i===1 ? C.cyan : C.accent;
@@ -50,7 +50,7 @@ function createValueTilesRenderer(ctx = {}, deps = {}) {
       addText(slide, c.body, { x:7.30, y:y+0.42, w:4.18, h:0.30, fontSize:9.2, color:C.body, fit:'shrink' });
       addHairline(slide, 7.30, y+0.95, 4.0, 'D8E2EF', 12, 0.55);
     });
-    if (s.note) addText(slide, s.note, { x:0.90, y:6.52, w:9.6, h:0.18, fontSize:8.6, color:'738297' });
+    if (s.note) addText(slide, s.note, { x:0.90, y:6.48, w:5.40, h:0.18, fontSize:8.5, color:'738297', fit:'shrink' });
     drawFooter(slide, plan, { color:'738297' });
   };
 }

@@ -235,24 +235,34 @@ function assertBrandWorldShell(ops) {
 
   assert(findRect(0.92, 2.04, 4.72, 4.02), 'expected brand world hero panel');
   assert(findRect(6.18, 2.04, 5.26, 4.02), 'expected brand proof board');
-  assert(findRect(0.92, 6.28, 10.86, 0.42), 'expected brand proof link strip');
+  assert(!findRect(0.92, 6.28, 10.86, 0.42), 'brand proof link strip should not render in delivery pages');
+  assert(
+    !ops.some(op => op.name === 'genericShowcaseField' && op.args[5] === 'BRAND WORLD'),
+    'brand world should use structured content instead of the generic showcase fallback'
+  );
 
-  const heroFallback = ops.find(op => op.name === 'genericShowcaseField'
-    && Math.abs(op.args[1] - 1.10) < 0.001
-    && Math.abs(op.args[2] - 2.22) < 0.001
-    && Math.abs(op.args[3] - 4.36) < 0.001
-    && Math.abs(op.args[4] - 2.70) < 0.001
-    && op.args[5] === 'BRAND WORLD');
-  assert(heroFallback, 'expected brand world fallback image field');
-
-  ['BRAND WORLD', 'BRAND SIGNAL', 'OPERATING ACTION', 'BUSINESS PROOF', 'PROOF LINK'].forEach(label => {
+  ['品牌信号', '经营动作', '业务证明', '经营主线'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected brand world label ${label}`
     );
   });
+  ['BRAND SIGNAL', 'OPERATING ACTION', 'BUSINESS PROOF'].forEach(label => {
+    assert(
+      !ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `brand world board should not leak hard-coded English label ${label}`
+    );
+  });
+  assert(
+    !ops.some(op => op.name === 'addLabel' && op.args[1] === 'BRAND WORLD'),
+    'structured no-image brand world card should not draw the old overlapping BRAND WORLD label'
+  );
+  assert(
+    !ops.some(op => op.name === 'addLabel' && op.args[1] === 'PROOF LINK'),
+    'brand world should not emit the legacy PROOF LINK label'
+  );
 
-  ['Input 1', 'Action 1', 'Outcome 1', '品牌世界观必须解释产品承诺如何转成渠道、会员和复购证据。'].forEach(text => {
+  ['Input 1', 'Action 1', 'Outcome 1', '把品牌主张、渠道动作和复购质量放在同一张经营看板里判断。'].forEach(text => {
     assert(
       ops.some(op => op.args.includes(text)),
       `expected brand world content ${text}`
@@ -334,7 +344,7 @@ function main() {
   assert(hasOp(ops, 'sectionKicker', 'VALUE CREATION PROCESS'), 'expected value creation strategy branch');
   assert(hasOp(ops, 'sectionKicker', 'SINGLE OBJECT MAP'), 'expected single object strategy branch');
   assert(ops.some(op => op.name === 'glassPanel'), 'expected module matrix glass panel');
-  assert(ops.some(op => op.name === 'genericShowcaseField'), 'expected evidence image fallback');
+  assert(!ops.some(op => op.name === 'genericShowcaseField' && op.args[5] === 'BRAND WORLD'), 'brand proof should not use generic evidence fallback');
   assert(ops.filter(op => op.name === 'addArrowLine').length >= 2, 'expected strategy arrows');
   assertDefaultStrategyHeader(ops);
   assertDefaultStrategyMapShell(ops);

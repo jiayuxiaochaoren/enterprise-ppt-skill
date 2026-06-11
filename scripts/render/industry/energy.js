@@ -7,6 +7,12 @@ const {
 const {
   createEnergySituationRenderers
 } = require('./energy-situation-renderers');
+const {
+  centeredStackY
+} = require('../layout/card-layout');
+const {
+  createEnergyServiceReportRenderers
+} = require('./energy-service-report');
 
 function createEnergyIndustryRenderers(ctx = {}) {
   const {
@@ -66,7 +72,9 @@ function createEnergyIndustryRenderers(ctx = {}) {
   function energyProblemSplit(slide, plan, s, idx) {
     const C = colors();
     stageCanvas(slide, { field:false });
-    addDarkBreathingCircle(slide, 8.62, 0.66, 3.94, 2.10, C.violet);
+    if (plan.enableDecorations === true || plan.enableDecorativeMotifs === true || s.enableDecorations === true) {
+      addDarkBreathingCircle(slide, 8.62, 0.66, 3.94, 2.10, C.violet);
+    }
     const useImage = slideWantsImage(plan, s, 'split');
     if (useImage) {
       addVisualPhotoPanel(slide, plan, s, 'split', 8.80, 0.98, 3.34, 5.24, { transparency:46, stroke:'334155', strokeTransparency:62 });
@@ -153,12 +161,13 @@ function createEnergyIndustryRenderers(ctx = {}) {
     const C = colors();
     const W = canvasWidth();
     const H = canvasHeight();
-    slide.background = { color:'F7FAFD' };
-    addRect(slide, 0, 0, W, H, 'F7FAFD', 'F7FAFD');
+    const paper = C.paper || 'FBFDFF';
+    slide.background = { color:paper };
+    addRect(slide, 0, 0, W, H, paper, paper);
     addRect(slide, 0, 0, W, 0.92, C.white, C.white, { line:{color:C.white, transparency:100} });
-    addLabel(slide, 'VALUE SIGNAL', { x:0.86, y:0.72, w:1.34, h:0.12, fontSize:6.8, color:C.muted, charSpace:1.0 });
-    addText(slide, s.title || '预期价值', { x:0.84, y:1.06, w:3.30, h:0.34, fontSize:24, bold:true, color:C.text });
-    if (s.intro) addText(slide, s.intro, { x:0.86, y:1.52, w:5.80, h:0.18, fontSize:9.0, color:C.muted, fit:'shrink' });
+    addLabel(slide, '价值信号', { x:0.86, y:0.72, w:1.34, h:0.12, fontSize:6.8, color:C.muted, charSpace:0 });
+    addText(slide, s.title || '预期价值', { x:0.84, y:1.06, w:4.80, h:0.34, fontSize:24, bold:true, color:C.text, fit:'shrink' });
+    if (s.intro) addText(slide, s.intro, { x:0.86, y:1.52, w:6.30, h:0.18, fontSize:9.0, color:C.muted, fit:'shrink' });
     addNumber(slide, String(idx).padStart(2,'0'), { x:11.70, y:0.66, w:0.72, h:0.22, fontSize:13, color:C.accent, align:'right' });
 
     const cards = s.cards || [];
@@ -167,26 +176,53 @@ function createEnergyIndustryRenderers(ctx = {}) {
     if (useImage) {
       addVisualPhotoPanel(slide, plan, s, 'value', 0.92, 2.08, 4.76, 3.70, { transparency:42, stroke:'D8E2EF', strokeTransparency:32 });
       addRect(slide, 0.92, 4.38, 4.76, 1.40, C.ink, C.ink, { fill:{color:C.ink, transparency:12}, line:{color:C.ink, transparency:100} });
+      addLabel(slide, '核心结果', { x:1.22, y:4.70, w:1.28, h:0.10, fontSize:5.8, color:C.accent, charSpace:0 });
+      addText(slide, lead.title, { x:1.22, y:5.02, w:2.80, h:0.22, fontSize:14.8, bold:true, color:C.white, fit:'shrink' });
+      addText(slide, lead.body, { x:1.22, y:5.32, w:3.70, h:0.24, typeRole:'bodySmall', fontSize:8.8, color:'CBD5E1', fit:'shrink' });
     } else {
-      addRect(slide, 0.92, 2.08, 4.76, 3.70, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-      addDarkBreathingCircle(slide, 2.62, 2.58, 2.18, 1.18, C.cyan);
-      if (hasEnergyCurveSemantics(s)) ctx.addPulseCurve(slide, 1.28, 3.78, 2.92, 0.42, C.cyan, true, { transparency:46, width:0.38, nodes:false });
+      addRect(slide, 0.92, 2.08, 4.76, 3.70, C.white, 'DDE8F3', {
+        fill:{ color:C.white, transparency:0 },
+        line:{ color:'DDE8F3', transparency:18, width:0.34 }
+      });
+      addLabel(slide, '核心结果', { x:1.22, y:2.44, w:1.28, h:0.10, fontSize:5.8, color:C.accent, charSpace:0 });
+      addText(slide, lead.title, { x:1.22, y:2.86, w:3.24, h:0.28, fontSize:17.8, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, lead.body, { x:1.22, y:3.36, w:3.70, h:0.46, typeRole:'bodySmall', fontSize:9.0, color:C.body, fit:'shrink', breakLine:true });
+      const metrics = (s.metrics || []).slice(0, 4);
+      metrics.forEach((metric, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const cardW = 1.88;
+        const cardH = 0.66;
+        const gapX = 0.34;
+        const gapY = 0.22;
+        const x = 1.22 + col * (cardW + gapX);
+        const y = 4.12 + row * (cardH + gapY);
+        const color = [C.accent, C.cyan, C.violet][i] || C.accent;
+        addRect(slide, x, y, cardW, cardH, C.white, 'DDE8F3', {
+          fill:{ color:C.white, transparency:0 },
+          line:{ color:'DDE8F3', transparency:28, width:0.28 }
+        });
+        const [labelY, valueY, noteY] = centeredStackY(y, cardH, [0.12, 0.18, 0.10], 0.035);
+        addText(slide, metric.label || metric.title || `指标${i + 1}`, { x:x+0.16, y:labelY, w:cardW-0.32, h:0.12, fontSize:6.7, bold:true, color:C.body, fit:'shrink', valign:'mid' });
+        addText(slide, metric.value || '', { x:x+0.16, y:valueY, w:cardW-0.32, h:0.18, fontSize:12.4, bold:true, color, fit:'shrink', valign:'mid' });
+        addText(slide, metric.note || '', { x:x+0.16, y:noteY, w:cardW-0.32, h:0.10, fontSize:5.9, color:C.muted, fit:'shrink', valign:'mid' });
+      });
     }
-    addLabel(slide, 'PRIMARY OUTCOME', { x:1.22, y:4.70, w:1.28, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
-    addText(slide, lead.title, { x:1.22, y:5.02, w:2.80, h:0.22, fontSize:14.8, bold:true, color:C.white, fit:'shrink' });
-    addText(slide, lead.body, { x:1.22, y:5.32, w:3.70, h:0.24, typeRole:'bodySmall', fontSize:8.8, color:'CBD5E1', fit:'shrink' });
 
     const signals = cards.slice(1,4);
     signals.forEach((card,i)=>{
       const y = 2.16 + i*1.12;
       const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
-      addRect(slide, 6.36, y, 5.26, 0.88, C.white, 'E4ECF5', { line:{color:'E4ECF5', transparency:4, width:0.52} });
+      addRect(slide, 6.36, y, 5.26, 0.88, C.white, 'E4ECF5', { line:{color:'E4ECF5', transparency:18, width:0.32} });
       addText(slide, String(i+2).padStart(2,'0'), { x:6.68, y:y+0.28, w:0.36, h:0.12, typeRole:'number', fontSize:7.0, bold:true, color:accent });
       addText(slide, card.title, { x:7.24, y:y+0.17, w:1.62, h:0.16, fontSize:12.1, bold:true, color:C.text, fit:'shrink' });
       addText(slide, card.body, { x:8.94, y:y+0.14, w:2.18, h:0.32, typeRole:'bodySmall', fontSize:8.8, color:C.body, fit:'shrink', valign:'mid' });
     });
-    addRect(slide, 6.36, 5.72, 5.26, 0.62, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-    addLabel(slide, 'VALUE CAPTION', { x:6.68, y:5.92, w:1.18, h:0.12, typeRole:'microLabel', fontSize:6.8, color:C.accent, charSpace:0.65 });
+    addRect(slide, 6.36, 5.72, 5.26, 0.62, C.white, 'DDE8F3', {
+      fill:{color:C.white, transparency:0},
+      line:{color:'DDE8F3', transparency:18, width:0.32}
+    });
+    addLabel(slide, '经营提示', { x:6.68, y:5.92, w:1.18, h:0.12, typeRole:'microLabel', fontSize:6.8, color:C.accent, charSpace:0 });
     addText(slide, s.note || '收益测算需结合站点发电量、电价规则、历史告警和运行数据进一步校准。', {
       x:8.02,
       y:5.88,
@@ -194,7 +230,7 @@ function createEnergyIndustryRenderers(ctx = {}) {
       h:0.20,
       typeRole:'caption',
       fontSize:8.4,
-      color:'CBD5E1',
+      color:C.body,
       fit:'shrink',
       breakLine:true
     });
@@ -202,6 +238,7 @@ function createEnergyIndustryRenderers(ctx = {}) {
   }
 
   return {
+    ...createEnergyServiceReportRenderers(ctx),
     energyDeploymentRadius,
     energyCapabilityLoop,
     energyProblemSplit,

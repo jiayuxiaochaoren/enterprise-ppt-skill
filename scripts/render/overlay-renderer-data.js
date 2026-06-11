@@ -59,13 +59,14 @@ function createOverlayDataHelpers(deps = {}) {
   }
 
   function overlayProofItemsForSlide(plan = {}, s = {}) {
+    if (Array.isArray(s.proofItems) && s.proofItems.length) return s.proofItems.slice(0, 4);
+    if (Array.isArray(s.evidenceItems) && s.evidenceItems.length) return s.evidenceItems.slice(0, 4);
+    if (Array.isArray(s.galleryItems) && s.galleryItems.length) return s.galleryItems.slice(0, 4);
     if (Array.isArray(s.cards) && s.cards.length) return s.cards.slice(0, 4);
     if (Array.isArray(s.items) && s.items.length) return s.items.slice(0, 4);
-    const metrics = overlayMetricsForSlide(plan, s);
-    if (metrics.length) return metrics.map(metric => ({ title:`${metric.label}: ${metric.value}`, body:metric.note }));
-    if (Array.isArray(s.rows) && s.rows.length) return s.rows.slice(0, 4).map(row => Array.isArray(row) ? { title:row[0], body:row.slice(1).join(' · ') } : row);
     const proof = s.proof || {};
-    return [proof.explanation || s.claim || s.subtitle].filter(Boolean).map(text => ({ title:'Proof', body:text }));
+    const caption = s.caption || (s.visual && s.visual.caption) || proof.caption || proof.sourceNote || proof.source_note || '';
+    return caption ? [{ title:'证据说明', body:caption }] : [];
   }
 
   function productField(item = {}, fields = []) {
@@ -77,8 +78,8 @@ function createOverlayDataHelpers(deps = {}) {
     const source = [
       s.products,
       s.productStory,
-      s.cards,
-      s.items
+      s.productItems,
+      s.skus
     ].find(value => Array.isArray(value) && value.length);
     if (!source) return [];
     return source.slice(0, 4)

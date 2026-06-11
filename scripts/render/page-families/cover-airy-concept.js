@@ -10,9 +10,13 @@ function createAiryConceptOpening(ctx = {}, deps = {}) {
     const C = colors();
     drawLightCanvasShell(slide);
     const imagePath = ctx.designForSlide(plan, s, 'cover').imagePath;
+    const title = deps.coverTitleText(s.title || plan.title || ctx.copyFallback(plan, 'coverTitle'));
     ctx.addLabel(slide, 'CONCEPT OPENING', { x:0.88, y:0.92, w:1.62, h:0.13, fontSize:7.0, color:C.accent, charSpace:1.0 });
-    ctx.addText(slide, s.title || plan.title || ctx.copyFallback(plan, 'coverTitle'), {
-      x:0.86, y:1.70, w:6.52, h:0.86, fontSize:ctx.typeSize('coverTitle', 31.0), bold:true, color:C.text, fit:'shrink', breakLine:true
+    ctx.addText(slide, title, {
+      x:0.86, y:1.70, w:6.52, h:0.86,
+      fontFace:ctx.profileFont('editorial'),
+      fontSize:ctx.typeSize('coverTitle', 31.0),
+      bold:true, color:C.text, fit:'shrink', breakLine:true
     });
     ctx.addText(slide, s.subtitle || s.coverInsight || plan.subtitle || ctx.copyFallback(plan, 'industryInsight'), {
       x:0.90, y:2.86, w:4.88, h:0.22, fontSize:11.0, color:C.body, fit:'shrink'

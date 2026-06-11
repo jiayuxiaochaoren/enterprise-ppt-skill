@@ -18,7 +18,7 @@ function renderProductMatrix(ctx = {}, items = [], opts = {}) {
     fill:{ color:dark ? C.ink2 : panelFill(), transparency:dark ? 18 : 0 },
     line:{ color:dark ? C.darkLine : C.line, transparency:dark ? 48 : 14, width:0.38 }
   });
-  addLabel(slide, opts.label || 'PRODUCT PROOF MATRIX', {
+  addLabel(slide, opts.label || '产品证据矩阵', {
     x:x + 0.18,
     y:y + 0.15,
     w:1.42,
@@ -65,10 +65,10 @@ function renderProductMatrix(ctx = {}, items = [], opts = {}) {
   }
 
   const headers = [
-    ['PRODUCT', 'product'],
-    ['SCENE', 'scene'],
-    ['PROOF', 'benefit'],
-    ['BUSINESS', 'businessMeaning']
+    ['产品', 'product'],
+    ['场景', 'scene'],
+    ['证据', 'benefit'],
+    ['经营', 'businessMeaning']
   ];
   const top = y + 0.40;
   const rowH = Math.min(0.36, Math.max(0.22, (z.h - 0.56) / Math.max(1, list.length)));

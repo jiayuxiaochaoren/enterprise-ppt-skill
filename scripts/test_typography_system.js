@@ -54,6 +54,17 @@ const cjkBody = normalizeTypographyOptions(beauty, '消费者画像必须绑定�
 });
 assert.equal(cjkBody.fontFace, 'PingFang SC');
 assert.ok(cjkBody.fontSize >= 9);
+const cjkTiny = normalizeTypographyOptions(beauty, '中文脚注', {
+  typeRole: 'caption',
+  fontSize: 6.2,
+  allowTiny: true,
+  x: 1,
+  y: 6.8,
+  w: 1.2,
+  h: 0.10
+});
+assert.equal(cjkTiny.fontFace, 'PingFang SC');
+assert.ok(cjkTiny.fontSize >= 8.0);
 assert.deepEqual(
   tokenHelpers.normalizeTypographyOptions(beauty, '消费者画像必须绑定场景、理由、购买或复购信号。', {
     fontSize: 6.8,
