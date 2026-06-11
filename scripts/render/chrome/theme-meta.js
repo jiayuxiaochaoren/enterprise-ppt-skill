@@ -1,6 +1,9 @@
 const {
   createDeckMetaPolicy
 } = require('./deck-meta-policy');
+const {
+  coverStyleDecision
+} = require('../../design/cover-style');
 
 function createThemeMetaHelpers(deps = {}) {
   const fs = deps.fs || require('fs');
@@ -37,7 +40,17 @@ function createThemeMetaHelpers(deps = {}) {
     return (DESIGN.palettes && DESIGN.palettes[PROFILE.palette]) || {};
   }
   function presentationSpec() {
-    return paletteSpec().presentation || {};
+    const base = paletteSpec().presentation || {};
+    const style = coverStyleDecision(activePlan(), activeSlide(), { visualSystem:DESIGN.visualSystem || {} });
+    if (!style.preset) return base;
+    return Object.assign({}, base, {
+      coverTone: style.preset.coverTone || base.coverTone,
+      coverMotif: style.preset.coverMotif || base.coverMotif,
+      coverTitleBreak: style.preset.titleBreak || base.coverTitleBreak,
+      backgroundPolicy: style.preset.backgroundPolicy || base.backgroundPolicy,
+      contentDensity: style.preset.contentDensity || base.contentDensity,
+      imageTreatment: style.preset.imageTreatment || base.imageTreatment
+    });
   }
   function surfaceFill() {
     return presentationSpec().surfaceFill || C.paper;

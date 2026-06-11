@@ -17,6 +17,9 @@ const {
   createCoverShowcaseRenderer
 } = require('./cover-showcase');
 const {
+  createCoverStyleRenderer
+} = require('./cover-style');
+const {
   createSpecialtyCoverRenderers
 } = require('./cover-specialty');
 const {
@@ -62,6 +65,11 @@ function createCoverCoreRenderers(ctx = {}) {
     drawFooter,
     fileExists
   });
+  const coverStyleRenderer = createCoverStyleRenderer(ctx, {
+    addCoverKicker,
+    colors,
+    drawFooter
+  });
   const coverDark = createCoverDarkRenderer(ctx, {
     addCoverKicker,
     airyConceptOpening,
@@ -70,6 +78,7 @@ function createCoverCoreRenderers(ctx = {}) {
     coverFieldRendererFor,
     coverLightEditorial,
     coverShowcase,
+    coverStyleRenderer,
     coverTitleText,
     fileExists,
     splitEnergyTitle

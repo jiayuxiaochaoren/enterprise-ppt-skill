@@ -1,0 +1,71 @@
+{
+  "title": "Renderer Cover Style Family Fixture",
+  "organization": "Renderer QA",
+  "industry": "manufacturing-operations",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "date": "2026-06-01",
+  "coverKicker": "COVER STYLE SYSTEM",
+  "slides": [
+    {
+      "type": "cover",
+      "coverStyle": "signal-atlas-command",
+      "title": "智能制造运营飞轮",
+      "subtitle": "从现场数据到经营决策的闭环提案"
+    },
+    {
+      "type": "cover",
+      "coverStyle": "editorial-proof-report",
+      "title": "增长质量年度复盘",
+      "subtitle": "用证据对象重建业务叙事"
+    },
+    {
+      "type": "cover",
+      "coverStyle": "industrial-swiss-line",
+      "title": "产线重构计划",
+      "subtitle": "以现场证据和硬网格建立运营可信度"
+    },
+    {
+      "type": "cover",
+      "coverStyle": "tactical-telemetry-risk",
+      "title": "风险雷达执行简报",
+      "subtitle": "把管理层注意力集中到信号和行动序列"
+    },
+    {
+      "type": "cover",
+      "coverStyle": "brand-system-board",
+      "title": "品牌世界商业证明",
+      "subtitle": "把识别、应用场景和业务证据放在同一个系统里"
+    },
+    {
+      "type": "cover",
+      "coverStyle": "eastern-void-object",
+      "title": "长期主义价值判断",
+      "subtitle": "以纸雕器物摄影和证据线制造安静高级感"
+    },
+    {
+      "type": "cover",
+      "coverStyle": "kinetic-field-launch",
+      "title": "新业务启动场",
+      "subtitle": "用真实空间动势表达速度与方向选择"
+    },
+    {
+      "type": "cover",
+      "coverStyle": "cold-luxury-product",
+      "title": "高端产品上市策略",
+      "subtitle": "用冷灰、金属材质和产品台座建立高级感"
+    },
+    {
+      "type": "cover",
+      "coverStyle": "documentary-evidence-wall",
+      "title": "概念化交付证据墙",
+      "subtitle": "让材料样本、现场氛围和标题共同构成可信证明"
+    },
+    {
+      "type": "cover",
+      "coverStyle": "architecture-blueprint-studio",
+      "title": "平台架构能力蓝图",
+      "subtitle": "用真实蓝图空间替代装饰性科技背景"
+    }
+  ]
+}

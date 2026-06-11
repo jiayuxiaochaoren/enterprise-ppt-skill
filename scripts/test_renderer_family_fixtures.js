@@ -19,6 +19,7 @@ const CASES = [
   ['profile-finance-family.json', 'page-family:profile'],
   ['closing-family.json', 'page-family:closing'],
   ['cover-family.json', 'page-family:cover'],
+  ['cover-style-family.json', 'page-family:cover'],
   ['cover-energy-family.json', 'page-family:cover'],
   ['architecture-family.json', 'page-family:architecture'],
   ['strategy-family.json', 'page-family:strategy'],
@@ -130,6 +131,37 @@ function main() {
       assert.ok(industrySlides.every(slide => slide.rendererMatch && slide.rendererMatch.rendererId === 'industry-chart'), 'financial industry-chart fixtures should keep rendererMatch stable');
       const consumedIds = industrySlides.flatMap(slide => (slide.consumedComponents || []).map(component => component.id || component));
       assert.ok(consumedIds.includes('bar-chart'), 'financial industry-chart chartSpec fixture should consume the native bar-chart component');
+    }
+    if (fixture === 'cover-style-family.json') {
+      const expectedStyles = [
+        'signal-atlas-command',
+        'editorial-proof-report',
+        'industrial-swiss-line',
+        'tactical-telemetry-risk',
+        'brand-system-board',
+        'eastern-void-object',
+        'kinetic-field-launch',
+        'cold-luxury-product',
+        'documentary-evidence-wall',
+        'architecture-blueprint-studio'
+      ];
+      assert.deepEqual(
+        (metaA.slides || []).map(slide => slide.coverStyle && slide.coverStyle.id),
+        expectedStyles,
+        'cover-style fixture should preserve all coverStyle ids in render-meta'
+      );
+      assert.ok(
+        (metaA.slides || []).every(slide => slide.coverStyle && slide.coverStyle.rendererFlavor),
+        'cover-style fixture should record renderer flavor'
+      );
+      assert.ok(
+        (metaA.slides || []).some(slide => slide.assetDecision && slide.assetDecision.mode === 'pending-generation'),
+        'cover-style fixture should mark missing hero assets for generation'
+      );
+      assert.ok(
+        (metaA.slides || []).some(slide => slide.assetDecision && slide.assetDecision.mode === 'blocked'),
+        'cover-style fixture should block synthetic factual evidence when needed'
+      );
     }
     const planJson = JSON.parse(fs.readFileSync(plan, 'utf8'));
     const textA = stableText(pptxText(pptxA));

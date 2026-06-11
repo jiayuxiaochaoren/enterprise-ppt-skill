@@ -1,5 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const {
+  contentThemeForCoverStyle,
+  coverStyleDecision
+} = require('./cover-style');
 
 function createVisualMediaHelpers({
   assetDir,
@@ -171,8 +175,14 @@ function createVisualMediaHelpers({
   function slideDesign(plan = {}, s = {}, roleOverride) {
     const role = roleOverride || slideRole(s);
     const mode = resolveVisualMode(plan, s, role);
-    const imageRole = visualRole(plan, s, role);
-    const wantsImage = slideWantsImage(plan, s, role);
+    const style = coverStyleDecision(plan, s, { visualSystem });
+    const preset = style.preset || null;
+    const explicitVisualRole = Boolean(s.visual && s.visual.role);
+    const imageRole = role === 'cover' && preset && preset.imageRole && !explicitVisualRole
+      ? preset.imageRole
+      : visualRole(plan, s, role);
+    const wantsStyleImage = role === 'cover' && preset && preset.assetPolicy && preset.assetPolicy !== 'none';
+    const wantsImage = slideWantsImage(plan, s, role) || Boolean(wantsStyleImage);
     const imagePath = wantsImage ? mediaForRole(plan, s, role) : '';
     return {
       role,
@@ -181,11 +191,16 @@ function createVisualMediaHelpers({
       wantsImage,
       imagePath,
       mediaKey: mediaKeyForRole(role),
+      coverStyle: style.id,
+      coverStyleSource: style.source,
+      coverStylePreset: preset,
+      contentTheme: contentThemeForCoverStyle(preset),
       pageFamily: pageFamily(plan, s, role)
     };
   }
 
   return {
+    coverStyleForPlan: (plan = {}, s = {}) => coverStyleDecision(plan, s, { visualSystem }).id,
     defaultIndustryMedia,
     galleryImages,
     mediaForRole,

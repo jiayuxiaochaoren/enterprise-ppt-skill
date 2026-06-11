@@ -30,6 +30,7 @@ const DESIGN_SYSTEM_EXPORT_NAMES = Object.freeze([
   'componentPlanAudit',
   'compositionAudit',
   'compositionPlan',
+  'coverStyleForPlan',
   'deckArtDirection',
   'deckNarrativeSummary',
   'contentOverlapAudit',

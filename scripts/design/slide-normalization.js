@@ -168,6 +168,16 @@ function createSlideNormalizationHelpers(deps = {}) {
     const normalizedSignals = contentSignals(plan, out, index, total);
 
     out.compositionPlan = compositionPlan(plan, out, index, total, normalizedSignals, recipe, design);
+    if (design.coverStyle) {
+      out.coverStyle = out.coverStyle || design.coverStyle;
+      out.coverStyleSource = out.coverStyleSource || design.coverStyleSource || '';
+      out.contentTheme = out.contentTheme || design.contentTheme || null;
+      out.compositionPlan = Object.assign({}, out.compositionPlan, {
+        coverStyle: design.coverStyle,
+        coverStyleSource: design.coverStyleSource || '',
+        contentTheme: design.contentTheme || null
+      });
+    }
     if (previousInputCompositionPlan) {
       routeSanitization.recomputed.push({
         field: 'compositionPlan',
@@ -215,7 +225,11 @@ function createSlideNormalizationHelpers(deps = {}) {
     out.layoutEnergy = out.layoutEnergy || out.compositionPlan.layoutEnergy;
     out.visualDensity = out.visualDensity || out.compositionPlan.visualDensity || out.compositionPlan.density;
     out.rhythmTransition = out.rhythmTransition || out.compositionPlan.rhythmTransition;
-    const assetGeneration = currentAssetGenerationDecision(generatedAssetPolicy(plan, out, recipe, design));
+    const assetGeneration = Object.assign(
+      {},
+      currentAssetGenerationDecision(generatedAssetPolicy(plan, out, recipe, design)),
+      design.coverStyle ? { coverStyle: design.coverStyle } : {}
+    );
     if (routeChanged || previousInputAssetGeneration) {
       if (previousInputAssetGeneration) out.previousAssetGeneration = out.previousAssetGeneration || previousInputAssetGeneration;
       routeSanitization.recomputed.push({

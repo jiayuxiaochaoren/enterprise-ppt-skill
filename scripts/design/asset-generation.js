@@ -278,6 +278,17 @@ function createAssetGenerationHelpers({
     const design = slideDesign(plan, s);
     const role = (s.visual && s.visual.role) || design.imageRole || (recipe && recipe.assetRole) || 'abstract';
     const normalizedRole = normalizeAssetRole(role);
+    const coverPreset = design.coverStylePreset || null;
+    if ((s.type === 'cover' || design.role === 'cover') && coverPreset && coverPreset.assetPromptIntent) {
+      const target = assetTargetContract(plan, s, role);
+      const cleanBase = stripPromptAspectConflicts(coverPreset.assetPromptIntent, target);
+      return [
+        cleanBase,
+        'Use case: premium enterprise PPT cover hero image.',
+        'Respect the declared text-safe zone and keep the main visual as a credible object or scene, not decoration.',
+        target.instruction || ''
+      ].filter(Boolean).join(' ');
+    }
     const patterns = referenceLayoutLibrary.generatedAssetPromptPatterns || {};
     const pattern = patterns[normalizedRole] || patterns.abstract;
     if (!pattern) return '';
@@ -324,11 +335,20 @@ function createAssetGenerationHelpers({
     const policy = industryVisualPolicy(plan);
     const recipeCanGenerate = ['optional', 'allowed'].includes(rule) || (rule === 'none' && imageLedReference);
     const autoGenerateMissing = ['auto-generate-missing', 'generate-missing', 'luxury', 'image-rich'].includes(String(plan.assetMode || plan.visualIntent || ''));
+    const coverPreset = design && design.coverStylePreset ? design.coverStylePreset : null;
+    const coverStyleNeedsAsset = slideRole(s) === 'cover' &&
+      coverPreset &&
+      coverPreset.assetPolicy &&
+      coverPreset.assetPolicy !== 'none' &&
+      design &&
+      design.wantsImage;
     const syntheticOnly = /synthetic|abstract|generic|placeholder|mood|atmospheric|concept|mock/i.test(String(recipe && recipe.generatedAsset || '')) ||
-      ['background', 'showcase', 'gallery', 'abstract'].includes(role);
+      ['background', 'showcase', 'gallery', 'abstract'].includes(role) ||
+      Boolean(coverStyleNeedsAsset && !hasBoundAsset);
     const factualRisk = factualGeneratedAssetRisk.test(text) && ['evidence', 'gallery', 'showcase'].includes(role);
     const shouldGenerate = !hasBoundAsset && (
       requested ||
+      coverStyleNeedsAsset ||
       (autoGenerateMissing && (recipeNeedsImage || (design && design.wantsImage))) ||
       (recipeNeedsImage && recipeCanGenerate && routeMode !== 'solid') ||
       (recipeNeedsImage && recipeCanGenerate && ['case-gallery', 'hybrid'].includes(policy.visualMode || ''))
@@ -345,7 +365,7 @@ function createAssetGenerationHelpers({
         reason: hasBoundAsset ? 'real or generated asset already bound' : 'layout can render natively without generated image'
       });
     }
-    if (rule === 'blocked' || (factualRisk && (requested || recipeCanGenerate))) {
+    if (rule === 'blocked' || (factualRisk && (requested || recipeCanGenerate || coverStyleNeedsAsset))) {
       return withDecisionSource({
         status: 'blocked',
         role,
@@ -360,16 +380,19 @@ function createAssetGenerationHelpers({
       });
     }
     return withDecisionSource({
-      status: requested || autoGenerateMissing ? 'required' : 'optional',
+      status: requested || autoGenerateMissing || coverStyleNeedsAsset ? 'required' : 'optional',
       role,
       originalRole: target.originalRole || originalRole,
       resolvedRole: target.resolvedRole || role,
       target,
-      mustBind: requested || autoGenerateMissing,
+      mustBind: requested || autoGenerateMissing || coverStyleNeedsAsset,
       syntheticOnly,
-      reason: requested || autoGenerateMissing
-        ? 'slide explicitly requests generated visual asset'
+      reason: coverStyleNeedsAsset
+        ? 'cover style preset requires a bound hero asset'
+        : (requested || autoGenerateMissing
+          ? 'slide explicitly requests generated visual asset'
         : 'reference layout can use a generated bitmap when no source image is available'
+        )
     });
   }
 

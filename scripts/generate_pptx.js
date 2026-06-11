@@ -376,10 +376,19 @@ function consumeComponentPlan(slide, plan, s, idx) {
   const plannedChartSpec = !nativeVariantSuppressesChartMeta(s) && slideHasChartSpecIntent(s)
     ? (s.chartSpec || routeChartSpec(plan, s, { index:idx, total:(plan.slides || []).length }) || null)
     : null;
+  const slideDesignMeta = DESIGN && typeof DESIGN.slideDesign === 'function' ? DESIGN.slideDesign(s) : {};
+  const coverStylePreset = slideDesignMeta.coverStylePreset || null;
   RENDER_META.slides.push({
     slide: idx,
     type: s.type || '',
     layoutVariant: s.layoutVariant || s.variant || '',
+    coverStyle: slideDesignMeta.coverStyle ? {
+      id: slideDesignMeta.coverStyle,
+      source: slideDesignMeta.coverStyleSource || '',
+      rendererFlavor: coverStylePreset && coverStylePreset.rendererFlavor || '',
+      backgroundPolicy: coverStylePreset && coverStylePreset.backgroundPolicy || '',
+      contentDensity: coverStylePreset && coverStylePreset.contentDensity || ''
+    } : null,
     proofObject: s.proofObject || s.proof_object || (s.proof && s.proof.id) || '',
     sourceTrace: s.sourceTrace || null,
     proof: s.proof || null,

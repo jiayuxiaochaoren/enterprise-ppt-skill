@@ -13,6 +13,7 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     coverFieldRendererFor,
     coverLightEditorial,
     coverShowcase,
+    coverStyleRenderer,
     coverTitleText,
     fileExists,
   } = deps;
@@ -31,6 +32,7 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     const coverDesign = ctx.designForSlide(plan, s, 'cover');
     const coverTone = ctx.presentationSpec().coverTone || 'dark';
     const hasCoverImage = coverDesign.imagePath && fileExists(coverDesign.imagePath);
+    if (coverStyleRenderer && coverStyleRenderer(slide, plan, s, industry, title)) return;
     if (plan.industry === 'finance-investment' && plan.visualIntent === 'case-led' && hasCoverImage) {
       if (coverShowcase(slide, plan, s, industry, title)) return;
     }

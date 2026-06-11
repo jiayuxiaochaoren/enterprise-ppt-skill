@@ -156,6 +156,14 @@ node scripts/audit_hardening_readiness.js --summary-md out/hardening-dashboard.m
 
 Renderer family smoke tests can be scoped with `--family` or the npm shortcuts for `architecture`、`closing`、`cover`、`evidence-gallery`、`financial`、`risk`，用于单个页面族迁移后的快速回归。
 
+### Cover Style Contract
+
+Cover styles are first-class design-system presets. Set `plan.coverStyle` for the deck default, set `slide.coverStyle` for a single cover override, or use `coverStyle: "auto"` to infer from industry, deck type, visual intent, and proof object. A selected style controls the cover renderer flavor, palette, title break policy, asset role, generated-asset prompt intent, and the quieter content-page theme inherited by non-cover slides.
+
+Available style ids: `signal-atlas-command`, `editorial-proof-report`, `industrial-swiss-line`, `tactical-telemetry-risk`, `brand-system-board`, `eastern-void-object`, `kinetic-field-launch`, `cold-luxury-product`, `documentary-evidence-wall`, and `architecture-blueprint-studio`.
+
+Generated cover assets are planned during normalization through `assetGeneration` and `generatedAssetPrompt`; renderers only consume bound `imagePath` values. Factual customer/site/product evidence remains protected by the existing generated-asset risk gate and must not be replaced by synthetic images.
+
 Changed-file 最小门禁可用：
 
 ```bash

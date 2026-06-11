@@ -1,3 +1,7 @@
+const {
+  coverStyleDecision
+} = require('./cover-style');
+
 function createArtDirectionHelpers({
   compactUnique,
   contentSignals,
@@ -15,7 +19,11 @@ function createArtDirectionHelpers({
     const dialect = industryDesignDialect(plan);
     const policy = industryVisualPolicy(plan);
     const art = deckArtDirection(plan);
-    return plan.palette || art.palette || art.paletteName || dialect.defaultPalette || policy.defaultPalette || 'boardroom-ink';
+    const explicitPalette = plan.palette || art.palette || art.paletteName;
+    if (explicitPalette) return explicitPalette;
+    const coverStyle = coverStyleDecision(plan, {}, { visualSystem });
+    if (coverStyle.preset && coverStyle.preset.paletteName) return coverStyle.preset.paletteName;
+    return dialect.defaultPalette || policy.defaultPalette || 'boardroom-ink';
   }
 
   function normalizedArtMap(plan = {}) {
