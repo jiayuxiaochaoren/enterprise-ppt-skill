@@ -57,8 +57,11 @@ function createClosingManufacturingRolloutRenderer(ctx = {}, helpers = {}) {
       addText(slide, a.body || '', { x:x+0.22, y:y+0.72, w:1.46, h:0.16, fontSize:7.2, color:C.body, fit:'shrink' });
       if (i < actions.length - 1) addArrowLine(slide, x+2.18, y+0.60, 0.28, 0, accent, { transparency:32, width:0.38 });
     });
-    addRect(slide, 0.92, 3.24, 6.94, 0.32, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:8}, line:{color:C.line, transparency:100} });
-    addText(slide, copyFallback(plan, 'closingDecisionOutcome'), { x:1.14, y:3.31, w:6.46, h:0.12, fontSize:8.0, color:C.body, fit:'shrink' });
+    const outcome = s.outcome || s.decisionOutcome || s.closingOutcome || plan.closingDecisionOutcome || '';
+    if (outcome) {
+      addRect(slide, 0.92, 3.24, 6.94, 0.32, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:8}, line:{color:C.line, transparency:100} });
+      addText(slide, outcome, { x:1.14, y:3.31, w:6.46, h:0.12, fontSize:8.0, color:C.body, fit:'shrink' });
+    }
     addText(slide, closingMeta(plan), { x:0.86, y:6.68, w:7.50, h:0.15, fontSize:7.4, color:C.muted, fit:'shrink' });
     drawFooter(slide, plan, { x:0.86, y:6.98, w:7.80, h:0.13, fontSize:7.2, color:C.muted, fit:'shrink' });
   };

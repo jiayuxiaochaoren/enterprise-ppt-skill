@@ -11,13 +11,20 @@ function createCompactEvidenceRows(ctx = {}) {
     addText,
     itemBody,
     itemTitle,
-    panelFill
+    panelFill,
+    publicSlideNote
   } = ctx;
 
   function drawCompactEvidenceRows(slide, s, board, items, compactRightRail) {
-    items.forEach((it, i) => {
-      const rowH = 0.84;
-      const y = board.y + 0.78 + i * 1.02;
+    const rows = items.slice(0, 3);
+    const note = publicSlideNote(s.evidenceNote || s.note || '');
+    const top = board.y + 0.76;
+    const bottom = board.y + board.h - (note ? 0.76 : 0.26);
+    const gap = compactRightRail ? 0.12 : 0.18;
+    const available = Math.max(0.60, bottom - top - gap * Math.max(0, rows.length - 1));
+    const rowH = Math.max(0.56, Math.min(0.84, available / Math.max(1, rows.length)));
+    rows.forEach((it, i) => {
+      const y = top + i * (rowH + gap);
       const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : C.violet);
       addRect(slide, board.x + 0.30, y, board.w - 0.60, rowH, i === 0 ? C.panelAlt : panelFill(), i === 0 ? accent : C.line, {
         fill:{ color:i === 0 ? C.panelAlt : panelFill(), transparency:i === 0 ? 10 : 0 },
@@ -47,12 +54,14 @@ function createCompactEvidenceRows(ctx = {}) {
         valign:'mid'
       });
     });
-    const noteLineY = board.y + board.h - 0.30;
-    addHairline(slide, board.x+0.32, noteLineY, board.w-0.64, C.line, 18, 0.30);
-    addText(slide, s.evidenceNote || s.note || '先把证据边界讲清楚，再进入品牌选择判断。', {
-      x:board.x+0.34, y:noteLineY+0.10, w:compactRightRail ? Math.max(1.0, board.w - 0.68) : Math.max(1.0, board.w - 1.60), h:0.12,
-      fontSize:compactRightRail ? 6.8 : 7.4, color:C.muted, fit:'shrink'
-    });
+    if (note) {
+      const noteLineY = board.y + board.h - 0.42;
+      addHairline(slide, board.x+0.32, noteLineY, board.w-0.64, C.line, 18, 0.30);
+      addText(slide, note, {
+        x:board.x+0.34, y:noteLineY+0.10, w:compactRightRail ? Math.max(1.0, board.w - 0.68) : Math.max(1.0, board.w - 1.60), h:0.12,
+        fontSize:compactRightRail ? 6.8 : 7.4, color:C.muted, fit:'shrink'
+      });
+    }
   }
 
   return {

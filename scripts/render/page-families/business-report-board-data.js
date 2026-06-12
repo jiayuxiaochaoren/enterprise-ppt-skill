@@ -1,3 +1,7 @@
+const {
+  publicSlideNote
+} = require('../content-helpers');
+
 function reportBoardItems(s) {
   const raw = s.sections || s.cards || s.items || s.rows || [];
   const defaultBody = s.itemBody || s.bodyHint || s.claim || s.subtitle || s.summary || '';
@@ -6,6 +10,13 @@ function reportBoardItems(s) {
     if (typeof v === 'string') return { title:v, body:defaultBody };
     const item = v || {};
     return Object.assign({}, item, { body:item.body || item.summary || item.note || defaultBody });
+  }).map(item => {
+    if (!item) return null;
+    const visibleText = [item.title, item.label, item.name, item.body, item.note, item.summary]
+      .filter(Boolean)
+      .join(' ');
+    if (visibleText && !publicSlideNote(visibleText)) return null;
+    return item;
   }).filter(Boolean);
 }
 

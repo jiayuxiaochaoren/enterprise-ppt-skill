@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /* Resolve missing visual assets before PPTX rendering.
    The bridge sits between the asset decision gate and renderer fallback:
-   - imagegen available: request synthetic generation and stop before render;
-   - imagegen unavailable: explicitly skip image use and keep the audit trail;
+   - default: stop and require an explicit user asset decision;
+   - auto_generate selected: request synthetic generation and stop before render;
+   - skip_image selected: explicitly skip image use and keep the audit trail;
    - asset map supplied: bind generated/provided bitmaps and continue. */
 const { resolveVisualAssetsFromFiles } = require('./assets/resolution-facade');
 
@@ -16,7 +17,8 @@ function usage() {
     '  --out-plan FILE               Where to write the resolved or bound deck plan.',
     '  --report FILE                 Where to write the machine-readable resolution report.',
     '  --prompts-out FILE            Where to write imagegen prompt specs.',
-    '  --blocked-action ACTION       skip_image | require_user_input. Default: skip_image.',
+    '  --missing-asset-action ACTION require_user_input | auto_generate | skip_image. Default: require_user_input.',
+    '  --blocked-action ACTION       skip_image | require_user_input. Default: require_user_input.',
     '',
     'This script never calls an image API. When it returns needs_image_generation,',
     'use the prompts with an imagegen-capable agent, save assets locally, then bind them.'
@@ -28,7 +30,8 @@ function parseArgs(argv) {
   const opts = {
     plan: argv[0],
     imagegenCapability: 'unavailable',
-    blockedAction: 'skip_image'
+    missingAssetAction: 'require_user_input',
+    blockedAction: 'require_user_input'
   };
   for (let i = 1; i < argv.length; i++) {
     const arg = argv[i];
@@ -38,6 +41,7 @@ function parseArgs(argv) {
     else if (arg === '--out-plan') opts.outPlan = argv[++i];
     else if (arg === '--report') opts.report = argv[++i];
     else if (arg === '--prompts-out') opts.promptsOut = argv[++i];
+    else if (arg === '--missing-asset-action') opts.missingAssetAction = String(argv[++i] || '');
     else if (arg === '--blocked-action') opts.blockedAction = String(argv[++i] || '');
     else if (arg === '--help' || arg === '-h') opts.help = true;
     else usage();

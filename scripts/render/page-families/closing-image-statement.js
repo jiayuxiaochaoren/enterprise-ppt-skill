@@ -25,11 +25,14 @@ function createClosingImageStatement(ctx = {}, deps = {}) {
     addRect(slide, 0, 0, W, H, bg, bg);
     addRect(slide, 0.72, 0.66, 5.42, 6.00, C.ink, C.ink);
     addPhotoPanel(slide, imagePath, 0.92, 0.90, 5.02, 5.42, { transparency:100, stroke:C.line, strokeTransparency:70, tone:'dark' });
-    addRect(slide, 0.92, 5.72, 5.02, 0.60, C.ink, C.ink, { fill:{color:C.ink, transparency:8}, line:{color:C.ink, transparency:100} });
-    addLabel(slide, s.imageLabel || 'CLOSING VISUAL', { x:1.18, y:5.94, w:1.28, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
-    addText(slide, (s.visual && s.visual.caption) || copyFallback(plan, 'fallbackCaption'), {
-      x:2.62, y:5.93, w:2.72, h:0.12, fontSize:6.6, color:C.captionOnImage, fit:'shrink'
-    });
+    const caption = s.visual && s.visual.caption;
+    if (caption) {
+      addRect(slide, 0.92, 5.72, 5.02, 0.60, C.ink, C.ink, { fill:{color:C.ink, transparency:8}, line:{color:C.ink, transparency:100} });
+      addLabel(slide, s.imageLabel || 'CLOSING VISUAL', { x:1.18, y:5.94, w:1.28, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+      addText(slide, caption, {
+        x:2.62, y:5.93, w:2.72, h:0.12, fontSize:6.6, color:C.captionOnImage, fit:'shrink'
+      });
+    }
 
     addLabel(slide, s.label || 'FINAL POSITION', { x:6.72, y:1.02, w:1.80, h:0.13, fontSize:6.9, color:C.accent, charSpace:1.05 });
     addText(slide, String(idx || '').padStart(2,'0'), { x:11.62, y:1.00, w:0.58, h:0.16, fontSize:9.8, bold:true, color:C.muted, align:'right' });

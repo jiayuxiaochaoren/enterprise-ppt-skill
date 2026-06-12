@@ -56,7 +56,7 @@ function usage() {
     '  --ocr-command CMD         Optional local image OCR command compatible with: CMD image stdout.',
     '  --summary-md FILE         Write a human-readable delivery summary.',
     '  --quality-mode MODE       draft | formal | delivery. Default: draft.',
-    '  --allow-generated-assets  Resolve missing visuals through imagegen prompts before rendering.',
+    '  --allow-generated-assets  User-approved: resolve missing visuals through imagegen prompts before rendering.',
     '  --imagegen-capability MODE available | unavailable. Defaults to available when --allow-generated-assets is set.',
     '  --asset-map FILE           Bind generated/provided image assets before rendering.',
     '  --skip-preview            Do not request Keynote preview export during validation.',

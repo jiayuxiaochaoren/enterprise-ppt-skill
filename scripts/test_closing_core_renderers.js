@@ -368,7 +368,7 @@ function assertRightSideCardAlignment(ops) {
     ops.some(op => {
       if (op.name !== 'addText' || op.args[1] !== 'Decision ready') return false;
       const box = op.args[2] || {};
-      return near(box.x, 8.92) && near(box.y, 5.72) && near(box.h, 0.18);
+      return near(box.x, 8.92) && near(box.y, 5.78) && near(box.h, 0.16);
     }),
     'expected decision summary outcome to keep a bottom safety margin inside the right card'
   );
@@ -452,7 +452,7 @@ function main() {
   direct.closingDecisionBoard(slide, activePlanRef.current, section(), 6);
   direct.closingCompanyThanks(slide, activePlanRef.current, section(), 7);
   direct.premiumClosingAnchor(slide, activePlanRef.current, section(), 8);
-  direct.closingDecisionSummary(slide, activePlanRef.current, section(), 9);
+  direct.closingDecisionSummary(slide, activePlanRef.current, section({ outcome:'Decision ready' }), 9);
   integrated.closingAdaptive(slide, activePlanRef.current, section({ closingVariant:'simple-end' }), 10);
 
   assert(hasOp(ops, 'addLabel', 'FINAL ALIGNMENT'), 'expected dark closing label');

@@ -25,20 +25,23 @@ function createAiryConceptOpening(ctx = {}, deps = {}) {
     ctx.addRect(slide, 2.00, 3.44, 0.32, 0.04, C.cyan, C.cyan, { fill:{color:C.cyan, transparency:36}, line:{color:C.cyan, transparency:100} });
 
     const object = { x:7.70, y:1.28, w:2.78, h:2.78 };
+    const hasImage = imagePath && fileExists(imagePath);
     slide.addShape('ellipse', { x:object.x-0.54, y:object.y-0.54, w:object.w+1.08, h:object.h+1.08, fill:{color:C.softBlue || 'EFF6FF', transparency:34}, line:{color:C.softBlue || 'EFF6FF', transparency:100} });
-    ctx.addRect(slide, object.x, object.y, object.w, object.h, ctx.panelFill(), C.line, { fill:{color:ctx.panelFill(), transparency:0}, line:{color:C.line, transparency:18, width:0.44} });
-    if (imagePath && fileExists(imagePath)) {
+    if (hasImage) {
+      ctx.addRect(slide, object.x, object.y, object.w, object.h, ctx.panelFill(), C.line, { fill:{color:ctx.panelFill(), transparency:0}, line:{color:C.line, transparency:18, width:0.44} });
       ctx.addPhotoPanel(slide, imagePath, object.x+0.20, object.y+0.20, object.w-0.40, object.h-0.40, { tone:'light', transparency:100, stroke:C.line, strokeTransparency:28, fit:'cover' });
-    } else {
-      ctx.genericShowcaseField(slide, object.x+0.20, object.y+0.20, object.w-0.40, object.h-0.40, 'CORE OBJECT');
+      const caption = s.visual && s.visual.caption;
+      if (caption) {
+        ctx.addText(slide, caption, { x:7.82, y:4.48, w:3.02, h:0.12, fontSize:7.4, color:C.body, fit:'shrink' });
+      }
     }
-    ctx.addLabel(slide, 'ONE OBJECT', { x:7.82, y:4.52, w:0.98, h:0.09, fontSize:5.6, color:C.accent, charSpace:0.8 });
-    ctx.addText(slide, (s.visual && s.visual.caption) || ctx.copyFallback(plan, 'fallbackCaption'), { x:8.98, y:4.48, w:1.86, h:0.12, fontSize:7.4, color:C.body, fit:'shrink' });
 
-    const proof = s.coverProof || s.note || ctx.copyFallback(plan, 'coverProof');
-    ctx.addRect(slide, 0.92, 5.46, 7.20, 0.48, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:10}, line:{color:C.line, transparency:100} });
-    ctx.addLabel(slide, 'PROOF DIRECTION', { x:1.16, y:5.63, w:1.30, h:0.09, fontSize:5.6, color:C.accent, charSpace:0.7 });
-    ctx.addText(slide, proof, { x:2.82, y:5.60, w:4.64, h:0.12, fontSize:7.8, color:C.body, fit:'shrink' });
+    const rawProof = s.coverProof || s.note || '';
+    const proof = typeof ctx.publicSlideNote === 'function' ? ctx.publicSlideNote(rawProof) : rawProof;
+    if (proof) {
+      ctx.addRect(slide, 0.92, 5.46, 7.20, 0.48, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:10}, line:{color:C.line, transparency:100} });
+      ctx.addText(slide, proof, { x:1.16, y:5.60, w:6.68, h:0.12, fontSize:7.8, color:C.body, fit:'shrink' });
+    }
     ctx.addDeckMeta(slide, plan, { x:0.90, y:6.42, w:5.60, h:0.14, fontSize:7.2, color:C.muted, fit:'shrink' });
     drawFooter(slide, plan, { fontSize:7.6, color:C.muted });
   };

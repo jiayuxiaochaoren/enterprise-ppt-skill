@@ -168,11 +168,13 @@ function createMediaPanelHelpers(core = {}, helpers = {}) {
   function addVisualPhotoPanel(slide, plan, s, role, x, y, w, hgt, opts = {}) {
     const designState = designForSlide(plan, s, role);
     if (!designState.wantsImage) return false;
+    if (!designState.imagePath || !fs.existsSync(designState.imagePath)) return false;
     return addSmartPhotoPanel(slide, designState.imagePath, x, y, w, hgt, Object.assign({ role }, opts));
   }
   function addVisualPhotoBackdrop(slide, plan, s, role = 'cover', opts = {}) {
     const designState = designForSlide(plan, s, role);
     if (!designState.wantsImage) return false;
+    if (!designState.imagePath || !fs.existsSync(designState.imagePath)) return false;
     return addSmartPhotoPanel(slide, designState.imagePath, 0, 0, W, H, Object.assign({ role, transparency:68 }, opts));
   }
   function addEnergyPhotoBackdrop(slide) {

@@ -187,13 +187,15 @@ For structured deck plans:
 ```bash
 node scripts/inspect_design.js deck-plan.json
 node scripts/deck_asset_decision_gate.js deck-plan.json --out out/asset-gate.json
-node scripts/resolve_visual_assets.js deck-plan.json --out-dir out/assets --imagegen-capability available
+node scripts/resolve_visual_assets.js deck-plan.json --out-dir out/assets
 node scripts/generate_pptx.js <deck-plan-or-with-assets>.json output.pptx
 node scripts/validate_pptx.js output.pptx --expect-slides <count> --require <keywords>
 ```
 
+If `resolve_visual_assets.js` returns `needs_user_input`, ask the user to choose per missing visual: provide assets, auto-generate illustrative visuals, or use structure-only pages.
+Only rerun with `--missing-asset-action auto_generate --imagegen-capability available` after the user chooses generated visuals.
+Only rerun with `--missing-asset-action skip_image` after the user chooses structure-only pages.
 If `resolve_visual_assets.js` returns `needs_image_generation`, generate and bind real bitmap assets before rendering.
-If image generation is unavailable, rerun with `--imagegen-capability unavailable` so the deck plan explicitly downgrades those pages to pure structural layouts.
 Do not leave unfulfilled generated-asset promises in the deck plan.
 
 Visual QA:

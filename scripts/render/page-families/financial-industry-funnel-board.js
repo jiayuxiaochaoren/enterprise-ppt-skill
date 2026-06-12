@@ -5,7 +5,8 @@ const {
 function createAdoptionOrPatientFunnelBoard(ctx = {}) {
   const C = ctx.colors();
   const {
-    addHairline,
+    addArrowLine,
+    addCardToCardConnector,
     addLabel,
     addRect,
     addText,
@@ -59,11 +60,12 @@ function createAdoptionOrPatientFunnelBoard(ctx = {}) {
       fontSize:6.8, color:C.accent, charSpace:0
     });
     const count = Math.max(1, items.length);
-    const gap = count >= 5 ? 0.14 : 0.20;
+    const gap = count >= 5 ? 0.34 : 0.56;
     const startX = board.x + 0.44;
     const cardY = board.y + 0.94;
     const cardH = 1.42;
     const cardW = (board.w - 0.88 - gap * (count - 1)) / count;
+    const cardBoxes = [];
     items.forEach((it,i)=>{
       const x = startX + i * (cardW + gap);
       const accent = accents[i % accents.length];
@@ -90,8 +92,20 @@ function createAdoptionOrPatientFunnelBoard(ctx = {}) {
         x:x+0.16, y:cardY+1.12, w:cardW-0.32, h:0.12,
         fontSize:6.4, color:C.body, fit:'shrink', valign:'mid'
       });
-      if (i < items.length - 1) {
-        addHairline(slide, x+cardW+0.03, cardY+0.70, Math.max(0.08, gap-0.06), C.line, 12, 0.34);
+      cardBoxes.push({ x, y:cardY, w:cardW, h:cardH, accent });
+    });
+    cardBoxes.slice(0, -1).forEach((card, i) => {
+      const next = cardBoxes[i + 1];
+      if (typeof addCardToCardConnector === 'function') {
+        addCardToCardConnector(slide, card, next, card.accent || C.line, {
+          gap:0.08,
+          transparency:18,
+          width:0.46
+        });
+      } else if (typeof addArrowLine === 'function') {
+        const start = card.x + card.w + 0.08;
+        const end = next.x - 0.08;
+        if (end > start) addArrowLine(slide, start, card.y + card.h / 2, end - start, 0, card.accent || C.line, { transparency:18, width:0.46 });
       }
     });
     const railY = board.y + board.h - 0.96;

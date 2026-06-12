@@ -13,13 +13,13 @@
       "closingTitle": "确认下一步决策边界",
       "closingSubtitle": "用同一套事实、责任人和复盘节奏推进下一步。",
       "closingNote": "外发前确认范围、数据口径、责任人和复盘节奏。",
-      "closingDecisionOutcome": "用可验证结果进入下一轮复盘。",
+      "closingDecisionOutcome": "",
       "closingContactFallback": "期待进一步交流与合作。",
       "closingSimpleTitle": "谢谢观看",
       "closingSimpleSubtitle": "期待下一步沟通。",
-      "fallbackCaption": "视觉素材只在证据角色和使用边界明确时使用。",
+      "fallbackCaption": "",
       "coverProofTitle": "核心决策",
-      "coverProof": "把有来源支撑的判断转成可复盘的行动。",
+      "coverProof": "",
       "productFallbackNote": "产品、使用场景和证据说明需要放在同一页内闭环。",
       "reportBoardClaim": "用层级、编号和来源证据让高密信息仍然可扫描。",
       "reportBoardCoreTitle": "先读判断",
@@ -48,8 +48,8 @@
         "closingTitle": "确认第一条产线级运营闭环",
         "closingSubtitle": "推广前先验证设备范围、数据接口、工单流转和 OEE 复盘。",
         "closingNote": "确认试点产线、设备清单、数据归属和八周复盘节奏。",
-        "closingDecisionOutcome": "先跑通一条可验证的产线运营闭环，再扩展到多车间。",
-        "fallbackCaption": "现场或设备图片只有在来源和使用授权明确时才作为证据。"
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
       }
     },
     "industrial-energy": {
@@ -63,8 +63,8 @@
         "closingTitle": "把资本配置收束到同一套决策依据",
         "closingSubtitle": "用组合分层、风险约束和退出节奏进入下一轮投资审议。",
         "closingNote": "外发前确认配置动作、风险边界和披露权限。",
-        "closingDecisionOutcome": "把证据读数转成配置、持有、退出或风险动作。",
-        "fallbackCaption": "金融视觉必须说明报告期间、指标口径和披露边界。"
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
       }
     },
     "beauty-consumer": {
@@ -76,10 +76,10 @@
         "closingTitle": "确认下一步品牌经营动作",
         "closingSubtitle": "从产品证据和消费者证据推进到渠道、会员和内容动作。",
         "closingNote": "确认产品素材、平台截图、运营指标和图片授权。",
-        "closingDecisionOutcome": "只把有来源支撑的产品和消费者证据放入下一步品牌动作。",
-        "fallbackCaption": "产品、包装、门店或平台图片需要说明它证明了什么。",
+        "closingDecisionOutcome": "",
+        "fallbackCaption": "",
         "coverProofTitle": "品牌经营判断",
-        "coverProof": "产品真实感、消费者证据和渠道动作必须共同支撑品牌决策。",
+        "coverProof": "",
         "productFallbackNote": "产品页必须把 SKU、质地或功效与来源说明放在一起。"
       }
     },
@@ -91,8 +91,8 @@
         "closingTitle": "把产品采用转成收入质量",
         "closingSubtitle": "同时复盘激活、集成深度、治理覆盖和扩张信号。",
         "closingNote": "确认工作流、激活指标、集成责任人和安全边界。",
-        "closingDecisionOutcome": "把采用证据转成健康度、集成和扩张复盘动作。",
-        "fallbackCaption": "产品界面必须是真实、已授权，或明确标注为非事实示意。"
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
       }
     },
     "saas-ai-technology": {
@@ -106,8 +106,8 @@
         "closingTitle": "让患者触点进入可复盘的服务链",
         "closingSubtitle": "从一条旅程开始，再把质量治理扩展到多团队。",
         "closingNote": "确认隐私许可、触点责任人、质量指标和复盘节奏。",
-        "closingDecisionOutcome": "把服务证据带入下一轮质量交接和复盘。",
-        "fallbackCaption": "医疗视觉需要隐私许可，并说明具体触点或质量角色。"
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
       }
     },
     "healthcare-wellness": {
@@ -121,8 +121,8 @@
         "closingTitle": "把体验资产转成可复用增长动作",
         "closingSubtitle": "用场景证据、路线产品、转化口径和复访节奏进入下一轮复盘。",
         "closingNote": "确认图片授权、场景证据、客群、转化口径和运营负责人。",
-        "closingDecisionOutcome": "用已验证的场景证据选择下一步路线、产品或转化动作。",
-        "fallbackCaption": "体验图片必须展示它要证明的真实产品、场所或路线。"
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
       }
     },
     "government-public-sector": {
@@ -133,8 +133,8 @@
         "closingTitle": "确认项目清单和复盘机制",
         "closingSubtitle": "用政策来源、资源地图、治理模型和风险保障进入下一次会议。",
         "closingNote": "确认来源日期、敏感边界、责任人和项目复盘节奏。",
-        "closingDecisionOutcome": "只把有来源日期且完成敏感性复核的事项放入下一轮项目复盘。",
-        "fallbackCaption": "公共部门判断需要来源日期、范围边界和敏感性复核。"
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
       }
     },
     "people-culture": {
@@ -145,8 +145,8 @@
         "closingTitle": "用清晰下一步延续沟通",
         "closingSubtitle": "为外部读者明确联系人、岗位、官网或下一步动作。",
         "closingNote": "确认公开人物素材、岗位信息、联系方式和使用授权。",
-        "closingDecisionOutcome": "用具体联系方式、岗位或下一步沟通边界继续推进。",
-        "fallbackCaption": "人物或办公场景视觉需要公开使用许可和角色说明。"
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
       }
     },
     "people-culture-company": {
@@ -163,9 +163,9 @@
         "closingTitle": "让运营从经验驱动走向数据驱动",
         "closingSubtitle": "期待共建高效、可持续的运营体系",
         "closingNote": "以核心运营闭环先行上线，再围绕数据接入、服务场景和管理指标持续迭代。",
-        "closingDecisionOutcome": "以可验证结果进入下一轮复盘。",
+        "closingDecisionOutcome": "",
         "closingContactFallback": "期待进一步交流与合作。",
-        "fallbackCaption": "图片用于说明对象与业务语境，不承载未验证事实。"
+        "fallbackCaption": ""
       }
     }
   }

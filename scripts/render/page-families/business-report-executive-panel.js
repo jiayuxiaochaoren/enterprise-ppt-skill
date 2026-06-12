@@ -33,8 +33,11 @@ function createReportExecutivePanel(ctx = {}) {
     addLabel(slide, '管理判断', { x:box.x+0.30, y:labelY, w:1.28, h:0.12, fontSize:6.8, color:C.accent, charSpace:0 });
     addText(slide, s.coreTitle || copyFallback(plan, 'reportBoardCoreTitle'), { x:box.x+0.30, y:coreY, w:1.82, h:0.32, fontSize:14.2, bold:true, color:text, fit:'shrink' });
     addText(slide, summary, { x:box.x+0.30, y:summaryY, w:1.86, h:summaryH, fontSize:8.3, color:body, fit:'shrink', breakLine:true, valign:'mid' });
-    addHairline(slide, box.x+0.30, hairY, 0.82, C.accent, 0, 0.48);
-    addText(slide, s.decision || copyFallback(plan, 'reportBoardDecision'), { x:box.x+0.30, y:decisionY, w:1.82, h:0.32, fontSize:7.4, color:useLight ? C.muted : (C.darkMuted || 'A8B3C3'), fit:'shrink', breakLine:true, valign:'mid' });
+    const decision = s.decision || '';
+    if (decision) {
+      addHairline(slide, box.x+0.30, hairY, 0.82, C.accent, 0, 0.48);
+      addText(slide, decision, { x:box.x+0.30, y:decisionY, w:1.82, h:0.32, fontSize:7.4, color:useLight ? C.muted : (C.darkMuted || 'A8B3C3'), fit:'shrink', breakLine:true, valign:'mid' });
+    }
   }
 
   return {

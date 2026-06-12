@@ -340,7 +340,8 @@ function main() {
     'expected waterfall chart renderer'
   );
   assert(
-    ops.some(op => op.name === 'addLabel' && op.args[1] === '渠道效率矩阵'),
+    ops.some(op => op.name === 'addText' && op.args[1] === 'ROAS') &&
+      ops.some(op => op.name === 'addText' && op.args[1] === '高效触点'),
     'expected channel efficiency chart renderer'
   );
   assertOperationalBoards();

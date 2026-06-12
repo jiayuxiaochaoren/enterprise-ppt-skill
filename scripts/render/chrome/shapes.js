@@ -49,6 +49,36 @@ function createShapeHelpers(core = {}) {
     }
     return addArrowLine(slide, from.x, from.y, to.x - from.x, to.y - from.y, color, base);
   }
+  function addCardToCardConnector(slide, from, to, color = C.accent, opts = {}) {
+    if (!slide || !from || !to) return false;
+    const gap = opts.gap ?? 0.10;
+    const x = from.x + from.w + gap;
+    const y = opts.y ?? (from.y + from.h / 2);
+    const endX = to.x - gap;
+    const endY = opts.endY ?? (to.y + to.h / 2);
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(endX) || !Number.isFinite(endY)) return false;
+    if (endX <= x) return false;
+    const marker = opts.marker !== false;
+    const markerSize = opts.markerSize ?? 0.09;
+    const lineEndX = marker ? Math.max(x + 0.02, endX - markerSize * 0.45) : endX;
+    addArrowLine(slide, x, y, lineEndX - x, endY - y, color, {
+      transparency:opts.transparency ?? 34,
+      width:opts.width ?? 0.36,
+      endArrowType:marker ? null : opts.endArrowType
+    });
+    if (marker) {
+      slide.addShape('triangle', {
+        x:endX - markerSize * 0.50,
+        y:endY - markerSize * 0.50,
+        w:markerSize,
+        h:markerSize,
+        rotate:90,
+        fill:{ color, transparency:opts.markerTransparency ?? Math.max(0, (opts.transparency ?? 34) - 12) },
+        line:{ color, transparency:100 }
+      });
+    }
+    return true;
+  }
   function addClockwiseLoopConnectors(slide, slots, connectorColors = [], opts = {}) {
     if (slots.length < 4) return;
     addArrowBetweenRects(slide, slots[0], slots[1], 'right', connectorColors[0] || C.accent, opts);
@@ -110,6 +140,7 @@ function createShapeHelpers(core = {}) {
   return {
     addArrowBetweenRects,
     addArrowLine,
+    addCardToCardConnector,
     addClockwiseLoopConnectors,
     addDarkBreathingCircle,
     addHairline,

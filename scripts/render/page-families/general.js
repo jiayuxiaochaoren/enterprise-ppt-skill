@@ -26,7 +26,7 @@ function createGeneralRenderers(ctx = {}) {
       addLabel(slide, 'FIELD EVIDENCE', { x:1.20, y:4.96, w:1.08, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.7 });
       addText(slide, s.leftTitle || '现场证据', { x:1.20, y:5.24, w:1.38, h:0.14, fontSize:9.8, bold:true, color:C.white, fit:'shrink' });
       const evidenceText = (s.visual && s.visual.caption) || (s.left || []).slice(0,1).join(' ');
-      addText(slide, evidenceText || '图片用于说明现场对象与业务语境，不承载长段正文。', { x:2.72, y:5.18, w:2.18, h:0.22, fontSize:6.8, color:'CBD5E1', fit:'shrink' });
+      if (evidenceText) addText(slide, evidenceText, { x:2.72, y:5.18, w:2.18, h:0.22, fontSize:6.8, color:'CBD5E1', fit:'shrink' });
     } else {
       addRect(slide, 0.92, 2.08, 4.36, 3.86, C.white, 'E8EEF6', { fill:{color:C.white, transparency:0}, line:{color:'E8EEF6', transparency:12, width:0.48} });
       addText(slide, s.leftTitle || '管理现状', { x:1.20, y:2.44, w:2.56, h:0.22, fontSize:14.8, bold:true, color:C.text, valign:'mid' });

@@ -51,7 +51,7 @@ node scripts/validate_pptx.js out/sample.pptx --expect-slides 10 --require æ–°èƒ
 - Uses `assets/visual-system.json` to coordinate Chinese title fonts, Latin labels, numeric typography, commercial palettes, visual routing, breathing circles, real photo backdrops, inner-page image crops, energy lens motifs, and closed-loop visuals.
 - Supports `palette`, `visualMode`, `visualIntent`, `media`, and `slide.visual` so decks can choose solid, photo, hybrid, generated, or case-gallery layouts by industry and slide role.
 - Adds a pre-generation clarification gate that turns missing contacts, case authorization, certificate details, metric basis, and visual evidence gaps into user-facing choices before extraction continues.
-- Adds a pre-render asset decision gate: when product, scene, or proof imagery is missing, the user chooses whether to provide assets, skip imagery, or generate clearly synthetic visuals before PPTX rendering.
+- Adds a pre-render asset decision gate: when product, scene, or proof imagery is missing, the default is to require an explicit user choice to provide assets, skip imagery, or generate clearly synthetic visuals before PPTX rendering.
 - Adds a `deckArtDirection` layer: the model provides `themeIntent`, `accentRole`, `layoutEnergy`, `visualDensity`, and `rhythmTransition`, while scripts enforce rhythm, semantic color use, page-family routing, and QA.
 - The energy sample cover, closing, and selected inner pages use different crops of a public-domain BESS site photo with attribution recorded in `assets/media/ATTRIBUTION.md`.
 - `assets/media/energy-storage-cover-loop.mp4` provides an optional motion backdrop for Keynote/PowerPoint environments that handle embedded video cleanly.

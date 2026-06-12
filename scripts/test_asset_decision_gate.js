@@ -145,6 +145,7 @@ const galleryBindPlanPath = path.join(OUT, 'gallery-bind-plan.json');
 const galleryBindMapPath = path.join(OUT, 'gallery-bind-map.json');
 const galleryBindOutPath = path.join(OUT, 'gallery-bind-plan.bound.json');
 const bridgeUnavailableDir = path.join(OUT, 'bridge-unavailable');
+const bridgeSkipDir = path.join(OUT, 'bridge-skip');
 const bridgeAvailableDir = path.join(OUT, 'bridge-available');
 const bridgeBlockedDir = path.join(OUT, 'bridge-blocked');
 
@@ -193,16 +194,39 @@ const bridgeUnavailable = JSON.parse(cp.execFileSync(process.execPath, [
   cwd: ROOT,
   encoding: 'utf8'
 }));
-assert.equal(bridgeUnavailable.status, 'ready');
+assert.equal(bridgeUnavailable.status, 'needs_user_input');
 const bridgeUnavailableReport = JSON.parse(fs.readFileSync(path.join(bridgeUnavailableDir, 'visual-asset-resolution.json'), 'utf8'));
 assert.equal(bridgeUnavailableReport.imagegenCapability, 'unavailable');
+assert.equal(bridgeUnavailableReport.missingAssetAction, 'require_user_input');
 assert.equal(bridgeUnavailableReport.counts.autoGenerate, 0);
-assert.ok(bridgeUnavailableReport.counts.skipImage >= 2, 'unavailable imagegen should explicitly skip missing image decisions');
-const bridgeUnavailablePlan = JSON.parse(fs.readFileSync(path.join(ROOT, bridgeUnavailableReport.outputs.deckPlan), 'utf8'));
-assert.equal(bridgeUnavailablePlan.slides[0].visual.mode, 'solid');
-assert.equal(bridgeUnavailablePlan.slides[0].assetGeneration.status, 'none');
-assert.equal(bridgeUnavailablePlan.slides[0].assetGeneration.decisionSource, 'asset-decision-gate/v1');
-assert.equal(Boolean(bridgeUnavailablePlan.slides[0].generatedAssetPrompt), false);
+assert.equal(bridgeUnavailableReport.counts.skipImage, 0);
+assert.ok(bridgeUnavailableReport.counts.requireUserInput >= 2, 'missing image decisions should require explicit user input by default');
+assert.ok(!bridgeUnavailableReport.outputs.deckPlan, 'default unresolved asset decisions must not write a renderable resolved plan');
+
+const bridgeSkip = JSON.parse(cp.execFileSync(process.execPath, [
+  'scripts/resolve_visual_assets.js',
+  planPath,
+  '--out-dir',
+  bridgeSkipDir,
+  '--imagegen-capability',
+  'unavailable',
+  '--missing-asset-action',
+  'skip_image'
+], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}));
+assert.equal(bridgeSkip.status, 'ready');
+const bridgeSkipReport = JSON.parse(fs.readFileSync(path.join(bridgeSkipDir, 'visual-asset-resolution.json'), 'utf8'));
+assert.equal(bridgeSkipReport.imagegenCapability, 'unavailable');
+assert.equal(bridgeSkipReport.missingAssetAction, 'skip_image');
+assert.equal(bridgeSkipReport.counts.autoGenerate, 0);
+assert.ok(bridgeSkipReport.counts.skipImage >= 2, 'explicit skip_image should keep the structure-only batch path available');
+const bridgeSkipPlan = JSON.parse(fs.readFileSync(path.join(ROOT, bridgeSkipReport.outputs.deckPlan), 'utf8'));
+assert.equal(bridgeSkipPlan.slides[0].visual.mode, 'solid');
+assert.equal(bridgeSkipPlan.slides[0].assetGeneration.status, 'none');
+assert.equal(bridgeSkipPlan.slides[0].assetGeneration.decisionSource, 'asset-decision-gate/v1');
+assert.equal(Boolean(bridgeSkipPlan.slides[0].generatedAssetPrompt), false);
 
 const bridgeAvailable = JSON.parse(cp.execFileSync(process.execPath, [
   'scripts/resolve_visual_assets.js',
@@ -210,7 +234,9 @@ const bridgeAvailable = JSON.parse(cp.execFileSync(process.execPath, [
   '--out-dir',
   bridgeAvailableDir,
   '--imagegen-capability',
-  'available'
+  'available',
+  '--missing-asset-action',
+  'auto_generate'
 ], {
   cwd: ROOT,
   encoding: 'utf8'

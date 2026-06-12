@@ -123,20 +123,20 @@ function assertProductHeroShell(ops) {
     && op.args[2] === 5.06
     && op.args[3] === 6.18
     && op.args[4] === 0.72);
-  assert(captionBand, 'expected product hero visual caption band');
+  assert(!captionBand, 'product hero should not draw a visual caption band without an asset caption');
   const sidePanel = ops.find(op => op.name === 'addRect'
     && op.args[1] === 7.62
     && op.args[2] === 2.00
     && op.args[3] === 3.78
     && op.args[4] === 3.78);
   assert(sidePanel, 'expected product hero positioning panel');
-  ['VISUAL PROOF', 'POSITIONING'].forEach(label => {
+  ['POSITIONING'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected product hero label ${label}`
     );
   });
-  ['INSPECTABLE OBJECT', 'Product 1', 'Product 1 body', 'Product 2'].forEach(text => {
+  ['Product 1', 'Product 1 body', 'Product 2'].forEach(text => {
     assert(
       ops.some(op => op.args.includes(text)),
       `expected product hero content ${text}`
@@ -321,7 +321,7 @@ function main() {
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'PRODUCT SYSTEM'), 'expected feature-strip branch');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'PRODUCT HERO'), 'expected hero branch');
   assert(ops.some(op => op.name === 'addSmartPhotoPanel'), 'expected product image rendering path');
-  assert(ops.some(op => op.name === 'genericShowcaseField'), 'expected product placeholder path');
+  assert(!ops.some(op => op.name === 'genericShowcaseField'), 'product renderers should not draw placeholder visuals without assets');
   assertBeautyHeaders(ops);
   assertCatalogFeaturedListShell(ops);
   assertCatalogGridCardsShell(ops);

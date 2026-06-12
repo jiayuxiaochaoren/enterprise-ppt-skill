@@ -26,9 +26,18 @@ function parseJson(text) {
 function actionForQuestion(question = {}, opts = {}) {
   const allowed = Array.isArray(question.allowedActions) ? question.allowedActions : [];
   const imagegenAvailable = opts.imagegenCapability === 'available';
-  if (question.blocked && imagegenAvailable && opts.blockedAction === 'require_user_input') return '';
-  if (imagegenAvailable && allowed.includes('auto_generate')) return 'auto_generate';
-  if (allowed.includes('skip_image')) return 'skip_image';
+  const missingAssetAction = String(opts.missingAssetAction || 'require_user_input').toLowerCase();
+  const blockedAction = String(opts.blockedAction || 'require_user_input').toLowerCase();
+  if (question.blocked) {
+    if (blockedAction === 'skip_image' && allowed.includes('skip_image')) return 'skip_image';
+    return '';
+  }
+  if (missingAssetAction === 'require_user_input') return '';
+  if (missingAssetAction === 'auto_generate') {
+    if (imagegenAvailable && allowed.includes('auto_generate')) return 'auto_generate';
+    return '';
+  }
+  if (missingAssetAction === 'skip_image' && allowed.includes('skip_image')) return 'skip_image';
   return '';
 }
 
@@ -40,7 +49,7 @@ function decisionReason(action, opts = {}, question = {}) {
     return 'generated assets cannot satisfy factual proof; use native structure instead';
   }
   if (action === 'skip_image') {
-    return 'imagegen capability unavailable; skip image use before renderer fallback';
+    return 'explicit missing-asset action selected structure-only rendering before renderer fallback';
   }
   return 'asset decision requires user input';
 }
@@ -101,13 +110,18 @@ function summaryForReport(report, paths, root = ROOT) {
 function resolveVisualAssetsFromFiles(opts = {}) {
   const normalizedOpts = Object.assign({
     imagegenCapability: 'unavailable',
-    blockedAction: 'skip_image',
+    missingAssetAction: 'require_user_input',
+    blockedAction: 'require_user_input',
     root: ROOT
   }, opts);
   normalizedOpts.imagegenCapability = String(normalizedOpts.imagegenCapability || 'unavailable').toLowerCase();
-  normalizedOpts.blockedAction = String(normalizedOpts.blockedAction || 'skip_image').toLowerCase();
+  normalizedOpts.missingAssetAction = String(normalizedOpts.missingAssetAction || 'require_user_input').toLowerCase();
+  normalizedOpts.blockedAction = String(normalizedOpts.blockedAction || 'require_user_input').toLowerCase();
   if (!['available', 'unavailable'].includes(normalizedOpts.imagegenCapability)) {
     throw new Error('imagegenCapability must be available or unavailable');
+  }
+  if (!['require_user_input', 'auto_generate', 'skip_image'].includes(normalizedOpts.missingAssetAction)) {
+    throw new Error('missingAssetAction must be require_user_input, auto_generate, or skip_image');
   }
   if (!['skip_image', 'require_user_input'].includes(normalizedOpts.blockedAction)) {
     throw new Error('blockedAction must be skip_image or require_user_input');
@@ -126,6 +140,7 @@ function resolveVisualAssetsFromFiles(opts = {}) {
     status: 'started',
     inputPlan: rel(planPath, root),
     imagegenCapability: normalizedOpts.imagegenCapability,
+    missingAssetAction: normalizedOpts.missingAssetAction,
     blockedAction: normalizedOpts.blockedAction,
     counts: {
       questionCount: initialGate.questionCount || 0,
@@ -140,7 +155,8 @@ function resolveVisualAssetsFromFiles(opts = {}) {
     nextActions: [],
     policy: {
       generationBeforeRendererFallback: true,
-      noImagegenAction: 'skip_image',
+      userChoiceRequiredByDefault: normalizedOpts.missingAssetAction === 'require_user_input',
+      noImagegenAction: normalizedOpts.missingAssetAction,
       generatedProofEligibility: 'synthetic-only',
       factualBlockedGeneratedAction: normalizedOpts.blockedAction
     }
@@ -173,7 +189,7 @@ function resolveVisualAssetsFromFiles(opts = {}) {
   if (auto.unresolved.length) {
     return finish('needs_user_input', r => {
       r.unresolved = auto.unresolved;
-      r.nextActions.push('Provide user assets or rerun with --blocked-action skip_image for structure-only pages.');
+      r.nextActions.push('Answer the asset decision gate: provide user assets, choose auto_generate for synthetic illustrative visuals, or explicitly rerun with --missing-asset-action skip_image for structure-only pages.');
     });
   }
 

@@ -76,6 +76,7 @@ helpers.addLabel(slide, 'LABEL', { x:0.5, y:0.5, w:1, h:0.12 });
 helpers.lightCanvas(slide);
 helpers.PageNumber(slide, 3);
 helpers.addArrowLine(slide, 1, 1, 2, 0, '0066FF');
+helpers.addCardToCardConnector(slide, { x:1, y:4, w:1, h:0.5 }, { x:3, y:4, w:1, h:0.5 }, '0066FF');
 helpers.addPhotoPanel(slide, '/missing-fixture-image.png', 2, 2, 1, 1, { fallback:'ABCDEF' });
 helpers.addDeckMeta(slide, { metadata:{ organization:'Acme' }, showMeta:true }, { x:0, y:0, w:2, h:0.2 });
 const beforeEmptySourceNote = texts.length;
@@ -118,6 +119,7 @@ assert.ok(texts.some(op => op.text === 'LABEL'), 'addLabel should delegate text 
 assert.ok(texts.some(op => op.text === '03' && op.opts._folioInternal), 'PageNumber should render a normalized folio');
 assert.ok(!shapes.some(op => op.type === 'ellipse'), 'lightCanvas should not add a default decorative motif');
 assert.ok(shapes.some(op => op.type === 'line' && op.opts.line.endArrowType === 'triangle'), 'addArrowLine should record arrow styling');
+assert.ok(shapes.some(op => op.type === 'triangle' && op.opts.rotate === 90), 'addCardToCardConnector should draw a visible arrow marker');
 assert.ok(shapes.some(op => op.type === 'rect' && op.opts.fill.color === 'ABCDEF'), 'missing photo should draw fallback panel');
 assert.ok(texts.some(op => op.text === 'Acme'), 'deck meta should render organization metadata');
 assert.ok(texts.some(op => op.text === 'Deck footer'), 'FooterNote should render ordinary deck footer text');

@@ -95,7 +95,7 @@ Rules:
 - Do not invent customer names, metrics, revenue, awards, policy endorsements, or successful cases.
 - If data is missing, phrase as `需结合实际数据测算` in the assistant response, not as PPT-visible placeholder copy unless the user asks for placeholders.
 - Before structured extraction, run `scripts/material_clarification_gate.js` after source audit and story architecture. If it returns `needs_user_input`, ask the user the listed questions and apply their choices before writing the final claim spine.
-- Before PPTX rendering, run `scripts/resolve_visual_assets.js` on the compiled deck plan. It uses the asset decision gate, then either stops with imagegen prompts when synthetic assets are allowed, binds provided/generated assets from an asset map, or explicitly skips image use when imagegen is unavailable. Never let a missing image silently become a visible placeholder.
+- Before PPTX rendering, run `scripts/resolve_visual_assets.js` on the compiled deck plan. It uses the asset decision gate and defaults to `needs_user_input` whenever missing visuals require a decision. Only use `--missing-asset-action auto_generate` after the user chooses synthetic illustrative visuals, or `--missing-asset-action skip_image` after the user chooses structure-only pages. Never let a missing image silently become a visible placeholder.
 - Generated preview decks should look client-facing; avoid `示例 / 测试稿 / 验收稿 / 占位 / 待补充` in slide text.
 
 ## Deck structure generation

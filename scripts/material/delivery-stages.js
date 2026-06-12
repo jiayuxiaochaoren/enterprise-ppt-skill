@@ -105,19 +105,20 @@ function resolveAssetStage({
   }
   if (!(opts.allowGeneratedAssets || opts.assetMap)) {
     report.status = 'needs_asset_decisions';
-    report.nextActions.push('Answer asset-decision-gate.json with provide_assets or skip_image; add --allow-generated-assets only for synthetic preview visuals.');
+    report.nextActions.push('Answer asset-decision-gate.json with provide_assets, auto_generate, or skip_image; add --allow-generated-assets only after the user approves synthetic preview visuals.');
     return { deckPlanPath: nextDeckPlanPath, stop: true };
   }
 
   const resolutionPath = path.join(outDir, 'visual-asset-resolution.json');
   const resolvedPlanPath = path.join(outDir, 'deck-plan.assets-resolved.json');
-  const imagegenCapability = opts.imagegenCapability || (opts.allowGeneratedAssets ? 'available' : 'unavailable');
+  const imagegenCapability = opts.imagegenCapability || ((opts.allowGeneratedAssets || opts.assetMap) ? 'available' : 'unavailable');
   const resolutionResult = resolveVisualAssetsFromFiles({
     planPath: deckPlanPath,
     outDir,
     report: resolutionPath,
     outPlan: resolvedPlanPath,
     imagegenCapability,
+    missingAssetAction: (opts.allowGeneratedAssets || opts.assetMap) ? 'auto_generate' : 'require_user_input',
     blockedAction: 'require_user_input',
     assetMap: opts.assetMap ? path.resolve(opts.assetMap) : '',
     root
@@ -163,7 +164,7 @@ function resolveAssetStage({
     return { deckPlanPath: nextDeckPlanPath, stop: false };
   }
   report.status = 'needs_asset_decisions';
-  report.nextActions.push('Answer asset-decision-gate.json with provide_assets or skip_image; generated factual-proof pages require user assets.');
+  report.nextActions.push('Answer asset-decision-gate.json with provide_assets, auto_generate, or skip_image; generated factual-proof pages require user assets.');
   return { deckPlanPath: nextDeckPlanPath, stop: true };
 }
 

@@ -133,7 +133,6 @@ function createChannelEfficiencyMatrixDrawer(ctx = {}) {
       { label:'渠道E', title:'渠道E', value:'3.2x', x:30, y:33, size:40, body:'资源位' }
     ]).slice(0, 6);
     const chart = { x:board.x+0.54, y:board.y+0.62, w:board.w-1.06, h:2.84 };
-    addLabel(slide, '渠道效率矩阵', { x:board.x+0.30, y:board.y+0.30, w:1.58, h:0.10, fontSize:6.6, color:C.accent, charSpace:0 });
     addHairline(slide, chart.x, chart.y+chart.h, chart.w, C.line, 8, 0.52);
     slide.addShape('line', { x:chart.x, y:chart.y, w:0, h:chart.h, line:{color:C.line, transparency:8, width:0.52} });
     slide.addShape('line', { x:chart.x + chart.w * 0.50, y:chart.y, w:0, h:chart.h, line:{color:C.line, transparency:58, width:0.28} });
