@@ -1,8 +1,8 @@
-# Enterprise PPT Skill for Codex
+# Enterprise PPT Skill
 
 A high-quality presentation generation skill for Chinese commercial decks. It turns user materials, meeting notes, industry data, product copy, or short prompts into structured, polished, editable, and verifiable PPTX decks.
 
-The project can run as a Node.js script pipeline, but it works best inside Codex: Codex can inspect local materials, follow the skill contract, ask for missing decisions, bind assets, generate PPTX files, export previews, run QA, and iterate on renderer fixes. When a layout needs a strong visual and no suitable image is available, the skill can also generate images after the user chooses that path.
+The project can run as a Node.js script pipeline, and it can work with any model or human workflow that produces the expected structured extraction results. It works best inside Codex: Codex can inspect local materials, follow the skill contract, ask for missing decisions, bind assets, generate PPTX files, export previews, run QA, and iterate on renderer fixes. When a layout needs a strong visual and no suitable image is available, the skill can also generate images after the user chooses that path.
 
 ## Preview
 
@@ -54,12 +54,14 @@ The examples below are generated outputs from the current project: image-led cov
   </tr>
 </table>
 
-## Why Use It In Codex
+## Best In Codex
 
 - **Local materials, local pipeline**: Codex can read the material folder, run ingestion, prepare model prompts, accept extraction results, and keep artifacts in the same workspace.
 - **Missing inputs become explicit choices**: when imagery, brand assets, evidence fields, or key metrics are missing, the pipeline asks the user to provide assets, generate images, use a structured no-image layout, or adjust the story.
 - **Generation and revision stay in one loop**: Codex can generate the PPTX, export previews, inspect layout issues, patch renderers, and run regression checks.
 - **Built for commercial decks**: each slide centers on one claim and one proof object, using real materials, data views, process diagrams, matrices, evidence cards, and industry-specific layouts.
+
+The pipeline is not Codex-only. Outside Codex, another model or a human reviewer can provide `material-extraction.json`, `model-results`, or a valid deck plan JSON, then continue through `material_to_deck_plan`, asset decisions, PPTX rendering, and QA.
 
 ## Quick Start
 
@@ -116,7 +118,7 @@ Without `material-extraction.json`, the delivery pipeline stops at the model ext
 ## Image And Asset Policy
 
 - Prefer user-provided brand, product, scene, and data assets when available.
-- If a layout needs a hero visual and no suitable image exists, Codex asks the user to provide an asset, generate an image, or switch to a structured no-image layout.
+- If a layout needs a hero visual and no suitable image exists, the pipeline requires the user to provide an asset, generate an image, or switch to a structured no-image layout. Inside Codex, the agent can guide that decision directly.
 - Generated images improve visual expression and industry context; test notes, placeholder text, and pipeline explanations are not written into client-facing slides.
 - Renderers consume bound `imagePath` values or structured visual configuration. Asset decisions happen before PPTX rendering.
 
