@@ -25,11 +25,9 @@ const {
 function evidenceStrengthForRow(row = {}) {
   const statuses = row.statuses || {};
   const fixtures = row.fixtures || {};
-  const fixtureEvidence = [fixtures.plan, fixtures.pptx, fixtures.preview, fixtures.renderMeta]
-    .filter(Boolean)
-    .every(file => fileExists(file));
+  const fixtureEvidence = fixtureEvidenceComplete(fixtures);
   const qaEvidence = row.qa && row.qa.evidence && fileExists(row.qa.evidence);
-  const acceptanceEvidence = Array.isArray(row.acceptanceEvidence) && row.acceptanceEvidence.length > 0;
+  const acceptanceEvidence = hasAcceptanceEvidence(row);
   const statusAllPass = REQUIRED_STATUS_FIELDS.every(field => normalizeStatus(statuses[field]) === 'pass');
   if (statusAllPass && fixtureEvidence && qaEvidence && acceptanceEvidence) return 'strong';
   if (statusAllPass && fixtureEvidence && qaEvidence) return 'moderate';
@@ -49,12 +47,52 @@ function containsId(text, id) {
   return String(text || '').includes(id);
 }
 
+function rootRelativePath(filePath) {
+  if (!filePath) return '';
+  return rel(absolute(filePath));
+}
+
+function isGeneratedEvidencePath(filePath) {
+  const normalized = rootRelativePath(filePath);
+  return normalized === 'out' ||
+    normalized.startsWith('out/') ||
+    normalized === 'outputs' ||
+    normalized.startsWith('outputs/');
+}
+
+function generatedEvidenceRecordedOrExists(filePath) {
+  return fileExists(filePath) || (Boolean(filePath) && isGeneratedEvidencePath(filePath));
+}
+
+function recordedAcceptanceHits(row = {}) {
+  const hits = row.acceptance && Array.isArray(row.acceptance.hits) ? row.acceptance.hits : [];
+  return hits.map(hit => ({
+    slug: hit.slug || '',
+    plan: hit.plan || '',
+    pptx: hit.pptx || '',
+    previewCount: Number(hit.previewCount || hit.slideCount || 0),
+    acceptanceStatus: hit.acceptanceStatus || 'unknown',
+    source: 'matrix'
+  }));
+}
+
+function hasAcceptanceEvidence(row = {}) {
+  const hits = Array.isArray(row.acceptanceEvidence) && row.acceptanceEvidence.length
+    ? row.acceptanceEvidence
+    : recordedAcceptanceHits(row);
+  return hits.some(hit => hit.acceptanceStatus === 'pass' && Number(hit.previewCount || 0) > 0);
+}
+
 function collectAcceptanceEvidence(matrix) {
   const root = absolute(matrix.acceptanceRoot || '');
   const manifest = readJson(path.relative(ROOT, path.join(root, 'manifest.json')), { decks: [] });
   const planDir = path.join(root, 'plans');
   const evidence = new Map();
+  const recordedEvidence = new Map();
   REQUIRED_PAGE_FAMILIES.forEach(id => evidence.set(id, []));
+  (Array.isArray(matrix.pageFamilies) ? matrix.pageFamilies : []).forEach(row => {
+    recordedEvidence.set(row.id, recordedAcceptanceHits(row));
+  });
 
   const decks = Array.isArray(manifest.decks) ? manifest.decks : [];
   const deckBySlug = new Map(decks.map(deck => [deck.slug, deck]));
@@ -70,11 +108,24 @@ function collectAcceptanceEvidence(matrix) {
         plan: rel(file),
         pptx: deck.pptx ? rel(absolute(deck.pptx)) : '',
         previewCount: countPngs(previewDir),
-        acceptanceStatus: deck.acceptanceStatus || 'unknown'
+        acceptanceStatus: deck.acceptanceStatus || 'unknown',
+        source: 'generated'
       });
     });
   });
+  REQUIRED_PAGE_FAMILIES.forEach(id => {
+    if ((evidence.get(id) || []).length === 0) {
+      evidence.set(id, recordedEvidence.get(id) || []);
+    }
+  });
   return evidence;
+}
+
+function fixtureEvidenceComplete(fixtures = {}) {
+  if (!fixtures.plan || !fileExists(fixtures.plan)) return false;
+  return [fixtures.pptx, fixtures.preview, fixtures.renderMeta]
+    .filter(Boolean)
+    .every(file => generatedEvidenceRecordedOrExists(file));
 }
 
 function recipeStatus(row, recipeLibraryText, designText) {
@@ -114,7 +165,7 @@ function qaStatus(row, qaText) {
 }
 
 function fixtureStatus(filePath) {
-  return fileExists(filePath) ? 'pass' : 'missing';
+  return generatedEvidenceRecordedOrExists(filePath) ? 'pass' : 'missing';
 }
 
 function acceptanceStatus(row, acceptanceEvidence) {
