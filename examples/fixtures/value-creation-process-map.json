@@ -1,0 +1,54 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "general-operations",
+  "documentType": "integrated-report",
+  "title": "价值创造链路从资源投入延伸到可验证经营结果",
+  "subtitle": "综合报告页要把投入、活动、产出和结果放在一条可读流向上。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "value-creation-process-map fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-creation-process-map/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-creation-process-map/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-creation-process-map/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-creation-process-map/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-creation-process-map/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "strategy-map",
+      "layoutVariant": "value-creation-process-map",
+      "title": "价值创造链路从资源投入延伸到可验证经营结果",
+      "claim": "综合报告页要把投入、活动、产出和结果放在一条可读流向上。",
+      "drivers": [
+        "客户需求",
+        "数据资产",
+        "组织能力"
+      ],
+      "actions": [
+        "产品化沉淀",
+        "流程协同",
+        "复盘机制",
+        "治理闭环"
+      ],
+      "outcomes": [
+        "客户价值提升",
+        "运营效率改善",
+        "长期信任增强"
+      ],
+      "note": "流程箭头必须能说明价值如何流动，而不是抽象装饰。"
+    }
+  ]
+}

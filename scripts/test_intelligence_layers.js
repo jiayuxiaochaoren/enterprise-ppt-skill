@@ -1,14 +1,31 @@
 const assert = require('assert/strict');
 const {
   auditDeckPlan,
+  contentOverlapAudit,
   industryKnowledgeAudit,
   industryProofCandidates,
   normalizeDeckPlan,
   normalizeSlide,
+  languagePolicyFor,
+  localizeMicrocopy,
+  mediaForRole,
   semanticFrame,
   semanticMeaning,
   visualAestheticModel
 } = require('./design-system');
+const {
+  MICROCOPY_TRANSLATIONS_ZH
+} = require('./design/language-microcopy-translations');
+const {
+  MICROCOPY_CORE_TRANSLATIONS_ZH
+} = require('./design/language-microcopy-translations-core');
+const {
+  MICROCOPY_DOMAIN_TRANSLATIONS_ZH
+} = require('./design/language-microcopy-translations-domain');
+const {
+  MICROCOPY_ACRONYMS,
+  MICROCOPY_TOKEN_TRANSLATIONS_ZH
+} = require('./design/language-microcopy-tokens');
 
 const manufacturingPlan = { industry:'manufacturing-operations', title:'设备运维升级方案' };
 const rootCauseSlide = {
@@ -92,6 +109,41 @@ assert.ok(
   'industry knowledge audit should flag finance decks without finance proof depth'
 );
 
+const weakRetailDepth = normalizeDeckPlan({
+  industry:'brand-retail',
+  slides:[
+    { type:'auto', title:'跨境电商复盘' },
+    ...Array.from({ length:7 }, (_, i) => ({
+      type:'metric-comparison',
+      title:`经营指标 ${i + 1}`,
+      metrics:[{ label:'GMV', value:`${100 + i}万` }, { label:'ROAS', value:'3.2x' }]
+    }))
+  ]
+});
+const weakRetailDepthFinding = industryKnowledgeAudit(weakRetailDepth, weakRetailDepth).findings.find(f => f.type === 'industryDepthMissing');
+assert.ok(weakRetailDepthFinding, 'retail deck without editorial/channel/cohort/loop depth should be reviewed');
+assert.ok(weakRetailDepthFinding.missingDomains.includes('editorial-proof'));
+assert.ok(weakRetailDepthFinding.recommendations.some(item => item.depthDomain === 'editorial-proof' && /editorial-proof-board/.test(item.recommendedRoute)));
+
+const strongRetailDepth = normalizeDeckPlan({
+  industry:'brand-retail',
+  slides:[
+    { type:'cover', layoutVariant:'beauty-brand-editorial-cover', proofObject:'beauty-brand-editorial-cover', title:'品牌经营复盘', subtitle:'产品与渠道进入质量增长。' },
+    { type:'report-board', layoutVariant:'editorial-proof-board', proofObject:'editorial-proof-board', title:'SKU 角色和消费者反馈形成视觉证据', productItems:[{ title:'P04 防晒', body:'旺季流量入口。' }] },
+    { type:'industry-chart', layoutVariant:'channel-efficiency-matrix', proofObject:'channel-efficiency-matrix', title:'渠道效率矩阵', channelEfficiency:[{ label:'Amazon', x:44, y:72, value:'4.2x' }] },
+    { type:'industry-chart', layoutVariant:'member-cohort-ladder', proofObject:'member-cohort-ladder', title:'会员分层', memberCohorts:[{ label:'高频会员', value:42 }] },
+    { type:'industry-chart', layoutVariant:'monthly-pulse-trend', proofObject:'monthly-pulse-trend', title:'月度经营趋势', monthlyPulse:[{ label:'1月', value:120 }, { label:'2月', value:136 }] },
+    { type:'timeline', layoutVariant:'closed-loop', proofObject:'closed-loop', title:'行动闭环', phases:[{ title:'动作' }, { title:'复盘' }] },
+    { type:'metric-comparison', layoutVariant:'member-growth-board', proofObject:'member-growth-board', title:'复购质量', metrics:[{ label:'复购率', value:'42%' }, { label:'客单价', value:'680' }] },
+    { type:'closing', title:'下一步行动', actions:[{ title:'复盘' }] }
+  ]
+});
+assert.equal(
+  industryKnowledgeAudit(strongRetailDepth, strongRetailDepth).findings.some(f => f.type === 'industryDepthMissing'),
+  false,
+  'retail deck with editorial/channel/cohort/business/loop depth should satisfy depth contract'
+);
+
 const strongFinance = normalizeDeckPlan({
   industry:'finance-investment',
   slides:[
@@ -107,6 +159,129 @@ assert.equal(
   industryKnowledgeAudit(strongFinance, strongFinance).findings.length,
   0,
   'strong finance deck should satisfy industry proof-object depth'
+);
+
+const generatedCover = normalizeSlide(
+  { industry:'brand-retail', title:'新品发布方案' },
+  { type:'cover', title:'新品发布方案', subtitle:'建立统一的新品视觉主张。', visual:{ mode:'generated', role:'background' } },
+  0,
+  3
+);
+assert.equal(generatedCover.assetGeneration.status, 'required', 'explicit generated background should be planned at architecture layer');
+assert.ok(generatedCover.generatedAssetPrompt && /no text/i.test(generatedCover.generatedAssetPrompt), 'generated prompt should enforce no text');
+
+const staleGeneratedPolicySource = normalizeSlide(
+  { industry:'saas-technology', title:'采用漏斗' },
+  {
+    type:'industry-chart',
+    layoutVariant:'adoption-funnel',
+    proofObject:'adoption-funnel',
+    title:'采用漏斗现在按原生漏斗呈现',
+    adoptionFunnel:{ steps:[{ label:'注册', value:'100%' }] },
+    visual:{ mode:'generated', role:'background' },
+    assetGeneration:{ decisionSource:'asset-generation-policy/v1', status:'required', role:'background', mustBind:true, reason:'previous normalized decision' },
+    generatedAssetPrompt:'OLD NORMALIZED PROMPT'
+  },
+  0,
+  1
+);
+assert.equal(staleGeneratedPolicySource.previousAssetGeneration.reason, 'previous normalized decision');
+assert.equal(staleGeneratedPolicySource.visual.mode, undefined);
+assert.notEqual(staleGeneratedPolicySource.generatedAssetPrompt, 'OLD NORMALIZED PROMPT');
+
+const zhLanguagePlan = { title:'中文方案汇报', slides:[{ title:'平台总体架构' }] };
+const microcopyShardEntryCount =
+  Object.keys(MICROCOPY_CORE_TRANSLATIONS_ZH).length +
+  Object.keys(MICROCOPY_DOMAIN_TRANSLATIONS_ZH).length;
+assert.equal(MICROCOPY_TRANSLATIONS_ZH.size, microcopyShardEntryCount, 'microcopy shards should merge without duplicate or missing keys');
+assert.equal(MICROCOPY_CORE_TRANSLATIONS_ZH['VALUE SIGNAL'], '价值信号');
+assert.equal(MICROCOPY_DOMAIN_TRANSLATIONS_ZH['SITE · DATA · ALARM · DISPATCH · VALUE'], '站点 · 数据 · 告警 · 调度 · 价值');
+assert.equal(MICROCOPY_TRANSLATIONS_ZH.get('SOLUTION BLUEPRINT'), '方案蓝图');
+assert.equal(MICROCOPY_TRANSLATIONS_ZH.get('VALUE SIGNAL'), MICROCOPY_CORE_TRANSLATIONS_ZH['VALUE SIGNAL']);
+assert.equal(MICROCOPY_TRANSLATIONS_ZH.get('CHART'), MICROCOPY_DOMAIN_TRANSLATIONS_ZH.CHART);
+assert.equal(MICROCOPY_TOKEN_TRANSLATIONS_ZH.EDGE, '边缘');
+assert.equal(MICROCOPY_ACRONYMS.has('OEE'), true);
+assert.equal(languagePolicyFor(zhLanguagePlan).localizeNonEssentialMicrocopy, true, 'Chinese decks should localize non-essential visible microcopy');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'SOLUTION BLUEPRINT'), '方案蓝图');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'EDGE  →  DATA  →  DISPATCH  →  MANAGEMENT'), '边缘 → 数据 → 调度 → 管理');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'SITE · DATA · ALARM · DISPATCH · VALUE'), '站点 · 数据 · 告警 · 调度 · 价值');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'SEQUENCE 01 → 02 → 03 → 04 → 01'), '序列 01 → 02 → 03 → 04 → 01');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'OEE'), 'OEE', 'standard acronyms should be preserved');
+assert.equal(localizeMicrocopy({ language:'en', title:'English report' }, 'SOLUTION BLUEPRINT'), 'SOLUTION BLUEPRINT');
+
+const imageLedBeauty = normalizeSlide(
+  { industry:'beauty-consumer', title:'肌研之光品牌经营报告', visualIntent:'image-rich' },
+  {
+    type:'content',
+    title:'品牌世界观与经营证据',
+    proofObject:'brand-world-and-business-proof',
+    drivers:[{ title:'肌肤屏障' }],
+    actions:[{ title:'成分故事' }],
+    outcomes:[{ title:'会员复购' }]
+  },
+  2,
+  8
+);
+assert.equal(imageLedBeauty.assetGeneration.status, 'required', 'image-led beauty proof pages should not silently fall back to placeholders when assets are missing');
+assert.ok(/no text/i.test(imageLedBeauty.generatedAssetPrompt || ''), 'image-led beauty pages should expose an imagegen prompt before rendering');
+
+const slideImageFallback = mediaForRole(
+  { industry:'beauty-consumer' },
+  { type:'cover', title:'品牌经营报告', images:['assets/media/energy-storage-cover.jpg'] },
+  'cover'
+);
+assert.ok(slideImageFallback.endsWith('assets/media/energy-storage-cover.jpg'), 'single-slide images should be available to cover/showcase renderers');
+
+const defaultMediaOnlyIndustrial = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  slides:[
+    { type:'cover', title:'封面' },
+    { type:'content', title:'普通说明页', claim:'介绍组织协作方式' }
+  ]
+});
+assert.equal(
+  defaultMediaOnlyIndustrial.slides[1].assetGeneration.status,
+  'none',
+  'industry default media should not make structure-only pages look asset-bound'
+);
+
+const unsafeGeneratedEvidence = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  slides:[
+    { type:'auto', title:'客户案例材料' },
+    { type:'case-gallery', title:'特斯拉客户现场证据', subtitle:'真实客户现场与验收参数。', visual:{ mode:'generated', role:'evidence' } },
+    { type:'closing', title:'下一步', actions:[{ title:'补齐授权' }] }
+  ]
+});
+assert.ok(
+  auditDeckPlan(unsafeGeneratedEvidence, unsafeGeneratedEvidence).some(f => f.type === 'unsafeGeneratedAssetRequest'),
+  'audit should block generated assets from substituting factual customer/site evidence'
+);
+
+const repeatedCompanyFacts = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  materialIntelligence:{ pptType:'company-intro' },
+  title:'承德环宇输送机械制造有限公司',
+  slides:[
+    { type:'cover', title:'承德环宇输送机械制造有限公司' },
+    { type:'company-profile-spread', title:'公司介绍', metrics:[
+      { label:'始建年份', value:'1993' },
+      { label:'厂区规模', value:'20.5亩' },
+      { label:'生产车间', value:'3000余平米' },
+      { label:'加工中心', value:'1000余平米' }
+    ] },
+    { type:'metric-comparison', title:'长期制造基础支撑非标输送项目交付', metrics:[
+      { label:'始建年份', value:'1993' },
+      { label:'厂区规模', value:'20.5亩' },
+      { label:'生产车间', value:'3000余平米' },
+      { label:'加工中心', value:'1000余平米' }
+    ] },
+    { type:'closing', title:'谢谢观看' }
+  ]
+});
+assert.ok(
+  contentOverlapAudit(repeatedCompanyFacts, repeatedCompanyFacts).some(f => f.level === 'fail' && f.type === 'contentOverlap'),
+  'content overlap audit should fail repeated adjacent company-profile facts'
 );
 
 console.log('intelligence layers ok');

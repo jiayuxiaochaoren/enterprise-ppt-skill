@@ -1,0 +1,42 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "beauty-consumer",
+  "documentType": "brand-report",
+  "title": "肌研之光品牌经营报告",
+  "subtitle": "以产品质感、场景记忆和会员复购解释品牌增长",
+  "organization": "肌研之光",
+  "footer": "beauty-brand-editorial-cover fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/beauty-brand-editorial-cover/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/beauty-brand-editorial-cover/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/beauty-brand-editorial-cover/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/beauty-brand-editorial-cover/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/beauty-brand-editorial-cover/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "cover",
+      "layoutVariant": "beauty-brand-editorial-cover",
+      "title": "肌研之光品牌经营报告",
+      "subtitle": "以产品质感、场景记忆和会员复购解释品牌增长",
+      "coverInsight": "产品、质地与消费者场景共同构成品牌经营证据。",
+      "visual": {
+        "image": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/beauty-brand-editorial-cover/proof-1.png",
+        "caption": "产品质感与包装作为品牌证据。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+const {
+  effectiveComponentModesFor
+} = require('../render/component-capability-manifest');
+const {
+  componentHasRenderPath
+} = require('../render/component-render-path-registry');
+
+function actualComponentMode(component = {}) {
+  if (component.mode === 'native-renderer') return 'native';
+  if (component.mode === 'overlay') return 'overlay';
+  return '';
+}
+
+function modeFindingsForComponent(slideNo, component = {}, planned = {}) {
+  const findings = [];
+  const allowedModes = planned.allowedModes || planned.supportedModes || [];
+  const actualMode = actualComponentMode(component);
+  const manifestModes = effectiveComponentModesFor(component.id);
+  if (component.rendered && actualMode && !componentHasRenderPath(component.id, actualMode)) {
+    findings.push({
+      slide: slideNo,
+      level:'fail',
+      type:'componentRenderPathModeMismatch',
+      message:`component ${component.id} rendered as ${actualMode}, but render path registry does not allow that mode`
+    });
+  }
+  if (component.rendered && actualMode && manifestModes.length && !manifestModes.includes(actualMode)) {
+    findings.push({
+      slide: slideNo,
+      level:'fail',
+      type:'componentModeMismatch',
+      message:`component ${component.id} rendered as ${actualMode}, but capability manifest allows ${manifestModes.join(',')}`
+    });
+  }
+  if (component.rendered && actualMode && Array.isArray(allowedModes) && allowedModes.length && !allowedModes.includes(actualMode)) {
+    findings.push({
+      slide: slideNo,
+      level:'fail',
+      type:'componentModeMismatch',
+      message:`component ${component.id} rendered as ${actualMode}, but allowed modes are ${allowedModes.join(',')}`
+    });
+  }
+  return findings;
+}
+
+module.exports = {
+  actualComponentMode,
+  modeFindingsForComponent
+};

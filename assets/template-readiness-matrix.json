@@ -1,0 +1,1317 @@
+{
+  "version": "template-readiness-matrix/v1",
+  "statusValues": [
+    "missing",
+    "partial",
+    "pass"
+  ],
+  "completionRule": "A page family is complete only when recipe, grammar, renderer, orchestration, QA, fixture PPTX, fixture preview, and acceptance deck evidence are all pass.",
+  "evidenceRoot": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures",
+  "acceptanceRoot": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance",
+  "pageFamilies": [
+    {
+      "id": "financial-kpi-snapshot",
+      "group": "financial",
+      "renderType": "metric-comparison",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "One dominant KPI, compact supporting metric strip, period/source disclosure, and a restrained finance accent used only for data emphasis.",
+        "requiredMarkers": [
+          "hero KPI",
+          "metric strip",
+          "period label",
+          "source note"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch financialKpiSnapshot is routed from layoutVariant financial-kpi-snapshot.",
+        "required": "Dedicated KPI snapshot branch with visible hierarchy separate from chart grids and quarterly summaries.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/financial-kpi-snapshot.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/financial-kpi-snapshot.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/financial-kpi-snapshot.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/financial-kpi-snapshot.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/financial-kpi-snapshot.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "financial-results-review",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/financial-results-review.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/financial-results-review.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/financial-results-review",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/financial-results-review.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 11
+          }
+        ]
+      }
+    },
+    {
+      "id": "chart-grid-with-commentary",
+      "group": "financial",
+      "renderType": "metric-comparison",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Two-by-two or three-chart grid with an attached commentary rail and a bottom insight bar that explains the data movement.",
+        "requiredMarkers": [
+          "chart grid",
+          "commentary rail",
+          "insight bar",
+          "source note"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch chartGridWithCommentary is routed from layoutVariant chart-grid-with-commentary.",
+        "required": "Chart grid branch with chart/commentary spatial binding instead of KPI-card reuse.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/chart-grid-with-commentary.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/chart-grid-with-commentary.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/chart-grid-with-commentary.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/chart-grid-with-commentary.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/chart-grid-with-commentary.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "financial-results-review",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/financial-results-review.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/financial-results-review.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/financial-results-review",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/financial-results-review.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 11
+          }
+        ]
+      }
+    },
+    {
+      "id": "quarterly-results-summary",
+      "group": "financial",
+      "renderType": "metric-comparison",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Quarter label, reported metric block, variance explanation, management action, and guidance/source disclosure in a board-readable hierarchy.",
+        "requiredMarkers": [
+          "quarter label",
+          "reported metrics",
+          "variance commentary",
+          "management action"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch quarterlyResultsSummary is routed from layoutVariant quarterly-results-summary.",
+        "required": "Results summary branch with period, variance, and guidance zones.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/quarterly-results-summary.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/quarterly-results-summary.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/quarterly-results-summary.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/quarterly-results-summary.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/quarterly-results-summary.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "financial-results-review",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/financial-results-review.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/financial-results-review.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/financial-results-review",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/financial-results-review.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 11
+          }
+        ]
+      }
+    },
+    {
+      "id": "guidance-and-risk-board",
+      "group": "financial",
+      "renderType": "risk-table",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Assumption, risk, trigger, owner/action, and guidance sensitivity shown as a management-control board.",
+        "requiredMarkers": [
+          "assumption",
+          "risk",
+          "trigger",
+          "owner/action"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch guidanceAndRiskBoard is routed from layoutVariant guidance-and-risk-board.",
+        "required": "Guidance board branch with trigger/action columns or equivalent risk ownership structure.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/guidance-and-risk-board.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/guidance-and-risk-board.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/guidance-and-risk-board.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/guidance-and-risk-board.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/guidance-and-risk-board.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "financial-results-review",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/financial-results-review.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/financial-results-review.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/financial-results-review",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/financial-results-review.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 11
+          },
+          {
+            "slug": "lifestyle-experience-growth",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/lifestyle-experience-growth.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/lifestyle-experience-growth.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/lifestyle-experience-growth",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/lifestyle-experience-growth.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "value-creation-process-map",
+      "group": "integrated-report",
+      "renderType": "strategy-map",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Inputs, activities, outputs, outcomes, and capital/proof notes connected by a visible left-to-right value flow.",
+        "requiredMarkers": [
+          "input",
+          "activity",
+          "output",
+          "outcome"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch valueCreationProcessMapSlide is routed from layoutVariant value-creation-process-map.",
+        "required": "Integrated-report value creation branch with capital/proof lanes.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/value-creation-process-map.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/value-creation-process-map.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/value-creation-process-map.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/value-creation-process-map.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/value-creation-process-map.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "beauty-brand-report",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/beauty-brand-report.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/beauty-brand-report.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/beauty-brand-report",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/beauty-brand-report.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "materiality-matrix-board",
+      "group": "integrated-report",
+      "renderType": "risk-table",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Two-axis matrix with stakeholder impact, business impact, priority zones, and positioned topics.",
+        "requiredMarkers": [
+          "x axis",
+          "y axis",
+          "priority zones",
+          "placed topics"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch materialityMatrixBoard is routed from layoutVariant materiality-matrix-board.",
+        "required": "Materiality branch with explicit ESG/topic coordinate rendering.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/materiality-matrix-board.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/materiality-matrix-board.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/materiality-matrix-board.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/materiality-matrix-board.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/materiality-matrix-board.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "government-park-governance",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/government-park-governance.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/government-park-governance.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/government-park-governance",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/government-park-governance.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "sustainability-proof-spread",
+      "group": "integrated-report",
+      "renderType": "case-gallery",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Evidence image, impact metric, initiative description, and caption/source note paired in an ESG proof spread.",
+        "requiredMarkers": [
+          "evidence image",
+          "impact metric",
+          "initiative",
+          "source note"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch sustainabilityProofSpread is routed from layoutVariant sustainability-proof-spread.",
+        "required": "Sustainability spread branch that forces image/caption/metric pairing.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/sustainability-proof-spread.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/sustainability-proof-spread.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/sustainability-proof-spread.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/sustainability-proof-spread.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/sustainability-proof-spread.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "beauty-brand-report",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/beauty-brand-report.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/beauty-brand-report.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/beauty-brand-report",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/beauty-brand-report.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "governance-table-editorial",
+      "group": "integrated-report",
+      "renderType": "risk-table",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Editorial governance table with responsibility, cadence, evidence, decision, and a quiet source/disclosure footer.",
+        "requiredMarkers": [
+          "responsibility",
+          "cadence",
+          "evidence",
+          "decision"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch governanceTableEditorial is routed from layoutVariant governance-table-editorial.",
+        "required": "Governance editorial table branch distinct from generic risk/control tables.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/governance-table-editorial.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/governance-table-editorial.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/governance-table-editorial.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/governance-table-editorial.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/governance-table-editorial.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "industrial-company-intro",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/industrial-company-intro.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/industrial-company-intro.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/industrial-company-intro",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/industrial-company-intro.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          },
+          {
+            "slug": "beauty-brand-report",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/beauty-brand-report.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/beauty-brand-report.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/beauty-brand-report",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/beauty-brand-report.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          },
+          {
+            "slug": "people-culture-company",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/people-culture-company.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/people-culture-company.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/people-culture-company",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/people-culture-company.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "culture-cover-with-soft-geometry",
+      "group": "culture",
+      "renderType": "manifesto",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Culture cover with soft geometry, people/company signal, sparse metadata, and warm but non-decorative stage composition.",
+        "requiredMarkers": [
+          "soft geometry",
+          "culture signal",
+          "minimal metadata",
+          "people/company proof"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch cultureCoverSoftGeometry is routed from layoutVariant culture-cover-with-soft-geometry.",
+        "required": "Culture cover branch separate from generic manifesto and beauty/editorial covers.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/culture-cover-with-soft-geometry.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/culture-cover-with-soft-geometry.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/culture-cover-with-soft-geometry.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/culture-cover-with-soft-geometry.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/culture-cover-with-soft-geometry.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "people-culture-company",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/people-culture-company.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/people-culture-company.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/people-culture-company",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/people-culture-company.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "mission-statement-stage",
+      "group": "culture",
+      "renderType": "manifesto",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Large mission statement supported by behavior principles and proof examples, not a slogan-only page.",
+        "requiredMarkers": [
+          "mission statement",
+          "behavior principles",
+          "proof example",
+          "stage composition"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch missionStatementStage is routed from layoutVariant mission-statement-stage.",
+        "required": "Mission stage branch with behavior proof gate.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/mission-statement-stage.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/mission-statement-stage.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/mission-statement-stage.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/mission-statement-stage.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/mission-statement-stage.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "people-culture-company",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/people-culture-company.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/people-culture-company.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/people-culture-company",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/people-culture-company.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "people-proof-mosaic",
+      "group": "culture",
+      "renderType": "case-gallery",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "People evidence wall where every image has a role, scene, output, and captioned proof of behavior.",
+        "requiredMarkers": [
+          "people image",
+          "role label",
+          "scene caption",
+          "output proof"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch peopleProofMosaic is routed from layoutVariant people-proof-mosaic.",
+        "required": "People mosaic branch that enforces role/caption evidence per image.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/people-proof-mosaic.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/people-proof-mosaic.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/people-proof-mosaic.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/people-proof-mosaic.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/people-proof-mosaic.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "people-culture-company",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/people-culture-company.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/people-culture-company.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/people-culture-company",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/people-culture-company.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "value-principle-cards",
+      "group": "culture",
+      "renderType": "manifesto",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Four value cards combining principle, observable behavior, and proof example, with no title-only value cards.",
+        "requiredMarkers": [
+          "principle",
+          "observable behavior",
+          "proof example",
+          "card set"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch valuePrincipleCards is routed from layoutVariant value-principle-cards.",
+        "required": "Principle card branch with required behavior/proof fields.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/value-principle-cards.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/value-principle-cards.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/value-principle-cards.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/value-principle-cards.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/value-principle-cards.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "people-culture-company",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/people-culture-company.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/people-culture-company.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/people-culture-company",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/people-culture-company.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "beauty-brand-editorial-cover",
+      "group": "beauty-consumer",
+      "renderType": "cover",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Product, texture, and brand-world hierarchy with restrained premium palette and inspectable visual subject.",
+        "requiredMarkers": [
+          "product hero",
+          "texture/detail",
+          "brand world",
+          "premium palette"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch beautyBrandEditorialCover is routed from layoutVariant beauty-brand-editorial-cover.",
+        "required": "Beauty editorial cover branch distinct from general covers.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/beauty-brand-editorial-cover.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/beauty-brand-editorial-cover.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/beauty-brand-editorial-cover.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/beauty-brand-editorial-cover.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/beauty-brand-editorial-cover.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "beauty-brand-report",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/beauty-brand-report.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/beauty-brand-report.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/beauty-brand-report",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/beauty-brand-report.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "brand-world-and-business-proof",
+      "group": "beauty-consumer",
+      "renderType": "strategy-map",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Brand world, product promise, channel/member signal, and business proof shown on one slide.",
+        "requiredMarkers": [
+          "brand world",
+          "product promise",
+          "channel/member proof",
+          "business metric"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch brandWorldBusinessProof is routed from layoutVariant brand-world-and-business-proof.",
+        "required": "Brand/business proof branch that combines visual brand evidence with operating proof.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/brand-world-and-business-proof.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/brand-world-and-business-proof.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/brand-world-and-business-proof.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/brand-world-and-business-proof.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/brand-world-and-business-proof.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "beauty-brand-report",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/beauty-brand-report.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/beauty-brand-report.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/beauty-brand-report",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/beauty-brand-report.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "consumer-proof-photo-grid",
+      "group": "beauty-consumer",
+      "renderType": "case-gallery",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Three-part or four-part consumer proof grid connecting scene, reason, repeat/purchase signal, and caption.",
+        "requiredMarkers": [
+          "consumer scene",
+          "reason",
+          "repeat signal",
+          "caption"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch consumerProofPhotoGrid is routed from layoutVariant consumer-proof-photo-grid.",
+        "required": "Keep the branch and add fixture, preview, and fallback QA evidence.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/consumer-proof-photo-grid.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/consumer-proof-photo-grid.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/consumer-proof-photo-grid.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/consumer-proof-photo-grid.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/consumer-proof-photo-grid.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "beauty-brand-report",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/beauty-brand-report.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/beauty-brand-report.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/beauty-brand-report",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/beauty-brand-report.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "product-evidence-story",
+      "group": "beauty-consumer",
+      "renderType": "case-gallery",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Hero product, texture/detail panels, claim, benefit, and evidence caption in a product-led story.",
+        "requiredMarkers": [
+          "hero product",
+          "texture/detail",
+          "claim",
+          "evidence caption"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch productEvidenceStory is routed from layoutVariant product-evidence-story.",
+        "required": "Product story branch distinct from consumer photo grid.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/product-evidence-story.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/product-evidence-story.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/product-evidence-story.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/product-evidence-story.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/product-evidence-story.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "beauty-brand-report",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/beauty-brand-report.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/beauty-brand-report.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/beauty-brand-report",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/beauty-brand-report.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "airy-concept-opening",
+      "group": "general-premium",
+      "renderType": "cover",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Airy opening with abstract concept, generous whitespace, one proof object or metaphor, and industry-neutral restraint.",
+        "requiredMarkers": [
+          "whitespace",
+          "concept object",
+          "single proof",
+          "minimal metadata"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch airyConceptOpening is routed from layoutVariant airy-concept-opening.",
+        "required": "Airy opening branch that does not inherit beauty-specific styling.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/airy-concept-opening.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/airy-concept-opening.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/airy-concept-opening.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/airy-concept-opening.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/airy-concept-opening.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "saas-ai-platform-growth",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/saas-ai-platform-growth.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/saas-ai-platform-growth.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/saas-ai-platform-growth",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/saas-ai-platform-growth.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          },
+          {
+            "slug": "lifestyle-experience-growth",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/lifestyle-experience-growth.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/lifestyle-experience-growth.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/lifestyle-experience-growth",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/lifestyle-experience-growth.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "single-object-concept-map",
+      "group": "general-premium",
+      "renderType": "strategy-map",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "One central object with surrounding forces, relationships, and an outcome layer; the slide must have one visible center.",
+        "requiredMarkers": [
+          "single center",
+          "surrounding nodes",
+          "relationship lines",
+          "outcome"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch singleObjectConceptMapSlide is routed from layoutVariant single-object-concept-map.",
+        "required": "Single-object concept map branch with explicit central object geometry.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/single-object-concept-map.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/single-object-concept-map.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/single-object-concept-map.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/single-object-concept-map.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/single-object-concept-map.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "saas-ai-platform-growth",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/saas-ai-platform-growth.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/saas-ai-platform-growth.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/saas-ai-platform-growth",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/saas-ai-platform-growth.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "executive-proof-board",
+      "group": "general-premium",
+      "renderType": "case-gallery",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Executive claim, mixed evidence set, and decision implication tied together as a board-ready proof surface.",
+        "requiredMarkers": [
+          "claim",
+          "mixed evidence",
+          "decision implication",
+          "source/proof note"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch executiveProofBoard is routed from layoutVariant executive-proof-board.",
+        "required": "Executive proof board branch connecting evidence items to a decision.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/executive-proof-board.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/executive-proof-board.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/executive-proof-board.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/executive-proof-board.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/executive-proof-board.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "financial-results-review",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/financial-results-review.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/financial-results-review.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/financial-results-review",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/financial-results-review.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 11
+          }
+        ]
+      }
+    },
+    {
+      "id": "premium-closing-anchor",
+      "group": "general-premium",
+      "renderType": "closing",
+      "statuses": {
+        "recipe": "pass",
+        "visualGrammar": "pass",
+        "renderer": "pass",
+        "orchestration": "pass",
+        "qa": "pass",
+        "fixturePptx": "pass",
+        "previewPng": "pass",
+        "acceptanceDeck": "pass"
+      },
+      "grammar": {
+        "primaryStructure": "Final decision, next actions, contact or owner, and an industry-aware visual anchor; no empty thank-you-only ending.",
+        "requiredMarkers": [
+          "final decision",
+          "next actions",
+          "owner/contact",
+          "visual anchor"
+        ]
+      },
+      "renderer": {
+        "current": "Dedicated renderer branch premiumClosingAnchor is routed from layoutVariant premium-closing-anchor.",
+        "required": "Premium closing branch that varies by industry and requires action/contact evidence.",
+        "approvedDistinctBranch": true,
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/premium-closing-anchor.001.png",
+        "code": "scripts/generate_pptx.js"
+      },
+      "fixtures": {
+        "plan": "examples/fixtures/premium-closing-anchor.json",
+        "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/premium-closing-anchor.pptx",
+        "preview": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/preview/premium-closing-anchor.001.png",
+        "renderMeta": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/output/premium-closing-anchor.pptx.render-meta.json"
+      },
+      "qa": {
+        "approvedFamilyGate": true,
+        "evidence": "scripts/test_template_family_qa.js",
+        "checks": [
+          "rendererFallbackQA",
+          "referenceGrammarQA",
+          "pageFamilyCoverageQA",
+          "proofObjectVisibleQA",
+          "contactSheetRhythmQA"
+        ]
+      },
+      "acceptance": {
+        "evidence": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/manifest.json",
+        "hits": [
+          {
+            "slug": "beauty-brand-report",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/beauty-brand-report.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/beauty-brand-report.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/beauty-brand-report",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/beauty-brand-report.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          },
+          {
+            "slug": "saas-ai-platform-growth",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/saas-ai-platform-growth.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/saas-ai-platform-growth.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/saas-ai-platform-growth",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/saas-ai-platform-growth.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 10
+          },
+          {
+            "slug": "lifestyle-experience-growth",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/lifestyle-experience-growth.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/lifestyle-experience-growth.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/lifestyle-experience-growth",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/lifestyle-experience-growth.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          },
+          {
+            "slug": "people-culture-company",
+            "plan": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/plans/people-culture-company.json",
+            "pptx": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/output/people-culture-company.pptx",
+            "previewDir": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/preview/people-culture-company",
+            "contactSheet": "outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/industry-template-system-acceptance/contact-sheets/people-culture-company.contact-sheet.svg",
+            "acceptanceStatus": "pass",
+            "slideCount": 9
+          }
+        ]
+      }
+    }
+  ],
+  "generatedAt": "2026-05-29T10:38:06.909Z"
+}

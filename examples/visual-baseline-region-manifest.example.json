@@ -1,0 +1,65 @@
+{
+  "version": "visual-baseline/v1",
+  "description": "Example region-level screenshot baseline manifest for visual_qa.js --baseline.",
+  "thresholds": {
+    "maxHashDistance": 18,
+    "maxLumaDistance": 28,
+    "maxBboxDelta": 0.38,
+    "maxRegionHashDistance": 10,
+    "maxRegionBBoxDelta": 0.18,
+    "minRegionCoverageRatio": 0.65,
+    "minRegionCoverage": 0.012
+  },
+  "regions": {
+    "mainBody": {
+      "minCoverage": 0.08
+    },
+    "footer": {
+      "minCoverage": 0.015
+    }
+  },
+  "slides": {
+    "1": {
+      "file": "preview-baselines/sample/slide1.png",
+      "regions": {
+        "mainBody": {
+          "minCoverage": 0.10
+        },
+        "footer": {
+          "minCoverage": 0.015
+        }
+      }
+    },
+    "2": {
+      "file": "preview-baselines/sample/slide2.png",
+      "regions": {
+        "cardGrid": {
+          "minCoverage": 0.18
+        },
+        "rightEvidence": {
+          "minCoverage": 0.045
+        },
+        "footer": {
+          "minCoverage": 0.015
+        }
+      }
+    },
+    "3": {
+      "file": "preview-baselines/sample/slide3.png",
+      "thresholds": {
+        "maxHashDistance": 22,
+        "maxBboxDelta": 0.42,
+        "maxRegionHashDistance": 8,
+        "maxRegionBBoxDelta": 0.14
+      },
+      "regions": {
+        "chartBoard": {
+          "minCoverage": 0.12
+        },
+        "footer": {
+          "minCoverage": 0.015
+        }
+      }
+    }
+  }
+}

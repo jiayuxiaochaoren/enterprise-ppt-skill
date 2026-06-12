@@ -1,0 +1,71 @@
+{
+  "title": "Renderer Architecture Family Fixture",
+  "industry": "saas-technology",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "architecture",
+      "layoutVariant": "platform-capability-map",
+      "title": "平台能力按接入、流程和治理分层",
+      "layers": [
+        { "title": "入口层", "items": ["管理端", "移动端", "开放 API"] },
+        { "title": "流程层", "items": ["工单", "审批", "自动化"] },
+        { "title": "治理层", "items": ["权限", "审计", "指标"] }
+      ]
+    },
+    {
+      "type": "architecture-dark",
+      "layoutVariant": "blueprint-stack",
+      "title": "系统架构保持分层可追踪",
+      "subtitle": "从数据到应用再到决策视图",
+      "layers": [
+        { "title": "用户入口层", "items": ["驾驶舱", "企业门户"] },
+        { "title": "业务应用层", "items": ["运营", "服务", "分析"] },
+        { "title": "数据支撑层", "items": ["企业库", "工单库", "指标库"] }
+      ]
+    },
+    {
+      "type": "architecture",
+      "layoutVariant": "service-blueprint",
+      "title": "服务蓝图把触点和后台责任连起来",
+      "touchpoints": [
+        { "title": "预约", "patient": "线上登记", "frontstage": "客服确认", "backstage": "排班协调", "evidence": "等待时长" },
+        { "title": "到场", "patient": "签到分诊", "frontstage": "导诊服务", "backstage": "资源联动", "evidence": "排队状态" },
+        { "title": "随访", "patient": "接收建议", "frontstage": "回访解释", "backstage": "质控复盘", "evidence": "满意度" }
+      ]
+    },
+    {
+      "type": "architecture-dark",
+      "layoutVariant": "hub-spoke",
+      "title": "多系统协同围绕统一平台展开",
+      "nodes": [
+        { "title": "客户入口", "body": "门户 / 小程序" },
+        { "title": "工单中心", "body": "派发 / 跟踪" },
+        { "title": "数据看板", "body": "指标 / 复盘" }
+      ]
+    },
+    {
+      "type": "architecture",
+      "layoutVariant": "energy-topology",
+      "title": "能源拓扑把设备数据调度和管理连起来",
+      "subtitle": "保持 industry override 的架构图实现可回归",
+      "layers": [
+        { "title": "设备侧", "items": ["逆变器", "PCS", "BMS", "电表"] },
+        { "title": "数据侧", "items": ["协议适配", "指标口径", "历史曲线"] },
+        { "title": "调度侧", "items": ["告警分级", "工单处置", "SOC 策略"] },
+        { "title": "管理侧", "items": ["多站点态势", "收益波动", "区域协同"] }
+      ]
+    },
+    {
+      "type": "architecture",
+      "layoutVariant": "production-topology",
+      "title": "产线拓扑把产品对象和交付资料对齐",
+      "layers": [
+        { "title": "产品与工艺对象", "items": ["输送设备", "涂装设备", "控制系统"] },
+        { "title": "制造交付动作", "items": ["需求确认", "加工制造", "控制联调", "现场安装"] },
+        { "title": "证据与交付资料", "items": ["图纸参数", "调试记录", "项目验收"] }
+      ]
+    }
+  ]
+}

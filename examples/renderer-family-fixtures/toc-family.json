@@ -1,0 +1,22 @@
+{
+  "title": "Renderer TOC Family Fixture",
+  "industry": "enterprise-services",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "toc",
+      "title": "目录",
+      "subtitle": "本次汇报按判断、证据、方案和交付节奏展开。",
+      "items": ["管理判断", "证据边界", "方案路径", "交付计划", "风险与下一步"]
+    },
+    {
+      "type": "toc-clean",
+      "label": "CONTENTS",
+      "title": "Navigation",
+      "subtitle": "A concise sequence for the delivery readout.",
+      "navigationLabel": "NAVIGATION SEQUENCE",
+      "items": ["Context", "Evidence", "Architecture", "Delivery", "Decision"]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "people-culture",
+  "documentType": "company-introduction",
+  "title": "价值观卡片必须写出可观察行为",
+  "subtitle": "价值观页不能只有标题，必须说明行为和证明材料。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "value-principle-cards fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-principle-cards/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-principle-cards/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-principle-cards/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-principle-cards/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/value-principle-cards/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "manifesto",
+      "layoutVariant": "value-principle-cards",
+      "title": "价值观卡片必须写出可观察行为",
+      "statement": "四条原则连接行为、证据和复盘",
+      "claim": "价值观页不能只有标题，必须说明行为和证明材料。",
+      "values": [
+        {
+          "title": "客户现场",
+          "body": "每周沉淀一条现场事实。"
+        },
+        {
+          "title": "证据优先",
+          "body": "关键判断先列来源和口径。"
+        },
+        {
+          "title": "清晰负责",
+          "body": "行动项必须有负责人和截止点。"
+        },
+        {
+          "title": "持续复盘",
+          "body": "把交付结果写回方法库。"
+        }
+      ]
+    }
+  ]
+}

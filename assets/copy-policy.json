@@ -1,0 +1,172 @@
+{
+  "version": "copy-policy/v1",
+  "rule": "Renderer code may use labels and layout microcopy, but default business narrative, TOC, closing, captions, and industry fallback sentences must come from this file or industry packs. Chinese decks localize all non-essential visible microcopy; preserve only brand names, URLs, emails, tickers, and standard acronyms.",
+  "global": {
+    "rendererFallbacks": {
+      "industryInsight": "围绕有来源支撑的决策、证据和下一步行动组织整套汇报。",
+      "industryCoreTitle": "决策证据地图",
+      "industryCoreBody": "把事实、证据物和行动连起来，不扩写材料没有支撑的判断。",
+      "tocTitle": "目录",
+      "tocSubtitle": "沿着从背景到决策的证据路径阅读。",
+      "tocCompanyIntroSubtitle": "从公司事实和能力证据进入下一步沟通。",
+      "coverTitle": "有来源支撑的商业汇报",
+      "closingTitle": "确认下一步决策边界",
+      "closingSubtitle": "用同一套事实、责任人和复盘节奏推进下一步。",
+      "closingNote": "外发前确认范围、数据口径、责任人和复盘节奏。",
+      "closingDecisionOutcome": "",
+      "closingContactFallback": "期待进一步交流与合作。",
+      "closingSimpleTitle": "谢谢观看",
+      "closingSimpleSubtitle": "期待下一步沟通。",
+      "fallbackCaption": "",
+      "coverProofTitle": "核心决策",
+      "coverProof": "",
+      "productFallbackNote": "产品、使用场景和证据说明需要放在同一页内闭环。",
+      "reportBoardClaim": "用层级、编号和来源证据让高密信息仍然可扫描。",
+      "reportBoardCoreTitle": "先读判断",
+      "reportBoardCoreBody": "报告页应在一屏内说清结论、证据和下一步行动。",
+      "reportBoardDecision": "把结论、证据和行动拆成清晰层次。"
+    },
+    "closingActions": [
+      { "title": "范围", "body": "确认受众、材料边界和决策范围。" },
+      { "title": "证据", "body": "核对来源、指标口径和素材授权。" },
+      { "title": "节奏", "body": "明确责任人、截止时间和下一轮复盘。" }
+    ],
+    "tocItems": [
+      "背景与决策目标",
+      "来源支撑的证据",
+      "运营或价值逻辑",
+      "风险与授权边界",
+      "下一步行动"
+    ]
+  },
+  "industries": {
+    "manufacturing-operations": {
+      "rendererFallbacks": {
+        "industryInsight": "让设备、产线数据、工单和复盘节奏指向同一个运营闭环。",
+        "industryCoreTitle": "运维能力地图",
+        "industryCoreBody": "把资产对象、故障信号、处置动作和 OEE 复盘连在一起。",
+        "closingTitle": "确认第一条产线级运营闭环",
+        "closingSubtitle": "推广前先验证设备范围、数据接口、工单流转和 OEE 复盘。",
+        "closingNote": "确认试点产线、设备清单、数据归属和八周复盘节奏。",
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
+      }
+    },
+    "industrial-energy": {
+      "aliasOf": "manufacturing-operations"
+    },
+    "finance-investment": {
+      "rendererFallbacks": {
+        "industryInsight": "把资本判断、指标口径、风险边界和下一步行动放在同一个审议框架里。",
+        "industryCoreTitle": "投资决策地图",
+        "industryCoreBody": "用指标口径、敏感性、风险和行动清单构成决策主线。",
+        "closingTitle": "把资本配置收束到同一套决策依据",
+        "closingSubtitle": "用组合分层、风险约束和退出节奏进入下一轮投资审议。",
+        "closingNote": "外发前确认配置动作、风险边界和披露权限。",
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
+      }
+    },
+    "beauty-consumer": {
+      "rendererFallbacks": {
+        "industryInsight": "用产品证据、消费者证据、渠道指标和素材授权支撑品牌增长判断。",
+        "industryCoreTitle": "品牌证据地图",
+        "industryCoreBody": "先连起产品、质地、渠道、会员和消费者证据，再进入策略判断。",
+        "coverTitle": "品牌经营报告",
+        "closingTitle": "确认下一步品牌经营动作",
+        "closingSubtitle": "从产品证据和消费者证据推进到渠道、会员和内容动作。",
+        "closingNote": "确认产品素材、平台截图、运营指标和图片授权。",
+        "closingDecisionOutcome": "",
+        "fallbackCaption": "",
+        "coverProofTitle": "品牌经营判断",
+        "coverProof": "",
+        "productFallbackNote": "产品页必须把 SKU、质地或功效与来源说明放在一起。"
+      }
+    },
+    "saas-technology": {
+      "rendererFallbacks": {
+        "industryInsight": "把工作流采用、平台能力、治理覆盖和收入信号翻译成一套运营读数。",
+        "industryCoreTitle": "平台采用地图",
+        "industryCoreBody": "连接用户动作、自动化、集成、治理和收入证据。",
+        "closingTitle": "把产品采用转成收入质量",
+        "closingSubtitle": "同时复盘激活、集成深度、治理覆盖和扩张信号。",
+        "closingNote": "确认工作流、激活指标、集成责任人和安全边界。",
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
+      }
+    },
+    "saas-ai-technology": {
+      "aliasOf": "saas-technology"
+    },
+    "healthcare-operations": {
+      "rendererFallbacks": {
+        "industryInsight": "把患者旅程、交接责任、质量指标和隐私边界连在一起。",
+        "industryCoreTitle": "服务质量地图",
+        "industryCoreBody": "连接触点、资源交接、指标、隐私和复盘节奏。",
+        "closingTitle": "让患者触点进入可复盘的服务链",
+        "closingSubtitle": "从一条旅程开始，再把质量治理扩展到多团队。",
+        "closingNote": "确认隐私许可、触点责任人、质量指标和复盘节奏。",
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
+      }
+    },
+    "healthcare-wellness": {
+      "aliasOf": "healthcare-operations"
+    },
+    "lifestyle-food-tourism-fashion": {
+      "rendererFallbacks": {
+        "industryInsight": "把场所、产品、旅程、转化和复访放进同一条体验证据链。",
+        "industryCoreTitle": "体验证据地图",
+        "industryCoreBody": "连接可检查场景、顾客旅程、转化信号和运营动作。",
+        "closingTitle": "把体验资产转成可复用增长动作",
+        "closingSubtitle": "用场景证据、路线产品、转化口径和复访节奏进入下一轮复盘。",
+        "closingNote": "确认图片授权、场景证据、客群、转化口径和运营负责人。",
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
+      }
+    },
+    "government-public-sector": {
+      "rendererFallbacks": {
+        "industryInsight": "把政策来源、资源地图、治理责任人、里程碑和风险边界放进同一套公共部门复盘。",
+        "industryCoreTitle": "治理证据地图",
+        "industryCoreBody": "连接政策来源、资源对象、责任主体、里程碑和保障动作。",
+        "closingTitle": "确认项目清单和复盘机制",
+        "closingSubtitle": "用政策来源、资源地图、治理模型和风险保障进入下一次会议。",
+        "closingNote": "确认来源日期、敏感边界、责任人和项目复盘节奏。",
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
+      }
+    },
+    "people-culture": {
+      "rendererFallbacks": {
+        "industryInsight": "用公司事实、使命行为、团队证据和联系边界构成叙事主线。",
+        "industryCoreTitle": "文化证据地图",
+        "industryCoreBody": "连接使命、行为证据、团队证据、成长路径和联系动作。",
+        "closingTitle": "用清晰下一步延续沟通",
+        "closingSubtitle": "为外部读者明确联系人、岗位、官网或下一步动作。",
+        "closingNote": "确认公开人物素材、岗位信息、联系方式和使用授权。",
+        "closingDecisionOutcome": "",
+        "fallbackCaption": ""
+      }
+    },
+    "people-culture-company": {
+      "aliasOf": "people-culture"
+    },
+    "general-operations": {
+      "rendererFallbacks": {
+        "industryInsight": "让业务闭环建立在统一数据之上",
+        "industryCoreTitle": "运营能力地图",
+        "industryCoreBody": "围绕业务闭环形成能力场。",
+        "coverTitle": "企业运营数字化方案",
+        "tocTitle": "目录",
+        "tocSubtitle": "从业务背景、运营模型到平台架构、落地路径与保障机制",
+        "closingTitle": "让运营从经验驱动走向数据驱动",
+        "closingSubtitle": "期待共建高效、可持续的运营体系",
+        "closingNote": "以核心运营闭环先行上线，再围绕数据接入、服务场景和管理指标持续迭代。",
+        "closingDecisionOutcome": "",
+        "closingContactFallback": "期待进一步交流与合作。",
+        "fallbackCaption": ""
+      }
+    }
+  }
+}

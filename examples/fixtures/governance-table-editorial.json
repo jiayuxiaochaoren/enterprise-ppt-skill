@@ -1,0 +1,60 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "government-public-sector",
+  "documentType": "integrated-report",
+  "title": "治理表格把责任、节奏、证据和决策放到同一行",
+  "subtitle": "治理页不是风险清单，而是可追踪的管理机制。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "governance-table-editorial fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/governance-table-editorial/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/governance-table-editorial/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/governance-table-editorial/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/governance-table-editorial/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/governance-table-editorial/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "risk-table",
+      "layoutVariant": "governance-table-editorial",
+      "title": "治理表格把责任、节奏、证据和决策放到同一行",
+      "claim": "治理页不是风险清单，而是可追踪的管理机制。",
+      "rows": [
+        [
+          "董事会审议",
+          "高",
+          "季度审议重大投入和风险阈值"
+        ],
+        [
+          "专项委员会",
+          "中",
+          "月度复盘指标和整改证据"
+        ],
+        [
+          "业务负责人",
+          "中",
+          "按周更新行动闭环"
+        ],
+        [
+          "外部合规",
+          "低",
+          "保留来源、授权和审计记录"
+        ]
+      ],
+      "note": "责任、节奏、证据和决策必须同时出现。"
+    }
+  ]
+}

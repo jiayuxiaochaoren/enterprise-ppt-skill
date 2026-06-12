@@ -5,6 +5,12 @@ out/
 *.tmp
 *.pptx
 *.png
+!docs/readme/
+!docs/readme/*.png
 !.gitkeep
 .env
 .env.*
+outputs/**
+*.pdf
+*.jpg
+*.mp4

@@ -1,0 +1,81 @@
+{
+  "title": "Renderer Risk Family Fixture",
+  "industry": "manufacturing-operations",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "risk-table",
+      "title": "风险治理表优先呈现责任动作",
+      "rows": [
+        ["授权缺失", "高", "补齐外发授权和使用范围"],
+        ["指标口径不清", "中", "在附录注明数据来源"],
+        ["联系人过期", "低", "交付前二次确认"]
+      ],
+      "note": "每项风险都有处置动作。"
+    },
+    {
+      "type": "risk-table",
+      "layoutVariant": "risk-matrix",
+      "title": "风险矩阵先判影响和概率",
+      "rows": [
+        ["扫描件缺 OCR", "高", "进入确认流程"],
+        ["证书有效期缺失", "中", "回到材料补充"],
+        ["图片授权待定", "低", "替换为自有素材"]
+      ]
+    },
+    {
+      "type": "risk-table",
+      "layoutVariant": "control-stack",
+      "title": "控制体系把制度和复盘连起来",
+      "rows": [
+        ["来源校验", "高", "保留原始材料路径"],
+        ["授权检查", "中", "记录外发限制"],
+        ["质量复盘", "低", "沉淀问题和修复项"]
+      ]
+    },
+    {
+      "type": "risk-table",
+      "layoutVariant": "responsibility-loop",
+      "title": "责任闭环避免风险无人认领",
+      "responsibilities": [
+        { "title": "定责", "owner": "材料 Owner", "body": "确认材料来源" },
+        { "title": "处置", "owner": "项目 Owner", "body": "推动补证和替换" },
+        { "title": "留痕", "owner": "交付 Owner", "body": "保留审核证据" },
+        { "title": "复盘", "owner": "PMO", "body": "更新交付清单" }
+      ]
+    },
+    {
+      "type": "risk-table",
+      "layoutVariant": "guidance-and-risk-board",
+      "title": "指引风险板绑定假设和触发条件",
+      "assumptions": ["客户案例仅限内部引用", "财务数字必须有来源", "图片资产需要授权记录"],
+      "rows": [
+        ["案例外发", "高", "缺授权时不进入终稿"],
+        ["数字口径", "中", "缺来源时标注待确认"],
+        ["预览不可用", "低", "降级到 metadata QA"]
+      ]
+    },
+    {
+      "type": "risk-table",
+      "layoutVariant": "materiality-matrix-board",
+      "title": "重要议题矩阵说明优先级来源",
+      "axes": { "x": "业务影响", "y": "外发风险" },
+      "rows": [
+        ["客户授权", "高", "决定是否可外发"],
+        ["证书有效期", "中", "影响可信度"],
+        ["截图清晰度", "低", "影响展示质量"]
+      ]
+    },
+    {
+      "type": "risk-table",
+      "layoutVariant": "governance-table-editorial",
+      "title": "治理机制表保留责任节奏证据",
+      "rows": [
+        ["材料来源", "高", "统一记录来源路径和责任人"],
+        ["资产授权", "中", "每次外发前复查授权状态"],
+        ["预览 QA", "低", "记录 provider 和不可用原因"]
+      ]
+    }
+  ]
+}

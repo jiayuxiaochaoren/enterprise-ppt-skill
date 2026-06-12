@@ -1,0 +1,53 @@
+{
+  "title": "Beauty Renderer Family Fixture",
+  "organization": "Renderer QA",
+  "industry": "consumer-beauty",
+  "pptType": "product-showcase",
+  "qualityMode": "draft",
+  "slides": [
+    {
+      "type": "product-showcase",
+      "layoutVariant": "hero-object",
+      "title": "明星单品展示",
+      "subtitle": "用一张页面同时表达对象、卖点和可证明场景。",
+      "product": {
+        "title": "玻尿酸精华",
+        "body": "高保湿、低刺激、适合日常护理。",
+        "tagline": "对象先成立，卖点再解释。",
+        "metrics": [
+          { "value": "24h", "label": "保湿测试" },
+          { "value": "3x", "label": "复购场景" }
+        ]
+      },
+      "features": [
+        { "title": "配方", "body": "核心成分明确。" },
+        { "title": "肤感", "body": "使用体验可描述。" },
+        { "title": "证据", "body": "结合测评与口碑。" }
+      ]
+    },
+    {
+      "type": "product-showcase",
+      "layoutVariant": "catalog-grid",
+      "title": "产品线矩阵",
+      "subtitle": "四个对象形成完整护肤组合。",
+      "products": [
+        { "title": "洁面乳", "body": "温和清洁。", "featured": true },
+        { "title": "爽肤水", "body": "补水打底。" },
+        { "title": "精华液", "body": "强化修护。" },
+        { "title": "面霜", "body": "锁水屏障。" }
+      ]
+    },
+    {
+      "type": "product-showcase",
+      "layoutVariant": "feature-strip",
+      "title": "能力卖点条",
+      "subtitle": "把配方、肤感、证据和场景拆成可扫描模块。",
+      "items": [
+        { "title": "温和", "body": "敏感肌友好。" },
+        { "title": "保湿", "body": "日夜场景通用。" },
+        { "title": "修护", "body": "强化屏障。" },
+        { "title": "复购", "body": "长期价值明确。" }
+      ]
+    }
+  ]
+}

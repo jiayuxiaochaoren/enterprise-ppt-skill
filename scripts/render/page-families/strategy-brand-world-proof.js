@@ -1,0 +1,61 @@
+const {
+  createBrandWorldBoardRenderer
+} = require('./strategy-brand-world-board');
+const {
+  createBrandWorldHeroRenderer
+} = require('./strategy-brand-world-hero');
+const {
+  createPageFamilyPrimitives
+} = require('./primitives');
+
+function createBrandWorldBusinessProofRenderer(ctx = {}) {
+  const {
+    drawFooter,
+    drawLightPageHeader
+  } = createPageFamilyPrimitives(ctx);
+  const { drawBrandWorldBoard } = createBrandWorldBoardRenderer(ctx);
+  const { drawBrandWorldHero } = createBrandWorldHeroRenderer(ctx);
+
+  return function brandWorldBusinessProof(slide, plan, s, idx) {
+    const header = drawLightPageHeader(slide, {
+      kicker:'BRAND WORLD / BUSINESS PROOF',
+      title:s.title || '品牌世界观与经营证据',
+      titleW:6.2,
+      titleSize:23.5,
+      subtitle:s.claim || s.subtitle || '品牌主张、产品承诺和业务证据必须在同一页相互解释。',
+      subtitleW:7.1,
+      subtitleSize:9.6,
+      idx,
+      pageNumber:'chrome'
+    });
+    const contentY = Math.max(2.50, Number(header && header.contentTop) || 2.50);
+    const contentH = Math.max(3.20, 6.10 - contentY);
+    const images = ctx.galleryImages(plan, s);
+    const metrics = (s.metrics || []).slice(0, 3);
+    const drivers = (s.drivers && s.drivers.length ? s.drivers : [
+      { title: metrics[0] ? `${metrics[0].value} ${metrics[0].label || ''}`.trim() : 'Global footprint' },
+      { title: 'Global prestige footprint' },
+      { title: 'Hero franchise memory' }
+    ]).slice(0, 3);
+    const actions = (s.actions && s.actions.length ? s.actions : [
+      { title: 'Use ULTIMUNE as spine' },
+      { title: 'Connect SKU proof' },
+      { title: 'Source-bound story' }
+    ]).slice(0, 3);
+    const outcomes = (s.outcomes && s.outcomes.length ? s.outcomes : [
+      { title: 'Operating priority' },
+      { title: 'Measurement system' },
+      { title: 'Regional growth review' }
+    ]).slice(0, 3);
+    const hero = { x:0.92, y:contentY, w:4.72, h:contentH };
+    drawBrandWorldHero(slide, hero, s, drivers, images[0], metrics);
+
+    const board = { x:6.18, y:contentY, w:5.26, h:contentH };
+    drawBrandWorldBoard(slide, board, { drivers, actions, outcomes });
+    drawFooter(slide, plan);
+  };
+}
+
+module.exports = {
+  createBrandWorldBusinessProofRenderer
+};

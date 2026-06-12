@@ -6,6 +6,7 @@ Use this file when the deck feels like one template with different colors. It di
 
 - Slideland slide gallery: https://www.slideland.tech/3
 - Slideland category list: https://www.slideland.tech/docs/category-list
+- Slideland full category sampler: `out/reference-corpus/meta/slideland-category-reference-samples.json`
 - COTEN report PDF: https://coten.co.jp/wp-content/uploads/2025/06/0f17e9f5d0bf9c6c9004120304adefbb.pdf
 - Sumitomo Forestry annual report: https://sfc.jp/information/ir/library/pdf/ar2025jpn.pdf
 - AMIYA financial results: https://www.amiya.co.jp/assets/ir/financial_results_2025_Q1.pdf
@@ -16,6 +17,7 @@ Use this file when the deck feels like one template with different colors. It di
 - HRX culture deck: https://speakerdeck.com/hrxteam/elements-culture-deck
 - Patagonia progress report: https://www.patagonia.com/media/pdf/patagonia-progress-report-2025-jp.pdf
 - NICE disclosure PDF: https://www.nice.co.jp/uploads/2025_11_13_02.pdf
+- Shiseido integrated report: https://corp.shiseido.com/jp/ir/library/annual/pdf/2025report_jp.pdf
 
 ## Patterns To Generalize
 
@@ -23,6 +25,12 @@ Slideland's useful contribution is not a single style. It is the category logic:
 page purpose, chart type, diagram grammar, photo subject, color, taste, industry,
 and document type. The skill mirrors that in `assets/reference-layout-library.json`
 so a page can be routed by proof object rather than by a fixed template name.
+
+The full category sampler extends that logic with 173 Chinese/English category
+entries and 342 reference samples. Use it as a retrieval index, not as a template
+to copy: category tags can steer theme intent, palette intent, page family and QA,
+but generated slides must use original structure, user assets and editable PPTX
+components.
 
 1. **Editorial Openers**
    - Best for: cover, chapter divider, strong thesis.
@@ -54,9 +62,15 @@ so a page can be routed by proof object rather than by a fixed template name.
    - Traits: prioritize visually; use matrix/scatter/heat signal plus a short mitigation summary.
    - Map to: `risk-table`.
 
+7. **Consumer Brand Editorial**
+   - Best for: beauty, fashion, food, retail, consumer goods, premium brand reports.
+   - Traits: brand world and proof objects alternate; hero imagery sets emotion, while product/user/research/operation evidence carries credibility.
+   - Map to: `case-gallery`, `executive-blocks`, `strategy-map`, or a dedicated `brand-world-and-business-proof` family when available.
+
 ## Router Rules
 
 - First select a reference recipe from `assets/reference-layout-library.json`.
+- If the material has a clear industry, page role, diagram type, taste or document type, query `out/reference-corpus/meta/slideland-category-reference-samples.json` and use its labels/tags as abstract design evidence.
 - Then map that recipe to an editable render type supported by `generate_pptx.js`.
 - If the recipe asks for an asset and no suitable user/source asset exists, call
   `scripts/asset_prompt_planner.js` and use imagegen for an original bitmap asset.
@@ -65,6 +79,7 @@ so a page can be routed by proof object rather than by a fixed template name.
 - If it has 2+ images, case names, product names, store/site/project labels, use `case-gallery`.
 - If it has values, culture, mission, vision, recruiting, principles, use `manifesto`.
 - If it has risk, mitigation, governance, compliance, assurance, use `risk-table`.
+- If it has beauty, fashion, food, retail or consumer brand signals, prefer a consumer-brand editorial rhythm: image evidence, product proof, brand world, business data and ESG/governance pages must be paced instead of collapsing into generic finance or SaaS cards.
 - If none of the above and the page has 5+ cards/items, use `module-matrix`; otherwise use `two-column` or `executive-blocks`.
 
 ## Generated Asset Rules

@@ -1,0 +1,88 @@
+{
+  "title": "Renderer Chapter Family Fixture",
+  "industry": "enterprise-services",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "slides": [
+    {
+      "type": "chapter-divider",
+      "title": "第一章 管理判断与证据边界",
+      "subtitle": "先明确讨论范围，再进入证据和方案。",
+      "items": ["背景判断", "证据边界", "下一步动作"]
+    },
+    {
+      "type": "chapter-divider",
+      "layoutVariant": "agenda-board",
+      "chapter": "02",
+      "title": "议题与判断框架",
+      "subtitle": "本章按讨论顺序组织证据。",
+      "items": [
+        { "title": "现状判断", "body": "明确当前经营事实。" },
+        { "title": "证据复盘", "body": "确认数据来源和置信度。" },
+        { "title": "配置选择", "body": "进入资源和节奏判断。" }
+      ]
+    },
+    {
+      "type": "chapter-divider",
+      "layoutVariant": "line-agenda",
+      "industry": "manufacturing-operations",
+      "chapter": "03",
+      "title": "从关键产线开始建立闭环",
+      "subtitle": "先跑通一条产线，再扩展到多车间协同。",
+      "items": [
+        { "title": "现场状态", "body": "设备和报警进入事实表。" },
+        { "title": "维修闭环", "body": "派工、处置和验收可追踪。" },
+        { "title": "OEE 复盘", "body": "把停机影响回写到策略。" }
+      ],
+      "note": "先验证闭环，再扩大范围。"
+    },
+    {
+      "type": "chapter-divider",
+      "layoutVariant": "adoption-agenda",
+      "chapter": "04",
+      "title": "平台增长与客户采用",
+      "items": [
+        { "title": "平台能力", "body": "模块、集成、数据。" },
+        { "title": "客户采用", "body": "激活、留存、扩展。" },
+        { "title": "商业结果", "body": "ARR、NRR、毛利。" }
+      ],
+      "note": "采用路径需要由客户成功和销售共同确认。"
+    },
+    {
+      "type": "chapter-divider",
+      "layoutVariant": "board-briefing",
+      "chapter": "05",
+      "title": "董事会汇报重点",
+      "subtitle": "本次审议围绕增长、风险和下一步投入展开。",
+      "items": [
+        { "title": "增长判断", "body": "确认高确定性增长来源。" },
+        { "title": "风险约束", "body": "列出必须进入治理的问题。" },
+        { "title": "资源投入", "body": "明确下一阶段责任边界。" }
+      ]
+    },
+    {
+      "type": "chapter-divider",
+      "layoutVariant": "pathway-map",
+      "chapter": "06",
+      "title": "路径与关键议题",
+      "items": [
+        { "title": "触点", "body": "客户入口。" },
+        { "title": "资源", "body": "交付能力。" },
+        { "title": "质量", "body": "验收机制。" },
+        { "title": "复盘", "body": "持续改善。" }
+      ]
+    },
+    {
+      "type": "chapter-divider",
+      "layoutVariant": "editorial-agenda",
+      "chapter": "07",
+      "title": "章节以视觉议程打开",
+      "subtitle": "适合品牌、案例、场景材料进入前的过渡页。",
+      "items": [
+        { "title": "场景", "body": "建立语境。" },
+        { "title": "证据", "body": "承接图片。" },
+        { "title": "判断", "body": "进入结论。" }
+      ]
+    }
+  ]
+}

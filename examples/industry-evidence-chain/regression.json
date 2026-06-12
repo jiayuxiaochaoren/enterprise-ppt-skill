@@ -1,0 +1,444 @@
+{
+  "version": "industry-evidence-chain-fixtures/v1",
+  "samples": [
+    {
+      "id": "manufacturing-oee-evidence-chain",
+      "plan": {
+        "industry": "manufacturing-operations",
+        "title": "制造现场设备质量证据链",
+        "slides": [
+          {
+            "type": "architecture",
+            "layoutVariant": "production-topology",
+            "proofObject": "production-topology",
+            "title": "能力主张来自可检查的产线与设备边界",
+            "layers": [
+              { "title": "设备对象", "items": ["输送线", "涂装线", "PLC"] },
+              { "title": "数据边界", "items": ["点检终端", "传感器", "OEE"] }
+            ],
+            "equipment": { "name": "A线涂装设备", "code": "LINE-A" }
+          },
+          {
+            "type": "timeline",
+            "layoutVariant": "closed-loop",
+            "proofObject": "maintenance-loop",
+            "title": "工艺与交付承诺落在点检、派工、复盘闭环",
+            "phases": [
+              { "title": "点检", "body": "发现异常并记录编号。" },
+              { "title": "派工", "body": "设备部确认责任人。" },
+              { "title": "复盘", "body": "回写质量记录。" }
+            ],
+            "inspectionMatrix": [
+              { "item": "轴承温升", "owner": "设备部" },
+              { "item": "节拍偏差", "owner": "工艺部" }
+            ],
+            "images": ["inspection.png"],
+            "proof": { "explanation": "点检矩阵证明交付承诺有控制点。" }
+          },
+          {
+            "type": "metric-comparison",
+            "layoutVariant": "oee-board",
+            "proofObject": "oee-board",
+            "title": "运营与质量证据用 OEE、良率和停机时长收口",
+            "metrics": [
+              { "label": "OEE", "value": "83%" },
+              { "label": "一次通过率", "value": "96%" },
+              { "label": "MTTR", "value": "42min" }
+            ],
+            "oee": { "availability": "91%", "performance": "88%", "quality": "96%" },
+            "cards": [
+              { "title": "停机复盘", "body": "故障排行回写维修动作。" },
+              { "title": "质量确认", "body": "良率与一次通过率按班组复盘。" }
+            ],
+            "proof": { "explanation": "OEE 与质量卡片共同证明运营改善。" },
+            "sourceNote": "内部 OEE 周报，2026-05。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "beauty-brand-product-user-evidence-chain",
+      "plan": {
+        "industry": "beauty-consumer",
+        "title": "消费品牌产品体验经营证据链",
+        "slides": [
+          {
+            "type": "cover",
+            "layoutVariant": "beauty-brand-editorial-cover",
+            "proofObject": "beauty-brand-editorial-cover",
+            "title": "视觉主张先让品牌世界观可见",
+            "visual": { "mode": "photo", "image": "counter-hero.png", "caption": "柜台主视觉说明品牌触点。" },
+            "claim": "视觉主张围绕可检查的柜台体验展开。"
+          },
+          {
+            "type": "case-gallery",
+            "layoutVariant": "product-evidence-story",
+            "proofObject": "product-evidence-story",
+            "title": "产品与体验承诺由单品、质地和场景证明",
+            "images": ["serum.png", "cream.png"],
+            "productStory": [
+              { "product": "修护精华", "scene": "换季修护", "benefit": "复购入口", "businessMeaning": "承接会员升级" },
+              { "product": "面霜系列", "scene": "夜间护理", "benefit": "质地记忆", "businessMeaning": "提升连带率" }
+            ],
+            "proof": { "explanation": "产品矩阵把质地、功效和经营动作连起来。" }
+          },
+          {
+            "type": "metric-comparison",
+            "layoutVariant": "member-growth-board",
+            "proofObject": "member-growth-board",
+            "title": "用户与经营证据看复购、会员贡献和渠道效率",
+            "metrics": [
+              { "label": "复购率", "value": "41%" },
+              { "label": "会员贡献", "value": "58%" },
+              { "label": "ROAS", "value": "3.2x" }
+            ],
+            "memberCohorts": [
+              { "label": "高频会员", "value": "18%" },
+              { "label": "新客首购", "value": "26%" }
+            ],
+            "cards": [
+              { "title": "会员分层", "body": "高频会员贡献复购。" },
+              { "title": "渠道效率", "body": "ROAS 解释投放动作。" }
+            ],
+            "proof": { "explanation": "用户经营证据用分层、渠道和复购共同说明。" },
+            "sourceNote": "会员运营看板，2026-05。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "finance-thesis-portfolio-risk-evidence-chain",
+      "plan": {
+        "industry": "finance-investment",
+        "title": "投资判断组合收益风险证据链",
+        "slides": [
+          {
+            "type": "finance-bridge",
+            "layoutVariant": "financial-waterfall",
+            "proofObject": "return-bridge",
+            "title": "判断框架先声明估值口径与投资假设",
+            "investmentThesis": "用现金流修复与退出折现判断增持空间。",
+            "assumptions": [
+              { "label": "退出倍数", "value": "8.0x" },
+              { "label": "折现率", "value": "11%" }
+            ],
+            "bridge": [
+              { "label": "经营改善", "value": "+1.2x" },
+              { "label": "估值修复", "value": "+0.6x" }
+            ],
+            "sourceNote": "投委会模型口径，2026-05。"
+          },
+          {
+            "type": "portfolio-table",
+            "layoutVariant": "portfolio-action-table",
+            "proofObject": "portfolio-action-table",
+            "title": "资产与组合逻辑说明配置、暴露和投后动作",
+            "portfolio": [
+              { "name": "项目A", "allocation": "22%", "action": "增持" },
+              { "name": "项目B", "allocation": "14%", "action": "观察" }
+            ],
+            "rows": [
+              ["项目A", "增持", "现金流修复"],
+              ["项目B", "观察", "退出窗口后移"]
+            ],
+            "sourceNote": "组合月报，2026-05。"
+          },
+          {
+            "type": "risk-table",
+            "layoutVariant": "guidance-and-risk-board",
+            "proofObject": "guidance-and-risk-board",
+            "title": "收益与风险证据同时呈现 IRR、DPI 和约束动作",
+            "metrics": [
+              { "label": "IRR", "value": "18%" },
+              { "label": "DPI", "value": "0.7x" }
+            ],
+            "rows": [
+              ["退出延迟", "中", "投后团队更新窗口"],
+              ["集中度", "高", "投委会设置上限"]
+            ],
+            "risks": [
+              { "title": "退出延迟", "level": "中" }
+            ],
+            "sourceNote": "风控台账，2026-05。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "healthcare-service-handoff-quality-evidence-chain",
+      "plan": {
+        "industry": "healthcare-operations",
+        "title": "医疗服务路径交接质量证据链",
+        "slides": [
+          {
+            "type": "metric-comparison",
+            "layoutVariant": "patient-service-scorecard",
+            "proofObject": "patient-service-scorecard",
+            "title": "服务承诺围绕等待时长、满意度和安全边界",
+            "servicePromise": "把患者等待、检查交接和随访闭环放进同一张质量视图。",
+            "metrics": [
+              { "label": "等待时长", "value": "24min" },
+              { "label": "满意度", "value": "92%" }
+            ]
+          },
+          {
+            "type": "architecture",
+            "layoutVariant": "service-blueprint",
+            "proofObject": "service-blueprint",
+            "title": "流程与触点用服务蓝图和交接节点落地",
+            "serviceBlueprint": {
+              "stages": ["预约", "到院", "检查", "随访"],
+              "frontstage": ["导诊", "护士站"],
+              "backstage": ["检验科", "质控办"]
+            },
+            "touchpoints": [
+              { "title": "预约导诊", "owner": "导诊台" },
+              { "title": "检查交接", "owner": "影像科" }
+            ]
+          },
+          {
+            "type": "risk-table",
+            "layoutVariant": "responsibility-loop",
+            "proofObject": "responsibility-loop",
+            "title": "质量与效率证据要求责任闭环和不良事件复盘",
+            "metrics": [
+              { "label": "不良事件", "value": "0" },
+              { "label": "周转率", "value": "+12%" }
+            ],
+            "rows": [
+              ["导诊漏接", "导诊台", "每日复盘"],
+              ["检查超时", "影像科", "SLA 提醒"]
+            ],
+            "responsibilities": [
+              { "owner": "质控办", "cadence": "周复盘" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "saas-platform-workflow-adoption-evidence-chain",
+      "plan": {
+        "industry": "saas-technology",
+        "title": "SaaS 平台工作流采用效率证据链",
+        "slides": [
+          {
+            "type": "architecture",
+            "layoutVariant": "platform-capability-map",
+            "proofObject": "platform-capability-map",
+            "title": "平台能力从 API、SSO、自动化和集成边界展开",
+            "platformCapabilities": [
+              { "title": "API 集成", "body": "连接 CRM 与工单。" },
+              { "title": "SSO 权限", "body": "统一身份边界。" }
+            ],
+            "layers": [
+              { "title": "接入层", "items": ["API", "Webhook"] },
+              { "title": "治理层", "items": ["SSO", "审计日志"] }
+            ]
+          },
+          {
+            "type": "case-gallery",
+            "layoutVariant": "prototype-flow",
+            "proofObject": "prototype-flow",
+            "title": "工作流落地必须看到真实原型状态与操作路径",
+            "images": ["screen-a.png", "screen-b.png"],
+            "workflow": [
+              { "title": "创建任务", "body": "自动生成审批。" },
+              { "title": "同步状态", "body": "回写客户成功视图。" }
+            ],
+            "prototype": { "state": "审批流原型" },
+            "proof": { "explanation": "原型截图说明工作流状态而不是泛 UI 氛围。" }
+          },
+          {
+            "type": "industry-chart",
+            "layoutVariant": "adoption-funnel",
+            "proofObject": "adoption-funnel",
+            "title": "采用与效率证据看激活、留存、权限审计和 ARR 扩展",
+            "adoptionFunnel": {
+              "steps": [
+                { "label": "注册", "value": "100%" },
+                { "label": "激活", "value": "64%" },
+                { "label": "扩展", "value": "31%" }
+              ]
+            },
+            "metrics": [
+              { "label": "NRR", "value": "118%" },
+              { "label": "ARR 扩展", "value": "+22%" }
+            ],
+            "permissionGovernance": [
+              { "role": "Admin", "audit": "enabled" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "lifestyle-experience-journey-retention-evidence-chain",
+      "plan": {
+        "industry": "lifestyle-food-tourism-fashion",
+        "title": "生活方式体验旅程转化证据链",
+        "slides": [
+          {
+            "type": "cover",
+            "layoutVariant": "lifestyle-editorial-cover",
+            "proofObject": "lifestyle-editorial-cover",
+            "title": "体验主张先看到真实地点与对象",
+            "visual": { "mode": "photo", "image": "place-hero.png", "caption": "真实场景说明体验入口。" },
+            "place": { "name": "海岸市集", "role": "到访场景" },
+            "proof": { "explanation": "体验主张必须能看到实际对象。" }
+          },
+          {
+            "type": "timeline",
+            "layoutVariant": "customer-journey",
+            "proofObject": "customer-journey-map",
+            "title": "场景与旅程承诺连接内容、到访、消费和复访",
+            "phases": [
+              { "title": "种草", "body": "内容引导预约。" },
+              { "title": "到访", "body": "路线与服务触点可见。" },
+              { "title": "复游", "body": "活动权益触发回访。" }
+            ],
+            "touchpoints": [
+              { "title": "预约入口", "owner": "运营" },
+              { "title": "现场导览", "owner": "门店" }
+            ],
+            "images": ["journey-a.png"],
+            "proof": { "explanation": "旅程证据解释每个触点证明什么。" }
+          },
+          {
+            "type": "metric-comparison",
+            "layoutVariant": "conversion-scorecard",
+            "proofObject": "conversion-scorecard",
+            "title": "转化与复访证据用到访率、客单和复访率收口",
+            "metrics": [
+              { "label": "到访转化", "value": "37%" },
+              { "label": "复访率", "value": "22%" }
+            ],
+            "conversion": { "visit": "37%" },
+            "retention": { "repeatVisit": "22%" },
+            "cards": [
+              { "title": "内容触发", "body": "预约入口贡献转化。" },
+              { "title": "复访权益", "body": "活动权益带动回访。" }
+            ],
+            "proof": { "explanation": "经营数据解释转化而不是只展示热闹。" },
+            "sourceNote": "门店运营看板，2026-05。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "public-governance-resource-risk-evidence-chain",
+      "plan": {
+        "industry": "government-public-sector",
+        "title": "公共部门治理资源风险证据链",
+        "slides": [
+          {
+            "type": "report-board",
+            "layoutVariant": "policy-context-board",
+            "proofObject": "policy-context-board",
+            "title": "治理主张必须说明政策来源和公共服务边界",
+            "policySource": "市级公共服务提升行动方案",
+            "policy": { "name": "公共服务提升行动", "date": "2026-05" },
+            "governanceModel": { "owner": "专项办公室" },
+            "sourceNote": "公开政策摘要，2026-05。"
+          },
+          {
+            "type": "strategy-map",
+            "layoutVariant": "resource",
+            "proofObject": "governance-operating-model",
+            "title": "资源与责任机制需要看到责任人、资源和保障动作",
+            "resources": [
+              { "name": "窗口资源", "owner": "服务中心" },
+              { "name": "数据接口", "owner": "信息办" }
+            ],
+            "responsibilities": [
+              { "owner": "服务中心", "cadence": "周调度" }
+            ],
+            "actions": [
+              { "title": "资源调度", "body": "按窗口压力调整班次。" },
+              { "title": "责任复盘", "body": "超时事项回到责任机制。" }
+            ],
+            "rows": [
+              ["窗口资源", "服务中心", "周调度"],
+              ["数据接口", "信息办", "月复盘"]
+            ]
+          },
+          {
+            "type": "risk-table",
+            "layoutVariant": "risk-and-assurance-board",
+            "proofObject": "risk-and-assurance-board",
+            "title": "公共结果与风险证据同时呈现里程碑、成效和保障",
+            "metrics": [
+              { "label": "办结率", "value": "94%" },
+              { "label": "超时事项", "value": "3" }
+            ],
+            "risks": [
+              { "title": "跨部门延迟", "level": "中" }
+            ],
+            "rows": [
+              ["跨部门延迟", "中", "联席会升级"],
+              ["公众反馈不足", "中", "补充回访问卷"]
+            ],
+            "sourceNote": "项目推进台账，2026-05。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "people-culture-behavior-growth-evidence-chain",
+      "plan": {
+        "industry": "people-culture-company",
+        "title": "人与文化使命行为成长证据链",
+        "slides": [
+          {
+            "type": "manifesto",
+            "layoutVariant": "mission-statement-stage",
+            "proofObject": "mission-statement-stage",
+            "title": "使命与文化主张需要落到行为原则",
+            "mission": "让一线团队拥有可复盘的成长路径。",
+            "values": [
+              { "title": "客户现场", "body": "把问题带回产品。" },
+              { "title": "持续复盘", "body": "每周形成行为例子。" }
+            ],
+            "valueChain": [
+              { "title": "使命", "body": "客户现场" },
+              { "title": "行为", "body": "团队复盘" },
+              { "title": "成长", "body": "能力沉淀" }
+            ],
+            "proof": { "explanation": "文化主张必须有行为例子承接。" }
+          },
+          {
+            "type": "case-gallery",
+            "layoutVariant": "people-proof",
+            "proofObject": "people-proof-mosaic",
+            "title": "行为与团队证据来自授权的工作场景和团队案例",
+            "images": ["team-a.png", "team-b.png"],
+            "behaviors": [
+              { "title": "客户现场复盘", "body": "项目经理记录真实问题。" },
+              { "title": "导师带教", "body": "新人任务有明确反馈。" }
+            ],
+            "cards": [
+              { "title": "授权影像", "body": "团队场景有公开授权。" },
+              { "title": "行为案例", "body": "价值观对应具体动作。" }
+            ],
+            "proof": { "explanation": "团队证据说明角色、授权和行为。" }
+          },
+          {
+            "type": "metric-comparison",
+            "layoutVariant": "company-profile-proof",
+            "proofObject": "company-profile-proof",
+            "title": "组织与成长证据看能力沉淀、招聘和团队规模",
+            "metrics": [
+              { "label": "导师覆盖", "value": "86%" },
+              { "label": "内部晋升", "value": "28%" }
+            ],
+            "companyFacts": [
+              { "label": "团队规模", "value": "420人" }
+            ],
+            "growth": { "promotion": "28%" },
+            "sourceNote": "组织发展月报，2026-05。"
+          }
+        ]
+      }
+    }
+  ]
+}

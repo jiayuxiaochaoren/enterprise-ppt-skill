@@ -1,0 +1,64 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "general-operations",
+  "documentType": "integrated-report",
+  "title": "重要议题矩阵区分利益相关方影响和业务影响",
+  "subtitle": "矩阵页要有双轴、优先区和可定位议题。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "materiality-matrix-board fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/materiality-matrix-board/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/materiality-matrix-board/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/materiality-matrix-board/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/materiality-matrix-board/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/materiality-matrix-board/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "risk-table",
+      "layoutVariant": "materiality-matrix-board",
+      "title": "重要议题矩阵区分利益相关方影响和业务影响",
+      "claim": "矩阵页要有双轴、优先区和可定位议题。",
+      "rows": [
+        [
+          "数据安全与隐私",
+          "高",
+          "纳入最高优先级治理议题"
+        ],
+        [
+          "供应链韧性",
+          "中",
+          "建立季度风险复盘"
+        ],
+        [
+          "员工发展",
+          "中",
+          "绑定人才梯队指标"
+        ],
+        [
+          "包装减量",
+          "低",
+          "进入年度改善项目"
+        ]
+      ],
+      "axes": {
+        "x": "业务影响",
+        "y": "利益相关方影响"
+      },
+      "note": "议题坐标需要服务于优先级判断。"
+    }
+  ]
+}

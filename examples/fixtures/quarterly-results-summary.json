@@ -1,0 +1,68 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "finance-investment",
+  "documentType": "financial-results",
+  "title": "2026 Q1 结果好于预算基线，但下季度仍需锁定现金边界",
+  "subtitle": "季度结果摘要必须同时呈现结果、差异解释和管理动作。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "quarterly-results-summary fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/quarterly-results-summary/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/quarterly-results-summary/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/quarterly-results-summary/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/quarterly-results-summary/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/quarterly-results-summary/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "quarterly-results-summary",
+      "title": "2026 Q1 结果好于预算基线，但下季度仍需锁定现金边界",
+      "claim": "季度结果摘要必须同时呈现结果、差异解释和管理动作。",
+      "period": "2026 Q1",
+      "guidance": "Q2 保持核心业务投入，费用率不突破预算上限。",
+      "metrics": [
+        {
+          "label": "收入",
+          "value": "+12.4%",
+          "note": "核心业务恢复"
+        },
+        {
+          "label": "经营现金流",
+          "value": "+18.0%",
+          "note": "回款节奏改善"
+        },
+        {
+          "label": "毛利率",
+          "value": "36.8%",
+          "note": "组合质量提升"
+        },
+        {
+          "label": "费用率",
+          "value": "-2.1pt",
+          "note": "投入边界更清晰"
+        }
+      ],
+      "businessLogic": {
+        "currentState": "收入和经营现金流均高于预算。",
+        "impact": "经营质量较上季度改善。",
+        "cause": "高复购客户贡献更稳定。",
+        "action": "围绕回款和毛利继续做月度复盘。",
+        "metric": "收入、毛利率、经营现金流、费用率"
+      }
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "general-operations",
+  "documentType": "board-report",
+  "title": "管理层判断需要把证据集合连接到决策含义",
+  "subtitle": "证据板同时包含指标、案例、风险和下一步建议。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "executive-proof-board fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/executive-proof-board/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/executive-proof-board/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/executive-proof-board/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/executive-proof-board/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/executive-proof-board/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "case-gallery",
+      "layoutVariant": "executive-proof-board",
+      "title": "管理层判断需要把证据集合连接到决策含义",
+      "subtitle": "证据板同时包含指标、案例、风险和下一步建议。",
+      "images": [
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/executive-proof-board/proof-1.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/executive-proof-board/proof-2.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/executive-proof-board/proof-3.png",
+        "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/executive-proof-board/proof-4.png"
+      ],
+      "cards": [
+        {
+          "title": "指标证据",
+          "body": "核心收入和现金指标持续改善。"
+        },
+        {
+          "title": "案例证据",
+          "body": "关键客户完成新流程验证。"
+        },
+        {
+          "title": "风险证据",
+          "body": "高风险项已有责任人与触发条件。"
+        },
+        {
+          "title": "决策含义",
+          "body": "建议扩大试点并锁定预算边界。"
+        }
+      ],
+      "note": "证据必须连接到管理层要做的决定。"
+    }
+  ]
+}

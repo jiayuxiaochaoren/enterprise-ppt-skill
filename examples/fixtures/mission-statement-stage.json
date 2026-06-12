@@ -1,0 +1,56 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "people-culture",
+  "documentType": "company-introduction",
+  "title": "使命必须被行为证明，而不是只写成一句口号",
+  "subtitle": "使命页必须用行为原则和证据支撑。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "mission-statement-stage fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/mission-statement-stage/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/mission-statement-stage/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/mission-statement-stage/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/mission-statement-stage/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/mission-statement-stage/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "manifesto",
+      "layoutVariant": "mission-statement-stage",
+      "title": "使命必须被行为证明，而不是只写成一句口号",
+      "statement": "把复杂工作变成可被团队持续执行的系统",
+      "claim": "使命页必须用行为原则和证据支撑。",
+      "values": [
+        {
+          "title": "对客户具体",
+          "body": "每个方案都回到客户真实场景。"
+        },
+        {
+          "title": "对事实诚实",
+          "body": "先拿证据，再做判断。"
+        },
+        {
+          "title": "对交付负责",
+          "body": "每个承诺都有负责人和时间点。"
+        },
+        {
+          "title": "对复盘开放",
+          "body": "把结果转回方法和系统。"
+        }
+      ]
+    }
+  ]
+}

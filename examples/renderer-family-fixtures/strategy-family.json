@@ -1,0 +1,47 @@
+{
+  "title": "Strategy Renderer Family Fixture",
+  "organization": "Renderer QA",
+  "industry": "general-operations",
+  "pptType": "strategy-readout",
+  "qualityMode": "draft",
+  "slides": [
+    {
+      "type": "strategy-map",
+      "title": "增长价值创造路径",
+      "subtitle": "把输入、运营动作和结果信号放在同一张链路图中。",
+      "leftTitle": "关键输入",
+      "centerTitle": "运营动作",
+      "rightTitle": "结果信号",
+      "drivers": [
+        { "title": "客户洞察" },
+        { "title": "渠道触点" },
+        { "title": "产品证据" }
+      ],
+      "actions": [
+        { "title": "主张重组" },
+        { "title": "渠道联动" },
+        { "title": "内容复用" },
+        { "title": "数据复盘" }
+      ],
+      "outcomes": [
+        { "title": "转化提升" },
+        { "title": "复购增强" },
+        { "title": "经营可视" }
+      ]
+    },
+    {
+      "type": "module-matrix",
+      "title": "运营能力模块矩阵",
+      "intro": "用能力雷达表达平台模块之间的协同关系。",
+      "coreTitle": "能力中心",
+      "coreBody": "围绕经营闭环组织模块，不把页面做成孤立功能清单。",
+      "cards": [
+        { "title": "洞察", "body": "识别关键问题。" },
+        { "title": "内容", "body": "沉淀可复用素材。" },
+        { "title": "渠道", "body": "连接触点。" },
+        { "title": "转化", "body": "跟踪结果。" },
+        { "title": "复盘", "body": "反馈策略。" }
+      ]
+    }
+  ]
+}

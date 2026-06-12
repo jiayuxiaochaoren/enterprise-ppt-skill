@@ -1,0 +1,65 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "finance-investment",
+  "documentType": "financial-results",
+  "title": "下季度指引需要同时锁定增长假设和风险边界",
+  "subtitle": "风险页以假设、触发条件、责任和行动承接经营结果。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "guidance-and-risk-board fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/guidance-and-risk-board/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/guidance-and-risk-board/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/guidance-and-risk-board/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/guidance-and-risk-board/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/guidance-and-risk-board/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "risk-table",
+      "layoutVariant": "guidance-and-risk-board",
+      "title": "下季度指引需要同时锁定增长假设和风险边界",
+      "claim": "风险页以假设、触发条件、责任和行动承接经营结果。",
+      "rows": [
+        [
+          "需求恢复低于预期",
+          "中",
+          "按周更新订单与复购数据"
+        ],
+        [
+          "回款节奏波动",
+          "高",
+          "重点客户建立现金流预警"
+        ],
+        [
+          "毛利率承压",
+          "中",
+          "审查低毛利订单和费用投入"
+        ],
+        [
+          "渠道投放效率下降",
+          "低",
+          "保留高转化渠道预算"
+        ]
+      ],
+      "assumptions": [
+        "核心客户复购维持稳定",
+        "新签项目回款周期不超过45天",
+        "渠道费用率不突破预算上限"
+      ],
+      "note": "每项风险必须有触发条件和处置动作。"
+    }
+  ]
+}

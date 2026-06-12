@@ -1,0 +1,20 @@
+const {
+  RENDERER_FOUNDATION_FAMILY_CONTEXT_CONTRACT
+} = require('./family-foundation-contracts');
+const {
+  RENDERER_COMMERCIAL_FAMILY_CONTEXT_CONTRACT
+} = require('./family-commercial-contracts');
+const {
+  RENDERER_EXTENDED_FAMILY_CONTEXT_CONTRACT
+} = require('./family-extended-contracts');
+
+const RENDERER_FAMILY_CONTEXT_CONTRACT = Object.assign(
+  {},
+  RENDERER_FOUNDATION_FAMILY_CONTEXT_CONTRACT,
+  RENDERER_COMMERCIAL_FAMILY_CONTEXT_CONTRACT,
+  RENDERER_EXTENDED_FAMILY_CONTEXT_CONTRACT
+);
+
+module.exports = {
+  RENDERER_FAMILY_CONTEXT_CONTRACT
+};

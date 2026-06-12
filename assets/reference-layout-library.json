@@ -1041,8 +1041,8 @@
     }
   ],
   "generatedAssetPromptPatterns": {
-    "background": "Create a premium business presentation background for {industryLabel}: {visualBrief}. Wide 16:9, large clean negative space for text, restrained color palette {paletteName}, no text, no logos, no fake charts, no UI labels, high-end keynote style.",
-    "showcase": "Create an original inspectable showcase image for {industryLabel}: {visualBrief}. Subject clearly visible, commercial lighting, uncluttered environment, 16:9 or 4:3 crop, no text, no logos, no brand marks, suitable for a business presentation image panel.",
+    "background": "Create a premium business presentation background for {industryLabel}: {visualBrief}. Large clean negative space for text, restrained color palette {paletteName}, no text, no logos, no fake charts, no UI labels, high-end keynote style.",
+    "showcase": "Create an original inspectable showcase image for {industryLabel}: {visualBrief}. Subject clearly visible, commercial lighting, uncluttered environment, no text, no logos, no brand marks, suitable for a business presentation image panel.",
     "evidence": "Create a clearly synthetic evidence-style scene for {industryLabel}: {visualBrief}. Realistic but generic, no identifiable brand/client/site, no text, no logos, designed for a framed presentation panel with caption outside the image.",
     "gallery": "Create a cohesive set of presentation gallery images for {industryLabel}: {visualBrief}. Same lighting and color temperature, consistent crop ratios, no text, no logos, no fake claims, premium commercial documentation style.",
     "abstract": "Create an abstract high-end presentation visual motif for {industryLabel}: {visualBrief}. Subtle depth, clean geometry, palette-compatible with {paletteName}, no text, no logos, no charts, no noisy decorative lines."

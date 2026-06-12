@@ -1,0 +1,213 @@
+{
+  "title": "Renderer Financial Family Fixture",
+  "industry": "finance-investment",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "draft",
+  "slides": [
+    {
+      "type": "finance-bridge",
+      "title": "组合回报归因桥保持可解释",
+      "bridge": [
+        { "label": "期初", "value": "12%", "kind": "start" },
+        { "label": "经营改善", "value": "+4%", "kind": "up" },
+        { "label": "估值回撤", "value": "-2%", "kind": "down" },
+        { "label": "期末", "value": "14%", "kind": "end" }
+      ],
+      "actions": [
+        { "title": "加仓", "body": "经营改善持续验证" },
+        { "title": "隔离", "body": "估值波动单独复盘" }
+      ]
+    },
+    {
+      "type": "portfolio-table",
+      "title": "组合分层进入行动表",
+      "portfolio": [
+        { "theme": "成长制造", "weight": 32, "irr": "21%", "dpi": "0.62", "risk": "中", "action": "维持加仓观察" },
+        { "theme": "企业服务", "weight": 28, "irr": "17%", "dpi": "0.81", "risk": "低", "action": "维持分红节奏" },
+        { "theme": "消费科技", "weight": 19, "irr": "13%", "dpi": "0.48", "risk": "高", "action": "控制新增敞口" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "title": "关键指标解释增长质量",
+      "metrics": [
+        { "label": "IRR", "value": "18.6%", "delta": "+2.1pt", "note": "核心组合改善" },
+        { "label": "DPI", "value": "0.74", "delta": "+0.06", "note": "现金回收提升" },
+        { "label": "风险项目", "value": "3", "delta": "-1", "note": "退出计划推进" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "financial-kpi-snapshot",
+      "title": "核心经营快照形成单页判断",
+      "period": "FY2026 Q1",
+      "metrics": [
+        { "label": "Revenue", "value": "12.8亿", "note": "收入保持增长" },
+        { "label": "Gross Margin", "value": "42%", "note": "毛利率稳定" },
+        { "label": "Cash", "value": "1.6亿", "note": "现金回收改善" },
+        { "label": "Expense", "value": "18%", "note": "费用纪律可控" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "chart-grid-with-commentary",
+      "title": "图表和管理评论绑定动作",
+      "metrics": [
+        { "label": "收入趋势", "value": "+9%", "note": "连续三个周期提升" },
+        { "label": "费用率", "value": "18%", "note": "低于预算上限" },
+        { "label": "现金回收", "value": "+6%", "note": "回款节奏改善" }
+      ],
+      "businessLogic": {
+        "currentState": "收入和现金回收同步改善。",
+        "cause": "重点客户复购和项目筛选提升质量。",
+        "action": "下季度继续控制费用并加快回款。"
+      }
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "quarterly-results-summary",
+      "title": "季度结果摘要回答结果原因动作",
+      "period": "Q1 2026",
+      "metrics": [
+        { "label": "Revenue", "value": "12.8亿", "note": "高于预算" },
+        { "label": "EBIT", "value": "1.9亿", "note": "盈利修复" },
+        { "label": "Cash", "value": "0.9亿", "note": "回款改善" }
+      ],
+      "businessLogic": {
+        "currentState": "本期结果好于预算基线。",
+        "cause": "复购客户和费用纪律共同推动。",
+        "action": "保持投入边界，按月复盘现金回收。"
+      }
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "oee-board",
+      "title": "产线 OEE 复盘连接维修动作",
+      "metrics": [
+        { "label": "OEE", "value": "78%", "delta": "+4pt", "note": "瓶颈工位改善" },
+        { "label": "维修响应", "value": "18min", "note": "班组响应更快" },
+        { "label": "良率", "value": "97%", "note": "返工率下降" }
+      ],
+      "oeeComponents": [
+        { "label": "稼动率", "value": "92%", "body": "停机窗口进入复盘" },
+        { "label": "性能率", "value": "84%", "body": "节拍波动可定位" },
+        { "label": "良率", "value": "97%", "body": "质量异常绑定工单" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "patient-service-scorecard",
+      "title": "患者服务指标回到触点闭环",
+      "metrics": [
+        { "label": "满意度", "value": "92%", "note": "复诊反馈改善" },
+        { "label": "等待时长", "value": "18min", "note": "预约分诊优化" },
+        { "label": "反馈闭环", "value": "86%", "note": "异常反馈更快处理" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "member-growth-board",
+      "title": "会员增长指标解释复购质量",
+      "metrics": [
+        { "label": "复购率", "value": "42%", "delta": "+6pt", "note": "高价值会员贡献提升" },
+        { "label": "客单价", "value": "268", "note": "套装组合拉动" },
+        { "label": "门店转化", "value": "31%", "note": "导购触达更稳定" }
+      ]
+    },
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "adoption-revenue-board",
+      "title": "SaaS 采用指标连接收入扩展",
+      "metrics": [
+        { "label": "NRR", "value": "118%", "note": "扩展收入稳定" },
+        { "label": "激活率", "value": "64%", "note": "关键动作完成" },
+        { "label": "集成深度", "value": "3.2", "note": "系统嵌入提升" }
+      ]
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "waterfall-bridge",
+      "title": "目标桥接展示贡献路径",
+      "coreTitle": "TARGET BRIDGE",
+      "coreBody": "用贡献桥把起点、增量和目标拆成可复盘对象。",
+      "waterfallBridge": [
+        { "label": "Q1净销", "value": "1482", "kind": "start" },
+        { "label": "防晒新品", "value": "+252", "kind": "up" },
+        { "label": "私域复购", "value": "+39", "kind": "up" },
+        { "label": "渠道修复", "value": "+22", "kind": "up" },
+        { "label": "Q2目标", "value": "1850", "kind": "end" }
+      ],
+      "businessLogic": {
+        "currentState": "目标差距已拆成贡献项。",
+        "cause": "新品、私域和渠道修复分别贡献增量。",
+        "action": "按贡献项建立周复盘。"
+      }
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "monthly-pulse-trend",
+      "title": "月度脉冲趋势解释波峰波谷",
+      "coreTitle": "MONTHLY PULSE",
+      "coreBody": "用月度趋势识别活动节点和自然低谷。",
+      "monthlyPulse": [
+        { "label": "1月", "value": "456.2", "note": "春节前稳定" },
+        { "label": "2月", "value": "402.2", "note": "节后低谷" },
+        { "label": "3月", "value": "618.4", "note": "活动拉动" },
+        { "label": "4月", "value": "538.0", "note": "回归常态" }
+      ]
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "channel-efficiency-matrix",
+      "title": "渠道效率矩阵定位投放动作",
+      "coreTitle": "CHANNEL EFFICIENCY",
+      "coreBody": "把 ROAS、花费和触点质量放进同一个决策矩阵。",
+      "channelEfficiency": [
+        { "label": "私域CRM", "value": "8x", "x": 22, "y": 82, "size": 64, "body": "高效低花费" },
+        { "label": "天猫搜索", "value": "4.1x", "x": 56, "y": 44, "size": 48, "body": "承接品牌词" },
+        { "label": "抖音", "value": "4.1x", "x": 84, "y": 44, "size": 46, "body": "内容转化" },
+        { "label": "小红书KOL", "value": "3.3x", "x": 66, "y": 34, "size": 42, "body": "种草承接" }
+      ]
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "adoption-funnel",
+      "title": "采用漏斗暴露扩展瓶颈",
+      "coreTitle": "ADOPTION FUNNEL",
+      "coreBody": "把注册、激活、集成和扩展转成同一条漏斗。",
+      "adoptionFunnel": [
+        { "title": "注册", "value": 100 },
+        { "title": "激活", "value": 64 },
+        { "title": "集成", "value": 46 },
+        { "title": "扩展", "value": 28 }
+      ]
+    },
+    {
+      "type": "industry-chart",
+      "layoutVariant": "evidence-readout",
+      "title": "原生图表规格进入行业读数",
+      "coreTitle": "NATIVE CHART SPEC",
+      "coreBody": "显式 chartSpec 应由 financial family 内部直接消费。",
+      "chartSpec": {
+        "version": "chartSpec/v1",
+        "kind": "bar",
+        "componentId": "bar-chart",
+        "title": "收入构成",
+        "insight": "直营渠道和私域渠道贡献主要增长。",
+        "categories": ["直营", "私域", "经销", "其他"],
+        "series": [
+          {
+            "name": "收入",
+            "values": [
+              { "category": "直营", "value": 48, "rawValue": "48%" },
+              { "category": "私域", "value": 31, "rawValue": "31%" },
+              { "category": "经销", "value": 16, "rawValue": "16%" },
+              { "category": "其他", "value": 5, "rawValue": "5%" }
+            ]
+          }
+        ],
+        "unit": "%"
+      }
+    }
+  ]
+}

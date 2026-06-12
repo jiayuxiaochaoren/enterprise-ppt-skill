@@ -1,0 +1,81 @@
+function statusForFindings(findings = []) {
+  if (findings.some(finding => finding.level === 'fail')) return 'fail';
+  if (findings.some(finding => finding.level === 'review')) return 'review';
+  return 'pass';
+}
+
+function unique(values = []) {
+  return [...new Set((values || []).filter(Boolean).map(value => String(value)))];
+}
+
+function compactFinding(finding = null) {
+  if (!finding) return null;
+  return {
+    level: finding.level || '',
+    type: finding.type || '',
+    slide: finding.slide || null,
+    chainId: finding.chainId || '',
+    message: finding.message || ''
+  };
+}
+
+function buildIndustryEvidenceChainSummary({
+  effective = {},
+  findings = [],
+  metrics = {},
+  sampleId = '',
+  slideAudits = []
+} = {}) {
+  const blocking = findings.find(finding => finding.level === 'fail') ||
+    findings.find(finding => finding.level === 'review') ||
+    null;
+  const chainMismatchFindings = findings.filter(finding =>
+    finding.type === 'industryEvidenceChainMismatch' ||
+    finding.type === 'industryEvidenceChainInvalid' ||
+    finding.type === 'industryEvidenceChainInputSuppressed'
+  );
+  const previousChainInvalidFindings = findings.filter(finding => finding.type === 'previousIndustryEvidenceChainInvalid');
+  const previousChainComponentMismatchFindings = findings.filter(finding => finding.type === 'previousIndustryEvidenceChainComponentMismatch');
+  const chainMismatchSlides = unique(chainMismatchFindings.map(finding => finding.slide).filter(Boolean)).length;
+  return {
+    version: 'industry-evidence-chain-summary/v1',
+    sampleId,
+    industry: effective.industry || '',
+    status: statusForFindings(findings),
+    slideCount: slideAudits.length,
+    stageCoverage: metrics.stageCoverage || {},
+    componentHits: metrics.componentHits || 0,
+    consumedHits: metrics.consumedHits || 0,
+    coverage: {
+      passSlides: slideAudits.filter(slide => slide.coverageStatus && slide.coverageStatus.status === 'pass').length,
+      failSlides: slideAudits.filter(slide => slide.coverageStatus && slide.coverageStatus.status === 'fail').length,
+      minHitGaps: slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && slide.coverageStatus.minimumHitsMissing) || 0), 0),
+      optionalHits: slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && slide.coverageStatus.optionalHitCount) || 0), 0),
+      optionalMissing: slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && slide.coverageStatus.optionalMissingCount) || 0), 0),
+      averageScore: slideAudits.length
+        ? slideAudits.reduce((sum, slide) => sum + ((slide.coverageStatus && Number(slide.coverageStatus.coverageScore)) || 0), 0) / slideAudits.length
+        : 1
+    },
+    keyComponents: unique(slideAudits.flatMap(slide => slide.expectedComponents.filter(id => slide.plannedComponents.includes(id)))),
+    consumedComponents: unique(slideAudits.flatMap(slide => slide.expectedComponents.filter(id => slide.consumedComponents.includes(id)))),
+    neutralFallbackSlides: metrics.neutralFallbackSlides || 0,
+    conflictSummary: {
+      suppressedComponentPlanSlides: slideAudits.filter(slide => slide.inputMetadata && slide.inputMetadata.previousComponentPlan).length,
+      suppressedComponentHintSlides: slideAudits.filter(slide => slide.inputMetadata && (slide.inputMetadata.previousComponentHints || slide.inputMetadata.previousComponentSuggestions)).length,
+      suppressedCompositionPlanSlides: slideAudits.filter(slide => slide.inputMetadata && slide.inputMetadata.previousCompositionPlan).length,
+      suppressedAssetGenerationSlides: slideAudits.filter(slide => slide.inputMetadata && slide.inputMetadata.previousAssetGeneration).length,
+      suppressedGeneratedPromptSlides: slideAudits.filter(slide => slide.inputMetadata && slide.inputMetadata.previousGeneratedAssetPrompt).length,
+      staleChainSlides: findings.filter(finding => finding.type === 'industryEvidenceChainStale').length,
+      previousChainInvalidSlides: unique(previousChainInvalidFindings.map(finding => finding.slide).filter(Boolean)).length,
+      previousChainComponentMismatchSlides: unique(previousChainComponentMismatchFindings.map(finding => finding.slide).filter(Boolean)).length,
+      chainMismatchSlides,
+      chainMismatchFindings: chainMismatchFindings.length
+    },
+    blockingGap: compactFinding(blocking)
+  };
+}
+
+module.exports = {
+  buildIndustryEvidenceChainSummary,
+  statusForFindings
+};

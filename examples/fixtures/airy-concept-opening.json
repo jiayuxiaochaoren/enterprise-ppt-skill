@@ -1,0 +1,42 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "saas-technology",
+  "documentType": "strategy-brief",
+  "title": "从单点工具走向可复盘的增长系统",
+  "subtitle": "用一个核心概念打开接续证据链",
+  "organization": "ClawLabs Template Lab",
+  "footer": "airy-concept-opening fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/airy-concept-opening/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/airy-concept-opening/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/airy-concept-opening/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/airy-concept-opening/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/airy-concept-opening/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "cover",
+      "layoutVariant": "airy-concept-opening",
+      "title": "从单点工具走向可复盘的增长系统",
+      "subtitle": "用一个核心概念打开接续证据链",
+      "coverInsight": "开场只保留一个概念对象和一个证明方向。",
+      "visual": {
+        "image": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/airy-concept-opening/proof-1.png",
+        "caption": "概念对象作为叙事锚点。"
+      }
+    }
+  ]
+}

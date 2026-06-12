@@ -1,0 +1,54 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "saas-technology",
+  "documentType": "strategy-brief",
+  "title": "围绕一个核心对象组织能力、约束和结果",
+  "subtitle": "单对象概念图必须有一个清晰视觉中心。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "single-object-concept-map fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/single-object-concept-map/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/single-object-concept-map/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/single-object-concept-map/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/single-object-concept-map/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/single-object-concept-map/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "strategy-map",
+      "layoutVariant": "single-object-concept-map",
+      "title": "围绕一个核心对象组织能力、约束和结果",
+      "claim": "单对象概念图必须有一个清晰视觉中心。",
+      "centerTitle": "客户工作台",
+      "drivers": [
+        "数据入口",
+        "流程动作",
+        "权限边界"
+      ],
+      "actions": [
+        "自动化编排",
+        "团队协同",
+        "质量复盘",
+        "治理留痕"
+      ],
+      "outcomes": [
+        "采用率提升",
+        "交付效率改善",
+        "风险可控"
+      ]
+    }
+  ]
+}

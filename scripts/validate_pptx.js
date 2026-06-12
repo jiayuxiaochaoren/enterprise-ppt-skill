@@ -3,25 +3,65 @@
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+const { exportPreviews } = require('./preview/provider');
+const { parseJsonFromOutput, validationMarkdown, validationReport } = require('./reports/delivery-report');
 
 function usage() {
-  console.error('Usage: node scripts/validate_pptx.js <file.pptx> [--expect-slides N] [--require term1,term2] [--preview-dir dir] [--allow-placeholders]');
+  console.error('Usage: node scripts/validate_pptx.js <file.pptx> [--expect-slides N] [--require term1,term2] [--preview-dir dir] [--preview-optional] [--baseline manifest.json] [--plan deck-plan.json] [--run-visual-qa] [--skip-visual-qa] [--summary] [--summary-md file] [--formal] [--quality-mode draft|formal|delivery] [--allow-placeholders]');
   process.exit(2);
 }
 const args = process.argv.slice(2);
 if (!args[0]) usage();
-const file = path.resolve(args[0]);
+let fileArg = '';
 let expectSlides = null;
 let requireTerms = [];
 let previewDir = null;
+let baselinePath = null;
+let planPath = null;
+let runVisualQa = false;
+let formal = false;
+let qualityMode = '';
 let allowPlaceholders = false;
-for (let i=1; i<args.length; i++) {
+let previewOptional = false;
+let summaryOnly = false;
+let summaryMarkdownPath = '';
+let skipVisualQa = false;
+function normalizeQualityMode(value = '') {
+  const mode = String(value || '').trim().toLowerCase().replace(/_/g, '-');
+  if (mode === 'formal-review') return 'formal';
+  if (['draft', 'formal', 'delivery'].includes(mode)) return mode;
+  return '';
+}
+for (let i=0; i<args.length; i++) {
   if (args[i] === '--expect-slides') expectSlides = Number(args[++i]);
   else if (args[i] === '--require') requireTerms = String(args[++i] || '').split(',').filter(Boolean);
   else if (args[i] === '--preview-dir') previewDir = path.resolve(String(args[++i] || ''));
+  else if (args[i] === '--baseline') baselinePath = path.resolve(String(args[++i] || ''));
+  else if (args[i] === '--plan') planPath = path.resolve(String(args[++i] || ''));
+  else if (args[i] === '--run-visual-qa') runVisualQa = true;
+  else if (args[i] === '--skip-visual-qa') skipVisualQa = true;
+  else if (args[i] === '--preview-optional') previewOptional = true;
+  else if (args[i] === '--summary') summaryOnly = true;
+  else if (args[i] === '--summary-md') summaryMarkdownPath = path.resolve(String(args[++i] || ''));
+  else if (args[i] === '--formal') {
+    formal = true;
+    qualityMode = 'formal';
+    runVisualQa = true;
+  }
+  else if (args[i] === '--quality-mode') {
+    qualityMode = normalizeQualityMode(args[++i]);
+    if (!qualityMode) usage();
+    if (qualityMode === 'formal' || qualityMode === 'delivery') formal = true;
+    runVisualQa = true;
+  }
   else if (args[i] === '--allow-placeholders') allowPlaceholders = true;
+  else if (!fileArg) fileArg = args[i];
   else usage();
 }
+if (!fileArg) usage();
+if (skipVisualQa) runVisualQa = false;
+const file = path.resolve(fileArg);
+if (!qualityMode) qualityMode = formal ? 'formal' : 'draft';
 function run(cmd, argv, opts={}) {
   return cp.execFileSync(cmd, argv, Object.assign({ encoding:'utf8' }, opts));
 }
@@ -52,44 +92,126 @@ for (const s of slides) {
 }
 const allText = textParts.join('\n');
 if (!/[\u4e00-\u9fff]/.test(allText)) fail('no_chinese_text_extracted', { file, slides:slides.length });
-const badPlaceholders = ['lorem', 'ipsum', 'xxxx', 'TODO', '示例', '测试稿', '验收稿', '占位', '待补充', '请批评指正'];
+const badPlaceholders = [
+  'lorem', 'ipsum', 'xxxx', 'TODO',
+  '示例', '测试稿', '验收稿', '占位', '待补充', '请批评指正',
+  '材料显示', '企业 PDF', '企业PDF', 'PDF 简介口径', '正式交付前',
+  '材料列出', '公司材料列出',
+  '图册页优先', '该页用于', '该页只展示', '模型抽取', '用户材料自动整理',
+  '第二页先', '后续页面', '后续再', '本页仅', '证明页优先', '对比页优先',
+  '测试 closing', '正式结束页用于'
+];
 const foundBad = allowPlaceholders ? [] : badPlaceholders.filter(p => allText.toLowerCase().includes(p.toLowerCase()));
 if (foundBad.length) fail('visible_scaffold_text_found', { foundBad });
 const missing = requireTerms.filter(t => !allText.includes(t));
 if (missing.length) fail('required_terms_missing', { missing });
-function applePath(p) {
-  return String(p).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+const previewResult = exportPreviews({ file, previewDir, qualityMode, previewOptional, run });
+const previewFiles = previewResult.files;
+const previewState = previewResult.state;
+if (previewState.required && previewState.error) {
+  fail(previewState.error, { previewDir, provider:previewState.provider, detail:previewState.detail });
 }
-function exportPreviews() {
-  if (!previewDir) return [];
-  fs.mkdirSync(previewDir, { recursive:true });
-  const keynoteApp = '/Applications/Keynote.app';
-  if (!fs.existsSync(keynoteApp)) fail('preview_export_requires_keynote', { previewDir });
-  try {
-    run('osascript', [
-      '-e', 'tell application "Keynote"',
-      '-e', `set theDoc to open POSIX file "${applePath(file)}"`,
-      '-e', `export theDoc to POSIX file "${applePath(previewDir)}" as slide images with properties {image format:PNG}`,
-      '-e', 'close theDoc saving no',
-      '-e', 'end tell'
-    ], { timeout:90000 });
-  } catch (e) {
-    fail('preview_export_failed', { previewDir, detail:String(e.message || e) });
+function renderMetaPathFor(pptxFile) {
+  const candidates = [
+    `${pptxFile}.render-meta.json`,
+    path.join(path.dirname(pptxFile), `${path.basename(pptxFile, '.pptx')}.render-meta.json`)
+  ];
+  return candidates.find(p => fs.existsSync(p)) || '';
+}
+function runVisualQaCommand() {
+  const argv = [path.join(__dirname, 'visual_qa.js'), file, '--json'];
+  if (previewDir) argv.push('--preview-dir', previewDir);
+  if (baselinePath) argv.push('--baseline', baselinePath);
+  if (planPath) argv.push('--plan', planPath);
+  argv.push('--quality-mode', qualityMode);
+  const res = cp.spawnSync(process.execPath, argv, {
+    cwd: path.resolve(__dirname, '..'),
+    encoding:'utf8',
+    timeout:120000
+  });
+  const output = String(res.stdout || '').trim();
+  const parsed = output ? parseJsonFromOutput(output) : null;
+  if (output && !parsed) {
+    fail('visual_qa_output_unreadable', {
+      status: res.status,
+      stdout: output.slice(0, 2000),
+      stderr: String(res.stderr || '').slice(0, 2000),
+      detail: 'Unable to parse visual QA JSON output.'
+    });
   }
-  return fs.readdirSync(previewDir)
-    .filter(x => /\.png$/i.test(x))
-    .sort()
-    .map(x => path.join(previewDir, x));
+  if (!parsed) {
+    fail('visual_qa_output_missing', {
+      status: res.status,
+      stderr: String(res.stderr || '').slice(0, 2000)
+    });
+  }
+  return parsed;
 }
-const previewFiles = exportPreviews();
+const renderMetaPath = renderMetaPathFor(file);
+if (formal && !renderMetaPath) fail('render_meta_required_for_formal_validation', { file });
+const visualQa = runVisualQa ? runVisualQaCommand() : null;
+const validationSummary = {
+  success: true,
+  file,
+  slide_count: slides.length,
+  quality_mode: qualityMode,
+  preview: {
+    requested: previewState.requested,
+    required: previewState.required,
+    status: previewState.status,
+    provider: previewState.provider,
+    error: previewState.error,
+    detail: previewState.detail,
+    count: previewFiles.length
+  },
+  render_meta_present: Boolean(renderMetaPath),
+  visual_qa: visualQa ? {
+    success: visualQa.success === true,
+    fail_count: visualQa.fail_count || 0,
+    review_count: visualQa.review_count || 0,
+    quality_mode: visualQa.quality_mode || qualityMode,
+    readiness: visualQa.readiness || null,
+    severity_policy: visualQa.severity_policy || null,
+    severity_summary: visualQa.severity_summary || (visualQa.severity_policy && visualQa.severity_policy.summary) || null
+  } : null,
+  checks: {
+    exists: true,
+    pptx_extension: true,
+    zip_ok: true,
+    chinese_text: true,
+    no_visible_scaffold_text: true,
+    required_terms_present: missing.length === 0,
+    render_meta_present: Boolean(renderMetaPath),
+    visual_qa_passed: visualQa ? visualQa.success === true : null
+  },
+  next_actions: []
+};
+if (previewState.status === 'unavailable') {
+  validationSummary.next_actions.push('Run on macOS with Keynote or provide a preview directory generated by another renderer for screenshot-level QA.');
+}
+if (previewState.status === 'metadata_fallback') {
+  validationSummary.next_actions.push('Install pdftoppm or run on macOS with Keynote for screenshot-level QA; metadata/render-meta QA has continued.');
+}
+if (!visualQa) validationSummary.next_actions.push('Run with --run-visual-qa for contract and visual metadata checks.');
+validationSummary.report = validationReport(validationSummary);
 const result = {
   success: true,
   file,
   size_bytes: fs.statSync(file).size,
   slide_count: slides.length,
+  quality_mode: qualityMode,
   preview_dir: previewDir,
+  preview_status: previewState.status,
+  preview_provider: previewState.provider,
+  preview_error: previewState.error,
+  preview_detail: previewState.detail,
+  preview_required: previewState.required,
+  baseline: baselinePath,
   preview_count: previewFiles.length,
   preview_files: previewFiles.slice(0, 20),
+  render_meta: renderMetaPath || null,
+  summary: validationSummary,
+  visualQa,
   text_sample: textParts.slice(0, 30),
   checks: {
     exists: true,
@@ -97,7 +219,25 @@ const result = {
     zip_ok: true,
     chinese_text: true,
     no_visible_scaffold_text: true,
-    required_terms_present: missing.length === 0
+    required_terms_present: missing.length === 0,
+    render_meta_present: Boolean(renderMetaPath),
+    visual_qa_passed: visualQa ? visualQa.success === true : null
   }
 };
-console.log(JSON.stringify(result, null, 2));
+if (visualQa && visualQa.success !== true) {
+  result.success = false;
+  result.summary.success = false;
+  result.summary.report = validationReport(result.summary);
+  result.error = 'visual_qa_failed';
+  if (summaryMarkdownPath) {
+    fs.mkdirSync(path.dirname(summaryMarkdownPath), { recursive:true });
+    fs.writeFileSync(summaryMarkdownPath, validationMarkdown(result.summary), 'utf8');
+  }
+  console.error(JSON.stringify(summaryOnly ? result.summary : result, null, 2));
+  process.exit(1);
+}
+if (summaryMarkdownPath) {
+  fs.mkdirSync(path.dirname(summaryMarkdownPath), { recursive:true });
+  fs.writeFileSync(summaryMarkdownPath, validationMarkdown(result.summary), 'utf8');
+}
+console.log(JSON.stringify(summaryOnly ? result.summary : result, null, 2));

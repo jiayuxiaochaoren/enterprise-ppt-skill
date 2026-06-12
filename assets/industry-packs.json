@@ -1,0 +1,370 @@
+{
+  "name": "premium-commercial-industry-packs",
+  "version": "0.1.0",
+  "rule": "Industry packs guide story architecture, reference retrieval, page-family choice, missing-input questions, and QA. They do not authorize copying external layouts or assets.",
+  "packs": [
+    {
+      "id": "finance-investment",
+      "labelZh": "金融 / 财报 / 投资者关系",
+      "labelEn": "Finance / Financial Results / Investor Relations",
+      "aliases": ["金融", "财报", "投委会", "投资", "IR", "fund", "finance", "financial-results"],
+      "recommendedOutline": ["投资或经营判断", "关键指标与口径", "收益/价值桥", "组合或业务分层", "风险与敏感性", "下一步决策"],
+      "reportStructures": {
+        "8": ["封面：投资判断", "阅读路径", "关键指标口径", "收益/价值桥", "组合分层", "风险与敏感性", "决策清单", "下一步"],
+        "12": ["封面：经营或投资判断", "执行摘要", "目录", "期间与口径", "核心 KPI", "收入/价值桥", "现金与回收", "组合分层", "敏感性", "风险与披露", "决策动作", "封底"],
+        "20": ["封面", "管理层摘要", "目录", "期间/口径", "核心 KPI", "收入桥", "毛利/费用桥", "现金流", "回收/退出", "组合分层", "行业/客户分层", "情景敏感性", "风险矩阵", "披露边界", "资本配置动作", "审议问题", "数据附录", "下一步", "负责人", "封底"]
+      },
+      "proofObjects": ["financial-kpi-snapshot", "chart-grid-with-commentary", "financial-waterfall", "portfolio-action-table", "risk-matrix", "guidance-and-risk-board"],
+      "proofObjectCatalog": [
+        {"id": "financial-kpi-snapshot", "label": "期间 / 口径 / 核心 KPI", "requires": ["期间", "口径", "指标来源"]},
+        {"id": "finance-bridge", "label": "收入 / 毛利 / 现金桥", "requires": ["起点", "变化项", "终点"]},
+        {"id": "portfolio-action-table", "label": "组合分层与行动表", "requires": ["分层维度", "风险等级", "动作"]},
+        {"id": "valuation-sensitivity", "label": "估值或情景敏感性", "requires": ["假设", "区间", "披露边界"]},
+        {"id": "guidance-and-risk-board", "label": "指引与风险边界", "requires": ["指引口径", "风险项", "审议责任"]}
+      ],
+      "visualTone": "capital-governance-system",
+      "paletteIntent": "finance-slate",
+      "themeIntents": ["industry-opening", "navigation-map", "value-signal", "system-architecture", "risk-warning", "closing-anchor"],
+      "pageFamilies": ["metric-comparison", "finance-bridge", "portfolio-table", "risk-table", "report-board"],
+      "componentRules": [
+        {"when": "metric / KPI / period basis", "components": ["kpi-strip", "chart-commentary-panel", "source-note"]},
+        {"when": "bridge / waterfall / sensitivity", "components": ["kpi-strip", "value-chain", "source-note"]},
+        {"when": "portfolio action", "components": ["risk-register", "governance-table", "source-note"]},
+        {"when": "disclosure or forecast risk", "components": ["risk-register", "caption-bar", "source-note"]}
+      ],
+      "visualGrammar": {
+        "imageRatios": ["16:9 chart screenshot only with source", "wide table crop for evidence appendix"],
+        "imageRoles": ["source table screenshot", "public annual-report chart", "no decorative stock finance image"],
+        "layoutRules": ["所有数字必须有期间和口径", "桥图必须解释变化来源", "风险页必须有责任或动作", "预测/指引必须标披露边界"],
+        "colorRules": ["深色用于治理与判断", "青色用于证据", "风险色只用于约束和敏感性"]
+      },
+      "forbiddenTemplates": ["generic card grid with equal-weight numbers", "decorative finance stock photo", "risk page as plain table"],
+      "clarificationQuestions": [
+        {"id": "metric_basis", "priority": "blocking", "question": "这些财务/经营指标是否有口径、期间和来源？", "fallback": "只做定性经营判断，不展示具体数字承诺。"},
+        {"id": "forecast_permission", "priority": "recommended", "question": "预测、目标或业绩指引是否允许外发展示？", "fallback": "改为区间/趋势/内部评审表达。"},
+        {"id": "risk_scope", "priority": "recommended", "question": "风险页需要覆盖哪些合规、披露或审议边界？", "fallback": "只保留通用风险类别和待确认说明。"}
+      ],
+      "missingMaterialQuestions": ["指标期间和口径是什么？", "预测或指引能否外发？", "是否有组合分层、敏感性或风险边界？", "是否需要披露脚注？", "希望输出 8 页、12 页还是 20 页？"],
+      "qaFocus": ["metricBusinessLogic", "semanticColorRoles", "riskMatrixCoordinates", "disclosureFootnote"]
+    },
+    {
+      "id": "industrial-energy",
+      "labelZh": "制造 / 工业 / 能源",
+      "labelEn": "Manufacturing / Industrial / Energy",
+      "aliases": ["制造", "工业", "能源", "产线", "设备", "储能", "OEE", "factory", "energy", "energy-utility"],
+      "recommendedOutline": ["现场对象与业务背景", "问题/损失诊断", "设备或站点拓扑", "运营闭环", "现场证据", "指标价值", "风险与推广路径"],
+      "reportStructures": {
+        "8": ["封面：现场对象", "阅读路径", "问题/损失诊断", "设备或站点拓扑", "运营闭环", "现场证据", "价值指标", "风险与推广"],
+        "12": ["封面", "执行摘要", "目录", "现场对象", "损失诊断", "产线/站点拓扑", "数据接入", "工单闭环", "现场证据", "OEE/响应指标", "风险保障", "下一步"],
+        "20": ["封面", "管理层摘要", "目录", "现场对象", "现状问题", "损失帕累托", "设备拓扑", "数据链路", "点检/工单", "备件/维修", "现场图册", "试点范围", "OEE 拆解", "价值测算", "推广路径", "安全与授权", "风险台账", "责任机制", "下一步", "封底"]
+      },
+      "proofObjects": ["production-topology", "downtime-pareto", "oee-board", "dispatch-map", "site-evidence", "maintenance-loop", "monthly-pulse-trend", "waterfall-bridge", "channel-efficiency-matrix", "report-board", "quarterly-results-summary", "metric-board"],
+      "proofObjectCatalog": [
+        {"id": "production-topology", "label": "产线 / 设备 / 站点拓扑", "requires": ["设备对象", "数据节点", "责任边界"]},
+        {"id": "downtime-pareto", "label": "停机 / 告警 / 损失帕累托", "requires": ["期间", "损失分类", "根因"]},
+        {"id": "maintenance-loop", "label": "发现-派工-处置-复盘闭环", "requires": ["角色", "时限", "复盘指标"]},
+        {"id": "site-evidence", "label": "现场 / 设备 / 项目图片证据", "requires": ["图片", "来源", "授权"]},
+        {"id": "oee-board", "label": "OEE / MTTR / MTBF 指标板", "requires": ["指标口径", "来源", "行动"]},
+        {"id": "monthly-pulse-trend", "label": "站点 / 业务月度趋势", "requires": ["期间", "指标口径", "来源"]},
+        {"id": "waterfall-bridge", "label": "业务线收入 / 价值桥", "requires": ["业务线", "数值", "单位"]},
+        {"id": "channel-efficiency-matrix", "label": "渠道效率矩阵", "requires": ["渠道", "投入或收入", "转化或ROI"]},
+        {"id": "report-board", "label": "经营动作拆解板", "requires": ["对象", "动作", "管理口径"]},
+        {"id": "quarterly-results-summary", "label": "利润 / 回款 / KPI 质量板", "requires": ["期间", "指标", "行动"]}
+      ],
+      "visualTone": "factory-or-field-evidence-system",
+      "paletteIntent": "factory-steel-amber",
+      "themeIntents": ["industry-opening", "diagnosis", "system-architecture", "operating-path", "case-evidence", "value-signal", "closing-anchor"],
+      "pageFamilies": ["architecture", "industry-chart", "metric-comparison", "timeline", "case-gallery", "risk-table"],
+      "componentRules": [
+        {"when": "equipment topology", "components": ["value-chain", "commentary-panel", "source-note"]},
+        {"when": "OEE / downtime / alert data", "components": ["kpi-strip", "chart-commentary-panel", "source-note"]},
+        {"when": "site / equipment images", "components": ["proof-gallery", "caption-bar", "source-note"]},
+        {"when": "safety / rollout risk", "components": ["risk-register", "governance-table"]}
+      ],
+      "visualGrammar": {
+        "imageRatios": ["16:9 site photo", "4:3 equipment detail", "wide line panorama"],
+        "imageRoles": ["inspectable equipment", "site context", "screenshot/dashboard proof"],
+        "layoutRules": ["现场图不做模糊背景", "指标页必须回到停机/维修动作", "拓扑图要显示对象和数据边界", "风险页不许泛化为空表"],
+        "colorRules": ["钢蓝用于结构", "橙色用于动作/风险", "绿色或青色用于证据"]
+      },
+      "forbiddenTemplates": ["abstract node network as factory proof", "equipment photo used as busy background", "capability page as 3x2 generic cards"],
+      "clarificationQuestions": [
+        {"id": "site_images", "priority": "recommended", "question": "是否有可外发展示的设备、产线、站点或项目现场图？", "fallback": "使用结构图和示意性行业视觉，不写真实现场证明。"},
+        {"id": "operations_metrics", "priority": "recommended", "question": "是否有 OEE、停机、告警、响应、收益等运营指标？", "fallback": "用流程闭环和定性价值表达替代指标页。"},
+        {"id": "customer_case_auth", "priority": "blocking", "question": "客户/项目名称和现场图是否获得外发授权？", "fallback": "脱敏为行业场景和项目类型。"}
+      ],
+      "missingMaterialQuestions": ["是否有可外发展的现场/设备/站点图？", "是否有 OEE、停机、告警、维修响应或收益指标？", "客户/项目名称和图片授权边界是什么？", "试点范围和推广路径是否明确？", "希望输出 8 页、12 页还是 20 页？"],
+      "qaFocus": ["industryKnowledgeCoverage", "weakImageTreatment", "captionCoverage", "metricBusinessLogic"]
+    },
+    {
+      "id": "saas-ai-technology",
+      "labelZh": "SaaS / AI / 科技服务",
+      "labelEn": "SaaS / AI / Technology Services",
+      "aliases": ["SaaS", "AI", "平台", "API", "工作流", "自动化", "模型", "technology", "platform"],
+      "recommendedOutline": ["用户/业务痛点", "平台能力地图", "产品流程或原型证据", "采用漏斗", "收入/效率指标", "安全治理", "落地路径"],
+      "reportStructures": {
+        "8": ["封面：平台判断", "阅读路径", "痛点与对象", "平台能力地图", "产品流程证据", "采用/收入指标", "安全治理", "落地路径"],
+        "12": ["封面", "执行摘要", "目录", "用户痛点", "核心工作流", "平台能力地图", "产品截图/原型", "采用漏斗", "收入或效率指标", "安全与权限", "落地节奏", "封底"],
+        "20": ["封面", "管理层摘要", "目录", "用户场景", "痛点诊断", "核心对象", "工作流", "平台架构", "AI/自动化能力", "集成 API", "权限治理", "产品证据", "采用漏斗", "留存/收入", "客户成功动作", "安全合规", "路线图", "风险", "下一步", "封底"]
+      },
+      "proofObjects": ["platform-capability-map", "prototype-flow", "adoption-funnel", "adoption-revenue-board", "permission-governance", "automation-workflow"],
+      "proofObjectCatalog": [
+        {"id": "platform-capability-map", "label": "平台能力地图", "requires": ["用户对象", "能力模块", "数据边界"]},
+        {"id": "prototype-flow", "label": "产品截图 / 原型流程证据", "requires": ["截图", "状态说明", "授权"]},
+        {"id": "adoption-funnel", "label": "注册-激活-集成-扩展漏斗", "requires": ["阶段", "转化率", "期间"]},
+        {"id": "adoption-revenue-board", "label": "采用与收入扩展板", "requires": ["激活指标", "收入指标", "动作"]},
+        {"id": "permission-governance", "label": "权限 / 审计 / 安全治理", "requires": ["角色", "日志", "合规边界"]}
+      ],
+      "visualTone": "product-platform-system",
+      "paletteIntent": "signal-charcoal",
+      "themeIntents": ["diagnosis", "system-architecture", "case-evidence", "value-signal", "risk-warning", "operating-path"],
+      "pageFamilies": ["architecture", "case-gallery", "industry-chart", "metric-comparison", "risk-table", "timeline"],
+      "componentRules": [
+        {"when": "platform map / workflow", "components": ["value-chain", "commentary-panel", "source-note"]},
+        {"when": "prototype screenshots", "components": ["proof-gallery", "caption-bar", "source-note"]},
+        {"when": "adoption / revenue metrics", "components": ["kpi-strip", "chart-commentary-panel", "source-note"]},
+        {"when": "security / permission", "components": ["risk-register", "governance-table"]}
+      ],
+      "visualGrammar": {
+        "imageRatios": ["16:9 product screenshot", "4:3 workflow state", "wide dashboard crop"],
+        "imageRoles": ["real product screenshot", "prototype state", "workflow proof"],
+        "layoutRules": ["不伪造真实 UI", "每张截图说明对象/动作/价值", "指标页解释采用深度", "安全页要有权限或审计对象"],
+        "colorRules": ["深色用于平台结构", "青色用于自动化/证据", "风险色用于权限边界"]
+      },
+      "forbiddenTemplates": ["fake UI screenshot", "AI abstract blob without workflow proof", "feature list with no adoption metric"],
+      "clarificationQuestions": [
+        {"id": "product_screens", "priority": "recommended", "question": "是否有可展示的产品截图、原型或流程图？", "fallback": "生成抽象平台结构图，不伪造界面。"},
+        {"id": "adoption_metrics", "priority": "recommended", "question": "是否有激活率、留存率、NRR、ARR、自动化节省等指标？", "fallback": "只呈现采用路径和预期衡量方式。"},
+        {"id": "security_scope", "priority": "optional", "question": "安全、权限、审计或合规是否是本次受众重点？", "fallback": "在治理页保留轻量约束。"}
+      ],
+      "missingMaterialQuestions": ["是否有可展示产品截图或原型？", "是否有激活、留存、NRR、ARR 或效率指标？", "安全/权限/审计是否为重点？", "截图或客户界面是否有授权？", "希望输出 8 页、12 页还是 20 页？"],
+      "qaFocus": ["generatedAssetSafety", "prototypeEvidence", "adoptionBusinessLogic", "permissionRisk"]
+    },
+    {
+      "id": "beauty-consumer",
+      "labelZh": "美妆 / 消费品牌 / 零售",
+      "labelEn": "Beauty / Consumer Brand / Retail",
+      "aliases": ["美妆", "美容", "消费品牌", "零售", "品牌", "产品", "会员", "beauty", "consumer", "retail"],
+      "recommendedOutline": ["品牌世界观", "产品/系列证据", "用户或场景洞察", "渠道/会员增长", "研发/供应链/可持续证据", "经营指标", "品牌下一步"],
+      "reportStructures": {
+        "8": ["封面：品牌经营判断", "阅读路径", "品牌定位与价格带", "核心 SKU 与卖点", "渠道/会员经营", "消费者证据", "问题与机会", "下一步动作"],
+        "12": ["封面：品牌经营判断", "执行摘要", "阅读路径", "品牌定位与视觉资产", "核心 SKU 与价格带", "产品质地/功效证据", "渠道结构与销售表现", "会员/复购/客单经营", "社媒/达人/评价证据", "活动与转化复盘", "风险与缺口", "下一步品牌动作"],
+        "20": ["封面：品牌经营判断", "管理层摘要", "目录", "品牌定位", "品类与价格带", "核心 SKU 矩阵", "明星单品证据", "质地/功效/成分证明", "包装与视觉资产", "渠道结构", "销售额与毛利/客单", "会员规模与复购", "活动转化漏斗", "内容/达人/直播证据", "用户评价与社媒声量", "门店/柜台/场景证据", "供应链与包材", "问题诊断", "策略动作", "下一步复盘机制"]
+      },
+      "proofObjects": ["beauty-brand-editorial-cover", "brand-world-and-business-proof", "consumer-proof-photo-grid", "product-evidence-story", "member-growth-board", "sustainability-proof-spread"],
+      "proofObjectCatalog": [
+        {"id": "sku-matrix", "label": "SKU / 价格带 / 卖点矩阵", "requires": ["产品名称", "价格带", "卖点或适用肤质"]},
+        {"id": "texture-efficacy-proof", "label": "质地 / 功效 / 成分证据", "requires": ["质地图片或描述", "功效口径", "检测或评价来源"]},
+        {"id": "channel-mix-board", "label": "渠道占比 / 销售额 / 客单经营板", "requires": ["期间", "渠道", "销售或转化数据"]},
+        {"id": "member-repurchase-board", "label": "会员 / 复购 / 客单证据", "requires": ["会员数", "复购率", "客单价或连带率"]},
+        {"id": "social-proof-gallery", "label": "小红书 / 天猫 / 直播 / 达人截图证据", "requires": ["截图", "来源", "授权或公开性"]},
+        {"id": "packaging-sustainability-proof", "label": "包材 / 供应链 / 可持续证明", "requires": ["包材动作", "供应链或质量记录", "影响指标"]},
+        {"id": "consumer-review-quote-board", "label": "用户评价 / 口碑引用板", "requires": ["评价原文", "平台或样本来源", "可引用边界"]}
+      ],
+      "visualTone": "consumer-brand-editorial",
+      "paletteIntent": "beauty-warm-premium",
+      "themeIntents": ["industry-opening", "case-evidence", "company-proof", "value-signal", "system-architecture", "closing-anchor"],
+      "pageFamilies": ["cover", "case-gallery", "product-showcase", "metric-comparison", "strategy-map", "manifesto"],
+      "componentRules": [
+        {"when": "cover or brand positioning", "components": ["hero-image", "caption-bar", "source-note"]},
+        {"when": "SKU / product / texture / efficacy", "components": ["product-matrix", "proof-gallery", "caption-bar", "source-note"]},
+        {"when": "sales / channel / member / repurchase data", "components": ["kpi-strip", "chart-commentary-panel", "source-note"]},
+        {"when": "social / review / live / store evidence", "components": ["proof-gallery", "caption-bar", "commentary-panel", "source-note"]},
+        {"when": "brand system or value chain", "components": ["hero-image", "value-chain", "commentary-panel"]},
+        {"when": "risk only when there is actual claim, regulation, channel, rights, or supply issue", "components": ["risk-register"], "forbidDefault": ["risk-matrix"]}
+      ],
+      "visualGrammar": {
+        "imageRatios": ["1:1 product packshot", "4:5 texture/detail crop", "16:9 counter/store scene", "3-up evidence strip with captions"],
+        "imageRoles": ["large inspectable product hero", "texture macro", "counter/store/lifestyle scene", "screenshot proof with source label"],
+        "layoutRules": ["产品大图必须可检查，不做深色模糊背景", "每组图片必须有 caption 说明证明对象", "奢华留白服务于产品和证据，不用随机装饰", "数据页要解释销售/渠道/会员动作，不只摆数字"],
+        "colorRules": ["避免全套红粉单色主题", "深漆红用于品牌权威，青绿用于证据/会员数据，铜色用于商业或可持续温度"]
+      },
+      "forbiddenTemplates": ["generic B2B finance board", "beautiful photo without proof role", "all pages in one red/pink palette", "泛咨询卡片堆叠", "无证据的大词", "风险页泛化", "随机装饰"],
+      "clarificationQuestions": [
+        {"id": "brand_assets", "priority": "recommended", "question": "是否有可用产品图、门店/场景图、品牌主视觉或包装图？", "fallback": "使用抽象品牌世界观，不冒充真实产品。"},
+        {"id": "consumer_metrics", "priority": "recommended", "question": "是否有会员、复购、客单、渠道、市场份额或品牌健康指标？", "fallback": "做品牌叙事和证据结构，不写数字承诺。"},
+        {"id": "image_rights", "priority": "blocking", "question": "人物、产品和品牌图是否允许外发展示？", "fallback": "移除敏感图像，改为示意结构。"},
+        {"id": "business_goal", "priority": "recommended", "question": "这份报告是复盘、招商、内部经营会、融资、品牌升级还是新品策略？", "fallback": "按内部经营复盘处理，结尾只给下一步动作。"},
+        {"id": "channel_screenshots", "priority": "recommended", "question": "是否有天猫、抖音、小红书、直播或门店渠道截图可作为消费者证据？", "fallback": "只写渠道逻辑，不放平台截图证据。"}
+      ],
+      "missingMaterialQuestions": ["是否有真实产品图/包装图/质地特写？", "是否有销售额、渠道占比、客单价、复购率、会员数、转化率或活动数据？", "是否有小红书/天猫/直播/达人/门店截图及授权边界？", "报告目标是复盘、招商、内部经营会、融资、品牌升级还是新品策略？", "希望输出 8 页、12 页还是 20 页？"],
+      "qaFocus": ["imageEvidenceRole", "brandWorldProof", "paletteVariety", "consumerMetricChain"]
+    },
+    {
+      "id": "healthcare-wellness",
+      "labelZh": "医疗 / 护理 / 健康",
+      "labelEn": "Healthcare / Care / Wellness",
+      "aliases": ["医疗", "护理", "健康", "患者", "质控", "医院", "wellness", "clinic", "healthcare"],
+      "recommendedOutline": ["患者/用户路径", "服务触点问题", "资源与责任交接", "质量指标", "风险合规", "改善路径", "复盘机制"],
+      "reportStructures": {
+        "8": ["封面：服务质量判断", "阅读路径", "患者路径", "服务蓝图", "质量交接", "指标复盘", "隐私与风险", "改善路径"],
+        "12": ["封面", "执行摘要", "目录", "患者旅程", "触点问题", "服务蓝图", "资源交接", "质量指标", "触点证据", "隐私合规", "改善节奏", "封底"],
+        "20": ["封面", "管理层摘要", "目录", "患者/用户路径", "触点诊断", "等待/满意度指标", "服务蓝图", "前台/后台交接", "资源排班", "质控记录", "隐私边界", "服务图册", "责任闭环", "不良事件/风险", "改善试点", "推广路径", "复盘机制", "培训", "下一步", "封底"]
+      },
+      "proofObjects": ["service-blueprint", "quality-handoff", "patient-service-scorecard", "responsibility-loop", "risk-governance"],
+      "proofObjectCatalog": [
+        {"id": "service-blueprint", "label": "患者路径 / 服务蓝图", "requires": ["触点", "前台动作", "后台资源"]},
+        {"id": "quality-handoff", "label": "质量交接图", "requires": ["交接角色", "证据", "时限"]},
+        {"id": "patient-service-scorecard", "label": "等待 / 满意度 / 闭环指标", "requires": ["期间", "口径", "来源"]},
+        {"id": "responsibility-loop", "label": "责任闭环", "requires": ["责任人", "动作", "复盘周期"]},
+        {"id": "risk-governance", "label": "隐私与合规风险", "requires": ["脱敏", "授权", "处理措施"]}
+      ],
+      "visualTone": "clinical-quality-system",
+      "paletteIntent": "sage-operations",
+      "themeIntents": ["diagnosis", "system-architecture", "operating-path", "value-signal", "risk-warning", "closing-anchor"],
+      "pageFamilies": ["architecture", "timeline", "metric-comparison", "risk-table", "case-gallery"],
+      "componentRules": [
+        {"when": "patient journey / service blueprint", "components": ["value-chain", "commentary-panel", "source-note"]},
+        {"when": "quality / satisfaction metrics", "components": ["kpi-strip", "chart-commentary-panel", "source-note"]},
+        {"when": "touchpoint images", "components": ["proof-gallery", "caption-bar", "source-note"]},
+        {"when": "privacy / compliance", "components": ["risk-register", "governance-table"]}
+      ],
+      "visualGrammar": {
+        "imageRatios": ["16:9 service scene", "4:3 workflow screenshot", "no identifiable patient crop unless cleared"],
+        "imageRoles": ["anonymous touchpoint", "process proof", "quality record"],
+        "layoutRules": ["患者数据必须脱敏", "图像证明触点而不是气氛", "指标回到服务动作", "风险页必须有责任闭环"],
+        "colorRules": ["低饱和绿/蓝用于信任", "风险色只用于隐私和安全"]
+      },
+      "forbiddenTemplates": ["decorative medical stock photo", "patient data shown without privacy clearance", "risk page without owner/action"],
+      "clarificationQuestions": [
+        {"id": "privacy_clearance", "priority": "blocking", "question": "患者、病例、影像或服务截图是否已脱敏并允许展示？", "fallback": "只保留流程和匿名指标。"},
+        {"id": "quality_metrics", "priority": "recommended", "question": "是否有等待时长、满意度、闭环率、不良事件等质量指标？", "fallback": "用服务蓝图和改进路径代替数据页。"},
+        {"id": "responsibility_owner", "priority": "recommended", "question": "跨科室责任和复盘周期是否明确？", "fallback": "以建议责任结构呈现，不写已落地承诺。"}
+      ],
+      "missingMaterialQuestions": ["患者/病例/影像是否脱敏并允许展示？", "是否有等待、满意度、闭环率或质量指标？", "跨科室责任和复盘周期是否明确？", "是否有可用服务触点图或流程记录？", "希望输出 8 页、12 页还是 20 页？"],
+      "qaFocus": ["privacyRisk", "serviceBlueprintDepth", "qualityScorecard", "responsibilityLoop"]
+    },
+    {
+      "id": "lifestyle-food-tourism-fashion",
+      "labelZh": "食品 / 文旅 / 时尚",
+      "labelEn": "Food / Tourism / Fashion",
+      "aliases": ["食品", "食物", "文旅", "旅游", "时尚", "酒店", "餐饮", "fashion", "food", "tourism"],
+      "recommendedOutline": ["体验主张", "产品/空间/路线证据", "客群洞察", "消费转化", "运营与供应链", "品牌传播", "增长路径"],
+      "reportStructures": {
+        "8": ["封面：体验主张", "阅读路径", "产品/空间证据", "客群旅程", "转化指标", "运营保障", "风险与品质", "增长路径"],
+        "12": ["封面", "执行摘要", "目录", "体验主张", "产品/空间/路线图册", "客群洞察", "旅程地图", "转化指标", "供应链/运营", "传播证据", "风险品质", "封底"],
+        "20": ["封面", "管理层摘要", "目录", "体验主张", "产品/地点证据", "路线/菜单/Lookbook", "客群分层", "消费旅程", "内容传播", "渠道转化", "客单/复购", "供应链/商户", "现场运营", "品质风险", "活动复盘", "增长动作", "会员机制", "素材授权", "下一步", "封底"]
+      },
+      "proofObjects": ["lifestyle-editorial-cover", "product-or-place-gallery", "customer-journey-map", "conversion-scorecard", "experience-proof-grid"],
+      "proofObjectCatalog": [
+        {"id": "product-or-place-gallery", "label": "产品 / 空间 / 路线图册", "requires": ["真实图片", "证明对象", "授权"]},
+        {"id": "customer-journey-map", "label": "客群旅程地图", "requires": ["客群", "触点", "转化动作"]},
+        {"id": "conversion-scorecard", "label": "客流 / 客单 / 复游指标", "requires": ["期间", "指标", "来源"]},
+        {"id": "experience-proof-grid", "label": "体验证据网", "requires": ["场景", "活动", "供应链或服务"]},
+        {"id": "lifestyle-editorial-cover", "label": "体验主张封面", "requires": ["真实对象", "目标客群", "价值主张"]}
+      ],
+      "visualTone": "lifestyle-editorial-system",
+      "paletteIntent": "graphite-ivory",
+      "themeIntents": ["industry-opening", "case-evidence", "diagnosis", "value-signal", "operating-path", "closing-anchor"],
+      "pageFamilies": ["cover", "case-gallery", "comparison", "metric-comparison", "timeline", "strategy-map"],
+      "componentRules": [
+        {"when": "product / place / route gallery", "components": ["proof-gallery", "caption-bar", "source-note"]},
+        {"when": "customer journey", "components": ["value-chain", "commentary-panel"]},
+        {"when": "conversion metrics", "components": ["kpi-strip", "chart-commentary-panel", "source-note"]},
+        {"when": "quality / weather / supply risk", "components": ["risk-register"]}
+      ],
+      "visualGrammar": {
+        "imageRatios": ["16:9 place scene", "4:5 product/detail", "3-up route/contact sheet"],
+        "imageRoles": ["inspectable product", "actual place", "route or experience proof"],
+        "layoutRules": ["首屏必须看到真实对象", "图片说明卖什么或证明什么", "旅程页连接内容、到访、消费、复游", "数据页解释转化而非热闹"],
+        "colorRules": ["避免单一暖色主题", "深色用于品牌记忆", "青绿用于证据和转化"]
+      },
+      "forbiddenTemplates": ["stock-like atmosphere with no inspectable product/place", "tourism deck as generic itinerary list", "fashion deck without visual rhythm"],
+      "clarificationQuestions": [
+        {"id": "place_or_product_assets", "priority": "recommended", "question": "是否有真实产品、空间、路线、菜单、Lookbook 或活动图片？", "fallback": "只做体验结构和视觉方向，不写真实场景证明。"},
+        {"id": "customer_segments", "priority": "recommended", "question": "目标客群、价格带或消费场景是否明确？", "fallback": "以通用客群假设呈现并标注需确认。"},
+        {"id": "conversion_data", "priority": "optional", "question": "是否有转化、客单、复购、客流或传播数据？", "fallback": "保留为后续衡量指标。"}
+      ],
+      "missingMaterialQuestions": ["是否有真实产品、空间、路线、菜单、Lookbook 或活动图片？", "目标客群、价格带或消费场景是否明确？", "是否有转化、客单、复购、客流或传播数据？", "图片和人物素材授权边界是什么？", "希望输出 8 页、12 页还是 20 页？"],
+      "qaFocus": ["photoEvidenceQuality", "experienceJourney", "conversionLogic", "imageCaptionAlignment"]
+    },
+    {
+      "id": "government-public-sector",
+      "labelZh": "政府 / 园区 / 国企汇报",
+      "labelEn": "Government / Park / State-Owned Enterprise Reporting",
+      "aliases": ["政府", "园区", "国企", "公共服务", "治理", "招商", "park", "government", "public"],
+      "recommendedOutline": ["政策/任务背景", "区域或组织现状", "治理/服务体系", "项目或资源地图", "阶段成效", "风险与保障", "下一步机制"],
+      "reportStructures": {
+        "8": ["封面：治理任务", "阅读路径", "政策/任务来源", "资源地图", "治理模型", "阶段成效", "风险保障", "下一步机制"],
+        "12": ["封面", "执行摘要", "目录", "政策背景", "区域/组织现状", "资源地图", "治理/服务模型", "项目里程碑", "成效指标", "风险保障", "推进机制", "封底"],
+        "20": ["封面", "管理层摘要", "目录", "政策来源", "任务边界", "现状诊断", "资源地图", "项目清单", "治理模型", "服务体系", "招商/推进里程碑", "公共成效", "风险与敏感", "授权/涉密边界", "保障机制", "责任清单", "复盘节奏", "下一步会议", "附录来源", "封底"]
+      },
+      "proofObjects": ["policy-context-board", "resource-map", "governance-operating-model", "milestone-scorecard", "risk-and-assurance-board"],
+      "proofObjectCatalog": [
+        {"id": "policy-context-board", "label": "政策 / 任务来源板", "requires": ["文件名", "日期", "适用范围"]},
+        {"id": "resource-map", "label": "区域 / 资源 / 项目地图", "requires": ["空间或资源", "项目对象", "敏感边界"]},
+        {"id": "governance-operating-model", "label": "治理与服务模型", "requires": ["责任主体", "流程", "复盘机制"]},
+        {"id": "milestone-scorecard", "label": "签约 / 开工 / 投产里程碑", "requires": ["期间", "口径", "来源"]},
+        {"id": "risk-and-assurance-board", "label": "风险与保障", "requires": ["敏感项", "措施", "责任"]}
+      ],
+      "visualTone": "civic-executive-system",
+      "paletteIntent": "civic-executive-blue",
+      "themeIntents": ["industry-opening", "diagnosis", "system-architecture", "value-signal", "risk-warning", "operating-path", "closing-anchor"],
+      "pageFamilies": ["report-board", "architecture", "strategy-map", "metric-comparison", "risk-table", "timeline"],
+      "componentRules": [
+        {"when": "policy source or public claim", "components": ["source-note", "commentary-panel"]},
+        {"when": "resource / governance map", "components": ["value-chain", "commentary-panel"]},
+        {"when": "milestone metrics", "components": ["kpi-strip", "chart-commentary-panel", "source-note"]},
+        {"when": "sensitivity / assurance", "components": ["risk-register", "governance-table", "source-note"]}
+      ],
+      "visualGrammar": {
+        "imageRatios": ["wide map or public site image", "16:9 public facility photo", "no sensitive project screenshot"],
+        "imageRoles": ["policy source proof", "resource map", "public facility context"],
+        "layoutRules": ["政策页必须有来源和日期", "项目名称按敏感级别脱敏", "风险页有责任和保障机制", "公共成效必须有证据"],
+        "colorRules": ["稳重蓝用于治理", "青色用于证据", "风险色用于敏感边界"]
+      },
+      "forbiddenTemplates": ["overly festive red-blue administrative template", "policy page without source or date", "public result claim without evidence"],
+      "clarificationQuestions": [
+        {"id": "policy_sources", "priority": "blocking", "question": "政策、文件、指标和项目名称是否有可引用来源和日期？", "fallback": "只写为背景方向，不写具体政策承诺。"},
+        {"id": "external_sensitivity", "priority": "blocking", "question": "是否涉及涉密、未公开项目、客户或监管敏感信息？", "fallback": "脱敏为区域/行业层级描述。"},
+        {"id": "contact_action", "priority": "recommended", "question": "结束页需要承接汇报、招商、立项还是内部对齐？", "fallback": "使用下一步评审动作。"}
+      ],
+      "missingMaterialQuestions": ["政策、文件、指标和项目名称是否有来源和日期？", "是否涉及涉密、未公开项目、客户或监管敏感信息？", "结束页承接汇报、招商、立项还是内部对齐？", "是否有可公开展示的地图、项目图或现场图？", "希望输出 8 页、12 页还是 20 页？"],
+      "qaFocus": ["policySourceNote", "externalSensitivity", "governanceDepth", "publicClaimEvidence"]
+    },
+    {
+      "id": "people-culture-company",
+      "labelZh": "招聘 / 文化 / 公司介绍",
+      "labelEn": "Recruiting / Culture / Company Introduction",
+      "aliases": ["招聘", "文化", "价值观", "团队", "公司介绍", "企业介绍", "company", "culture", "recruiting"],
+      "recommendedOutline": ["组织身份", "使命愿景", "业务与产品证据", "团队/文化行为", "岗位或合作对象", "成长与福利", "联系方式/下一步"],
+      "reportStructures": {
+        "8": ["封面：组织身份", "阅读路径", "我们是谁", "使命愿景", "产品/业务证据", "团队与文化", "成长机制", "联系方式"],
+        "12": ["封面", "执行摘要", "目录", "组织身份", "使命/愿景", "业务与产品证据", "团队图册", "价值观行为", "成长与福利", "岗位/合作对象", "联系人", "封底"],
+        "20": ["封面", "管理层摘要", "目录", "公司事实", "使命愿景", "业务证据", "产品/案例", "团队结构", "人物/空间图册", "价值观行为", "成长路径", "岗位画像", "福利机制", "招聘流程", "文化活动", "外部合作", "联系方式", "素材授权", "下一步", "封底"]
+      },
+      "proofObjects": ["culture-cover-with-soft-geometry", "mission-statement-stage", "people-proof-mosaic", "value-principle-cards", "company-profile-proof", "premium-closing-anchor"],
+      "proofObjectCatalog": [
+        {"id": "company-profile-proof", "label": "公司事实 / 产品 / 业务证据", "requires": ["公司事实", "产品或业务", "来源"]},
+        {"id": "mission-statement-stage", "label": "使命愿景舞台", "requires": ["使命原文", "行为证据", "来源"]},
+        {"id": "people-proof-mosaic", "label": "团队 / 办公 / 工作现场图册", "requires": ["图片", "角色说明", "授权"]},
+        {"id": "value-principle-cards", "label": "价值观行为卡", "requires": ["价值观", "行为例子", "证明"]},
+        {"id": "premium-closing-anchor", "label": "联系人 / 下一步", "requires": ["官网", "邮箱/联系人", "地址或行动"]}
+      ],
+      "visualTone": "culture-soft-geometry",
+      "paletteIntent": "culture-soft-geometry",
+      "themeIntents": ["industry-opening", "company-proof", "case-evidence", "executive-narrative", "closing-anchor"],
+      "pageFamilies": ["cover", "manifesto", "profile-proof", "case-gallery", "timeline", "closing"],
+      "componentRules": [
+        {"when": "mission / values", "components": ["value-chain", "commentary-panel"]},
+        {"when": "people / workplace images", "components": ["proof-gallery", "caption-bar", "source-note"]},
+        {"when": "company facts / growth proof", "components": ["kpi-strip", "source-note"]},
+        {"when": "external closing", "components": ["caption-bar", "source-note"]}
+      ],
+      "visualGrammar": {
+        "imageRatios": ["16:9 workplace scene", "1:1 people mosaic", "4:5 portrait only with permission"],
+        "imageRoles": ["team proof", "workspace proof", "product/business proof"],
+        "layoutRules": ["价值观必须有行为例子", "人物图必须有角色/授权", "公司介绍封底必须有联系人或下一步", "不使用空口号"],
+        "colorRules": ["柔和几何可用但不能盖过公司事实", "强调色用于价值观或行动"]
+      },
+      "forbiddenTemplates": ["values page with empty slogans", "people photos without role/caption", "company intro ending without contact"],
+      "clarificationQuestions": [
+        {"id": "people_assets", "priority": "recommended", "question": "是否有可展示的团队照、办公空间、人物访谈或工作现场图？", "fallback": "使用价值观行为和公司事实，不放虚假人物。"},
+        {"id": "hiring_details", "priority": "optional", "question": "是否需要展示岗位、薪酬、福利、招聘流程或联系人？", "fallback": "只保留组织文化与联系入口。"},
+        {"id": "company_contacts", "priority": "recommended", "question": "公司官网、联系人、二维码或地址是否可外发展示？", "fallback": "结束页改为下一步交流。"}
+      ],
+      "missingMaterialQuestions": ["是否有可展示团队照、办公空间、人物访谈或工作现场图？", "是否需要展示岗位、薪酬、福利、招聘流程或联系人？", "官网、联系人、二维码或地址是否可外发展示？", "人物与空间素材授权边界是什么？", "希望输出 8 页、12 页还是 20 页？"],
+      "qaFocus": ["cultureProof", "peopleCaption", "contactClosing", "sloganEvidence"]
+    }
+  ]
+}

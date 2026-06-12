@@ -1,0 +1,61 @@
+{
+  "style": "premium-commercial-keynote",
+  "industry": "finance-investment",
+  "documentType": "financial-results",
+  "title": "三个经营读数解释下一季度投入节奏",
+  "subtitle": "图表评论区把趋势转成行动，而不是停留在数字展示。",
+  "organization": "ClawLabs Template Lab",
+  "footer": "chart-grid-with-commentary fixture",
+  "visualIntent": "proof-led",
+  "contacts": [
+    {
+      "label": "Owner",
+      "value": "Template System"
+    },
+    {
+      "label": "Review",
+      "value": "Design QA"
+    }
+  ],
+  "media": {
+    "cover": "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/chart-grid-with-commentary/proof-1.png",
+    "gallery": [
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/chart-grid-with-commentary/proof-1.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/chart-grid-with-commentary/proof-2.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/chart-grid-with-commentary/proof-3.png",
+      "/Users/superboy/clawlabs/enterprise-ppt-skill/outputs/019e583b-b589-7043-8c51-700ce5757a00/presentations/template-page-family-fixtures/assets/chart-grid-with-commentary/proof-4.png"
+    ]
+  },
+  "slides": [
+    {
+      "type": "metric-comparison",
+      "layoutVariant": "chart-grid-with-commentary",
+      "title": "三个经营读数解释下一季度投入节奏",
+      "claim": "图表评论区把趋势转成行动，而不是停留在数字展示。",
+      "metrics": [
+        {
+          "label": "核心客户复购",
+          "value": "64%",
+          "note": "稳定贡献收入"
+        },
+        {
+          "label": "新签回款周期",
+          "value": "42天",
+          "note": "较预算缩短"
+        },
+        {
+          "label": "重点项目毛利",
+          "value": "39%",
+          "note": "高于组合均值"
+        }
+      ],
+      "businessLogic": {
+        "currentState": "复购和回款指标改善。",
+        "impact": "现金流韧性增强。",
+        "cause": "客户结构和订单筛选更清晰。",
+        "action": "优先投入高复购客户群。",
+        "metric": "复购率、回款天数、重点项目毛利"
+      }
+    }
+  ]
+}

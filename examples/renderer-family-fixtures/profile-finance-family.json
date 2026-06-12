@@ -1,0 +1,22 @@
+{
+  "title": "Renderer Finance Profile Family Fixture",
+  "industry": "finance-investment",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "organization": "远景产业资本",
+  "slides": [
+    {
+      "type": "profile-proof",
+      "title": "管理团队与投后能力证明",
+      "company": "远景产业资本",
+      "description": "以投资纪律、产业研究、投后经营和退出管理支撑组合决策。",
+      "metrics": [
+        { "label": "覆盖赛道", "value": "6" },
+        { "label": "在管项目", "value": "42" },
+        { "label": "投后复盘", "value": "18轮" },
+        { "label": "退出案例", "value": "9" }
+      ],
+      "note": "投资平台证明必须区分历史事实、投后动作和可公开案例。"
+    }
+  ]
+}

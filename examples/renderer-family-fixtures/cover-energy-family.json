@@ -1,0 +1,17 @@
+{
+  "title": "Renderer Energy Cover Family Fixture",
+  "organization": "Renderer QA",
+  "industry": "energy-utility",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "date": "2026-06-01",
+  "coverKicker": "能源运营体系",
+  "coverInsight": "站端接入、告警处置、负荷预测和收益复盘进入同一调度视图，形成可复核的运营闭环与管理机制。",
+  "slides": [
+    {
+      "type": "cover-dark",
+      "title": "新能源站端智能运营平台",
+      "subtitle": "把设备状态、区域调度、负荷预测和收益复盘放入统一管理界面"
+    }
+  ]
+}

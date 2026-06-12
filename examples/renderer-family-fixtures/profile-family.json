@@ -1,0 +1,44 @@
+{
+  "title": "Renderer Profile Family Fixture",
+  "industry": "manufacturing-operations",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "organization": "华东智能装备有限公司",
+  "slides": [
+    {
+      "type": "company-profile-spread",
+      "title": "华东智能装备有限公司",
+      "subtitle": "以制造基础、产品谱系和现场交付经验建立合作信任。",
+      "description": "围绕装备制造、输送系统和现场交付形成综合服务能力。",
+      "metrics": [
+        { "label": "成立年限", "value": "18年" },
+        { "label": "交付项目", "value": "260+" },
+        { "label": "服务城市", "value": "42" },
+        { "label": "核心设备", "value": "86台" }
+      ],
+      "note": "公司基础页先建立可信身份，再用少量事实和一张证据图承接能力证明。"
+    },
+    {
+      "type": "profile-proof",
+      "title": "公司与能力证明",
+      "company": "华东智能装备有限公司",
+      "description": "长期服务制造、仓储和分拣场景，形成从设备到服务的交付能力。",
+      "metrics": [
+        { "label": "项目复购", "value": "64%" },
+        { "label": "服务响应", "value": "24h" },
+        { "label": "质保闭环", "value": "98%" }
+      ]
+    },
+    {
+      "type": "quote-proof",
+      "title": "交付团队把设备、调试和验收节奏放在同一张表里",
+      "quote": "交付团队把设备、调试和验收节奏放在同一张表里，问题闭环更快。",
+      "attribution": "制造客户项目负责人",
+      "items": [
+        { "title": "现场协同", "body": "设备、工艺和验收同步推进。" },
+        { "title": "复盘清晰", "body": "问题记录能回到责任和动作。" },
+        { "title": "服务延续", "body": "上线后仍保留追踪机制。" }
+      ]
+    }
+  ]
+}

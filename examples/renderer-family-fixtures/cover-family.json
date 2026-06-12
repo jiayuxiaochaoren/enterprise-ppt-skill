@@ -1,0 +1,37 @@
+{
+  "title": "Renderer Cover Family Fixture",
+  "organization": "Renderer QA",
+  "industry": "manufacturing-operations",
+  "style": "premium-commercial-keynote",
+  "qualityMode": "formal",
+  "date": "2026-06-01",
+  "coverKicker": "制造交付体系",
+  "coverInsight": "从设计、制造、安调到复盘形成可验证交付闭环。",
+  "coverMetrics": [
+    { "label": "产线覆盖", "value": "12条" },
+    { "label": "控制集成", "value": "PLC" },
+    { "label": "现场安调", "value": "8城" },
+    { "label": "复盘闭环", "value": "月度" }
+  ],
+  "coverTags": ["设计", "制造", "安调", "复盘"],
+  "slides": [
+    {
+      "type": "cover",
+      "title": "制造交付运营平台",
+      "subtitle": "以设备对象、工单闭环和现场复盘组织交付证据"
+    },
+    {
+      "type": "cover-dark",
+      "variant": "beauty-brand-editorial-cover",
+      "title": "品牌质感证据开场",
+      "subtitle": "用产品、质地和场景建立第一屏判断"
+    },
+    {
+      "type": "cover",
+      "variant": "airy-concept-opening",
+      "title": "单一核心对象开场",
+      "subtitle": "以一个对象聚焦价值主张",
+      "coverProof": "对象、场景和复盘证据保持一致。"
+    }
+  ]
+}
