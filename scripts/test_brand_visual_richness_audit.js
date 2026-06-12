@@ -11,31 +11,74 @@ const {
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'out', 'brand-visual-richness-audit');
 const CLEAN_VISUAL_QA = path.join(OUT, 'visual-qa-clean.json');
-const CURRENT_RENDER_META_DIR = path.join(ROOT, 'outputs', 'test-template-page-family-fixtures-current');
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(CLEAN_VISUAL_QA, `${JSON.stringify({ findings: [] }, null, 2)}\n`, 'utf8');
 
+function writeJson(file, value) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+}
+
+function renderedComponent(componentId, slide = {}) {
+  const imageCount = Math.max(
+    Array.isArray(slide.images) ? slide.images.length : 0,
+    Array.isArray(slide.visual && slide.visual.images) ? slide.visual.images.length : 0,
+    slide.image || (slide.visual && slide.visual.image) ? 1 : 0
+  );
+  const itemCount = Math.max(
+    imageCount,
+    Array.isArray(slide.cards) ? slide.cards.length : 0,
+    Array.isArray(slide.items) ? slide.items.length : 0,
+    Array.isArray(slide.productStory) ? slide.productStory.length : 0,
+    1
+  );
+  return {
+    id: componentId,
+    mode: 'native-renderer',
+    rendered: true,
+    itemCount,
+    drawnCount: itemCount,
+    reason: 'unit-test render-meta fixture'
+  };
+}
+
+function writeRenderMetaFixture(testCase) {
+  if (testCase.expectedStatus !== 'pass') return null;
+  const plan = normalizeDeckPlan(JSON.parse(fs.readFileSync(testCase.plan, 'utf8')));
+  const renderMeta = {
+    version: 'render-meta/v1',
+    slideCount: plan.slides.length,
+    slides: plan.slides.map((slide, index) => {
+      const componentIds = ((slide.componentPlan || {}).componentIds || []).filter(Boolean);
+      return {
+        slide: index + 1,
+        consumedComponents: componentIds.map(componentId => renderedComponent(componentId, slide))
+      };
+    })
+  };
+  const file = path.join(OUT, 'render-meta', `${testCase.id}.render-meta.json`);
+  writeJson(file, renderMeta);
+  return file;
+}
+
 const cases = [
   {
     id: 'product-evidence-story',
     plan: path.join(ROOT, 'examples', 'fixtures', 'product-evidence-story.json'),
-    renderMeta: path.join(CURRENT_RENDER_META_DIR, 'product-evidence-story.pptx.render-meta.json'),
     expectedStatus: 'pass',
     expectedComponents: ['proof-gallery', 'product-matrix', 'caption-bar']
   },
   {
     id: 'brand-world-and-business-proof',
     plan: path.join(ROOT, 'examples', 'fixtures', 'brand-world-and-business-proof.json'),
-    renderMeta: path.join(CURRENT_RENDER_META_DIR, 'brand-world-and-business-proof.pptx.render-meta.json'),
     expectedStatus: 'pass',
     expectedComponents: ['caption-bar', 'value-chain', 'kpi-strip']
   },
   {
     id: 'consumer-proof-photo-grid',
     plan: path.join(ROOT, 'examples', 'fixtures', 'consumer-proof-photo-grid.json'),
-    renderMeta: path.join(CURRENT_RENDER_META_DIR, 'consumer-proof-photo-grid.pptx.render-meta.json'),
     expectedStatus: 'pass',
     expectedComponents: ['proof-gallery', 'caption-bar']
   },
@@ -51,7 +94,7 @@ const cases = [
 const reports = cases.map(testCase => auditBrandVisualRichnessFromFiles({
   sampleId: testCase.id,
   planPath: testCase.plan,
-  renderMetaPath: testCase.renderMeta,
+  renderMetaPath: writeRenderMetaFixture(testCase),
   visualQaPath: CLEAN_VISUAL_QA,
   normalizeDeckPlan
 }));

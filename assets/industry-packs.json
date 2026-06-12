@@ -51,7 +51,7 @@
       "id": "industrial-energy",
       "labelZh": "制造 / 工业 / 能源",
       "labelEn": "Manufacturing / Industrial / Energy",
-      "aliases": ["制造", "工业", "能源", "产线", "设备", "储能", "OEE", "factory", "energy"],
+      "aliases": ["制造", "工业", "能源", "产线", "设备", "储能", "OEE", "factory", "energy", "energy-utility"],
       "recommendedOutline": ["现场对象与业务背景", "问题/损失诊断", "设备或站点拓扑", "运营闭环", "现场证据", "指标价值", "风险与推广路径"],
       "reportStructures": {
         "8": ["封面：现场对象", "阅读路径", "问题/损失诊断", "设备或站点拓扑", "运营闭环", "现场证据", "价值指标", "风险与推广"],
