@@ -5,8 +5,11 @@ const cp = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-hardening-dashboard');
+const SMOKE_OUT = path.join(ROOT, 'outputs', 'hardening-smoke');
+const SMOKE_PPTX = path.join(SMOKE_OUT, 'sample.pptx');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+fs.mkdirSync(SMOKE_OUT, { recursive: true });
 
 function runAudit(args = []) {
   return cp.spawnSync(process.execPath, ['scripts/audit_hardening_readiness.js', ...args], {
@@ -47,6 +50,15 @@ function assertProfileGateReady(row, expected = {}) {
   assert.equal(row.actualFallbackToFull, Boolean(expected.fallback), `${row.id} fallback`);
   assert.deepEqual(row.mismatchReasons, [], `${row.id} mismatch reasons`);
 }
+
+cp.execFileSync(process.execPath, ['scripts/generate_pptx.js', 'examples/sample-deck-plan.json', SMOKE_PPTX], {
+  cwd: ROOT,
+  encoding: 'utf8',
+  stdio: 'pipe',
+  timeout: 120000
+});
+assert.ok(fs.existsSync(SMOKE_PPTX), 'hardening smoke sample PPTX should be generated for readiness audit');
+assert.ok(fs.existsSync(`${SMOKE_PPTX}.render-meta.json`), 'hardening smoke sample render-meta should be generated for readiness audit');
 
 const jsonRun = runAudit(['--json']);
 assert.equal(jsonRun.status, 0, jsonRun.stderr || jsonRun.stdout);
