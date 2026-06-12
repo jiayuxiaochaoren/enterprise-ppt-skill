@@ -30,7 +30,7 @@ function createRiskBoardLayoutRenderers(ctx = {}) {
 function drawRiskLightHeader(slide, s, idx, opts = {}) {
   const { fallbackTitle, chrome, ...header } = opts;
   const subtitle = Object.prototype.hasOwnProperty.call(opts, 'subtitle') ? opts.subtitle : (s.subtitle || s.claim);
-  drawLightPageHeader(slide, Object.assign(header, { title:s.title || fallbackTitle || '', subtitle, idx, pageNumber:chrome ? 'chrome' : header.pageNumber }));
+  return drawLightPageHeader(slide, Object.assign(header, { title:s.title || fallbackTitle || '', subtitle, idx, pageNumber:chrome ? 'chrome' : header.pageNumber }));
 }
 
 const governanceRenderers = createRiskBoardGovernanceLayoutRenderers(ctx, {

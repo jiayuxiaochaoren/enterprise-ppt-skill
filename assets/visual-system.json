@@ -825,6 +825,34 @@
       },
       "intent": "Editorial corporate palette for brand, retail, culture, and leadership narratives."
     },
+    "consumer-commerce-teal-coral": {
+      "background": "F6FBFA",
+      "text": "122027",
+      "body": "43535A",
+      "muted": "718188",
+      "line": "D7E8E5",
+      "panel": "FFFFFF",
+      "dark": "10232A",
+      "darkPanel": "17333B",
+      "darkText": "F4FBFA",
+      "darkMuted": "B8CBC8",
+      "darkLine": "2D4E55",
+      "captionOnImage": "E8F5F2",
+      "accent": "E05A47",
+      "secondary": "168B84",
+      "tertiary": "6B7CE8",
+      "soft": "EAF6F3",
+      "dataHighlight": "D59A2F",
+      "risk": "C84A50",
+      "presentation": {
+        "coverTone": "split",
+        "coverMotif": "commerce-signal-board",
+        "metaStyle": "folio",
+        "panelFill": "FFFFFF",
+        "surfaceFill": "F6FBFA"
+      },
+      "intent": "Cross-border commerce and consumer retail palette: cool teal evidence surfaces, coral action marks, clean white panels, and restrained executive contrast."
+    },
     "beauty-warm-premium": {
       "background": "FBF3EF",
       "text": "1C1A20",
@@ -925,6 +953,22 @@
         },
         "assetQueries": ["modern industrial park aerial", "business park campus", "park operations service"],
         "assetPolicy": "Use spatial/park images for place context and case pages; keep management and risk pages clean."
+      },
+      "government-public-sector": {
+        "defaultPalette": "japan-editorial-navy",
+        "visualMode": "solid",
+        "photoRoles": [],
+        "optionalPhotoRoles": [],
+        "defaultImageRoles": {
+          "cover": "background",
+          "situation": "structure",
+          "value": "structure",
+          "risk": "structure",
+          "timeline": "structure",
+          "case-gallery": "evidence"
+        },
+        "assetQueries": ["public service command center", "government campus operations"],
+        "assetPolicy": "Prefer solid, sourced, policy-first layouts. Use real public-site imagery only when a user-provided or cleared source directly proves the claim."
       },
       "healthcare-operations": {
         "defaultPalette": "sage-operations",
@@ -1187,7 +1231,7 @@
         "situation": ["site-evidence-frame", "asset-status-chip"],
         "architecture": ["hub-spoke-dispatch-map", "telemetry-node"],
         "timeline": ["dispatch-rail", "alert-checkpoint"],
-        "value": ["asset-readout-strip", "load-curve-band"],
+        "value": ["asset-readout-strip"],
         "risk": ["alert-severity-tag"],
         "closing": ["site-photo-backdrop", "contact-block"]
       },
@@ -1245,7 +1289,7 @@
   },
   "motifs": {
     "breathing_circle": "Low-contrast circular field for dark and light canvases. Use it as atmosphere, never as a busy diagram.",
-    "energy_lens": "Energy-specific field made from circles, one quiet pulse curve, and minimal metric labels. No repeated diagonal slash decoration.",
+    "energy_lens": "Energy-specific field made from quiet circles and minimal state labels. Do not render decorative load curves without source-traced chart data.",
     "energy_photo_backdrop": "Real BESS site photo, dark-graded for cover and closing pages. Use for energy-utility decks when the deck needs a stronger first impression than vector-only atmosphere.",
     "energy_photo_detail": "A tighter BESS detail crop for inner-page editorial splits, problem pages, and value pages. It should support the narrative instead of acting as decoration.",
     "energy_photo_band": "A panoramic BESS band for chapter navigation and rollout pages. Use as a quiet grounding layer near the bottom or edge of the canvas.",

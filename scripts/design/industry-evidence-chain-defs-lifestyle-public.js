@@ -144,16 +144,21 @@ module.exports = {
         "label": "治理主张",
         "components": [
           "source-note",
-          "commentary-panel"
+          "commentary-panel",
+          "content-card-grid",
+          "process-rail"
         ],
         "coveragePolicy": {
           "requiredWhenVisible": [
             "source-note"
           ],
           "requiredAny": [
-            "commentary-panel"
+            "commentary-panel",
+            "content-card-grid",
+            "process-rail"
           ],
-          "minHits": 2
+          "minHits": 2,
+          "coverageAliases": {"process-rail": ["commentary-panel"]}
         },
         "proofObjects": [
           "policy-context-board",
@@ -190,10 +195,10 @@ module.exports = {
           "requiredAll": [
             "value-chain"
           ],
-          "requiredAny": [
+          "optional": [
             "governance-table"
           ],
-          "minHits": 2
+          "minHits": 1
         },
         "proofObjects": [
           "resource-map",
@@ -226,14 +231,16 @@ module.exports = {
         "components": [
           "kpi-strip",
           "risk-register",
+          "governance-table",
+          "scorecard",
           "source-note"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "kpi-strip"
-          ],
           "requiredAny": [
-            "risk-register"
+            "kpi-strip",
+            "risk-register",
+            "governance-table",
+            "scorecard"
           ],
           "optional": [
             "source-note"

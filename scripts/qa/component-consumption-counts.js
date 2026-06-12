@@ -3,9 +3,18 @@ function arrayLength(slide = {}, keys = []) {
 }
 
 function imageCountForSlide(slide = {}) {
-  return arrayLength(slide, ['images']) +
-    (slide.visual && Array.isArray(slide.visual.images) ? slide.visual.images.length : 0) +
-    (slide.image || (slide.visual && slide.visual.image) ? 1 : 0);
+  const refs = [];
+  const push = value => {
+    if (Array.isArray(value)) value.forEach(push);
+    else if (value) refs.push(String(value));
+  };
+  push(slide.images);
+  if (slide.visual) {
+    push(slide.visual.images);
+    push(slide.visual.image);
+  }
+  push(slide.image);
+  return new Set(refs).size;
 }
 
 function objectArrayLength(value = {}, keys = []) {
@@ -51,7 +60,6 @@ function expectedRenderedCountsForSlide(slide = {}) {
   set(['workflow-rail'], Math.max(arrayLength(slide, ['steps', 'phases', 'items', 'workflow', 'workflows']), slide.automationWorkflow || slide.platformCapabilities ? 1 : 0));
   set(['permission-audit-tag'], Math.max(arrayLength(slide, ['permissionGovernance', 'permissions', 'risks', 'rows']), slide.auditLog ? 1 : 0));
   set(['adoption-funnel'], Math.max(objectArrayLength(slide.adoptionFunnel, ['steps']), objectArrayLength(slide.activationFunnel, ['steps']), objectArrayLength(slide.cohortFunnel, ['steps']), slide.adoptionFunnel || slide.activationFunnel || slide.cohortFunnel ? 1 : 0));
-  set(['load-curve-band'], plannedIds.has('load-curve-band') ? 1 : 0);
   return counts;
 }
 

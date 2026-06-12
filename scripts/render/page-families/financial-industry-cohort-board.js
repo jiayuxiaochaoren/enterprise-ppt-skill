@@ -1,4 +1,5 @@
 const {
+  chartNumber,
   coerceChartItems
 } = require('./financial-chart-utils');
 
@@ -18,15 +19,37 @@ function createMemberCohortLadderBoard(ctx = {}) {
       { title:'高价值会员', value:'18%', body:'客单提升' },
       { title:'沉睡会员', value:'9%', body:'召回动作' }
     ]).slice(0,4);
+    const values = items.map((it, i) => chartNumber(it.value, items.length - i));
+    const max = Math.max(...values, 1);
+    const labelW = Math.min(2.05, Math.max(1.44, board.w * 0.20));
+    const barX = board.x + 0.72 + labelW + 0.34;
+    const barMaxW = Math.max(2.40, Math.min(4.90, board.w - labelW - 3.90));
     items.forEach((it,i)=>{
-      const y = board.y + 3.10 - i*0.62;
-      const w = 1.24 + i*0.70;
-      const x = board.x + 0.72 + i*0.38;
+      const y = board.y + 0.92 + i*0.62;
+      const val = values[i];
+      const w = Math.max(0.42, barMaxW * val / max);
+      const labelX = board.x + 0.72;
       const accent = i===0 ? C.muted : (i===1 ? C.accent : (i===2 ? C.cyan : C.violet));
-      addRect(slide, x, y, w, 0.38, accent, accent, { fill:{color:accent, transparency:i===0?22:8}, line:{color:accent, transparency:100} });
-      addText(slide, itemTitle(it, `客群 ${i+1}`), { x:x+0.14, y:y+0.08, w:0.82, h:0.16, fontSize:8.8, bold:true, color:C.onAccent || C.white, fit:'shrink' });
-      addText(slide, it.value || '', { x:x+w+0.28, y:y+0.08, w:0.54, h:0.16, fontSize:8.8, bold:true, color:accent, fit:'shrink' });
-      addText(slide, itemBody(it), { x:x+w+0.92, y:y+0.08, w:1.44, h:0.16, fontSize:8.8, color:C.body, fit:'shrink' });
+      addText(slide, itemTitle(it, `客群 ${i+1}`), {
+        x:labelX, y:y+0.06, w:labelW, h:0.18,
+        fontSize:8.4, bold:true, color:C.text, fit:'shrink'
+      });
+      addRect(slide, barX, y+0.08, barMaxW, 0.22, C.line, C.line, {
+        fill:{color:C.line, transparency:78},
+        line:{color:C.line, transparency:100}
+      });
+      addRect(slide, barX, y+0.08, w, 0.22, accent, accent, {
+        fill:{color:accent, transparency:i===0?18:8},
+        line:{color:accent, transparency:100}
+      });
+      addText(slide, String(it.value || ''), {
+        x:barX+barMaxW+0.28, y:y+0.06, w:0.66, h:0.18,
+        fontSize:8.4, bold:true, color:accent, fit:'shrink'
+      });
+      addText(slide, itemBody(it), {
+        x:barX+barMaxW+1.08, y:y+0.06, w:Math.max(1.30, board.x + board.w - (barX + barMaxW + 1.08) - 0.44), h:0.18,
+        fontSize:8.2, color:C.body, fit:'shrink'
+      });
     });
   }
 

@@ -6,8 +6,8 @@ function createServiceBlueprintRibbonRenderer(ctx = {}) {
     addText
   } = ctx;
 
-  function drawServiceBlueprintRibbon(slide, s) {
-    const ribbon = { x:0.92, y:2.04, w:10.84, h:0.60 };
+  function drawServiceBlueprintRibbon(slide, s, opts = {}) {
+    const ribbon = { x:0.92, y:opts.y || 2.04, w:10.84, h:0.60 };
     addRect(slide, ribbon.x, ribbon.y, ribbon.w, ribbon.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
     addLabel(slide, 'CARE JOURNEY', { x:ribbon.x+0.28, y:ribbon.y+0.20, w:1.18, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
     addText(slide, s.coreTitle || '从触点到责任', { x:ribbon.x+1.72, y:ribbon.y+0.16, w:1.62, h:0.17, fontSize:10.4, bold:true, color:C.white, fit:'shrink' });

@@ -76,7 +76,7 @@ function businessSection(overrides = {}) {
 
 function assertBusinessFooters(ops) {
   const footers = ops.filter(op => op.name === 'addText' && op.args[1] === 'Footer');
-  assert.equal(footers.length, 5, 'expected five business footer draws across exercised branches');
+  assert.equal(footers.length, 6, 'expected six business footer draws across exercised branches');
 
   const sidebar = footers.find(op => (op.args[2] || {}).x === 0.62);
   assert(sidebar, 'expected executive sidebar footer');
@@ -87,7 +87,7 @@ function assertBusinessFooters(ops) {
   assert.equal(sidebar.args[2].color, '64748B');
 
   const standardFooters = footers.filter(op => (op.args[2] || {}).x === 0.82);
-  assert.equal(standardFooters.length, 4, 'expected four standard business footers');
+  assert.equal(standardFooters.length, 5, 'expected five standard business footers');
   standardFooters.forEach(op => {
     const opts = op.args[2] || {};
     assert.equal(opts.y, 7.05);
@@ -95,7 +95,7 @@ function assertBusinessFooters(ops) {
     assert.equal(opts.h, 0.16);
     assert.equal(opts.fontSize, 7.8);
   });
-  assert.equal(standardFooters.filter(op => op.args[2].color === '64748B').length, 3);
+  assert.equal(standardFooters.filter(op => op.args[2].color === '64748B').length, 4);
   assert.equal(standardFooters.filter(op => op.args[2].color === '738297').length, 1);
 }
 
@@ -158,6 +158,36 @@ function assertReportBoardHeader(ops) {
   });
 }
 
+function assertLongReportBoardHeader(ops) {
+  const titleText = '多渠道经营底座已成型，2026 年要转向质量增长';
+  const subtitleText = '684 个在售 SKU 与五大平台支撑规模基础，下一步同步看营收、毛利和复购。';
+  const title = ops.find(candidate => candidate.name === 'addText' && candidate.args[1] === titleText);
+  assert(title, 'expected long report-board title');
+  const titleOpts = title.args[2] || {};
+  assert(titleOpts.y > 1.04, 'long title should move below the header boundary');
+  assert(titleOpts.h > 0.70, 'long title should reserve two-line height');
+  assert.strictEqual(titleOpts.breakLine, true, 'long title should allow line wrapping');
+
+  const subtitle = ops.find(candidate => candidate.name === 'addText' && candidate.args[1] === subtitleText);
+  assert(subtitle, 'expected long report-board subtitle');
+  const subtitleOpts = subtitle.args[2] || {};
+  assert(subtitleOpts.y >= titleOpts.y + titleOpts.h + 0.11, 'subtitle should stay below long title');
+
+  const executivePanel = ops.find(op => (
+    op.name === 'addRect' &&
+    Math.abs((op.args[1] || 0) - 0.92) < 0.001 &&
+    Math.abs((op.args[3] || 0) - 2.78) < 0.001 &&
+    (op.args[2] || 0) > 2.08
+  ));
+  assert(executivePanel, 'long report-board content should move below expanded header');
+  const evidencePanel = ops.find(op => (
+    op.name === 'addRect' &&
+    Math.abs((op.args[1] || 0) - 4.12) < 0.001 &&
+    (op.args[2] || 0) > 2.08
+  ));
+  assert(evidencePanel, 'long report-board evidence stack should move below expanded header');
+}
+
 function assertValueTilesHeader(ops) {
   assertHeaderText(ops, 'Value section', {
     x:0.84, y:1.05, w:5.5, h:0.35, fontSize:24, bold:true, color:'111827'
@@ -205,6 +235,17 @@ function main() {
     ]
   }), 2);
   renderers.reportBoard(createSlide(ops), {}, businessSection(), 3);
+  renderers.reportBoard(createSlide(ops), {}, businessSection({
+    title:'多渠道经营底座已成型，2026 年要转向质量增长',
+    claim:'684 个在售 SKU 与五大平台支撑规模基础，下一步同步看营收、毛利和复购。',
+    label:'经营底座',
+    sections:[
+      { title:'成立年份', body:'2018 · 经营底座' },
+      { title:'员工规模', body:'214人 · 团队规模' },
+      { title:'在售 SKU', body:'684个 · 产品宽度' },
+      { title:'2026 目标', body:'+27% · 营收同比增长' }
+    ]
+  }), 6);
   renderers.comparisonSlide(createSlide(ops), {}, businessSection({
     title:'Comparison section',
     claim:'Comparison claim',
@@ -219,9 +260,11 @@ function main() {
   }), 5);
 
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'REPORT BOARD'), 'expected report board branch');
+  assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === '经营底座'), 'expected localized report board branch');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'COMPARISON'), 'expected comparison branch');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'VALUE SIGNAL'), 'expected value tiles branch');
   assertReportBoardHeader(ops);
+  assertLongReportBoardHeader(ops);
   assertComparisonHeader(ops);
   assertValueTilesHeader(ops);
   assert(ops.filter(op => op.name === 'addVisualPhotoPanel').length >= 2, 'expected visual fallback paths');

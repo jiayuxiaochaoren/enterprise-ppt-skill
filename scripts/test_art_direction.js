@@ -66,6 +66,22 @@ const deck = normalizeDeckPlan({
 assert.equal(selectPaletteName(deck), 'factory-steel-amber');
 assert.equal(makeDeckContext(deck).paletteName, 'factory-steel-amber');
 
+const commerceDeck = normalizeDeckPlan({
+  industry: 'brand-retail',
+  palette: 'consumer-commerce-teal-coral',
+  deckArtDirection: {
+    palette: 'consumer-commerce-teal-coral',
+    tone: 'executive-boardroom'
+  },
+  slides: [
+    { type:'cover', title:'跨境电商经营增长复盘' },
+    { type:'content', title:'渠道效率', metrics:[{ label:'ROAS', value:'4.2' }] },
+    { type:'closing', title:'下一步' }
+  ]
+});
+assert.equal(selectPaletteName(commerceDeck), 'consumer-commerce-teal-coral');
+assert.equal(makeDeckContext(commerceDeck).paletteName, 'consumer-commerce-teal-coral');
+
 const risk = deck.slides.find(s => s.id === 'risk-claim');
 assert.equal(risk.type, 'risk-table');
 assert.equal(risk.themeIntent, 'risk-warning');

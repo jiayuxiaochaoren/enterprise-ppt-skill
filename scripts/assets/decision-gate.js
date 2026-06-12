@@ -13,6 +13,9 @@ const {
   assetTargetContract
 } = require('../design/asset-generation');
 const {
+  assetDecisionStateFor
+} = require('../design/asset-decision-state');
+const {
   bindGeneratedAssets
 } = require('./binder');
 const { MATRIX_VERSION, POLICY_VERSION, policyRowsForTypes } = require('../qa/quality-severity-policy');
@@ -75,6 +78,11 @@ function writeJson(file, data) {
   fs.writeFileSync(path.resolve(file), `${JSON.stringify(data, null, 2)}\n`);
 }
 
+function writeText(file, text) {
+  fs.mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
+  fs.writeFileSync(path.resolve(file), text, 'utf8');
+}
+
 function assetRoleNeedsImage(role = '') {
   const r = String(role || '').toLowerCase();
   if (!r || ['none', 'diagram', 'structure', 'comparison'].includes(r)) return false;
@@ -99,36 +107,50 @@ function promptForSlide(plan = {}, slide = {}) {
   return slide.generatedAssetPrompt || generatedAssetPrompt(plan, slide, slide.referenceRecipe || null);
 }
 
+function assetDecisionForGeneration(generation = {}) {
+  if (generation && generation.assetDecisionState && generation.assetDecisionState.version) {
+    return generation.assetDecisionState;
+  }
+  return assetDecisionStateFor({
+    status: generation.status,
+    blocked: generation.status === 'blocked',
+    mustBind: generation.mustBind === true,
+    factual: generation.factualRequired === true || generation.factualRisk === true,
+    structureOnly: generation.structureOnly === true,
+    target: generation.target,
+    reason: generation.reason
+  });
+}
+
 function questionFor(plan = {}, slide = {}, idx = 0) {
   const role = visualRole(plan, slide);
   const generation = slide.assetGeneration || {};
+  const decisionState = assetDecisionForGeneration(generation);
   const refRole = slide.referenceRecipe && slide.referenceRecipe.assetRole;
   const prompt = promptForSlide(plan, slide);
   const target = generation.target || assetTargetContract(plan, slide, generation.originalRole || role || refRole || 'showcase', {
     resolvedRole: generation.resolvedRole || generation.role || role
   });
   const effectiveRole = role === 'structure' && target.originalRole ? target.originalRole : (role || refRole || 'showcase');
-  const required = generation.status === 'required' || generation.mustBind === true;
+  const required = decisionState.blocking || generation.status === 'required' || generation.mustBind === true;
   const title = slide.title || slide.claim || `第 ${idx + 1} 页`;
-  const isFactualBlocked = generation.status === 'blocked';
+  const isFactualBlocked = decisionState.factual || generation.status === 'blocked';
   const severityFindingType = isFactualBlocked || required ? 'skippedCriticalAsset' : 'weakImageAsset';
-  const options = [
-    {
-      action: 'provide_assets',
+  const optionLabels = {
+    provide_assets: {
       label: '用户提供素材',
       effect: '绑定真实产品图、场景图、截图或授权图片；可作为事实证据使用。'
     },
-    !isFactualBlocked ? {
-      action: 'auto_generate',
+    auto_generate: {
       label: '模型自动生成',
       effect: '生成通用/示意性高质量图片；只能承担氛围、类别或概念视觉，不能冒充真实品牌、客户、现场、证书或数据。'
-    } : null,
-    {
-      action: 'skip_image',
+    },
+    skip_image: {
       label: '跳过图片',
       effect: '改成结构图、指标页或文本证据页；不在可见页面放几何占位图。'
     }
-  ].filter(Boolean);
+  };
+  const options = (decisionState.allowedActions || []).map(action => Object.assign({ action }, optionLabels[action])).filter(option => option.label);
   return {
     id: `slide_${idx + 1}_asset`,
     slide: idx + 1,
@@ -141,14 +163,16 @@ function questionFor(plan = {}, slide = {}, idx = 0) {
     assetTarget: target,
     priority: required || isFactualBlocked ? 'blocking' : 'recommended',
     status: 'unresolved',
-    blocked: isFactualBlocked,
-    question: isFactualBlocked
+    blocked: decisionState.status === 'blocked',
+    factual: isFactualBlocked,
+    assetDecisionState: decisionState,
+    question: !decisionState.canAutoGenerate
       ? `第 ${idx + 1} 页「${title}」需要事实视觉素材。请选择：提供可用图片，或跳过图片改结构页。`
       : `第 ${idx + 1} 页「${title}」需要视觉素材。请选择：提供可用图片、跳过图片改结构页，或自动生成示意图。`,
     options,
     allowedActions: options.map(option => option.action),
-    recommendedAction: isFactualBlocked ? 'provide_assets' : 'auto_generate',
-    generatedAssetPrompt: isFactualBlocked ? '' : prompt,
+    recommendedAction: decisionState.recommendedAction || (isFactualBlocked ? 'provide_assets' : 'auto_generate'),
+    generatedAssetPrompt: decisionState.canAutoGenerate ? prompt : '',
     severityFindingType,
     severityPolicy: policyRowsForTypes([severityFindingType])[0] || null,
     reason: generation.reason || 'image-led page family has no bound visual asset'
@@ -166,7 +190,13 @@ function buildGate(planPath, answersPath = '', opts = {}) {
     const wantsImage = slideWantsImage(normalized, normalizedSlide, normalizedSlide.type);
     const generation = normalizedSlide.assetGeneration || {};
     const refRole = normalizedSlide.referenceRecipe && normalizedSlide.referenceRecipe.assetRole;
-    const needsImage = wantsImage || assetRoleNeedsImage(refRole) || ['required', 'optional', 'blocked'].includes(generation.status || '');
+    const decisionState = assetDecisionForGeneration(generation);
+    const generationResolvedRole = String(generation.resolvedRole || generation.role || '').toLowerCase();
+    const generationStructureOnly = decisionState.status === 'structure-only' || (generation.status === 'none' &&
+      generation.mustBind !== true &&
+      ['abstract', 'none', 'structure', 'diagram'].includes(generationResolvedRole));
+    const needsImage = decisionState.needsUserDecision ||
+      (!generation.assetDecisionState && !generationStructureOnly && (wantsImage || assetRoleNeedsImage(refRole)));
     if (needsImage && !hasBoundAsset(normalizedSlide, normalized, role)) {
       questions.push(questionFor(normalized, normalizedSlide, i));
     }
@@ -219,6 +249,7 @@ function buildGate(planPath, answersPath = '', opts = {}) {
         slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, {
           decisionSource: ASSET_DECISION_GATE_SOURCE,
           status: 'required',
+          assetDecisionState: assetDecisionStateFor({ status:'required', mustBind:true, target:q.assetTarget, reason:'user chose automatic synthetic asset generation' }),
           role: q.role,
           originalRole: q.originalRole || q.role,
           resolvedRole: q.resolvedRole || q.role,
@@ -236,6 +267,7 @@ function buildGate(planPath, answersPath = '', opts = {}) {
         slide.assetGeneration = Object.assign({}, slide.assetGeneration || {}, {
           decisionSource: ASSET_DECISION_GATE_SOURCE,
           status: 'none',
+          assetDecisionState: assetDecisionStateFor({ status:'structure-only', structureOnly:true, target:q.assetTarget, reason:'user chose to skip visual asset and use native structure' }),
           role: q.role,
           mustBind: false,
           reason: 'user chose to skip visual asset and use native structure'
@@ -274,10 +306,52 @@ function buildGate(planPath, answersPath = '', opts = {}) {
   };
 }
 
-function buildGateFromFiles({ planPath, answersPath = '', outPath = '', outPlanPath = '', cwd = process.cwd() }) {
+function assetDecisionMarkdown(gate = {}) {
+  const questions = Array.isArray(gate.questions) ? gate.questions : [];
+  const lines = [
+    `# 资产决策清单`,
+    '',
+    `- Deck: ${gate.deckTitle || '未命名'}`,
+    `- Industry: ${gate.industry || 'unknown'}`,
+    `- Status: ${gate.status || 'unknown'}`,
+    `- Questions: ${questions.length}`,
+    '',
+    '## 决策项',
+    ''
+  ];
+  if (!questions.length) {
+    lines.push('当前没有未解决的视觉素材决策。');
+  } else {
+    lines.push('| Slide | Priority | Title | Role | Factual | Allowed actions | Recommended | Reason |');
+    lines.push('| --- | --- | --- | --- | --- | --- | --- | --- |');
+    questions.forEach(q => {
+      lines.push([
+        q.slide,
+        q.priority || '',
+        String(q.title || '').replace(/\|/g, '/'),
+        q.role || '',
+        q.factual || q.blocked ? 'yes' : 'no',
+        (q.allowedActions || []).join(', '),
+        q.recommendedAction || '',
+        String(q.reason || '').replace(/\|/g, '/')
+      ].join(' | ').replace(/^/, '| ').replace(/$/, ' |'));
+    });
+    lines.push('');
+    lines.push('## 操作说明');
+    lines.push('');
+    lines.push('- `provide_assets`: 绑定用户提供的真实产品图、截图、现场图或授权图片。');
+    lines.push('- `auto_generate`: 只用于非事实的示意/氛围/类别视觉；事实素材决策项不会提供这个选项。');
+    lines.push('- `skip_image`: 改用结构页或文本/指标证据，不在页面放几何占位图。');
+  }
+  lines.push('');
+  return `${lines.join('\n')}\n`;
+}
+
+function buildGateFromFiles({ planPath, answersPath = '', outPath = '', outPlanPath = '', summaryPath = '', cwd = process.cwd() }) {
   const gate = buildGate(planPath, answersPath, { cwd });
   if (outPath) writeJson(outPath, gate);
   if (outPlanPath && gate.resolvedPlan) writeJson(outPlanPath, gate.resolvedPlan);
+  if (summaryPath) writeText(summaryPath, assetDecisionMarkdown(gate));
   return gate;
 }
 
@@ -285,11 +359,13 @@ module.exports = {
   ASSET_DECISION_GATE_SOURCE,
   ASSET_POLICY_TYPES,
   assetRoleNeedsImage,
+  assetDecisionMarkdown,
   buildGate,
   buildGateFromFiles,
   hasBoundAsset,
   promptForSlide,
   questionFor,
   readJson,
-  writeJson
+  writeJson,
+  writeText
 };

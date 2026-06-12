@@ -10,6 +10,13 @@ const {
   createComponentPlanningInputHelpers
 } = require('./component-planning-inputs');
 const {
+  enrichComponentPlanOutput
+} = require('./component-planning-output');
+const {
+  componentRouteSignalSummary,
+  hasExplicitRiskMatrixData
+} = require('./component-planning-route-signals');
+const {
   filterComponentPlanCandidates
 } = require('./component-planning-filters');
 const {
@@ -23,6 +30,7 @@ const {
   hasSourceEvidence,
   visibleSourceNotesEnabled
 } = require('./source-evidence');
+const { CARD_GRID_TYPES, hasStructuredMetricEvidence, hasStructuredProductEvidence, nativeIndustryVariantOwnsChartComponent } = require('./route-component-capabilities');
 
 function createComponentPlanHelpers(deps = {}) {
   const {
@@ -51,17 +59,6 @@ function createComponentPlanHelpers(deps = {}) {
     flattenText,
     proofObjectIdForSlide
   });
-
-  function hasExplicitRiskMatrixData(s = {}) {
-    if (s.riskMatrix || s.risk_matrix || s.controlsMatrix || s.controls_matrix) return true;
-    const matrix = s.matrix;
-    if (!matrix) return false;
-    if (matrix === true) return true;
-    if (Array.isArray(matrix)) return matrix.length > 0;
-    if (typeof matrix !== 'object') return Boolean(matrix);
-    return ['items', 'points', 'cells', 'quadrants', 'rows', 'data', 'risks']
-      .some(field => Array.isArray(matrix[field]) && matrix[field].length);
-  }
 
   function componentPlanFor(plan = {}, s = {}, index = 0, total = 1, signals = contentSignals(plan, s, index, total), composition = null) {
     const type = s.type || '';
@@ -100,26 +97,25 @@ function createComponentPlanHelpers(deps = {}) {
       productStory: s.productStory,
       products: s.products
     });
-    const visual = s.visual || {};
-    const directImageCount = (s.image || visual.image ? 1 : 0) +
-      (Array.isArray(s.images) ? s.images.length : 0) +
-      (Array.isArray(visual.images) ? visual.images.length : 0);
-    const galleryEligible = !['cover', 'cover-dark', 'closing', 'closing-dark', 'chapter-divider', 'toc', 'toc-clean'].includes(type);
-    const brandWorldStrategySignal = type === 'strategy-map' && /brand-world|brand-world-and-business/i.test(`${variant} ${proofObject}`);
-    const brandConsumerSceneSignal = /brand|consumer|retail|beauty|lookbook|shopper|store|柜台|门店|陳列|陈列|消费者|消費者|会员|會員|复购|復購|种草|品牌故事|产品故事/i.test(slideRouteText);
-    const productStorySignal = Array.isArray(s.productStory) && s.productStory.length;
-    const explicitProductMatrixTextSignal = /SKU|核心单品|明星单品|單品|单品|質地|质地|功效|efficacy|texture/i.test([s.title, s.subtitle, s.claim, proofObject].filter(Boolean).join(' '));
-    const productShowcaseHasEvidence = type === 'product-showcase' && (directImageCount > 0 || productStorySignal || (Array.isArray(s.products) && s.products.length) || explicitProductMatrixTextSignal);
-    const productProofSignal =
-      Boolean(s.product || (Array.isArray(s.products) && s.products.length) || productStorySignal) ||
-      productShowcaseHasEvidence ||
-      /sku|product-evidence|product-showcase|texture|efficacy|单品|質地|质地|功效/i.test(proofObject) ||
-      explicitProductMatrixTextSignal;
-    const explicitGalleryRouteSignal = ['case-gallery', 'gallery', 'portfolio'].includes(type) ||
-      (!brandWorldStrategySignal && /gallery|photo|lookbook|mosaic/i.test(`${variant} ${proofObject}`));
-    const imageBackedGallerySignal = signals.imageCount >= 2 || directImageCount > 0;
-    const productStoryGallerySignal = productStorySignal && (imageBackedGallerySignal || /product-evidence|product-showcase|gallery|photo|lookbook/i.test(`${variant} ${proofObject} ${type}`));
-    const brandSceneGallerySignal = brandConsumerSceneSignal && imageBackedGallerySignal;
+    const routeSignals = componentRouteSignalSummary({
+      proofObject,
+      proofObjectForVisualRules,
+      s,
+      signals,
+      slideRouteText,
+      type,
+      variant
+    });
+    const {
+      brandSceneGallerySignal,
+      brandWorldStrategySignal,
+      directImageCount,
+      explicitGalleryRouteSignal,
+      galleryEligible,
+      imageBackedGallerySignal,
+      productProofSignal,
+      productStoryGallerySignal
+    } = routeSignals;
 
     explicitComponentEntries(s).forEach(entry => addComponent(components, entry, entry.source || 'explicit'));
 
@@ -141,17 +137,16 @@ function createComponentPlanHelpers(deps = {}) {
           id,
           `industry evidence chain: ${industryEvidenceChain.stageLabel}`,
           `industry-evidence-chain:${industryEvidenceChain.stageId}`,
-          coverageRole !== 'optional',
+          coverageRole === 'requiredAll' || coverageRole === 'requiredWhenVisible',
           { coverageRole, coveragePolicy: industryEvidenceChain.coveragePolicy || null }
         );
       });
     }
 
-    const activeBrandWorldHero = /brand-world/i.test(proofObjectForVisualRules) && /brand-world/i.test(variant);
-    const proofObjectVisualAnchor = activeBrandWorldHero || /hero|cover|(?:^|[-_])product(?:$|[-_])|image/i.test(proofObjectForVisualRules);
-    const heroImageRouteEligible = ['cover', 'cover-dark', 'case-gallery', 'gallery', 'portfolio', 'product-showcase', 'company-profile-spread'].includes(type) ||
-      proofObjectVisualAnchor ||
-      /hero|cover|brand|showcase|lookbook|gallery|photo|image/i.test(variant);
+    const {
+      heroImageRouteEligible,
+      proofObjectVisualAnchor
+    } = routeSignals;
     if (['cover', 'cover-dark'].includes(type) || (signals.imageCount > 0 && heroImageRouteEligible) || proofObjectVisualAnchor) {
       addRule('hero-image', 'primary visual or brand-world anchor', 'visual-or-cover-signal', !['toc', 'toc-clean'].includes(type));
     }
@@ -161,15 +156,16 @@ function createComponentPlanHelpers(deps = {}) {
     if (type === 'chapter-divider' && (Array.isArray(s.items) || /sequence|agenda|path|路径|目录/i.test(`${variant} ${proofObject} ${s.title || ''}`))) {
       addRule('navigation-sequence', 'native navigation path or agenda sequence', 'chapter-navigation');
     }
-    if (['two-column', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks'].includes(type)) {
+    if (CARD_GRID_TYPES.has(type)) {
       addRule('content-card-grid', 'native card grid or editorial content body', 'native-content-grid');
     }
     if (type === 'report-board') {
       addRule('commentary-panel', 'executive read or management judgment panel', 'report-board-native');
       addRule('content-card-grid', 'structured evidence sections', 'report-board-native');
     }
-    const metricEligible = !['cover', 'cover-dark', 'closing', 'chapter-divider', 'toc', 'toc-clean', 'risk-table', 'portfolio-table', 'timeline', 'timeline-dark', 'report-board'].includes(type);
-    if ((metricEligible && signals.hasMetrics) || ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type)) {
+    const metricEligible = !['cover', 'cover-dark', 'closing', 'chapter-divider', 'toc', 'toc-clean', 'risk-table', 'portfolio-table', 'timeline', 'timeline-dark', 'report-board'].includes(type) &&
+      !CARD_GRID_TYPES.has(type);
+    if ((metricEligible && hasStructuredMetricEvidence(s)) || ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type)) {
       addRule('kpi-strip', 'metric evidence readout', 'metric-signal');
       if (!brandWorldStrategySignal) {
         addRule('chart-commentary-panel', 'explain what the data proves', 'metric-signal', false);
@@ -186,7 +182,8 @@ function createComponentPlanHelpers(deps = {}) {
     const chartEligibleRoute = ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type) ||
       /chart|metric|kpi|scorecard|matrix|funnel|waterfall|pareto/i.test(String(variant || proofObject));
     const inferredInformationGap = chartSpec && chartSpec.kind === 'informationGap' && !explicitChartSignal;
-    if (chartIntent && chartComponentId && !inferredInformationGap && (explicitChartSignal || chartEligibleRoute) && !['cover', 'cover-dark', 'closing', 'closing-dark', 'toc', 'toc-clean', 'chapter-divider'].includes(type)) {
+    const nativeVariantOwnsChart = nativeIndustryVariantOwnsChartComponent(type, variant);
+    if (chartIntent && chartComponentId && !nativeVariantOwnsChart && !inferredInformationGap && (explicitChartSignal || chartEligibleRoute) && !['cover', 'cover-dark', 'closing', 'closing-dark', 'toc', 'toc-clean', 'chapter-divider'].includes(type)) {
       addRule(chartComponentId, chartSpec.kind === 'informationGap' ? 'explicit data gap instead of fake chart' : `chartSpec/v1 ${chartSpec.kind} renderer`, 'chart-spec-router');
     }
     if (
@@ -204,7 +201,7 @@ function createComponentPlanHelpers(deps = {}) {
     if (brandWorldStrategySignal) {
       addRule('caption-bar', 'connect brand-world claim to evidence boundary', 'brand-world-proof-link');
     }
-    if (productProofSignal && !['cover', 'closing', 'chapter-divider', 'toc', 'toc-clean'].includes(type)) {
+    if (productProofSignal && hasStructuredProductEvidence(s) && !['cover', 'closing', 'chapter-divider', 'toc', 'toc-clean'].includes(type)) {
       addRule('product-matrix', 'SKU, texture, efficacy, price, or pack proof', 'product-signal');
     }
     const systemValueEligible = !['cover', 'cover-dark', 'closing', 'closing-dark', 'toc', 'toc-clean', 'chapter-divider'].includes(type);
@@ -221,14 +218,18 @@ function createComponentPlanHelpers(deps = {}) {
     }
     const riskEligible = !['cover', 'cover-dark', 'closing', 'closing-dark', 'chapter-divider', 'toc', 'toc-clean'].includes(type);
     const riskMatrixExplicit = riskEligible && (hasExplicitRiskMatrixData(s) || /risk-matrix|materiality-matrix/i.test(variant) || /risk-matrix|materiality-matrix/i.test(proofObject));
+    const hasGovernanceRows = Array.isArray(s.rows) || Array.isArray(s.risks) || Array.isArray(s.controls) ||
+      Array.isArray(s.responsibilities) || Array.isArray(s.owners) || Array.isArray(s.accountabilities) || Array.isArray(s.raci) ||
+      Boolean(s.riskRegister || s.riskMatrix || s.controlsMatrix || s.matrix || s.responsibilityLoop);
+    const nativeGovernanceRoute = ['risk-table', 'table'].includes(type);
     if (riskMatrixExplicit) {
       addRule('risk-matrix', 'rank risk by impact and likelihood or materiality', 'explicit-risk-matrix');
-    } else if (riskEligible && (type === 'risk-table' || signals.hasRisk || signals.hasResponsibilityLoop)) {
-      const hasRiskRows = Array.isArray(s.rows) || Array.isArray(s.risks) || Array.isArray(s.controls);
-      const required = type === 'risk-table' || signals.hasRisk || signals.hasResponsibilityLoop || hasRiskRows;
-      addRule('risk-register', 'owner, level, action, and cadence', 'risk-governance-without-matrix', required);
+    } else if (riskEligible && (nativeGovernanceRoute || hasGovernanceRows)) {
+      const required = nativeGovernanceRoute || hasGovernanceRows;
+      const wantsRiskRegister = s.riskRegister || /risk-register/i.test(`${variant} ${proofObject}`);
+      addRule(wantsRiskRegister ? 'risk-register' : 'governance-table', 'owner, level, action, and cadence', 'risk-governance-without-matrix', required);
     }
-    if (/governance|control|responsibility/i.test(variant) || signals.hasGovernance || signals.hasResponsibilityLoop) {
+    if ((/governance|control|responsibility/i.test(variant) || signals.hasGovernance || signals.hasResponsibilityLoop) && (nativeGovernanceRoute || hasGovernanceRows)) {
       addRule('governance-table', 'governance rows with owner/action logic', 'governance-signal', false);
     }
     if (hasSourceEvidence(s) && visibleSourceNotesEnabled(plan)) {
@@ -259,31 +260,14 @@ function createComponentPlanHelpers(deps = {}) {
       valueCreationMapOwnsProcess,
       variant
     });
-    const unknownComponents = [];
-    const knownComponents = filtered
-      .map(component => {
-        const capability = componentCapabilityFor(component.id);
-        if (!capability) {
-          unknownComponents.push({ id: component.id, source: component.source || '', required: component.required !== false });
-          return null;
-        }
-        const supportedModes = typeof effectiveComponentModesFor === 'function' ? effectiveComponentModesFor(component.id) : capability.supportedModes;
-        const requestedModes = component.allowedModes || component.allowed_modes || component.supportedModes;
-        const allowedModes = Array.isArray(requestedModes) && requestedModes.length ? requestedModes.filter(mode => supportedModes.includes(mode)) : supportedModes;
-        return Object.assign({}, component, {
-          supportedModes,
-          allowedModes: allowedModes.length ? allowedModes : supportedModes,
-          ownershipPolicy: capability.ownershipPolicy,
-          componentFamily: capability.family,
-          dataRequirements: component.dataRequirements || capability.dataRequirements || [],
-          slotPolicy: component.slotPolicy || component.slot_policy || (supportedModes.includes('overlay') ? 'declared-safe-slot-required' : 'native-evidence-required'),
-          repairPolicy: component.repairPolicy || component.repair_policy || (component.required === false ? 'optional-drop-allowed' : 'no-unplanned-repair'),
-          priority: component.priority || (component.required === false ? 'optional' : 'required'),
-          coverageRole: component.coverageRole || component.coverage_role || '',
-          coveragePolicy: component.coveragePolicy || component.coverage_policy || null
-        });
-      })
-      .filter(Boolean);
+    const { knownComponents, unknownComponents } = enrichComponentPlanOutput({
+      componentCapabilityFor,
+      effectiveComponentModesFor,
+      filtered,
+      plan,
+      signals,
+      slide: s
+    });
 
     return {
       version: 'component-plan/v1',
@@ -305,7 +289,6 @@ function createComponentPlanHelpers(deps = {}) {
     nativeOnlyOptionalComponentAllowed
   };
 }
-
 module.exports = {
   addComponent,
   componentIdFromHint,

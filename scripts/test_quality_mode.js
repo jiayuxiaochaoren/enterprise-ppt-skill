@@ -14,6 +14,9 @@ const {
   runVisualQa: runVisualQaRunner
 } = require('./qa/visual-qa-runner');
 const {
+  acceptanceReadinessForFindings
+} = require('./qa/acceptance-readiness');
+const {
   MATRIX_VERSION: MATRIX_SHARD_VERSION,
   QUALITY_SEVERITY_MATRIX: MATRIX_SHARD
 } = require('./qa/quality-severity-matrix');
@@ -21,6 +24,9 @@ const {
   acceptanceAudit,
   normalizeDeckPlan
 } = require('./design-system');
+const {
+  layoutPreflightAudit
+} = require('./design/layout-preflight');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-quality-mode');
@@ -54,7 +60,8 @@ const VISUAL_QA_FINDING_POLICY_SOURCE_FILES = [
   'scripts/design/source-trace-audit.js',
   'scripts/design/typography.js',
   'scripts/design/chart-spec-qa.js',
-  'scripts/design/chart-acceptance-gate.js'
+  'scripts/design/chart-acceptance-gate.js',
+  'scripts/design/layout-preflight.js'
 ];
 
 async function makePptx() {
@@ -115,6 +122,12 @@ function assertSeverityMatrix() {
   assert.equal(policyRow('renderMetaDrawnComponentFieldMissing').delivery, 'fail');
   assert.equal(policyRow('chartSourceMissing').category, 'data_contract_gap');
   assert.equal(policyRow('overlaySlotMismatch').category, 'overlay_contract');
+  assert.equal(policyRow('componentRouteUnsupported').category, 'unknown_component');
+  assert.equal(policyRow('titleSubtitleCollisionRisk').delivery, 'fail');
+  assert.equal(policyRow('metricUnitWrapRisk').category, 'shrink_risk');
+  assert.equal(policyRow('cardContentOverflowRisk').delivery, 'fail');
+  assert.equal(policyRow('closedLoopCenteringRisk').formal, 'review');
+  assert.equal(policyRow('chartLabelDensityRisk').delivery, 'fail');
   assert.equal(policyRow('visualTemplateFatigue').category, 'commercial_readiness');
   assert.equal(policyRow('fallbackRendererUsed').category, 'fallback');
   assert.equal(policyRow('skippedCriticalAsset').formal, 'fail');
@@ -155,6 +168,8 @@ function assertSeverityMatrix() {
     { level:'review', type:'sourceCoverageLow', message:'source' },
     { level:'review', type:'prototypeEvidenceMissing', message:'prototype' },
     { level:'review', type:'healthcareHandoffEvidenceMissing', message:'handoff' },
+    { level:'review', type:'titleSubtitleCollisionRisk', message:'title budget' },
+    { level:'review', type:'chartLabelDensityRisk', message:'label density' },
     { level:'fail', type:'unknownComponentId', message:'unknown' },
     { level:'fail', type:'baselineHashDistance', message:'baseline' }
   ];
@@ -189,7 +204,39 @@ function assertSeverityMatrix() {
 
   const delivery = applyQualitySeverityPolicy(findings, 'delivery');
   assert.equal(delivery.findings.find(f => f.type === 'possiblyBlankPreview').level, 'fail');
+  assert.equal(delivery.findings.find(f => f.type === 'titleSubtitleCollisionRisk').level, 'fail');
+  assert.equal(delivery.findings.find(f => f.type === 'chartLabelDensityRisk').level, 'fail');
   assert.equal(delivery.findings.find(f => f.type === 'baselineHashDistance').severityCategory, 'baseline_drift');
+
+  const reviewOnlyReadiness = acceptanceReadinessForFindings([{ level:'review', type:'reportLogicThin' }]);
+  assert.equal(reviewOnlyReadiness.status, 'client-review');
+  assert.deepEqual(reviewOnlyReadiness.blockingTypes, []);
+  assert.deepEqual(reviewOnlyReadiness.reviewTypes, ['reportLogicThin']);
+  const allowedReviewReadiness = acceptanceReadinessForFindings([{ level:'review', type:'captionCoverageLow' }], {
+    allowedReviewTypes:['captionCoverageLow']
+  });
+  assert.equal(allowedReviewReadiness.status, 'delivery-ready');
+  assert.equal(allowedReviewReadiness.deliveryReadyReason, 'only allowed review types remain');
+
+  const preflight = layoutPreflightAudit({}, {
+    slides:[{
+      type:'timeline',
+      layoutVariant:'closed-loop',
+      title:'一个非常长的中文闭环标题需要在渲染之前预判是否会把中心图形往下挤压并导致闭环组件偏移',
+      subtitle:'这个副标题也很长，会继续占用页眉下方空间，因此需要进入布局预算审计。',
+      metrics:[{ label:'现金回款', value:'1234567890', unit:'万元' }],
+      cards:Array.from({ length:4 }, (_, index) => ({
+        title:`卡片 ${index + 1}`,
+        value:'1234567890',
+        unit:'万元',
+        body:'这是一段明显超过单张卡片安全预算的说明文字，用来验证渲染前的溢出风险，并继续增加一段解释让预算稳定超过阈值。'
+      }))
+    }]
+  });
+  const preflightTypes = preflight.findings.map(f => f.type);
+  assert.ok(preflightTypes.includes('metricUnitWrapRisk'));
+  assert.ok(preflightTypes.includes('cardContentOverflowRisk'));
+  assert.ok(preflightTypes.includes('closedLoopCenteringRisk'));
 }
 
 function assertFormalExplicitChartSourceAcceptance() {
@@ -258,6 +305,9 @@ function assertFormalExplicitChartSourceAcceptance() {
   assert.equal(draft.status, 0, 'draft visual QA can keep missing render-meta as review');
   assert.equal(draft.result.quality_mode, 'draft');
   assert.equal(draft.result.findings.some(f => f.type === 'renderMetaMissing' && f.level === 'review'), true);
+  assert.equal(draft.result.readiness.status, 'client-review');
+  assert.deepEqual(draft.result.readiness.failTypes, []);
+  assert.ok(draft.result.readiness.reviewTypes.includes('renderMetaMissing'));
 
   const formal = runVisualQa(pptxPath, 'formal');
   assert.notEqual(formal.status, 0, 'formal visual QA should promote missing render-meta to fail');
@@ -267,6 +317,8 @@ function assertFormalExplicitChartSourceAcceptance() {
   assert.equal(finding.fatalBecauseOfQualityMode, 'formal');
   assert.ok(formal.result.severity_policy.promotedTypes.includes('renderMetaMissing'));
   assert.equal(formal.result.findings.find(f => f.type === 'renderMetaMissing').severityCategory, 'contract');
+  assert.equal(formal.result.readiness.status, 'blocked');
+  assert.ok(formal.result.readiness.failTypes.includes('renderMetaMissing'));
 
   console.log('quality mode severity policy ok');
 })().catch(err => {

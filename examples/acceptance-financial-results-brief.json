@@ -6,6 +6,9 @@
   "subtitle": "用统一口径解释收入质量、现金回收和下季度风险边界",
   "audience": "董事会 / 投委会",
   "footer": "Q1 Results Review",
+  "media": {
+    "cover": "acceptance://financial-results-review/cover.png"
+  },
   "slides": [
     {
       "type": "auto",

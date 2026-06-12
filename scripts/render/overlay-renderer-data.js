@@ -27,28 +27,7 @@ function createOverlayDataHelpers(deps = {}) {
     if (['cover', 'cover-dark'].includes(s.type || '') && Array.isArray(plan.coverMetrics) && plan.coverMetrics.length) {
       return plan.coverMetrics.map(normalize).filter(metric => metric.value || metric.note).slice(0, 4);
     }
-    const textItems = [
-      s.title,
-      s.subtitle,
-      s.claim,
-      s.note,
-      ...(Array.isArray(s.cards) ? s.cards.map(card => `${card.title || ''} ${card.body || card.text || ''}`) : []),
-      ...(Array.isArray(s.items) ? s.items.map(value => `${itemTitle(value)} ${itemBody(value)}`) : [])
-    ].filter(Boolean);
-    const found = [];
-    textItems.forEach((text, i) => {
-      const matches = String(text).match(/[+-]?\d[\d,]*(?:\.\d+)?\s*(?:%|％|pt|bps|倍|JPY|¥|B|bn|m|年|yrs?|countries|awards)?/gi) || [];
-      matches.forEach(match => {
-        const value = match.replace(/\s+/g, '');
-        if (!value || /^\d{4}$/.test(value) || found.some(metric => metric.value === value)) return;
-        found.push({
-          label: i === 0 ? 'Claim signal' : compactText(String(text).replace(match, ''), 18),
-          value,
-          note: compactText(String(text), 24)
-        });
-      });
-    });
-    return found.slice(0, 4);
+    return [];
   }
 
   function overlayPointsForSlide(s = {}) {

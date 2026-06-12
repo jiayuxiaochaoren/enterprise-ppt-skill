@@ -28,7 +28,20 @@ const GALLERY_TILE = Object.freeze({
   fitPolicy: 'cover'
 });
 
+const PANORAMIC_EVIDENCE_TILE = Object.freeze({
+  role: 'gallery',
+  slot: { w: 3.36, h: 1.04 },
+  fitPolicy: 'cover'
+});
+
+const PROFILE_EVIDENCE_BAND = Object.freeze({
+  role: 'evidence',
+  slot: { w: 3.36, h: 1.28 },
+  fitPolicy: 'cover'
+});
+
 const IMAGE_SLOT_TARGETS_BY_TYPE = Object.freeze({
+  'company-profile-spread': Object.assign({}, PROFILE_EVIDENCE_BAND, { targetSource: 'renderer-slot:company-profile-spread-evidence-band' }),
   'executive-blocks': Object.assign({}, SPLIT_FULL_HEIGHT, { targetSource: 'renderer-slot:executive-blocks' }),
   'quote-proof': Object.assign({}, SPLIT_FULL_HEIGHT, { targetSource: 'renderer-slot:quote-proof' }),
   manifesto: Object.assign({}, SPLIT_FULL_HEIGHT, { targetSource: 'renderer-slot:manifesto' }),
@@ -45,6 +58,7 @@ const IMAGE_SLOT_TARGETS_BY_VARIANT = Object.freeze({
   'side-panel': Object.assign({}, SPLIT_FULL_HEIGHT, { targetSource: 'renderer-slot:side-panel' }),
   'hero-panel': Object.assign({}, SHOWCASE_PANEL, { targetSource: 'renderer-slot:hero-panel' }),
   'evidence-frame': Object.assign({}, EVIDENCE_FRAME, { targetSource: 'renderer-slot:evidence-frame' }),
+  'evidence-board': Object.assign({}, PANORAMIC_EVIDENCE_TILE, { targetSource: 'renderer-slot:evidence-board-panoramic-tile' }),
   'consumer-proof-photo-grid': Object.assign({}, GALLERY_TILE, { targetSource: 'renderer-slot:consumer-proof-photo-grid' }),
   'case-gallery': Object.assign({}, GALLERY_TILE, { targetSource: 'renderer-slot:case-gallery' })
 });
@@ -64,10 +78,9 @@ function cloneTarget(target) {
 
 function imageSlotTargetForSlide(slide = {}) {
   const type = lower(slide.type);
-  if (IMAGE_SLOT_TARGETS_BY_TYPE[type]) return cloneTarget(IMAGE_SLOT_TARGETS_BY_TYPE[type]);
-
   const variant = lower(slide.layoutVariant || slide.variant || slide.proofObject || slide.proof_object);
   if (IMAGE_SLOT_TARGETS_BY_VARIANT[variant]) return cloneTarget(IMAGE_SLOT_TARGETS_BY_VARIANT[variant]);
+  if (IMAGE_SLOT_TARGETS_BY_TYPE[type]) return cloneTarget(IMAGE_SLOT_TARGETS_BY_TYPE[type]);
 
   const slotKind = lower(
     slide.imageSlotKind ||
@@ -85,6 +98,8 @@ module.exports = {
   GALLERY_TILE,
   IMAGE_SLOT_TARGETS_BY_TYPE,
   IMAGE_SLOT_TARGETS_BY_VARIANT,
+  PANORAMIC_EVIDENCE_TILE,
+  PROFILE_EVIDENCE_BAND,
   SHOWCASE_PANEL,
   SPLIT_FULL_HEIGHT,
   WIDE_BACKGROUND,

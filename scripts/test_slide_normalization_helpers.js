@@ -205,6 +205,23 @@ assert.equal(sameRoutePolicySourceStaleAsset.assetGeneration.previousDecisionSta
 assert.equal(sameRoutePolicySourceStaleAsset.generatedAssetPrompt, undefined);
 assert.ok(sameRoutePolicySourceStaleAsset.routeSanitization.suppressed.some(item => item.field === 'assetGeneration'));
 
+const resolvedSkipAssetDecision = helpers.normalizeSlide({}, {
+  forceType:'cover',
+  type:'cover',
+  title:'已解析跳过图片的封面',
+  assetStatus:'required',
+  assetGeneration:{
+    decisionSource:'asset-decision-gate/v1',
+    status:'none',
+    action:'skip_image',
+    mode:'structure-only',
+    reason:'user chose to skip visual asset and use native structure'
+  }
+}, 0, 1);
+assert.equal(resolvedSkipAssetDecision.assetGeneration.status, 'none');
+assert.equal(resolvedSkipAssetDecision.assetGeneration.decisionSource, 'asset-decision-gate/v1');
+assert.equal(resolvedSkipAssetDecision.generatedAssetPrompt, undefined);
+
 const metric = helpers.normalizeSlide({}, {
   forceType:'metric-comparison',
   title:'指标页',

@@ -7,7 +7,6 @@ function createEnergyNavigationRenderers(ctx = {}, deps = {}) {
     addRect,
     addText,
     addVisualPhotoPanel,
-    hasEnergyCurveSemantics,
     slideWantsImage,
     stageCanvas
   } = ctx;
@@ -30,7 +29,6 @@ function createEnergyNavigationRenderers(ctx = {}, deps = {}) {
       addVisualPhotoPanel(slide, plan, s, 'navigation', 0, 5.58, W, 1.28, { transparency:44 });
     } else if (allowDecorations) {
       addRect(slide, 0, 5.58, W, 1.28, C.ink2, C.ink2, { fill:{color:C.ink2, transparency:28}, line:{color:C.ink2, transparency:100} });
-      if (hasEnergyCurveSemantics(s)) ctx.addPulseCurve(slide, 1.02, 5.90, 5.36, 0.36, C.cyan, true, { transparency:66, width:0.36, nodes:false });
     }
     if (allowDecorations) addDarkBreathingCircle(slide, 10.36, 0.36, 2.48, 1.22, C.accent);
     addLabel(slide, '运营序列', { x:0.84, y:0.72, w:1.72, h:0.14, fontSize:7.0, color:'64748B', charSpace:0 });

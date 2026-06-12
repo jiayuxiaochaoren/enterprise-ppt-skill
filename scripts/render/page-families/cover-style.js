@@ -130,24 +130,69 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
       line:{ color:surface, transparency:100 }
     });
     const rightX = 5.75;
-    ctx.addPhotoPanel(slide, design.imagePath, rightX, 0, W() - rightX, H(), {
+    const addHeroImage = ctx.addSmartPhotoPanel || ctx.addPhotoPanel;
+    const imageRendered = addHeroImage(slide, design.imagePath, rightX, 0, W() - rightX, H(), {
+      role:'showcase',
       tone:'light',
-      transparency:22,
+      transparency:88,
       stroke:C.line,
       strokeTransparency:100,
-      fit:'cover',
       fallback:ctx.panelFill()
     });
-    ctx.addRect(slide, 0, 0, 6.10, H(), surface, surface, {
+    if (imageRendered === false) {
+      const board = { x:rightX + 0.52, y:0.86, w:W() - rightX - 1.04, h:5.78 };
+      ctx.addRect(slide, board.x, board.y, board.w, board.h, C.ink || '10232A', C.ink || '10232A', {
+        fill:{ color:C.ink || '10232A', transparency:0 },
+        line:{ color:C.line, transparency:72, width:0.34 }
+      });
+      ctx.addLabel(slide, '经营信号板', {
+        x:board.x+0.34, y:board.y+0.40, w:1.20, h:0.12,
+        fontSize:6.7, color:C.accent, charSpace:0
+      });
+      const signals = [
+        { title:'渠道效率', value:'ROAS', body:'按平台分层配置资源', color:C.accent },
+        { title:'SKU 组合', value:'684', body:'引流、毛利、复购角色拆分', color:C.cyan },
+        { title:'复购质量', value:'NPS', body:'履约和售后回到会员承接', color:C.violet }
+      ];
+      signals.forEach((item, i) => {
+        const x = board.x + 0.46 + i * ((board.w - 0.92) / 3);
+        const w = (board.w - 1.20) / 3;
+        ctx.addRect(slide, x, board.y+1.36, w, 2.76, C.ink2 || '17333B', item.color, {
+          fill:{ color:C.ink2 || '17333B', transparency:i === 0 ? 2 : 14 },
+          line:{ color:item.color, transparency:i === 0 ? 18 : 48, width:0.38 }
+        });
+        ctx.addText(slide, item.value, {
+          x:x+0.18, y:board.y+1.76, w:w-0.36, h:0.24,
+          fontSize:17.6, bold:true, color:item.color, fit:'shrink'
+        });
+        ctx.addText(slide, item.title, {
+          x:x+0.18, y:board.y+2.34, w:w-0.36, h:0.16,
+          fontSize:9.0, bold:true, color:C.white || 'FFFFFF', fit:'shrink'
+        });
+        ctx.addText(slide, item.body, {
+          x:x+0.18, y:board.y+2.84, w:w-0.36, h:0.38,
+          fontSize:7.0, color:C.darkMuted || 'B8CBC8', fit:'shrink', breakLine:true
+        });
+      });
+      ctx.addRect(slide, board.x+0.44, board.y+4.72, board.w-0.88, 0.02, C.line, C.line, {
+        fill:{ color:C.line, transparency:44 },
+        line:{ color:C.line, transparency:100 }
+      });
+      ctx.addText(slide, '平台资源 → SKU 组合 → 会员复购 → 现金回款', {
+        x:board.x+0.46, y:board.y+5.04, w:board.w-0.92, h:0.14,
+        fontSize:7.8, color:C.darkMuted || 'B8CBC8', fit:'shrink'
+      });
+    }
+    ctx.addRect(slide, 0, 0, rightX, H(), surface, surface, {
       fill:{ color:surface, transparency:0 },
       line:{ color:surface, transparency:100 }
     });
     addCoverKicker(slide, plan, industry, { x:0.84, y:0.92, w:3.8, h:0.14, fontSize:7.0, color:C.accent, charSpace:0.9 });
     ctx.addText(slide, title, {
-      x:0.80, y:1.54, w:5.18, h:1.10,
+      x:0.80, y:1.54, w:4.70, h:1.22,
       fontFace:ctx.profileFont('editorial'),
-      fontSize:ctx.typeSize('coverTitle', 34.0),
-      bold:true, color:C.text, breakLine:false, fit:'shrink'
+      fontSize:ctx.typeSize('coverTitle', 30.8),
+      bold:true, color:C.text, breakLine:true, fit:'shrink'
     });
     ctx.addText(slide, insightFor(plan, s, industry), {
       x:0.86, y:3.06, w:4.80, h:0.28,

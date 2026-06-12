@@ -109,6 +109,41 @@ assert.ok(
   'industry knowledge audit should flag finance decks without finance proof depth'
 );
 
+const weakRetailDepth = normalizeDeckPlan({
+  industry:'brand-retail',
+  slides:[
+    { type:'auto', title:'跨境电商复盘' },
+    ...Array.from({ length:7 }, (_, i) => ({
+      type:'metric-comparison',
+      title:`经营指标 ${i + 1}`,
+      metrics:[{ label:'GMV', value:`${100 + i}万` }, { label:'ROAS', value:'3.2x' }]
+    }))
+  ]
+});
+const weakRetailDepthFinding = industryKnowledgeAudit(weakRetailDepth, weakRetailDepth).findings.find(f => f.type === 'industryDepthMissing');
+assert.ok(weakRetailDepthFinding, 'retail deck without editorial/channel/cohort/loop depth should be reviewed');
+assert.ok(weakRetailDepthFinding.missingDomains.includes('editorial-proof'));
+assert.ok(weakRetailDepthFinding.recommendations.some(item => item.depthDomain === 'editorial-proof' && /editorial-proof-board/.test(item.recommendedRoute)));
+
+const strongRetailDepth = normalizeDeckPlan({
+  industry:'brand-retail',
+  slides:[
+    { type:'cover', layoutVariant:'beauty-brand-editorial-cover', proofObject:'beauty-brand-editorial-cover', title:'品牌经营复盘', subtitle:'产品与渠道进入质量增长。' },
+    { type:'report-board', layoutVariant:'editorial-proof-board', proofObject:'editorial-proof-board', title:'SKU 角色和消费者反馈形成视觉证据', productItems:[{ title:'P04 防晒', body:'旺季流量入口。' }] },
+    { type:'industry-chart', layoutVariant:'channel-efficiency-matrix', proofObject:'channel-efficiency-matrix', title:'渠道效率矩阵', channelEfficiency:[{ label:'Amazon', x:44, y:72, value:'4.2x' }] },
+    { type:'industry-chart', layoutVariant:'member-cohort-ladder', proofObject:'member-cohort-ladder', title:'会员分层', memberCohorts:[{ label:'高频会员', value:42 }] },
+    { type:'industry-chart', layoutVariant:'monthly-pulse-trend', proofObject:'monthly-pulse-trend', title:'月度经营趋势', monthlyPulse:[{ label:'1月', value:120 }, { label:'2月', value:136 }] },
+    { type:'timeline', layoutVariant:'closed-loop', proofObject:'closed-loop', title:'行动闭环', phases:[{ title:'动作' }, { title:'复盘' }] },
+    { type:'metric-comparison', layoutVariant:'member-growth-board', proofObject:'member-growth-board', title:'复购质量', metrics:[{ label:'复购率', value:'42%' }, { label:'客单价', value:'680' }] },
+    { type:'closing', title:'下一步行动', actions:[{ title:'复盘' }] }
+  ]
+});
+assert.equal(
+  industryKnowledgeAudit(strongRetailDepth, strongRetailDepth).findings.some(f => f.type === 'industryDepthMissing'),
+  false,
+  'retail deck with editorial/channel/cohort/business/loop depth should satisfy depth contract'
+);
+
 const strongFinance = normalizeDeckPlan({
   industry:'finance-investment',
   slides:[
@@ -170,6 +205,7 @@ assert.equal(languagePolicyFor(zhLanguagePlan).localizeNonEssentialMicrocopy, tr
 assert.equal(localizeMicrocopy(zhLanguagePlan, 'SOLUTION BLUEPRINT'), '方案蓝图');
 assert.equal(localizeMicrocopy(zhLanguagePlan, 'EDGE  →  DATA  →  DISPATCH  →  MANAGEMENT'), '边缘 → 数据 → 调度 → 管理');
 assert.equal(localizeMicrocopy(zhLanguagePlan, 'SITE · DATA · ALARM · DISPATCH · VALUE'), '站点 · 数据 · 告警 · 调度 · 价值');
+assert.equal(localizeMicrocopy(zhLanguagePlan, 'SEQUENCE 01 → 02 → 03 → 04 → 01'), '序列 01 → 02 → 03 → 04 → 01');
 assert.equal(localizeMicrocopy(zhLanguagePlan, 'OEE'), 'OEE', 'standard acronyms should be preserved');
 assert.equal(localizeMicrocopy({ language:'en', title:'English report' }, 'SOLUTION BLUEPRINT'), 'SOLUTION BLUEPRINT');
 

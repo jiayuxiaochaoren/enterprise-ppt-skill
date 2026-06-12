@@ -45,7 +45,8 @@ const TEST_PROFILE_RULES = [
     label: 'Chart QA rule-part or normalization change',
     patterns: [
       /^scripts\/design\/chart-.*qa.*\.js$/,
-      /^scripts\/design\/chart-spec-normalization\.js$/
+      /^scripts\/design\/chart-spec-normalization\.js$/,
+      /^scripts\/design\/chart-preflight\.js$/
     ],
     groups: ['unit', 'visual'],
     commands: ['npm run test:unit', 'npm run test:visual']
@@ -60,7 +61,7 @@ const TEST_PROFILE_RULES = [
       /^scripts\/test_renderer_/,
       /^scripts\/test_render_/,
       /^scripts\/test_.*_renderers\.js$/,
-      /^scripts\/test_(chrome_helpers|closing_routing|evidence_gallery_routing|fallback_renderer|financial_chart_utils|metadata_policy|routing)\.js$/,
+      /^scripts\/test_(card_layout_helpers|chrome_helpers|closing_routing|evidence_gallery_routing|fallback_renderer|financial_chart_utils|metadata_policy|routing)\.js$/,
       /^scripts\/test_page_family_splits\.js$/,
       /^scripts\/test_(component_fixture_qa|renderer_family_fixtures|template_family_qa|template_novelty_qa|template_page_family_fixtures)\.js$/,
       /^scripts\/(run_template_(page_family_fixtures|novelty_baselines)|template_page_family_fixtures)\.js$/,
@@ -80,6 +81,7 @@ const TEST_PROFILE_RULES = [
       /^scripts\/bind_generated_assets\.js$/,
       /^scripts\/assets\//,
       /^scripts\/design\/asset-generation\.js$/,
+      /^scripts\/design\/asset-target-contract\.js$/,
       /^scripts\/design\/image-assets\.js$/,
       /^scripts\/design\/visual-media\.js$/,
       /^scripts\/render\/asset-decision-meta\.js$/,
@@ -119,6 +121,7 @@ const TEST_PROFILE_RULES = [
       /^scripts\/visual_qa\.js$/,
       /^scripts\/validate_pptx\.js$/,
       /^scripts\/qa\/(?!(hardening-|template-readiness-|skill-metadata\.js$|[^/]*region[^/]*\.js$|component-consumption-[^/]+\.js$))/,
+      /^scripts\/design\/layout-preflight\.js$/,
       /^scripts\/test_brand_visual_richness_audit\.js$/,
       /^scripts\/test_(commercial_readiness_qa|component_screenshot_qa|quality_mode|semantic_narrative_qa)\.js$/,
       /^scripts\/test_visual_qa/,
@@ -136,7 +139,7 @@ const TEST_PROFILE_RULES = [
       /^scripts\/design\/(?!asset-generation\.js$|image-assets\.js$|visual-media\.js$|chart-.*qa.*\.js$|chart-spec-normalization\.js$)/,
       /^scripts\/design-system\.js$/,
       /^scripts\/chart-spec\.js$/,
-      /^scripts\/test_(acceptance_briefs|art_direction|composition_planner|composition_strategy|connector_pages|content_signals|deck_rhythm_helpers|density_strategy|image_layout_strategy|industry_evidence_chain|industry_evidence_component_contracts|industry_evidence_coverage_policy|industry_evidence_fixtures|industry_evidence_registry|industry_evidence_source_trace|industry_evidence_chain_smoke|industry_pack_depth|intelligence_layers|reference_recipe_system|rhythm_planner|semantic_model|slide_normalization_helpers|slide_routing_helpers|typography_system)\.js$/,
+      /^scripts\/test_(acceptance_briefs|art_direction|composition_planner|composition_strategy|connector_pages|content_signals|cover_style_contract|deck_rhythm_helpers|density_strategy|image_layout_strategy|industry_evidence_chain|industry_evidence_component_contracts|industry_evidence_coverage_policy|industry_evidence_fixtures|industry_evidence_registry|industry_evidence_source_trace|industry_evidence_chain_smoke|industry_pack_depth|intelligence_layers|reference_recipe_system|rhythm_planner|semantic_model|slide_normalization_helpers|slide_routing_helpers|typography_system)\.js$/,
       /^scripts\/test_design/,
       /^scripts\/test_chart_spec\.js$/,
       /^scripts\/(build_chart_regression_samples|build_reference_recipes|generate_industry_stress_demos|industry_acceptance_matrix|inspect_design|run_beauty_chart_benchmark|run_industry_acceptance|run_industry_evidence_chain_smoke)\.js$/,

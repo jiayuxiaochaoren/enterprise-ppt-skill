@@ -163,9 +163,33 @@ function bboxDelta(a = null, b = null) {
   return Number((Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.w - b.w) + Math.abs(a.h - b.h)).toFixed(4));
 }
 
+function previewSimilarityRisk(prev = null, cur = null, opts = {}) {
+  const dist = prev && cur ? hamming(prev.hash, cur.hash) : null;
+  const maxHash = opts.maxHash == null ? 6 : opts.maxHash;
+  if (dist == null || dist > maxHash) return { similar:false, dist };
+  const globalBbox = bboxDelta(prev.contentBBox, cur.contentBBox) || 0;
+  const mainBbox = bboxDelta(prev.regions && prev.regions.mainBody && prev.regions.mainBody.contentBBox, cur.regions && cur.regions.mainBody && cur.regions.mainBody.contentBBox) || 0;
+  const chartHam = hamming(prev.regions && prev.regions.chartBoard && prev.regions.chartBoard.hash, cur.regions && cur.regions.chartBoard && cur.regions.chartBoard.hash) || 0;
+  const meanDelta = Math.abs(Number(prev.mean || 0) - Number(cur.mean || 0));
+  const stdDelta = Math.abs(Number(prev.stddev || 0) - Number(cur.stddev || 0));
+  const coverageDelta = Math.abs(Number(prev.contentCoverage || 0) - Number(cur.contentCoverage || 0));
+  const materiallyDifferent = globalBbox > 0.08 || mainBbox > 0.12 || chartHam > 6 || meanDelta > 4 || stdDelta > 4 || coverageDelta > 0.06;
+  return {
+    similar: !materiallyDifferent,
+    dist,
+    globalBbox,
+    mainBbox,
+    chartHam,
+    meanDelta: Number(meanDelta.toFixed(2)),
+    stdDelta: Number(stdDelta.toFixed(2)),
+    coverageDelta: Number(coverageDelta.toFixed(4))
+  };
+}
+
 module.exports = {
   bboxDelta,
   hamming,
+  previewSimilarityRisk,
   pngAnalysis,
   pngInfo
 };

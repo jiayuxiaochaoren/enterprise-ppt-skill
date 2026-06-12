@@ -224,7 +224,7 @@ function assertSaasPrototypeFlowShell(ops) {
     && op.args[1] === 0.92
     && op.args[2] === 2.00
     && op.args[3] === 5.52
-    && op.args[4] === 3.72);
+    && op.args[4] === 3.88);
   assert(hero, 'expected SaaS prototype hero panel');
 
   const heroFallback = findGenericShowcaseField(ops, 'PRIMARY SCREEN', {

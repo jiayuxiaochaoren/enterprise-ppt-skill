@@ -121,7 +121,7 @@ module.exports = {
       {
         "id": "operations-quality-evidence",
         "position": 3,
-        "label": "运营/质量证据",
+        "label": "运营/现场证据",
         "components": [
           "quality-scorecard",
           "kpi-strip",
@@ -129,14 +129,12 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "quality-scorecard"
-          ],
           "requiredAny": [
-            "kpi-strip",
+            "quality-scorecard",
             "proof-gallery"
           ],
           "optional": [
+            "kpi-strip",
             "caption-bar"
           ],
           "minHits": 2
@@ -150,7 +148,9 @@ module.exports = {
         "routes": [
           "metric-comparison:oee",
           "industry-chart:downtime",
-          "case-gallery:site-evidence"
+          "case-gallery:site-evidence",
+          "case-gallery:evidence-board",
+          "case-gallery"
         ],
         "fields": [
           "metrics",
@@ -160,6 +160,7 @@ module.exports = {
           "pareto",
           "qualityScorecard",
           "inspectionRecords",
+          "quality",
           "images",
           "visual"
         ],
@@ -172,8 +173,11 @@ module.exports = {
           "MTBF",
           "质量",
           "现场",
+          "现场图片",
+          "图片证据",
           "oee",
           "downtime",
+          "gallery",
           "quality"
         ]
       }

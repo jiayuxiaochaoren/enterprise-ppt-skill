@@ -73,7 +73,6 @@ const CAPABILITY_ROWS = [
   ['large-product-frame', ['native'], 'visual'],
   ['launch-rhythm-strip', ['native'], 'flow'],
   ['line-chart', ['native', 'overlay'], 'chart'],
-  ['load-curve-band', ['native'], 'native-decoration'],
   ['lookbook-frame', ['native'], 'visual'],
   ['luxury-caption-bar', ['native', 'overlay'], 'caption'],
   ['matrix-chart', ['native', 'overlay'], 'chart'],

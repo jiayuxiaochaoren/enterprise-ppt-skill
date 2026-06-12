@@ -4,6 +4,12 @@ const {
   assetTargetContract
 } = require('../design/asset-generation');
 const {
+  boundAssetsForMeta,
+  firstProvenanceDimensions,
+  maxAspectMismatch,
+  numericAspect
+} = require('./asset-meta-helpers');
+const {
   imageAuthorizationStatus,
   imageProofEligibility,
   imageProvenanceClass,
@@ -70,65 +76,6 @@ function createRenderMetaHelpers(deps = {}) {
     return '';
   }
 
-  function firstProvenanceDimensions(provenance = []) {
-    const item = provenance.find(value => value && value.dimensions);
-    return item ? item.dimensions : null;
-  }
-
-  function provenanceForRef(ref = '', provenance = []) {
-    const value = String(ref || '');
-    return provenance.find(item => {
-      const file = String((item && (item.file || item.path)) || '');
-      return file === value || path.basename(file) === path.basename(value);
-    }) || null;
-  }
-
-  function numericAspect(value) {
-    const n = Number(value);
-    return Number.isFinite(n) && n >= 0 ? Number(n.toFixed(3)) : null;
-  }
-
-  function boundAssetsForMeta(generation = {}, provenance = [], refs = [], fitDecisions = [], target = null) {
-    if (Array.isArray(generation.boundAssets) && generation.boundAssets.length) {
-      return generation.boundAssets.map(item => Object.assign({}, item, {
-        imageAspectRatio: numericAspect(item.imageAspectRatio),
-        targetAspectRatio: numericAspect(item.targetAspectRatio || (item.assetTarget && item.assetTarget.aspectRatio)),
-        aspectMismatch: numericAspect(item.aspectMismatch),
-        targetSource: item.targetSource || (item.assetTarget && item.assetTarget.targetSource) || '',
-        fitPolicy: item.fitPolicy || (item.assetTarget && item.assetTarget.fitPolicy) || ''
-      }));
-    }
-    return refs.map((ref, i) => {
-      const provenanceItem = provenanceForRef(ref, provenance) || provenance[i] || {};
-      const fit = fitDecisions[i] || {};
-      const imageAspectRatio = numericAspect(provenanceItem.imageAspectRatio) ?? numericAspect(fit.imageAspectRatio);
-      const targetAspectRatio = numericAspect(provenanceItem.targetAspectRatio) ?? numericAspect(target && target.aspectRatio);
-      return {
-        path: ref,
-        dimensions: provenanceItem.dimensions || fit.imageDimensions || null,
-        imageAspectRatio,
-        targetAspectRatio,
-        aspectMismatch: numericAspect(provenanceItem.aspectMismatch) ?? numericAspect(
-          imageAspectRatio && targetAspectRatio
-            ? Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio
-            : null
-        ),
-        aspectMismatchAllowed: provenanceItem.aspectMismatchAllowed || undefined,
-        targetSlot: (provenanceItem.assetTarget && provenanceItem.assetTarget.slot) || (target && target.slot) || undefined,
-        targetSource: (provenanceItem.assetTarget && provenanceItem.assetTarget.targetSource) || (target && target.targetSource) || '',
-        fitPolicy: (provenanceItem.assetTarget && provenanceItem.assetTarget.fitPolicy) || (target && target.fitPolicy) || '',
-        assetTarget: provenanceItem.assetTarget || target || undefined
-      };
-    });
-  }
-
-  function maxAspectMismatch(items = []) {
-    const values = items
-      .map(item => numericAspect(item && item.aspectMismatch))
-      .filter(value => value != null);
-    return values.length ? Math.max(...values) : null;
-  }
-
   function assetDecisionForMeta(plan = {}, s = {}, renderedSlide = null) {
     const generation = s.assetGeneration || {};
     const refs = assetRefsForSlide(plan, s);
@@ -160,27 +107,36 @@ function createRenderMetaHelpers(deps = {}) {
     const target = generation.target || assetTargetContract(plan, s, generation.originalRole || role, {
       resolvedRole: generation.resolvedRole || generation.role || role
     });
-    const fitDecisions = (renderedSlide && Array.isArray(renderedSlide.__codexImageFits)) ? renderedSlide.__codexImageFits : [];
+    const onlyDefaultDecorativeMedia = refs.length === 0 &&
+      defaultMediaRefs.length > 0 &&
+      !generation.mustBind &&
+      generation.status !== 'required' &&
+      !s.generatedAssetPrompt;
+    const fitDecisions = onlyDefaultDecorativeMedia
+      ? []
+      : ((renderedSlide && Array.isArray(renderedSlide.__codexImageFits)) ? renderedSlide.__codexImageFits : []);
     const fitDecision = fitDecisions[0] || null;
     const boundAssets = boundAssetsForMeta(generation, provenance, refs, fitDecisions, target);
+    const anyFitFallbackContain = fitDecisions.some(fit => fit && (fit.fallbackContain === true || String(fit.fit || '').toLowerCase() === 'contain'));
+    const anyAssetMismatchAllowed = boundAssets.some(item => item && item.aspectMismatchAllowed === true);
     const firstBoundAsset = boundAssets[0] || {};
-    const imageDimensions = generation.imageDimensions || firstBoundAsset.dimensions || firstProvenanceDimensions(provenance) || (fitDecision && fitDecision.imageDimensions) || null;
-    const imageAspectRatio = numericAspect(generation.imageAspectRatio) ??
+    const imageDimensions = onlyDefaultDecorativeMedia ? null : (generation.imageDimensions || firstBoundAsset.dimensions || firstProvenanceDimensions(provenance) || (fitDecision && fitDecision.imageDimensions) || null);
+    const imageAspectRatio = onlyDefaultDecorativeMedia ? null : (numericAspect(generation.imageAspectRatio) ??
       numericAspect(firstBoundAsset.imageAspectRatio) ??
       numericAspect(provenance.find(item => item && item.imageAspectRatio) && provenance.find(item => item && item.imageAspectRatio).imageAspectRatio) ??
-      numericAspect(fitDecision && fitDecision.imageAspectRatio);
-    const targetAspectRatio = numericAspect(generation.targetAspectRatio) ?? numericAspect(target && target.aspectRatio);
-    const worstAspectMismatch = numericAspect(generation.worstAspectMismatch) ??
+      numericAspect(fitDecision && fitDecision.imageAspectRatio));
+    const targetAspectRatio = onlyDefaultDecorativeMedia ? null : (numericAspect(generation.targetAspectRatio) ?? numericAspect(target && target.aspectRatio));
+    const worstAspectMismatch = onlyDefaultDecorativeMedia ? null : (numericAspect(generation.worstAspectMismatch) ??
       numericAspect(generation.aspectMismatch) ??
-      maxAspectMismatch(boundAssets);
-    const aspectMismatch = numericAspect(generation.aspectMismatch) ??
+      maxAspectMismatch(boundAssets));
+    const aspectMismatch = onlyDefaultDecorativeMedia ? null : (numericAspect(generation.aspectMismatch) ??
       worstAspectMismatch ??
       numericAspect(provenance.find(item => item && item.aspectMismatch != null) && provenance.find(item => item && item.aspectMismatch != null).aspectMismatch) ??
       numericAspect(
         imageAspectRatio && targetAspectRatio
           ? Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio
           : null
-      );
+      ));
     const authorizationRisk = authorizationRiskLevel(preferredStatus);
     const riskLevel = authorizationRisk === 'high'
       ? 'high'
@@ -227,11 +183,14 @@ function createRenderMetaHelpers(deps = {}) {
       imageAspectRatio,
       aspectMismatch,
       worstAspectMismatch,
-      aspectMismatchAllowed: generation.aspectMismatchAllowed === true || provenance.some(item => item && item.aspectMismatchAllowed === true),
+      aspectMismatchAllowed: generation.aspectMismatchAllowed === true ||
+        provenance.some(item => item && item.aspectMismatchAllowed === true) ||
+        anyFitFallbackContain ||
+        anyAssetMismatchAllowed,
       fitDecision: fitDecision ? fitDecision.fit : (target && target.fitPolicy) || '',
       renderedSlot: fitDecision && fitDecision.slot ? fitDecision.slot : null,
       renderedSlotAspectRatio: fitDecision ? fitDecision.slotAspectRatio : undefined,
-      fitFallbackContain: Boolean(fitDecision && fitDecision.fallbackContain),
+      fitFallbackContain: anyFitFallbackContain,
       boundAssetCount: refs.length,
       boundAssetRefs: refs,
       boundAssets,

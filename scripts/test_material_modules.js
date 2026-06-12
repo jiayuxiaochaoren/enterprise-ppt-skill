@@ -4,7 +4,7 @@ const os = require('os');
 const path = require('path');
 const pipeline = require('./material_pipeline');
 const { buildClarificationGate } = require('./material/clarification');
-const { validateExtraction } = require('./material/deck-plan-compiler');
+const { extractionDepthFindings, validateExtraction } = require('./material/deck-plan-compiler');
 const { extractionSchema } = require('./material/extraction-schema');
 const {
   classifyImageRole,
@@ -93,6 +93,9 @@ assert.ok(ocrConfidence(match) < 0.9);
 const schema = extractionSchema();
 assert.equal(schema.version, 'material-extraction/v1');
 assert.ok(schema.claim_spine[0].source_pages);
+['business_domain', 'chain_stage', 'depth_domain', 'industry_objects', 'proof_intent'].forEach(field => {
+  assert.ok(Object.prototype.hasOwnProperty.call(schema.claim_spine[0], field), `claim schema should include ${field}`);
+});
 assert.equal(chartFieldForProof('monthly-pulse-trend'), 'monthlyPulse');
 assert.deepEqual(metricsFromClaim({ claim:'OEE 提升至 78%，计划达到 85%' }).map(m => m.value), ['78%', '85%']);
 assert.ok(claimVisibleText({ claim:'核心判断', bullets:['证据一'] }).includes('证据一'));
@@ -123,6 +126,35 @@ assert.equal(slideFromClaim({
   source_ids:['src-001'],
   metrics:[{ label:'OEE', value:'78%' }]
 }, { evidence: [] }, { sources: [{ id:'src-001', kind:'text', name:'brief.md' }] }).monthlyPulse.length, 1);
+const foundationMetricSlide = slideFromClaim({
+  claim:'多渠道经营底座已成型，后续转向质量增长',
+  support:'SKU、平台和团队规模构成增长基础。',
+  proof_object:'metric-board',
+  metrics:[
+    { label:'成立年份', value:'2018', note:'经营底座' },
+    { label:'员工规模', value:'214人', note:'团队规模' },
+    { label:'在售 SKU', value:'684个', note:'产品宽度' },
+    { label:'2026 目标', value:'+27%', note:'营收同比增长' }
+  ]
+}, { evidence: [] }, { sources: [] });
+assert.equal(foundationMetricSlide.type, 'report-board');
+assert.equal(foundationMetricSlide.proofObject, 'report-board');
+assert.equal(foundationMetricSlide.label, '经营底座');
+assert.equal(foundationMetricSlide.sections.length, 4);
+const financeMetricSlide = slideFromClaim({
+  claim:'利润质量修复后，费用要绑定现金回款',
+  support:'Q4 利润率承压，Q1 修复，继续加码前要明确回收周期。',
+  proof_object:'metric-board',
+  metrics:[
+    { label:'2025Q4 利润率', value:'-16.0%', note:'经营利润承压' },
+    { label:'2026Q1 利润率', value:'17.4%', note:'利润质量修复' },
+    { label:'2026Q1 回款', value:'5214.48万', note:'现金回款' },
+    { label:'2025Q3 销售费用', value:'1486.08万', note:'费用投放增加' }
+  ]
+}, { evidence: [] }, { sources: [] });
+assert.equal(financeMetricSlide.type, 'metric-comparison');
+assert.equal(financeMetricSlide.layoutVariant, 'financial-kpi-snapshot');
+assert.equal(financeMetricSlide.proofObject, 'financial-kpi-snapshot');
 assert.deepEqual(
   imagesForClaim(
     { visuals:[{ source_id:'img-001', caption:'现场照片', role:'evidence' }] },
@@ -173,6 +205,44 @@ assert.deepEqual(
   scalarSlide.sourceTrace.sourceIds,
   'slide proof sourceIds should come from canonical sourceTrace'
 );
+const depthFindings = extractionDepthFindings({
+  version:'material-extraction/v1',
+  document:{ industry:'brand-retail' },
+  claim_spine:[{
+    id:'claim-depth-missing',
+    claim:'产品与视觉证据缺少深度字段',
+    source_ids:['src-a']
+  }]
+});
+assert.equal(depthFindings[0].type, 'extractionDepthFieldsMissing');
+assert.ok(depthFindings[0].missingFields.includes('business_domain'));
+const editorialSlide = slideFromClaim({
+  id:'claim-editorial',
+  claim:'核心 SKU 已经形成产品角色，但缺少可外发产品图',
+  support:'产品宽度和消费者反馈可以先结构化呈现。',
+  business_domain:'editorial-proof',
+  chain_stage:'visual-claim',
+  depth_domain:'editorial-proof',
+  proof_intent:'visual claim',
+  proof_object:'editorial-proof-board',
+  industry_objects:{
+    product_skus:['P01 基础款', 'P04 防晒'],
+    platforms_channels:['Amazon', 'TikTok Shop'],
+    customer_or_user_signals:['物流顾虑', '品质升级']
+  },
+  asset_requirements:[{ role:'product', required:true, provenance:'user-provided product image required' }],
+  missing_info:['缺少真实产品图'],
+  source_ids:['src-a'],
+  source_pages:{ 'src-a':1 },
+  source_excerpts:{ 'src-a':'SKU 与消费者反馈样本' }
+}, { evidence: [] }, scalarBundle);
+assert.equal(editorialSlide.type, 'report-board');
+assert.equal(editorialSlide.layoutVariant, 'editorial-proof-board');
+assert.equal(editorialSlide.proofObject, 'editorial-proof-board');
+assert.equal(editorialSlide.depthDomain, 'editorial-proof');
+assert.ok(editorialSlide.sections.some(section => /产品/.test(section.title)));
+assert.ok(editorialSlide.informationGap, 'missing factual editorial assets should remain as an information gap');
+assert.equal(editorialSlide.assetGeneration.status, 'blocked');
 const assetOnlyClaim = { id:'claim-asset-only', claim:'Asset-only evidence', evidenceIds:'ev-asset' };
 const assetOnlyExtraction = {
   evidence:[{ id:'ev-asset', type:'image', assetSourceId:'img-asset', summary:'asset evidence', authorizationStatus:'cleared' }]

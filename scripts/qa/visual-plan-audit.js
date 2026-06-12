@@ -1,22 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const {
-  acceptanceAudit,
-  auditDeckPlan,
-  commercialReadinessAudit,
-  componentPlanAudit,
-  compositionAudit,
-  evidenceAudit,
-  industryFitAudit,
-  industryKnowledgeAudit,
-  normalizeDeckPlan,
-  pageCountAudit,
-  reportDepthAudit,
-  resolveAssetPath,
-  scoreImageAsset,
-  sourceTraceAudit,
-  typographyAudit,
-  visualAestheticModel
+  acceptanceAudit, auditDeckPlan, commercialReadinessAudit, componentPlanAudit, compositionAudit, evidenceAudit,
+  industryFitAudit, industryKnowledgeAudit, normalizeDeckPlan, pageCountAudit, reportDepthAudit, resolveAssetPath,
+  scoreImageAsset, sourceTraceAudit, typographyAudit, visualAestheticModel
 } = require('../design-system');
 const {
   chartAcceptanceGate,
@@ -36,6 +23,15 @@ const {
   assetTargetContract,
   generatedPromptAspectConflict
 } = require('../design/asset-generation');
+const {
+  layoutPreflightAudit
+} = require('../design/layout-preflight');
+const {
+  aspectMismatch,
+  auditForAssetRef,
+  factualSyntheticRisk,
+  generatedOrSynthetic
+} = require('./visual-plan-asset-audit');
 
 function defaultPlanAuditResult() {
   return {
@@ -59,6 +55,7 @@ function defaultPlanAuditResult() {
     planChartVisual: null,
     planChartEvidence: null,
     planChartScores: null,
+    planLayoutPreflight: null,
     planChartAcceptanceGate: null,
     secondaryAestheticReview: null
   };
@@ -70,48 +67,6 @@ function resolvePlanAssetPath(value, baseDir) {
   const fromPlan = path.resolve(baseDir, value);
   if (fs.existsSync(fromPlan)) return fromPlan;
   return resolveAssetPath(value);
-}
-
-function aspectMismatch(imageAspectRatio, targetAspectRatio) {
-  const image = Number(imageAspectRatio);
-  const target = Number(targetAspectRatio);
-  if (!Number.isFinite(image) || !Number.isFinite(target) || image <= 0 || target <= 0) return null;
-  return Number((Math.abs(image - target) / target).toFixed(3));
-}
-
-function refMatchesAudit(ref = '', audit = {}) {
-  const a = String(ref || '');
-  const candidates = [audit.path, audit.file, audit.sourceId].map(value => String(value || '')).filter(Boolean);
-  return candidates.some(candidate => candidate === a || path.basename(candidate) === path.basename(a));
-}
-
-function auditForAssetRef(ref = '', generation = {}, trace = {}) {
-  const candidates = [
-    ...(Array.isArray(generation.boundAssets) ? generation.boundAssets : []),
-    ...(Array.isArray(trace.imageProvenance) ? trace.imageProvenance : [])
-  ];
-  return candidates.find(item => item && refMatchesAudit(ref, item)) || null;
-}
-
-function generatedOrSynthetic(slide = {}) {
-  const generation = slide.assetGeneration || {};
-  const visual = slide.visual || {};
-  return generation.syntheticOnly === true ||
-    visual.generated === true ||
-    /generated|imagegen|model|synthetic/i.test(`${visual.mode || ''} ${generation.reason || ''} ${generation.decisionSource || ''}`);
-}
-
-function factualSyntheticRisk(slide = {}) {
-  const text = [
-    slide.title,
-    slide.subtitle,
-    slide.claim,
-    slide.proofObject,
-    slide.assetBrief,
-    slide.visual && slide.visual.caption,
-    slide.visual && slide.visual.prompt
-  ].filter(Boolean).join(' ');
-  return /真实客户|客户截图|真实截图|授权截图|证书|条码|门店陈列|现场实拍|真实SKU|真实产品包装|真实门店|真实数据截图/i.test(text);
 }
 
 function runPlanAudits(options = {}) {
@@ -150,6 +105,7 @@ function runPlanAudits(options = {}) {
     result.planChartVisual = chartVisualQA(rawPlan, normalized, renderMetaResult.meta);
     result.planChartEvidence = chartEvidenceQA(rawPlan, normalized);
     result.planChartScores = pageLevelChartScores(rawPlan, normalized, renderMetaResult.meta);
+    result.planLayoutPreflight = layoutPreflightAudit(rawPlan, normalized);
     result.planChartAcceptanceGate = chartAcceptanceGate(rawPlan, normalized, renderMetaResult.meta, {
       previewReports,
       requireContactSheet
@@ -183,12 +139,31 @@ function runPlanAudits(options = {}) {
       result.planChartSemantic,
       result.planChartVisual,
       result.planChartEvidence,
+      result.planLayoutPreflight,
       result.planChartAcceptanceGate
     ].forEach(audit => (audit.findings || []).forEach(f => findings.push(f)));
     if (result.secondaryAestheticReview) result.secondaryAestheticReview.findings.forEach(f => findings.push(f));
     const baseDir = path.dirname(planPath);
     const industry = String(rawPlan.industry || normalized.industry || '').toLowerCase();
+    const renderSlides = renderMetaResult && renderMetaResult.meta && Array.isArray(renderMetaResult.meta.slides)
+      ? renderMetaResult.meta.slides
+      : [];
     result.planAssetChecks = (normalized.slides || []).map((slide, i) => {
+      const renderedSlide = renderSlides.find(item => Number(item && item.slide) === i + 1) || renderSlides[i] || {};
+      const renderedAssetDecision = renderedSlide.assetDecision || {};
+      const renderedBoundAssets = Array.isArray(renderedAssetDecision.boundAssets)
+        ? renderedAssetDecision.boundAssets
+        : [];
+      const renderedAssetForRef = ref => {
+        const refName = path.basename(String(ref || ''));
+        return renderedBoundAssets.find(item => {
+          const itemPath = String((item && item.path) || '');
+          return itemPath === String(ref || '') || path.basename(itemPath) === refName;
+        }) || null;
+      };
+      const rendererHandledAspect = renderedAssetDecision.fitFallbackContain === true ||
+        renderedAssetDecision.aspectMismatchAllowed === true ||
+        (Array.isArray(renderedAssetDecision.boundAssets) && renderedAssetDecision.boundAssets.some(item => item && item.aspectMismatchAllowed === true));
       const imageValue = (slide.visual && slide.visual.image) || slide.image || '';
       const resolvedImage = resolvePlanAssetPath(imageValue, baseDir);
       const gallery = [
@@ -229,6 +204,7 @@ function runPlanAudits(options = {}) {
       assetRefs.forEach(ref => {
         const resolved = resolvePlanAssetPath(ref, baseDir);
         const assetAudit = auditForAssetRef(ref, generation, trace);
+        const renderedAssetAudit = renderedAssetForRef(ref);
         const assetTarget = (assetAudit && (assetAudit.assetTarget || assetAudit.target)) || target;
         const qualityRole = (assetTarget && (assetTarget.resolvedRole || assetTarget.role)) ||
           generation.resolvedRole ||
@@ -244,11 +220,17 @@ function runPlanAudits(options = {}) {
             message:`image asset needs review: ${path.basename(resolved)} (${quality.issues.join('; ')})`
           });
         }
-        const imageAspect = assetAudit && assetAudit.imageAspectRatio ? assetAudit.imageAspectRatio : quality.aspectRatio;
-        const targetAspect = assetAudit && assetAudit.targetAspectRatio ? assetAudit.targetAspectRatio : (assetTarget && assetTarget.aspectRatio);
-        const mismatch = quality.exists && targetAspect
+        const imageAspect = renderedAssetAudit && renderedAssetAudit.imageAspectRatio
+          ? renderedAssetAudit.imageAspectRatio
+          : (assetAudit && assetAudit.imageAspectRatio ? assetAudit.imageAspectRatio : quality.aspectRatio);
+        const targetAspect = renderedAssetAudit && renderedAssetAudit.targetAspectRatio
+          ? renderedAssetAudit.targetAspectRatio
+          : (assetAudit && assetAudit.targetAspectRatio ? assetAudit.targetAspectRatio : (assetTarget && assetTarget.aspectRatio));
+        const mismatch = renderedAssetAudit && renderedAssetAudit.aspectMismatch != null
+          ? renderedAssetAudit.aspectMismatch
+          : (quality.exists && targetAspect
           ? aspectMismatch(imageAspect, targetAspect)
-          : null;
+          : null);
         const enforceTarget = Boolean(
           (generation.status === 'bound' && targetAspect) ||
           mustBindGenerated ||
@@ -258,7 +240,9 @@ function runPlanAudits(options = {}) {
           enforceTarget &&
           mismatch != null &&
           mismatch > 0.25 &&
+          !rendererHandledAspect &&
           generation.aspectMismatchAllowed !== true &&
+          !(renderedAssetAudit && renderedAssetAudit.aspectMismatchAllowed === true) &&
           !(assetAudit && assetAudit.aspectMismatchAllowed === true) &&
           slide.allowAspectMismatch !== true
         ) {

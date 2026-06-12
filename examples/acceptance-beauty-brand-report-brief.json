@@ -6,6 +6,9 @@
   "subtitle": "把品牌世界观、产品证据和消费者经营放入同一套增长叙事",
   "organization": "肌研之光",
   "footer": "Beauty Brand Report",
+  "media": {
+    "cover": "acceptance://beauty-brand-report/cover.png"
+  },
   "slides": [
     {
       "type": "auto",

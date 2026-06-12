@@ -39,6 +39,14 @@ const {
   effectiveComponentModesFor,
   hasComponentCapability
 } = require('./components');
+const {
+  ASSET_DECISION_STATES,
+  assetDecisionStateFor
+} = require('./design/asset-decision-state');
+const {
+  SEMANTIC_LOCKED_ROUTE_TYPES,
+  routeIntentDecisionFor
+} = require('./design/route-intent-decision');
 
 let normalizeDeckPlanImpl = null;
 function normalizeDeckPlan(plan = {}) {
@@ -67,6 +75,12 @@ const languageRuntime = {
   inferDeckLanguage,
   languagePolicyFor,
   localizeMicrocopy
+};
+const contractRuntime = {
+  ASSET_DECISION_STATES,
+  SEMANTIC_LOCKED_ROUTE_TYPES,
+  assetDecisionStateFor,
+  routeIntentDecisionFor
 };
 
 const coreRuntime = createDesignSystemCoreRuntime(Object.assign({}, foundation, chartRuntime, componentRuntime, {
@@ -102,6 +116,7 @@ module.exports = buildDesignSystemExports({
   core: coreRuntime,
   audits: auditRuntime,
   planning: Object.assign({}, planningRuntime, { normalizeDeckPlan }),
+  contracts: contractRuntime,
   assetsAndIndustry: foundation,
   copyAndLanguage: Object.assign({}, foundation, languageRuntime),
   industryEvidenceChain: {

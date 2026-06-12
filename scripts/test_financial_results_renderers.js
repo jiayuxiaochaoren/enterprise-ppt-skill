@@ -191,6 +191,19 @@ function assertPortfolioDashboardShell(ops) {
   });
 }
 
+function assertFinancialKpiSnapshotShell(ops) {
+  const hero = ops.find(candidate => candidate.name === 'addRect'
+    && candidate.args[1] === 0.92
+    && candidate.args[3] === 4.18);
+  assert(hero, 'expected financial KPI hero panel');
+  const heroY = hero.args[2];
+  assert(heroY >= 2.28, `financial KPI hero should clear the header subtitle, got ${heroY}`);
+  const subtitle = ops.find(candidate => candidate.name === 'addText' && candidate.args[1] === 'KPI snapshot subtitle');
+  assert(subtitle, 'expected financial KPI subtitle');
+  const subtitleBox = subtitle.args[2] || {};
+  assert(heroY >= subtitleBox.y + subtitleBox.h + 0.50, 'financial KPI hero should not cover subtitle text');
+}
+
 function assertQuarterlyResultsShell(ops) {
   [
     [0.92, 2.06, 2.46, 3.86],
@@ -254,6 +267,7 @@ function main() {
   assertKicker(ops, 'QUARTERLY RESULTS SUMMARY');
   assertFinancialHeaders(ops);
   assertPortfolioDashboardShell(ops);
+  assertFinancialKpiSnapshotShell(ops);
   assertChartGridShell(ops);
   assertQuarterlyResultsShell(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 40, 'expected text output');

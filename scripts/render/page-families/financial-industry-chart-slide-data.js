@@ -7,6 +7,7 @@ const INDUSTRY_CHART_VARIANT_LABELS = {
   'channel-efficiency-matrix': '渠道效率',
   'monthly-pulse-trend': '月度脉冲',
   'waterfall-bridge': '目标桥',
+  'fact-metrics': '指标读数',
   'dispatch-map': '调度地图',
   'adoption-funnel': '采用漏斗',
   'evidence-readout': '行业读数'

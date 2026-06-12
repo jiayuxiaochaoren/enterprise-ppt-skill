@@ -197,11 +197,11 @@ function hasRect(ops, expected) {
 }
 
 function assertConsumerProofGridShell(ops) {
-  assert(hasRect(ops, { x:0.92, y:2.06, w:3.20, h:3.86 }), 'expected consumer proof shopper signal panel');
+  assert(hasRect(ops, { x:0.92, y:2.50, w:3.20, h:3.48 }), 'expected consumer proof shopper signal panel');
   [
-    { x:4.58, y:2.06, w:2.08, h:3.86 },
-    { x:6.96, y:2.06, w:2.08, h:3.86 },
-    { x:9.34, y:2.06, w:2.08, h:3.86 }
+    { x:4.58, y:2.50, w:2.08, h:3.48 },
+    { x:6.96, y:2.50, w:2.08, h:3.48 },
+    { x:9.34, y:2.50, w:2.08, h:3.48 }
   ].forEach((rect, index) => {
     assert(hasRect(ops, rect), `expected consumer proof slot ${index + 1}`);
   });

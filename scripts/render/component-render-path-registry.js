@@ -70,7 +70,6 @@ const COMPONENT_RENDER_PATH_OVERRIDES = {
   'inspection-matrix': ['native'],
   'kpi-primary-metric': ['native'],
   'kpi-strip': ['native', 'overlay'],
-  'load-curve-band': ['native'],
   'launch-rhythm-strip': ['native'],
   'line-chart': ['native', 'overlay'],
   'matrix-chart': ['native', 'overlay'],
@@ -134,7 +133,6 @@ const COMPONENT_RENDER_KIND_OVERRIDES = {
   'inspection-matrix': 'evidence',
   'kpi-primary-metric': 'evidence',
   'kpi-strip': 'evidence',
-  'load-curve-band': 'utility',
   'launch-rhythm-strip': 'utility',
   'line-chart': 'evidence',
   'matrix-chart': 'evidence',
@@ -167,6 +165,13 @@ const COMPONENT_RENDER_KIND_OVERRIDES = {
 
 const COMPONENT_RENDER_PATH_KINDS = Object.assign({}, COMPONENT_RENDER_KIND_DEFAULTS, COMPONENT_RENDER_KIND_OVERRIDES);
 
+const EVIDENCE_CAPABLE_UTILITY_COMPONENT_IDS = new Set([
+  'content-card-grid',
+  'contact-block',
+  'decision-panel',
+  'process-rail'
+]);
+
 const NATIVE_EVIDENCE_COMPONENT_IDS = new Set(
   Object.entries(COMPONENT_RENDER_PATH_OVERRIDES)
     .filter(([id, paths]) => paths.includes('native') && COMPONENT_RENDER_PATH_KINDS[id] === 'evidence')
@@ -184,6 +189,47 @@ function componentHasRenderPath(id = '', path = '') {
 
 function componentRenderKindFor(id = '') {
   return COMPONENT_RENDER_PATH_KINDS[normalizeComponentId(id)] || '';
+}
+
+function componentEvidenceCapabilityFor(id = '') {
+  const key = normalizeComponentId(id);
+  if (componentRenderKindFor(key) === 'evidence') return 'evidence';
+  if (EVIDENCE_CAPABLE_UTILITY_COMPONENT_IDS.has(key)) return 'evidence-capable-utility';
+  return 'none';
+}
+
+function componentNativeOwnershipFor(id = '') {
+  const paths = componentRenderPathsFor(id);
+  if (paths.includes('native') && paths.includes('overlay')) return 'native-or-overlay';
+  if (paths.includes('native')) return 'native';
+  if (paths.includes('overlay')) return 'overlay';
+  return paths.includes('suppressed-by-policy') ? 'suppressed-by-policy' : 'none';
+}
+
+function componentOverlayEligibilityFor(id = '') {
+  const paths = componentRenderPathsFor(id);
+  if (paths.includes('overlay')) return 'eligible';
+  if (paths.includes('suppressed-by-policy')) return 'suppressed-by-policy';
+  return 'not-eligible';
+}
+
+function componentConsumptionContractFor(id = '') {
+  const evidenceCapability = componentEvidenceCapabilityFor(id);
+  if (evidenceCapability === 'evidence' || evidenceCapability === 'evidence-capable-utility') return 'evidence-chain-capable';
+  if (componentRenderKindFor(id) === 'chrome') return 'chrome-only';
+  return componentRenderPathsFor(id).length ? 'utility-only' : 'none';
+}
+
+function componentCapabilityContractFor(id = '') {
+  return {
+    id: normalizeComponentId(id),
+    renderKind: componentRenderKindFor(id),
+    evidenceCapability: componentEvidenceCapabilityFor(id),
+    nativeOwnership: componentNativeOwnershipFor(id),
+    overlayEligibility: componentOverlayEligibilityFor(id),
+    consumptionContract: componentConsumptionContractFor(id),
+    renderPaths: componentRenderPathsFor(id)
+  };
 }
 
 function componentRenderPathIssues(id = '') {
@@ -214,10 +260,16 @@ function componentRenderPathIssues(id = '') {
 module.exports = {
   COMPONENT_RENDER_PATH_KINDS,
   COMPONENT_RENDER_PATHS,
+  EVIDENCE_CAPABLE_UTILITY_COMPONENT_IDS,
   NATIVE_EVIDENCE_COMPONENT_IDS,
   VALID_COMPONENT_RENDER_KINDS,
   VALID_COMPONENT_RENDER_PATHS,
+  componentCapabilityContractFor,
+  componentConsumptionContractFor,
+  componentEvidenceCapabilityFor,
   componentHasRenderPath,
+  componentNativeOwnershipFor,
+  componentOverlayEligibilityFor,
   componentRenderKindFor,
   componentRenderPathIssues,
   componentRenderPathsFor

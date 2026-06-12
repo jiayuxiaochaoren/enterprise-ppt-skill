@@ -70,6 +70,28 @@ function knownIndustry(plan = {}, slide = {}) {
   return normalizeIndustryEvidenceChainId(plan.industry, slide) !== 'neutral-general';
 }
 
+function nativeNeutralStageAllowed(slide = {}, planned = []) {
+  const type = String(slide.type || '');
+  if (['cover', 'cover-dark', 'closing', 'toc', 'toc-clean', 'chapter-divider'].includes(type)) return true;
+  const plannedSet = new Set(planned);
+  if (['cards', 'value-tiles', 'executive-blocks', 'two-column', 'two-column-clean', 'module-matrix', 'report-board'].includes(type)) {
+    return plannedSet.has('content-card-grid') || plannedSet.has('commentary-panel');
+  }
+  if (['timeline', 'timeline-dark'].includes(type)) {
+    return plannedSet.has('process-rail') || plannedSet.has('workflow-rail');
+  }
+  if (['risk-table', 'table'].includes(type)) {
+    return plannedSet.has('risk-register') || plannedSet.has('risk-matrix') || plannedSet.has('governance-table');
+  }
+  if (type === 'strategy-map') {
+    return plannedSet.has('value-chain') || plannedSet.has('commentary-panel');
+  }
+  if (type === 'case-gallery') {
+    return plannedSet.has('proof-gallery') || plannedSet.has('proof-gallery-grid') || plannedSet.has('caption-bar');
+  }
+  return false;
+}
+
 function crossIndustryFindings(slideNo, chain = {}, planned = []) {
   const findings = [];
   const plannedSet = new Set(planned);
@@ -196,6 +218,7 @@ module.exports = {
   hasFieldPath,
   inputChainFindings,
   knownIndustry,
+  nativeNeutralStageAllowed,
   plannedComponentsForSlide,
   plannedIdsForSlide,
   renderedSlideFor,

@@ -10,7 +10,7 @@ const {
 function usage() {
   console.error([
     'Usage:',
-    '  node scripts/deck_asset_decision_gate.js <deck-plan.json> --out out/asset-gate.json',
+    '  node scripts/deck_asset_decision_gate.js <deck-plan.json> --out out/asset-gate.json [--summary-md out/asset-gate.md]',
     '  node scripts/deck_asset_decision_gate.js <deck-plan.json> --answers out/asset-answers.json --out out/asset-gate-resolved.json --out-plan out/deck-plan.resolved.json',
     '',
     'Answer JSON shape:',
@@ -27,6 +27,7 @@ function parseArgs(argv) {
     if (a === '--out') opts.out = argv[++i];
     else if (a === '--answers') opts.answers = argv[++i];
     else if (a === '--out-plan') opts.outPlan = argv[++i];
+    else if (a === '--summary-md') opts.summaryMd = argv[++i];
     else if (a === '--external') opts.external = true;
     else if (a === '--help' || a === '-h') opts.help = true;
   }
@@ -41,12 +42,14 @@ function runCli(argv = process.argv.slice(2)) {
       planPath: opts.plan,
       answersPath: opts.answers || '',
       outPath: opts.out,
-      outPlanPath: opts.outPlan || ''
+      outPlanPath: opts.outPlan || '',
+      summaryPath: opts.summaryMd || ''
     });
     console.log(JSON.stringify({
       success: true,
       out: path.resolve(opts.out),
       outPlan: opts.outPlan ? path.resolve(opts.outPlan) : undefined,
+      summaryMd: opts.summaryMd ? path.resolve(opts.summaryMd) : undefined,
       status: gate.status,
       questions: gate.questionCount,
       canContinueWithoutAnswers: gate.canContinueWithoutAnswers

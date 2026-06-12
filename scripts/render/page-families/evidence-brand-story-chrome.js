@@ -4,7 +4,7 @@ function createBrandStoryChrome(ctx = {}) {
   const { drawFooter, drawLightPageHeader } = createPageFamilyPrimitives(ctx);
 
   function drawBrandStoryHeader(slide, s, idx, opts = {}) {
-    drawLightPageHeader(slide, {
+    return drawLightPageHeader(slide, {
       kicker:opts.kicker,
       title:s.title || opts.title,
       titleW:opts.titleW,

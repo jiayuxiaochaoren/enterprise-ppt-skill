@@ -73,12 +73,10 @@ module.exports = {
           "workflow-rail"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "value-chain",
-            "workflow-rail"
+          "requiredAll": [
+            "value-chain"
           ],
           "optional": [
-            "value-chain",
             "workflow-rail"
           ],
           "minHits": 1
@@ -114,83 +112,6 @@ module.exports = {
         ]
       },
       {
-        "id": "navigation-operating-path",
-        "position": 2,
-        "label": "运营路径",
-        "components": [
-          "navigation-sequence"
-        ],
-        "coveragePolicy": {
-          "requiredAll": [
-            "navigation-sequence"
-          ],
-          "optional": [],
-          "minHits": 1
-        },
-        "proofObjects": [
-          "metric-board",
-          "navigation-sequence"
-        ],
-        "routes": [
-          "chapter-divider:energy-sequence",
-          "toc-clean:energy-sequence"
-        ],
-        "fields": [
-          "items",
-          "sections"
-        ],
-        "keywords": [
-          "汇报路径",
-          "运营路径",
-          "接入",
-          "监测",
-          "闭环",
-          "复盘"
-        ]
-      },
-      {
-        "id": "management-action-board",
-        "position": 2,
-        "label": "经营动作拆解",
-        "components": [
-          "content-card-grid",
-          "commentary-panel"
-        ],
-        "coveragePolicy": {
-          "requiredAny": [
-            "content-card-grid",
-            "commentary-panel"
-          ],
-          "optional": [
-            "content-card-grid",
-            "commentary-panel"
-          ],
-          "minHits": 1
-        },
-        "proofObjects": [
-          "report-board"
-        ],
-        "routes": [
-          "report-board"
-        ],
-        "fields": [
-          "businessLogic",
-          "sections",
-          "cards",
-          "items"
-        ],
-        "keywords": [
-          "业务线",
-          "车队",
-          "聚合",
-          "套餐",
-          "渠道",
-          "经营口径",
-          "管理动作",
-          "复购"
-        ]
-      },
-      {
         "id": "operations-return-evidence",
         "position": 3,
         "label": "运行/收益证据",
@@ -199,19 +120,16 @@ module.exports = {
           "chart-commentary-panel"
         ],
         "coveragePolicy": {
-          "requiredAny": [
-            "kpi-strip",
-            "chart-commentary-panel"
+          "requiredAll": [
+            "kpi-strip"
           ],
           "optional": [
-            "kpi-strip",
             "chart-commentary-panel"
           ],
           "minHits": 1
         },
         "proofObjects": [
           "asset-readout",
-          "load-curve-band",
           "dispatch-map",
           "monthly-pulse-trend",
           "waterfall-bridge",

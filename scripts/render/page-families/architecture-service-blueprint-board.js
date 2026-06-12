@@ -9,7 +9,7 @@ function createServiceBlueprintBoardRenderer(ctx = {}) {
     panelFill
   } = ctx;
 
-  function drawServiceBlueprintBoard(slide, s, cols, fallback) {
+  function drawServiceBlueprintBoard(slide, s, cols, fallback, opts = {}) {
     const lanes = [
       { label:'患者动作', key:'patient', color:C.accent },
       { label:'前台服务', key:'frontstage', color:C.cyan },
@@ -17,7 +17,7 @@ function createServiceBlueprintBoardRenderer(ctx = {}) {
       { label:'质量证据', key:'evidence', color:'94A3B8' }
     ];
 
-    const board = { x:0.92, y:2.86, w:10.84, h:3.36 };
+    const board = { x:0.92, y:opts.y || 2.86, w:10.84, h:opts.h || 3.36 };
     addRect(slide, board.x, board.y, board.w, board.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.52} });
     addLabel(slide, 'TOUCHPOINTS · FRONTSTAGE · BACKSTAGE · QUALITY', { x:board.x+0.30, y:board.y+0.28, w:3.30, h:0.10, fontSize:5.8, color:C.muted, charSpace:0.8 });
     const colW = (board.w - 1.48) / cols.length;
@@ -41,8 +41,9 @@ function createServiceBlueprintBoardRenderer(ctx = {}) {
         addText(slide, text, { x:x+0.12, y:y+0.13, w:colW-0.44, h:0.12, fontSize:6.6, color:row===0 ? C.text : C.body, fit:'shrink' });
       });
     });
-    addHairline(slide, board.x+0.30, 5.78, board.w-0.60, C.line, 16, 0.45);
-    addText(slide, s.footerNote || '服务蓝图页强调触点之间的责任和证据，不把患者旅程压成单条时间线。', { x:board.x+0.30, y:5.96, w:6.3, h:0.12, fontSize:7.4, color:C.muted, fit:'shrink' });
+    const footerY = Math.min(5.92, board.y + board.h - 0.44);
+    addHairline(slide, board.x+0.30, footerY, board.w-0.60, C.line, 16, 0.45);
+    addText(slide, s.footerNote || '服务蓝图页强调触点之间的责任和证据，不把患者旅程压成单条时间线。', { x:board.x+0.30, y:footerY+0.18, w:6.3, h:0.12, fontSize:7.4, color:C.muted, fit:'shrink' });
   }
 
   return {

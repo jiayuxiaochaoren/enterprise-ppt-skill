@@ -101,12 +101,12 @@ function overlayContractAuditFromRender(renderMetaResult = {}) {
     }));
     const decorations = Array.isArray(slide.decorations) ? slide.decorations : [];
     const loadCurves = decorations.filter(d => d.type === 'load-curve-band');
-    if (loadCurves.length > 1) {
+    if (loadCurves.length) {
       findings.push({
         slide: slideNo,
         level:'fail',
-        type:'duplicateLoadCurveBand',
-        message:`${loadCurves.length} load-curve-band decorations on one slide; expected at most one`
+        type:'deprecatedLoadCurveBand',
+        message:'load-curve-band decorations are deprecated; use source-traced chartSpec or dispatch-map evidence instead'
       });
     }
     const rings = decorations.filter(d => d.type === 'breathing-circle');

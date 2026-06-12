@@ -7,6 +7,9 @@ const {
   createCoverCoreRenderers
 } = require('./render/page-families/cover-core');
 const {
+  createCoverStyleRenderer
+} = require('./render/page-families/cover-style');
+const {
   createCoverCopyHelpers
 } = require('./render/page-families/cover-copy');
 
@@ -71,7 +74,8 @@ function createFakeCtx(ops, specRef) {
     designForSlide: plan => ({
       wantsImage:Boolean(plan && plan.coverImagePath),
       imagePath:(plan && plan.coverImagePath) || '',
-      imageRole:(plan && plan.imageRole) || ''
+      imageRole:(plan && plan.imageRole) || '',
+      coverStylePreset:(plan && plan.coverStylePreset) || null
     }),
     fileExists: file => Boolean(file && String(file).includes('/exists/')),
     footerText: () => 'Footer',
@@ -304,6 +308,70 @@ function main() {
   assertLightEditorialShell(ops);
   assertCoverFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 30, 'expected cover text output');
+
+  const styleOps = [];
+  const styleSpecRef = { current:{ coverTone:'light' } };
+  const styleCtx = createFakeCtx(styleOps, styleSpecRef);
+  const styleCopy = createCoverCopyHelpers(styleCtx);
+  const styleRenderer = createCoverStyleRenderer(styleCtx, {
+    addCoverKicker: styleCopy.addCoverKicker,
+    colors: () => styleCtx.colors()
+  });
+  assert.equal(styleRenderer(
+    createSlide(styleOps),
+    {
+      title:'Brand System Board',
+      coverImagePath:'/exists/brand-system-board.jpg',
+      coverStylePreset:{ rendererFlavor:'brand-product-showcase' }
+    },
+    { title:'Brand System Board' },
+    { label:'BRAND RETAIL' },
+    'Brand System Board'
+  ), true);
+  const brandPhoto = styleOps.find(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/brand-system-board.jpg');
+  assert(brandPhoto, 'expected brand product showcase to render the right cover image panel');
+  assert(
+    (brandPhoto.args[6] || {}).transparency >= 80,
+    'brand product showcase should not wash out cover imagery with an opaque white overlay'
+  );
+  const leftSurface = styleOps.find(op => op.name === 'addRect'
+    && op.args[1] === 0
+    && op.args[2] === 0
+    && op.args[3] === brandPhoto.args[2]
+    && op.args[4] === 7.5);
+  assert(leftSurface, 'brand product showcase copy panel should stop exactly at the image boundary');
+
+  const noImageOps = [];
+  const noImageCtx = createFakeCtx(noImageOps, styleSpecRef);
+  noImageCtx.addPhotoPanel = (...args) => {
+    noImageOps.push({ name:'addPhotoPanel', args });
+    return false;
+  };
+  const noImageCopy = createCoverCopyHelpers(noImageCtx);
+  const noImageRenderer = createCoverStyleRenderer(noImageCtx, {
+    addCoverKicker: noImageCopy.addCoverKicker,
+    colors: () => noImageCtx.colors()
+  });
+  assert.equal(noImageRenderer(
+    createSlide(noImageOps),
+    {
+      title:'Commerce Signal Board',
+      coverStylePreset:{ rendererFlavor:'brand-product-showcase' }
+    },
+    { title:'Commerce Signal Board' },
+    { label:'BRAND RETAIL' },
+    'Commerce Signal Board'
+  ), true);
+  assert(
+    noImageOps.some(op => op.name === 'addLabel' && op.args[1] === '经营信号板'),
+    'brand product showcase skip-image branch should render a native signal board'
+  );
+  ['渠道效率', 'SKU 组合', '复购质量'].forEach(text => {
+    assert(
+      noImageOps.some(op => op.name === 'addText' && op.args[1] === text),
+      `expected native cover signal ${text}`
+    );
+  });
 
   console.log('cover core renderers ok');
 }

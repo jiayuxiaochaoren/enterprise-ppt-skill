@@ -8,8 +8,8 @@ function createSaasEnterpriseFitPanel(ctx = {}) {
     panelFill
   } = ctx;
 
-  function drawEnterpriseFit(slide, s, dataLayer, integrationLayer) {
-    const right = { x:8.92, y:2.08, w:2.82, h:4.10 };
+  function drawEnterpriseFit(slide, s, dataLayer, integrationLayer, opts = {}) {
+    const right = { x:8.92, y:opts.y || 2.08, w:2.82, h:opts.h || 4.10 };
     addRect(slide, right.x, right.y, right.w, right.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.52} });
     addLabel(slide, 'ENTERPRISE FIT', { x:right.x+0.26, y:right.y+0.32, w:1.30, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
     const proofRows = [
@@ -24,8 +24,9 @@ function createSaasEnterpriseFitPanel(ctx = {}) {
       addText(slide, row.body, { x:right.x+0.78, y:y-0.02, w:1.68, h:0.18, fontSize:8.8, color:C.text, fit:'shrink' });
       addHairline(slide, right.x+0.28, y+0.42, 2.14, C.line, 20, 0.34);
     });
-    addRect(slide, right.x+0.28, right.y+3.42, 2.10, 0.32, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:8}, line:{color:C.line, transparency:100} });
-    addText(slide, s.footerNote || '解释采用与扩展收入。', { x:right.x+0.40, y:right.y+3.48, w:1.92, h:0.16, fontSize:8.8, color:C.body, fit:'shrink' });
+    const footerY = right.y + Math.max(3.10, right.h - 0.68);
+    addRect(slide, right.x+0.28, footerY, 2.10, 0.32, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:8}, line:{color:C.line, transparency:100} });
+    addText(slide, s.footerNote || '解释采用与扩展收入。', { x:right.x+0.40, y:footerY+0.06, w:1.92, h:0.16, fontSize:8.8, color:C.body, fit:'shrink' });
   }
 
   return {

@@ -8,10 +8,11 @@ function createSaasPrototypeStateRenderer(ctx = {}) {
     itemTitle
   } = ctx;
 
-  function drawSaasScreenStates(slide, images, steps) {
+  function drawSaasScreenStates(slide, images, steps, opts = {}) {
+    const baseY = opts.y || 4.54;
     const screenSlots = [
-      { x:6.86, y:4.54, w:2.16, h:1.18, image:images[1], title:'STATE 02', color:C.cyan },
-      { x:9.42, y:4.54, w:2.16, h:1.18, image:images[2], title:'STATE 03', color:C.violet }
+      { x:6.86, y:baseY, w:2.16, h:1.18, image:images[1], title:'STATE 02', color:C.cyan },
+      { x:9.42, y:baseY, w:2.16, h:1.18, image:images[2], title:'STATE 03', color:C.violet }
     ];
     screenSlots.forEach((slot,i)=>{
       if (slot.image) addPhotoPanel(slide, slot.image, slot.x, slot.y, slot.w, slot.h, {

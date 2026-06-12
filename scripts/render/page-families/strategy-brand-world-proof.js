@@ -17,7 +17,7 @@ function createBrandWorldBusinessProofRenderer(ctx = {}) {
   const { drawBrandWorldHero } = createBrandWorldHeroRenderer(ctx);
 
   return function brandWorldBusinessProof(slide, plan, s, idx) {
-    drawLightPageHeader(slide, {
+    const header = drawLightPageHeader(slide, {
       kicker:'BRAND WORLD / BUSINESS PROOF',
       title:s.title || '品牌世界观与经营证据',
       titleW:6.2,
@@ -28,6 +28,8 @@ function createBrandWorldBusinessProofRenderer(ctx = {}) {
       idx,
       pageNumber:'chrome'
     });
+    const contentY = Math.max(2.50, Number(header && header.contentTop) || 2.50);
+    const contentH = Math.max(3.20, 6.10 - contentY);
     const images = ctx.galleryImages(plan, s);
     const metrics = (s.metrics || []).slice(0, 3);
     const drivers = (s.drivers && s.drivers.length ? s.drivers : [
@@ -45,10 +47,10 @@ function createBrandWorldBusinessProofRenderer(ctx = {}) {
       { title: 'Measurement system' },
       { title: 'Regional growth review' }
     ]).slice(0, 3);
-    const hero = { x:0.92, y:2.04, w:4.72, h:4.02 };
+    const hero = { x:0.92, y:contentY, w:4.72, h:contentH };
     drawBrandWorldHero(slide, hero, s, drivers, images[0], metrics);
 
-    const board = { x:6.18, y:2.04, w:5.26, h:4.02 };
+    const board = { x:6.18, y:contentY, w:5.26, h:contentH };
     drawBrandWorldBoard(slide, board, { drivers, actions, outcomes });
     drawFooter(slide, plan);
   };

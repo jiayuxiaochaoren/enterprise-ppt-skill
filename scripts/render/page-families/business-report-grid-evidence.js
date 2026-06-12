@@ -18,13 +18,13 @@ function createGridEvidenceRows(ctx = {}) {
     const cols = compactRightRail ? 1 : (visible.length <= 4 ? 2 : 3);
     const rows = Math.max(1, Math.ceil(visible.length / cols));
     const gapX = compactRightRail ? 0 : 0.24;
-    const gapY = rows <= 2 ? 0.28 : 0.18;
+    const gapY = compactRightRail ? 0.14 : (rows <= 2 ? 0.28 : 0.18);
     const startX = board.x + 0.30;
     const startY = board.y + 0.76;
     const gridW = board.w - 0.60;
     const gridH = board.h - 1.02;
     const colW = compactRightRail ? gridW : (gridW - gapX * (cols - 1)) / cols;
-    const rowH = Math.max(0.72, (gridH - gapY * (rows - 1)) / rows);
+    const rowH = Math.max(compactRightRail ? 0.66 : 0.72, (gridH - gapY * (rows - 1)) / rows);
     visible.forEach((it,i)=>{
       const col = i % cols;
       const row = Math.floor(i / cols);
@@ -41,14 +41,16 @@ function createGridEvidenceRows(ctx = {}) {
       });
       const title = itemTitle(it, `要点 ${i+1}`);
       const body = itemBody(it);
-      const titleH = 0.16;
-      const bodyH = body ? Math.min(0.42, Math.max(0.24, rowH - 0.56)) : 0;
+      const titleH = compactRightRail ? 0.14 : 0.16;
+      const bodyH = body
+        ? (compactRightRail ? Math.min(0.34, Math.max(0.22, rowH - 0.34)) : Math.min(0.42, Math.max(0.24, rowH - 0.56)))
+        : 0;
       const stack = body ? [titleH, bodyH] : [titleH];
-      const [titleY, bodyY] = centeredStackY(y, rowH, stack, body ? 0.10 : 0);
+      const [titleY, bodyY] = centeredStackY(y, rowH, stack, body ? (compactRightRail ? 0.06 : 0.10) : 0);
       addNumber(slide, String(i+1).padStart(2,'0'), { x:x+0.20, y:titleY+0.02, w:0.28, h:0.10, fontSize:6.4, color:accent });
-      addText(slide, title, { x:x+0.58, y:titleY, w:Math.max(0.90, colW - 0.82), h:titleH, fontSize:8.6, bold:true, color:C.text, fit:'shrink', valign:'mid' });
+      addText(slide, title, { x:x+0.58, y:titleY, w:Math.max(0.90, colW - 0.82), h:titleH, fontSize:compactRightRail ? 8.0 : 8.6, bold:true, color:C.text, fit:'shrink', valign:'mid' });
       if (body) {
-        addText(slide, body, { x:x+0.58, y:bodyY, w:Math.max(0.90, colW - 0.82), h:bodyH, fontSize:7.1, color:C.body, fit:'shrink', breakLine:true, valign:'mid' });
+        addText(slide, body, { x:x+0.58, y:bodyY, w:Math.max(0.90, colW - 0.82), h:bodyH, fontSize:compactRightRail ? 6.5 : 7.1, color:C.body, fit:'shrink', breakLine:true, valign:'mid' });
       }
     });
     if (!visible.length) {

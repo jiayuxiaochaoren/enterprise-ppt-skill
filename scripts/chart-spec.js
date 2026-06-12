@@ -4,6 +4,7 @@ const dataShape = require('./design/chart-data-shape');
 const intent = require('./design/chart-intent');
 const routing = require('./design/chart-spec-routing');
 const qa = require('./design/chart-spec-qa');
+const preflight = require('./design/chart-preflight');
 
 module.exports = Object.assign(
   {},
@@ -15,6 +16,7 @@ module.exports = Object.assign(
     sourceTraceForSlide: dataUtils.sourceTraceForSlide
   },
   {
+    chartSpecHasUnit: dataShape.chartSpecHasUnit,
     dataSufficiency: dataShape.dataSufficiency,
     valuesForSpec: dataShape.valuesForSpec
   },
@@ -27,5 +29,6 @@ module.exports = Object.assign(
     hasExplicitChartSignal: routing.hasExplicitChartSignal,
     routeChartSpec: routing.routeChartSpec
   },
+  preflight,
   qa
 );

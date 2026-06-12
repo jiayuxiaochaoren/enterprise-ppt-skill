@@ -228,16 +228,9 @@ function assertChapterEditorialShell(ops) {
     && op.args[3] === 5.72
     && op.args[4] === 4.98);
   assert(visual, 'expected editorial agenda visual map panel');
-  const overlay = ops.find(op => op.name === 'addRect'
-    && op.args[1] === 6.36
-    && op.args[2] === 4.68
-    && op.args[3] === 5.72
-    && op.args[4] === 1.32);
-  assert(overlay, 'expected editorial agenda pathway overlay');
-
   [
     ['EDITORIAL AGENDA', { x:0.86, y:0.94, w:1.64, h:0.13, fontSize:7.1, color:'0891B2', charSpace:0.9 }],
-    ['PATHWAY MAP', { x:6.70, y:4.98, w:1.18, h:0.10, fontSize:5.8, color:'2563EB', charSpace:0.8 }]
+    ['汇报路径', { x:6.70, y:1.36, w:1.18, h:0.12, fontSize:6.4, color:'2563EB', charSpace:0 }]
   ].forEach(([label, expected]) => {
     const op = ops.find(candidate => {
       if (candidate.name !== 'addLabel' || candidate.args[1] !== label) return false;
@@ -245,6 +238,13 @@ function assertChapterEditorialShell(ops) {
       return Object.entries(expected).every(([key, value]) => opts[key] === value);
     });
     assert(op, `expected editorial agenda label ${label}`);
+  });
+  [
+    { x:6.78, y:1.96, w:4.88, h:0.68 },
+    { x:6.78, y:2.80, w:4.88, h:0.68 },
+    { x:6.78, y:3.64, w:4.88, h:0.68 }
+  ].forEach((rect, index) => {
+    assert(hasRect(ops, rect), `expected editorial agenda path card ${index + 1}`);
   });
 
   assertHeaderText(ops, '05', {

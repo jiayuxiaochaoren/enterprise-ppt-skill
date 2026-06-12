@@ -178,6 +178,8 @@ function pngScene(file, opts = {}) {
 
 function buildGeneratedAssets() {
   const specs = {
+    'financial-results-review': { motif: 'policy', width:1600, height:900, bg: '#f8fafc', accent: '#b45309', secondary: '#0f766e' },
+    'beauty-brand-report': { motif: 'product', width:1600, height:1583, bg: '#fbf3ef', accent: '#b45359', secondary: '#0f766e' },
     'saas-ai-platform-growth': { motif: 'product', bg: '#f7faff', accent: '#2563eb', secondary: '#14b8a6' },
     'healthcare-service-quality': { motif: 'service', bg: '#f4faf7', accent: '#2f6f73', secondary: '#8aa06a' },
     'lifestyle-experience-growth': { motif: 'place', bg: '#fbfaf7', accent: '#b45309', secondary: '#0f766e' },

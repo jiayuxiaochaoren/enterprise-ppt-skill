@@ -127,6 +127,54 @@ assert.equal(beautyChartEvidenceSlide.componentPlan.componentIds.includes('kpi-s
 assert.equal(beautyChartEvidenceSlide.componentPlan.componentIds.includes('proof-gallery'), false);
 assert.equal(beautyChartEvidenceSlide.componentPlan.componentIds.includes('caption-bar'), false);
 
+const nativeFactMetricsPlan = normalizeSlide(
+  { industry:'brand-retail', title:'指标读数' },
+  {
+    type:'industry-chart',
+    layoutVariant:'fact-metrics',
+    variant:'fact-metrics',
+    proofObject:'metric-board',
+    title:'利润质量修复后，费用要绑定现金回款',
+    metrics:[
+      { label:'2025Q4 利润率', value:'-16.0%' },
+      { label:'2026Q1 利润率', value:'17.4%' }
+    ],
+    chartSpec:{
+      version:'chartSpec/v1',
+      kind:'scorecard',
+      componentId:'scorecard',
+      series:[{ values:[{ category:'2025Q4 利润率', value:-16, rawValue:'-16.0%' }] }]
+    }
+  },
+  4,
+  8
+);
+assert.equal(nativeFactMetricsPlan.componentPlan.componentIds.includes('scorecard'), false);
+assert.equal(nativeFactMetricsPlan.componentPlan.componentIds.includes('kpi-strip'), true);
+
+const nativeMemberCohortPlan = normalizeSlide(
+  { industry:'brand-retail', title:'会员分层' },
+  {
+    type:'industry-chart',
+    layoutVariant:'member-cohort-ladder',
+    variant:'member-cohort-ladder',
+    proofObject:'member-cohort-ladder',
+    title:'消费者反馈显示复购承接卡在信任、履约和售后',
+    metrics:[{ label:'样本量', value:'60条' }],
+    memberCohorts:[{ title:'新客', value:'31%' }],
+    chartSpec:{
+      version:'chartSpec/v1',
+      kind:'scorecard',
+      componentId:'beauty-member-repurchase',
+      series:[{ values:[{ category:'样本量', value:60, rawValue:'60条' }] }]
+    }
+  },
+  5,
+  8
+);
+assert.equal(nativeMemberCohortPlan.componentPlan.componentIds.includes('beauty-member-repurchase'), false);
+assert.equal(nativeMemberCohortPlan.componentPlan.componentIds.includes('kpi-strip'), true);
+
 const beautyValueCreationWithStaleProof = normalizeSlide(
   { industry:'beauty-consumer', title:'品牌经营体系' },
   {
@@ -326,6 +374,52 @@ assert.ok(kpiComponent, 'metric slide should plan kpi-strip');
 assert.ok(Array.isArray(kpiComponent.supportedModes) && kpiComponent.supportedModes.includes('overlay'));
 assert.equal(kpiComponent.ownershipPolicy, 'native-or-overlay');
 
+const numericCardPage = normalizeSlide(
+  { industry:'general-operations', title:'数字卡片页' },
+  {
+    type:'executive-blocks',
+    title:'渠道复盘显示 ROAS 与 GMV 已进入改善区间',
+    cards:[
+      { title:'ROAS', body:'本月 2.4 倍，仍由卡片原生承接。' },
+      { title:'GMV', body:'销售额 128 万元，作为卡片正文而非底部 KPI 条。' },
+      { title:'花费', body:'预算 42 万元，保留在卡片内。' }
+    ]
+  },
+  3,
+  8
+);
+assert.equal(numericCardPage.componentPlan.componentIds.includes('kpi-strip'), false);
+
+const skuKeywordWithoutProducts = normalizeSlide(
+  { industry:'brand-retail', title:'产品叙述页' },
+  {
+    type:'two-column',
+    title:'SKU 梯队说明先聚焦经营判断',
+    subtitle:'没有真实产品或 SKU 数据时，不应规划产品矩阵。',
+    cards:[{ title:'判断', body:'只说明预算方向。' }]
+  },
+  3,
+  8
+);
+assert.equal(skuKeywordWithoutProducts.componentPlan.componentIds.includes('product-matrix'), false);
+
+const unsupportedExplicitProductMatrix = normalizeSlide(
+  { industry:'brand-retail', title:'显式组件审计' },
+  {
+    type:'two-column',
+    title:'显式产品矩阵缺少产品数据',
+    componentHints:[{ id:'product-matrix', required:true }],
+    cards:[{ title:'判断', body:'没有 products/productStory。' }]
+  },
+  3,
+  8
+);
+assert.ok(unsupportedExplicitProductMatrix.componentPlan.componentIds.includes('product-matrix'));
+assert.ok(
+  componentPlanAudit({ slides:[unsupportedExplicitProductMatrix] }, { slides:[unsupportedExplicitProductMatrix] }).findings.some(f => f.type === 'componentRouteUnsupported'),
+  'explicit required components unsupported by the active route should be audited'
+);
+
 const unknownComponentPlan = normalizeSlide(
   { industry:'general-operations', title:'未知组件验证' },
   {
@@ -375,7 +469,7 @@ assert.equal(energyComponentsBySlide[1].has('navigation-sequence'), true);
 assert.equal(energyComponentsBySlide[2].has('content-card-grid'), true);
 assert.equal(energyComponentsBySlide[4].has('system-rail'), true);
 assert.equal(energyComponentsBySlide[6].has('process-rail'), true);
-assert.equal(energyComponentsBySlide[7].has('load-curve-band'), true);
+assert.equal(energyComponentsBySlide[7].has('load-curve-band'), false);
 assert.equal(energyComponentsBySlide[8].has('governance-table'), true);
 
 const explicitOptionalNativeComponent = normalizeSlide(

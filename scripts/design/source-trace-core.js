@@ -2,6 +2,7 @@ const {
   assetAuthorizationStatusHasSignal,
   sourceEntryIds,
   sourceIdValues,
+  sourceTraceObjectIsExplainable,
   sourceTraceForSlide: canonicalSourceTraceForSlide
 } = require('./source-evidence');
 
@@ -140,8 +141,12 @@ function createSourceTraceCoreHelpers({
   function applyPlanAuthoredSourceTrace(plan = {}, slide = {}, index = 0) {
     if (!/^plan-authored|brief|self-contained$/i.test(sourceTracePolicyMode(plan))) return slide;
     if (['cover', 'cover-dark', 'closing', 'closing-dark', 'toc', 'toc-clean', 'chapter-divider'].includes(slide.type || '')) return slide;
-    if (slideHasSourceBoundary(slide)) return slide;
-    const trace = planAuthoredSourceTrace(plan, slide, index);
+    const existingTrace = sourceTraceForSlide(slide);
+    if (Array.isArray(existingTrace.imageProvenance) && existingTrace.imageProvenance.length) return slide;
+    if (slideHasSourceBoundary(slide) && sourceTraceObjectIsExplainable(existingTrace, { requireSourceId:true }) && (slide.proof && slide.proof.id)) return slide;
+    const trace = Object.assign(planAuthoredSourceTrace(plan, slide, index), existingTrace.sourceNote || existingTrace.source_note ? {
+      sourceNote: existingTrace.sourceNote || existingTrace.source_note
+    } : {});
     const proofId = preferredProofObjectIdForTrace(slide) || `slide-${String(index + 1).padStart(2, '0')}`;
     return Object.assign({}, slide, {
       sourceTrace: trace,

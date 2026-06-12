@@ -565,7 +565,24 @@ function createEnergyServiceReportRenderers(ctx = {}) {
     slide.background = { color:C.dark || '08111F' };
     rect(slide, 0, 0, W(), H(), C.dark || '08111F', C.dark || '08111F', { lineTransparency:0 });
     addHeader(slide, '下一步动作收口', s.subtitle || '把增长动作收口到站点稳定、渠道分层和套餐复购', idx, true);
-    const actions = (s.actions || []).slice(0, 3);
+    const fallbackActions = [
+      { title:'试点验证', body:'确认首批重点站点、设备接入和指标口径。' },
+      { title:'闭环复盘', body:'把告警工单、储能策略和收益波动放入同一复盘节奏。' },
+      { title:'区域推广', body:'按站点成熟度扩展到区域运维中心。' }
+    ];
+    const rawActions = []
+      .concat(Array.isArray(s.actions) ? s.actions : [])
+      .concat(Array.isArray(s.cards) ? s.cards : [])
+      .concat(Array.isArray(s.items) ? s.items : [])
+      .concat(Array.isArray(s.phases) ? s.phases : []);
+    const note = cleanText(s.note || s.summary || s.decision || s.subtitle || '');
+    const noteActions = note
+      ? note.split(/[，,；;。]/).map(part => cleanText(part)).filter(Boolean).slice(0, 3).map((body, i) => ({
+        title:['试点验证', '闭环复盘', '区域推广'][i] || `动作${i + 1}`,
+        body
+      }))
+      : [];
+    const actions = (rawActions.length ? rawActions : noteActions.length ? noteActions : fallbackActions).slice(0, 3);
     actions.forEach((a, i) => {
       const x = 0.88 + i * 4.05;
       const color = accents()[i];
@@ -613,7 +630,7 @@ function isEnergyChargingServiceReport(plan = {}, s = {}) {
     s.proofObject,
     s.layoutVariant
   ].filter(Boolean).join(' ');
-  return /新能源汽车|充电服务|充电枪|快充站|车队|补能|站点|ROI/i.test(text);
+  return /新能源汽车|充电服务|充电枪|快充站|充电站|车队充电|补能|换电|ROI/i.test(text);
 }
 
 function energyServiceReportRendererNameFor(plan = {}, s = {}) {

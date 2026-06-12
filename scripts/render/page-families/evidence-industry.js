@@ -17,7 +17,7 @@ function createEvidenceIndustryRenderers(ctx = {}) {
   } = createPageFamilyPrimitives(ctx);
 
   function drawEvidenceHeader(slide, s, idx, opts = {}) {
-    drawLightPageHeader(slide, {
+    return drawLightPageHeader(slide, {
       kicker:opts.kicker,
       title:s.title || opts.title,
       titleW:5.9,

@@ -10,7 +10,10 @@ function componentEvidenceFieldFindings({
 } = {}) {
   const findings = [];
   const plannedSet = new Set(planned);
-  if (chain.chainId === 'saas-technology' && plannedSet.has('prototype-frame') && !componentHasEvidence('prototype-frame', slide, { strict:true })) {
+  const chainExpectsPrototype = Array.isArray(chain.components) && chain.components.includes('prototype-frame');
+  const slideClaimsPrototype = componentHasEvidence('prototype-frame', slide) ||
+    /prototype-flow/i.test(`${slide.layoutVariant || ''} ${slide.variant || ''} ${slide.proofObject || slide.proof_object || ''}`);
+  if (chain.chainId === 'saas-technology' && chainExpectsPrototype && slideClaimsPrototype && !componentHasEvidence('prototype-frame', slide, { strict:true })) {
     findings.push({
       slide: slideNo,
       level: 'review',

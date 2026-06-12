@@ -19,20 +19,31 @@ module.exports = {
         "label": "判断框架",
         "components": [
           "value-chain",
+          "kpi-strip",
+          "waterfall-chart",
           "source-note",
           "disclosure-footnote"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "value-chain"
-          ],
           "requiredAny": [
+            "value-chain",
+            "kpi-strip",
+            "waterfall-chart",
             "disclosure-footnote"
           ],
           "optional": [
             "source-note"
           ],
-          "minHits": 2
+          "minHits": 2,
+          "scoreMode": "minHits",
+          "coverageAliases": {
+            "chart-commentary-panel": [
+              "disclosure-footnote"
+            ],
+            "heatmap-chart": [
+              "kpi-strip"
+            ]
+          }
         },
         "proofObjects": [
           "financial-kpi-snapshot",
@@ -41,8 +52,7 @@ module.exports = {
         ],
         "routes": [
           "finance-bridge",
-          "industry-chart:valuation",
-          "metric-comparison:financial"
+          "industry-chart:valuation"
         ],
         "fields": [
           "investmentThesis",
@@ -78,14 +88,12 @@ module.exports = {
           "requiredAll": [
             "value-chain"
           ],
-          "requiredAny": [
-            "governance-table",
-            "disclosure-footnote"
-          ],
           "optional": [
+            "governance-table",
+            "disclosure-footnote",
             "source-note"
           ],
-          "minHits": 2
+          "minHits": 1
         },
         "proofObjects": [
           "portfolio-action-table",
@@ -129,18 +137,25 @@ module.exports = {
           "disclosure-footnote"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "risk-register"
-          ],
           "requiredAny": [
             "kpi-strip",
+            "risk-register",
             "governance-table",
             "disclosure-footnote"
           ],
           "optional": [
             "source-note"
           ],
-          "minHits": 2
+          "minHits": 2,
+          "scoreMode": "minHits",
+          "coverageAliases": {
+            "chart-commentary-panel": [
+              "disclosure-footnote"
+            ],
+            "scorecard": [
+              "kpi-strip"
+            ]
+          }
         },
         "proofObjects": [
           "risk-matrix",

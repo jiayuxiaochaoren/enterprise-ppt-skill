@@ -176,11 +176,6 @@ function createThemeMetaHelpers(deps = {}) {
   function copyFallback(plan = {}, key = '', fallback = '') {
     return deps.copyPolicyText(plan, key, fallback);
   }
-  function hasEnergyCurveSemantics(s = {}) {
-    if (s.loadCurve || s.loadCurveBand || s.curve || s.trend || s.monthlyTrend || s.monthlyPulse) return true;
-    return /曲线|趋势|负荷|SOC|load|curve|trend|pulse/i.test(deps.slideSemanticText(s));
-  }
-
   return {
     C,
     DESIGN,
@@ -206,7 +201,6 @@ function createThemeMetaHelpers(deps = {}) {
     design,
     footerText,
     fs,
-    hasEnergyCurveSemantics,
     industryProfile,
     isCompanyIntroPlan,
     isVisualIndustry,

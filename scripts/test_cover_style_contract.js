@@ -27,9 +27,27 @@ assert.equal(
 );
 
 assert.equal(
+  coverStyleForPlan({ coverStyle:'auto', industry:'brand-retail' }, { type:'cover', title:'NorthBay Living 跨境电商经营复盘', subtitle:'五个平台收入、SKU 组合和复购承接' }),
+  'brand-system-board',
+  'commerce platform wording should infer retail brand style instead of architecture blueprint'
+);
+const brandPrompt = generatedAssetPrompt(
+  { coverStyle:'brand-system-board' },
+  { type:'cover', title:'NorthBay Living 跨境电商经营复盘', visual:{ role:'showcase' } }
+);
+assert.match(brandPrompt, /right-side hero panel|continuous edge-to-edge/i);
+assert.doesNotMatch(brandPrompt, /text-safe zone|safe zone/i);
+
+assert.equal(
   selectPaletteName({ coverStyle:'eastern-void-object' }),
   'graphite-ivory',
   'coverStyle preset palette should become deck palette when no explicit palette is set'
+);
+
+assert.equal(
+  selectPaletteName({ industry:'brand-retail', palette:'consumer-commerce-teal-coral' }),
+  'consumer-commerce-teal-coral',
+  'explicit commerce palette should not fall back to the generic retail redline palette'
 );
 
 const design = slideDesign(

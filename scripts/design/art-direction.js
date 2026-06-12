@@ -20,10 +20,33 @@ function createArtDirectionHelpers({
     const policy = industryVisualPolicy(plan);
     const art = deckArtDirection(plan);
     const explicitPalette = plan.palette || art.palette || art.paletteName;
-    if (explicitPalette) return explicitPalette;
+    const palettes = visualSystem.palettes || {};
+    function knownPalette(name = '') {
+      const key = String(name || '').trim();
+      return key && palettes[key] ? key : '';
+    }
+    function paletteAlias(name = '') {
+      const key = String(name || '').trim();
+      if (!key) return '';
+      if (/consumer[-_\s]*commerce|commerce.*(?:teal|coral)|(?:teal|coral).*commerce|cross[-_\s]*border|跨境|电商/i.test(key)) return 'consumer-commerce-teal-coral';
+      if (/consumer|retail|brand|teal|coral|零售|消费|品牌/i.test(key)) return 'warm-white-redline';
+      if (/energy|utility|ops|charging|新能源|充电|电站/i.test(key)) return 'energy-ops-clean';
+      if (/finance|investment|fund|金融|投资/i.test(key)) return 'finance-slate';
+      return '';
+    }
+    if (explicitPalette) {
+      return knownPalette(explicitPalette) ||
+        knownPalette(paletteAlias(explicitPalette)) ||
+        knownPalette(dialect.defaultPalette) ||
+        knownPalette(policy.defaultPalette) ||
+        'boardroom-ink';
+    }
     const coverStyle = coverStyleDecision(plan, {}, { visualSystem });
-    if (coverStyle.preset && coverStyle.preset.paletteName) return coverStyle.preset.paletteName;
-    return dialect.defaultPalette || policy.defaultPalette || 'boardroom-ink';
+    const explicitCoverStyle = plan.coverStyle || plan.cover_style || art.coverStyle || art.cover_style;
+    if (explicitCoverStyle && String(explicitCoverStyle).toLowerCase() !== 'auto' && coverStyle.preset && coverStyle.preset.paletteName) {
+      return coverStyle.preset.paletteName;
+    }
+    return dialect.defaultPalette || policy.defaultPalette || (coverStyle.preset && coverStyle.preset.paletteName) || 'boardroom-ink';
   }
 
   function normalizedArtMap(plan = {}) {

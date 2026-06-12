@@ -1,5 +1,5 @@
 const {
-  coerceChartItems
+  firstChartItems
 } = require('./financial-chart-utils');
 
 function createDefaultIndustryReadoutBoard(ctx = {}) {
@@ -13,7 +13,7 @@ function createDefaultIndustryReadoutBoard(ctx = {}) {
   } = ctx;
 
   function renderDefaultIndustryReadoutBoard(slide, s, board) {
-    const items = coerceChartItems(s.items || s.cards, [
+    const items = firstChartItems(s, ['items', 'cards', 'metrics', 'facts', 'signals'], [
       { title:'对象', body:'行业材料对象' },
       { title:'证据', body:'可检查事实' },
       { title:'动作', body:'下一步行动' }

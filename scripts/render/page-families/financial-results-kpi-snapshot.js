@@ -20,7 +20,7 @@ function createFinancialKpiSnapshot(ctx = {}, deps = {}) {
   } = deps;
 
   return function financialKpiSnapshot(slide, plan, s, idx) {
-    drawResultsHeader(slide, s, idx, {
+    const header = drawResultsHeader(slide, s, idx, {
       kicker:'FINANCIAL KPI SNAPSHOT',
       title:'核心经营快照',
       titleY:1.05,
@@ -32,6 +32,8 @@ function createFinancialKpiSnapshot(ctx = {}, deps = {}) {
       subtitleW:7.0,
       subtitleSize:10.0
     });
+    const contentY = Math.max(2.28, (Number(header && header.contentTop) || 2.02) + 0.18);
+    const yDelta = contentY - 2.02;
     const metrics = (s.metrics || []).slice(0, 4);
     const primary = metrics[0] || { label:'主指标', value:'-', note:'需要补充本期核心经营判断。' };
     const period = s.period || s.quarter || s.reportingPeriod || s.reporting_period || '';
@@ -39,7 +41,7 @@ function createFinancialKpiSnapshot(ctx = {}, deps = {}) {
       ? (s.source || s.sourceNote || s.source_note || ((s.proof && s.proof.sourceNote) || '') || sourceTraceNoteText(s))
       : '';
 
-    const hero = { x:0.92, y:2.02, w:4.18, h:4.16 };
+    const hero = { x:0.92, y:contentY, w:4.18, h:Math.max(3.76, 4.16 - yDelta) };
     addRect(slide, hero.x, hero.y, hero.w, hero.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
     addLabel(slide, 'PRIMARY KPI', { x:hero.x+0.34, y:hero.y+0.38, w:1.16, h:0.10, fontSize:6.4, color:C.accent, charSpace:0.8 });
     addText(slide, primary.label || '核心指标', { x:hero.x+0.34, y:hero.y+0.86, w:1.64, h:0.16, fontSize:10.0, bold:true, color:'CBD5E1', fit:'shrink' });
@@ -51,7 +53,7 @@ function createFinancialKpiSnapshot(ctx = {}, deps = {}) {
       addText(slide, period, { x:hero.x+1.14, y:hero.y+3.55, w:1.62, h:0.12, fontSize:8.0, color:'CBD5E1', fit:'shrink' });
     }
 
-    const strip = { x:5.62, y:2.02, w:6.08, h:2.04 };
+    const strip = { x:5.62, y:contentY, w:6.08, h:2.04 };
     addLabel(slide, 'SUPPORTING METRIC STRIP', { x:strip.x, y:strip.y+0.02, w:1.94, h:0.10, fontSize:6.0, color:C.accent, charSpace:0.8 });
     metrics.slice(1, 4).forEach((m, i) => {
       const cardW = 1.78;
@@ -74,7 +76,7 @@ function createFinancialKpiSnapshot(ctx = {}, deps = {}) {
       });
     });
 
-    const readout = { x:5.62, y:4.46, w:5.84, h:1.46 };
+    const readout = { x:5.62, y:contentY + 2.44, w:5.84, h:1.46 };
     addRect(slide, readout.x, readout.y, readout.w, readout.h, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:10}, line:{color:C.line, transparency:100} });
     addLabel(slide, '预算判断', { x:readout.x+0.28, y:readout.y+0.26, w:1.00, h:0.09, fontSize:6.2, color:C.accent, charSpace:0 });
     const logic = s.businessLogic || {};

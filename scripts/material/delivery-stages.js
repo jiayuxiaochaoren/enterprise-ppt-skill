@@ -38,7 +38,7 @@ function prepareExtractionPath({
   rel
 }) {
   let extractionPath = opts.modelJson ? path.resolve(opts.modelJson) : '';
-  if (!extractionPath && opts.autoDraft) {
+  if (!extractionPath && opts.autoDraft && opts.qualityMode === 'draft') {
     extractionPath = path.join(orchestrationDir, 'material-extraction.draft.json');
     const draft = buildDraftExtraction(bundle, opts);
     const errors = validateExtraction(draft);
@@ -46,6 +46,8 @@ function prepareExtractionPath({
     writeJson(extractionPath, draft);
     report.outputs.draftExtraction = rel(extractionPath);
     report.nextActions.push('Auto-draft extraction was used; replace it with model-reviewed material-extraction.json before external delivery.');
+  } else if (!extractionPath && opts.autoDraft) {
+    report.nextActions.push('Auto-draft extraction is draft-only; formal or delivery runs must use model-reviewed material-extraction.json via --model-json or --model-results.');
   }
   if (!extractionPath) {
     report.status = 'awaiting_model_extraction';
@@ -64,12 +66,14 @@ function resolveAssetStage({
   rel
 }) {
   const assetGatePath = path.join(outDir, 'asset-decision-gate.json');
+  const assetGateMarkdownPath = path.join(outDir, 'asset-decision-gate.md');
   const assetResolvedPlanPath = path.join(outDir, 'deck-plan.assets-resolved.json');
   const assetGate = buildGateFromFiles({
     planPath: deckPlanPath,
     answersPath: opts.assetAnswers ? path.resolve(opts.assetAnswers) : '',
     outPath: assetGatePath,
-    outPlanPath: opts.assetAnswers ? assetResolvedPlanPath : ''
+    outPlanPath: opts.assetAnswers ? assetResolvedPlanPath : '',
+    summaryPath: assetGateMarkdownPath
   });
   report.steps.push(internalStep('asset decision gate', 'buildGateFromFiles', {
     status: assetGate.status,
@@ -77,6 +81,7 @@ function resolveAssetStage({
     canContinueWithoutAnswers: assetGate.canContinueWithoutAnswers
   }));
   report.outputs.assetGate = rel(assetGatePath);
+  report.outputs.assetGateMarkdown = rel(assetGateMarkdownPath);
   report.assetGate = {
     status: assetGate.status || '',
     questionCount: (assetGate.questions || []).length
@@ -98,7 +103,7 @@ function resolveAssetStage({
   if (assetGate.status !== 'needs_user_input') {
     return { deckPlanPath: nextDeckPlanPath, stop: false };
   }
-  if (!(opts.autoDraft || opts.allowGeneratedAssets || opts.assetMap)) {
+  if (!(opts.allowGeneratedAssets || opts.assetMap)) {
     report.status = 'needs_asset_decisions';
     report.nextActions.push('Answer asset-decision-gate.json with provide_assets or skip_image; add --allow-generated-assets only for synthetic preview visuals.');
     return { deckPlanPath: nextDeckPlanPath, stop: true };
@@ -113,7 +118,7 @@ function resolveAssetStage({
     report: resolutionPath,
     outPlan: resolvedPlanPath,
     imagegenCapability,
-    blockedAction: opts.autoDraft ? 'skip_image' : 'require_user_input',
+    blockedAction: 'require_user_input',
     assetMap: opts.assetMap ? path.resolve(opts.assetMap) : '',
     root
   });

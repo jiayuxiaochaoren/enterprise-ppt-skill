@@ -170,7 +170,7 @@ assert.equal(nativeVariantSuppressesChartMeta({ layoutVariant:'product-evidence-
 assert.equal(nativeVariantSuppressesChartMeta({ layoutVariant:'product-evidence-story', chartSpec:{ version:'chartSpec/v1' } }), false);
 assert.equal(nativeVariantSuppressesChartMetaDirect({ layoutVariant:'product-evidence-story' }), nativeVariantSuppressesChartMeta({ layoutVariant:'product-evidence-story' }));
 assert.equal(isEnergyNativeRendererDirect({ industry:'energy-utility' }, 'energyArchitecture'), true);
-assert.equal(energyNativeOwnedComponentIdsDirect().has('load-curve-band'), true);
+assert.equal(energyNativeOwnedComponentIdsDirect().has('load-curve-band'), false);
 assert.equal(nativeOwnedComponentIdsForDirect('closing', '').has('value-chain'), true);
 const nativeComponentIdHelpers = createNativeComponentIdHelpers({ chartComponentIds: CHART_COMPONENT_IDS });
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'metric-comparison' }).has('bar-chart'), true);
@@ -178,6 +178,11 @@ assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'product-show
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'closing' }).has('decision-panel'), true);
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'closing' }).has('source-note'), false);
 assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({ type:'report-board' }).has('source-note'), false);
+assert.equal(nativeComponentIdHelpers.nativeComponentIdsFor({
+  type:'report-board',
+  metrics:[{ label:'SKU', value:'684' }],
+  sections:[{ title:'SKU', body:'684 个' }]
+}).has('kpi-strip'), true);
 INDUSTRY_NATIVE_COMPONENTS.forEach(id => {
   assert.equal(
     NATIVE_EVIDENCE_COMPONENT_IDS.has(id),
@@ -235,7 +240,7 @@ assert.equal(
   null
 );
 const energyContract = overlayHelpers.nativeRendererContractFor({ industry:'energy-utility' }, { type:'architecture' }, 'energyArchitecture');
-assert.ok(energyContract.ownedComponents.includes('load-curve-band'));
+assert.equal(energyContract.ownedComponents.includes('load-curve-band'), false);
 assert.ok(energyContract.occupiedZones.some(item => item.id === 'topology-board'));
 const overlayRendererCalls = [];
 const overlayRendererDeps = {
@@ -298,7 +303,8 @@ assert.equal(
   overlayRenderer.componentSourceNoteText({ visibleSourceNotes:true }, { sourceTrace:{ sourceNote:'Trace Source A' } }),
   'Trace Source A'
 );
-assert.equal(overlayRenderer.overlayMetricsForSlide({}, { title:'Revenue +12% YoY' })[0].value, '+12%');
+assert.deepEqual(overlayRenderer.overlayMetricsForSlide({}, { title:'Revenue +12% YoY' }), []);
+assert.equal(overlayRenderer.overlayMetricsForSlide({}, { metrics:[{ label:'Revenue', value:'+12%' }] })[0].value, '+12%');
 assert.deepEqual(overlayRenderer.overlayPointsForSlide({ phases:[{ title:'A' }, { title:'B' }] }).map(item => item.title), ['A', 'B']);
 assert.deepEqual(overlayRenderer.overlayProofItemsForSlide({}, { rows:[['Risk', 'Action']] }), []);
 assert.deepEqual(overlayRenderer.overlayProofItemsForSlide({}, { metrics:[{ label:'ARR', value:'42%' }] }), []);
@@ -471,6 +477,18 @@ const nativeEvidence = overlayRenderer.renderOverlayComponent({}, {}, { type:'ar
 }, []);
 assert.equal(nativeEvidence.mode, 'native-renderer');
 assert.equal(nativeEvidence.rendererModule, 'fixture/native');
+const overlayCallCountBeforeOwnedRisk = overlayRendererCalls.length;
+const ownedRiskEvidence = overlayRenderer.renderOverlayComponent({}, {}, { type:'risk-table', rows:[['风险', '中', '动作']] }, 1, 'risk-register', new Set(['risk-register']), {
+  ownedComponents:['risk-register'],
+  safeOverlayZones:{ 'risk-register':{ id:'risk-register-lower-right', x:8, y:4, w:3, h:1, role:'safe-overlay' } },
+  occupiedZones:[{ id:'risk-table-main-stage', x:0, y:1.8, w:11, h:4.8, role:'native' }]
+}, []);
+assert.equal(ownedRiskEvidence.mode, 'native-renderer');
+assert.equal(
+  overlayRendererCalls.length,
+  overlayCallCountBeforeOwnedRisk,
+  'native-owned risk-register should not draw an overlay risk register'
+);
 const nativeEvidenceHelpers = createOverlayNativeEvidence({
   chartComponentIds: new Set(['bar-chart']),
   nativeRendererModule: 'fixture/native-helper',
@@ -495,6 +513,15 @@ assert.equal(chartNativeEvidence.rendererMethod, 'nativeDrawnEvidenceFor');
 assert.equal(chartNativeEvidence.nativeSlot, 'chart-board');
 assert.equal(chartNativeEvidence.drawnCount, 1);
 assert.equal(chartNativeEvidence.rendererModule, 'fixture/native-helper');
+const reportBoardMetricEvidence = nativeEvidenceHelpers.nativeDrawnEvidenceFor({}, {
+  type:'report-board',
+  metrics:[{ label:'SKU', value:'684' }],
+  sections:[{ title:'SKU', body:'684 个' }]
+}, 'kpi-strip', {
+  occupiedZones:[{ id:'report-board-evidence-stack', x:4.12, y:2.08, w:7.46, h:4.16, role:'native' }]
+}, {});
+assert.equal(reportBoardMetricEvidence.mode, 'native-renderer');
+assert.equal(reportBoardMetricEvidence.drawnCount, 1);
 assert.equal(
   nativeEvidenceHelpers.nativeDrawnEvidenceFor({}, { type:'report-board', sourceNote:'Source A' }, 'source-note', {
     safeOverlayZones:{ 'source-note':{ id:'source-note-footer', x:8, y:7, w:4, h:0.2, role:'safe-overlay' } }
@@ -529,7 +556,6 @@ const energyCtx = {
   addVisualPhotoPanel: () => false,
   footerText: () => 'Footer',
   glassPanel: (...args) => energyCalls.push(['glass', args]),
-  hasEnergyCurveSemantics: () => true,
   lightCanvas: (...args) => energyCalls.push(['lightCanvas', args]),
   panelFill: () => 'F8FAFC',
   sectionKicker: (...args) => energyCalls.push(['sectionKicker', args]),

@@ -7,12 +7,17 @@ const {
   VALID_COMPONENT_RENDER_KINDS,
   VALID_COMPONENT_RENDER_PATHS,
   NATIVE_EVIDENCE_COMPONENT_IDS,
+  componentCapabilityContractFor,
+  componentEvidenceCapabilityFor,
   componentRenderKindFor,
   componentRenderPathsFor
 } = require('./render/component-render-path-registry');
 const {
   CAPABILITY_ROWS
 } = require('./render/component-capability-rows');
+const {
+  componentCapabilityFor
+} = require('./render/component-capability-manifest');
 const {
   CHART_COMPONENT_ID_LIST
 } = require('./render/component-capability-contracts');
@@ -30,6 +35,15 @@ assert.equal(componentRenderKindFor('source-note'), 'evidence');
 assert.equal(componentRenderKindFor('page-number'), 'chrome');
 assert.equal(componentRenderKindFor('value-chain-connector'), 'utility');
 assert.equal(componentRenderKindFor('contact-block'), 'utility');
+assert.equal(componentEvidenceCapabilityFor('contact-block'), 'evidence-capable-utility');
+assert.equal(componentCapabilityContractFor('contact-block').consumptionContract, 'evidence-chain-capable');
+assert.equal(componentCapabilityFor('contact-block').renderKind, 'utility');
+assert.equal(componentCapabilityFor('contact-block').evidenceCapability, 'evidence-capable-utility');
+['content-card-grid', 'decision-panel', 'process-rail'].forEach(id => {
+  assert.equal(componentRenderKindFor(id), 'utility', `${id} should keep utility renderKind`);
+  assert.equal(componentEvidenceCapabilityFor(id), 'evidence-capable-utility', `${id} should be evidence-capable only inside evidence chains`);
+  assert.equal(componentCapabilityContractFor(id).consumptionContract, 'evidence-chain-capable');
+});
 ['campaign-to-member-rail', 'launch-rhythm-strip', 'editorial-index'].forEach(id => {
   assert.deepEqual(componentRenderPathsFor(id), ['native'], `${id} should declare a native utility render path`);
   assert.equal(componentRenderKindFor(id), 'utility', `${id} should be utility render kind`);

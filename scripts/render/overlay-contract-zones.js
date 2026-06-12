@@ -44,7 +44,7 @@ function createOverlayZoneHelpers(deps = {}) {
         Object.assign(zones, {
           'chart-commentary-panel': z('commentary-right-rail', 8.04, 5.96, 3.72, 0.48, 'safe-overlay'),
           'commentary-panel': z('commentary-right-rail', 8.04, 5.92, 3.72, 0.52, 'safe-overlay'),
-          'product-matrix': z('product-matrix-right-rail', 8.04, 4.90, 3.58, 0.64, 'safe-overlay'),
+          'product-matrix': z('product-matrix-right-rail', 8.04, 2.08, 3.72, 4.16, 'safe-overlay'),
           'proof-gallery': z('proof-gallery-right-rail', 8.04, 5.46, 3.72, 0.80, 'safe-overlay'),
           'risk-register': z('risk-register-right-rail', 8.04, 4.68, 3.72, 1.70, 'safe-overlay')
         });

@@ -84,14 +84,15 @@ function createChannelEfficiencyMatrixDrawer(ctx = {}) {
 
   function drawMetricRankBoard(slide, board, items, s = {}) {
     const rows = items.slice(0, 5);
-    const chart = { x:board.x+0.46, y:board.y+0.74, w:board.w-0.92, h:2.70 };
+    const chart = { x:board.x+0.46, y:board.y+0.78, w:board.w-0.92, h:Math.max(2.70, board.h - 1.22) };
     const values = rows.map(item => chartNumber(item.value, 0));
     const max = Math.max(...values, 1);
     addLabel(slide, rankTitleForChannelMatrix(s, items), { x:board.x+0.30, y:board.y+0.30, w:1.58, h:0.10, fontSize:6.6, color:C.accent, charSpace:0 });
     addHairline(slide, chart.x, chart.y-0.12, chart.w, C.line, 18, 0.42);
+    const rowStep = Math.min(0.62, Math.max(0.54, (chart.h - 0.18) / Math.max(1, rows.length)));
     rows.forEach((item, i) => {
-      const rowH = 0.44;
-      const y = chart.y + i * 0.50;
+      const rowH = 0.52;
+      const y = chart.y + i * rowStep;
       const color = [C.accent, C.cyan, C.violet, C.risk, C.muted][i] || C.accent;
       const value = values[i];
       const barW = Math.max(0.22, (value / max) * (chart.w - 2.60));
@@ -107,10 +108,10 @@ function createChannelEfficiencyMatrixDrawer(ctx = {}) {
       });
       addText(slide, item.value, { x:chart.x+chart.w-0.90, y:y, w:0.86, h:rowH, fontSize:7.0, bold:true, color, align:'right', fit:'shrink', valign:'mid' });
       if (item.body) {
-        addText(slide, item.body, { x:chart.x+1.42, y:y+0.29, w:chart.w-2.54, h:0.11, fontSize:6.1, color:C.body, fit:'shrink', valign:'mid' });
+        addText(slide, item.body, { x:chart.x+1.42, y:y+0.41, w:chart.w-2.54, h:0.11, fontSize:5.9, color:C.body, fit:'shrink', valign:'mid' });
       }
     });
-    addHairline(slide, chart.x, chart.y + rows.length * 0.50 + 0.04, chart.w, C.line, 16, 0.42);
+    addHairline(slide, chart.x, chart.y + rows.length * rowStep + 0.04, chart.w, C.line, 16, 0.42);
   }
 
   return function drawChannelEfficiencyMatrix(slide, board, s) {

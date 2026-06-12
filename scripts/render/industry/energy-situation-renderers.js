@@ -22,18 +22,24 @@ function createEnergySituationRenderers(ctx = {}, deps = {}) {
     if (useImage) {
       addVisualPhotoPanel(slide, plan, s, 'situation', 0, 0, 4.82, H, { transparency:36, stroke:'334155', strokeTransparency:78 });
     }
-    addRect(slide, 0, 0, 4.82, H, C.ink, C.ink, { fill:{color:C.ink, transparency:18}, line:{color:C.ink, transparency:100} });
-    addLabel(slide, 'SITE READOUT', { x:0.78, y:0.76, w:1.36, h:0.12, fontSize:6.8, color:'94A3B8', charSpace:1.1 });
-    addText(slide, s.title || '多站点能源资产运营背景', { x:0.76, y:1.18, w:3.18, h:0.62, typeRole:'pageTitle', fontSize:22.5, bold:true, color:C.white, fit:'shrink', breakLine:true });
-    addText(slide, s.leftTitle || '管理现状', { x:0.82, y:2.28, w:1.36, h:0.18, fontSize:10.6, bold:true, color:'CBD5E1' });
+    addRect(slide, 0, 0, 4.82, H, useImage ? C.ink : C.white, useImage ? C.ink : 'E4ECF5', {
+      fill:{color:useImage ? C.ink : C.white, transparency:useImage ? 18 : 0},
+      line:{color:useImage ? C.ink : 'E4ECF5', transparency:useImage ? 100 : 18, width:0.42}
+    });
+    const leftTitleColor = useImage ? C.white : C.text;
+    const leftBodyColor = useImage ? 'CBD5E1' : C.body;
+    const leftMutedColor = useImage ? '94A3B8' : C.muted;
+    addLabel(slide, 'SITE READOUT', { x:0.78, y:0.76, w:1.36, h:0.12, fontSize:6.8, color:leftMutedColor, charSpace:1.1 });
+    addText(slide, s.title || '多站点能源资产运营背景', { x:0.76, y:1.18, w:3.18, h:0.62, typeRole:'pageTitle', fontSize:22.5, bold:true, color:leftTitleColor, fit:'shrink', breakLine:true });
+    addText(slide, s.leftTitle || '管理现状', { x:0.82, y:2.28, w:1.36, h:0.18, fontSize:10.6, bold:true, color:leftBodyColor, valign:'mid' });
     (s.left || []).slice(0,3).forEach((it,i)=>{
       const y = 2.78 + i*0.78;
       const accent = i===1 ? C.cyan : C.accent;
       slide.addShape('ellipse', { x:0.86, y:y+0.07, w:0.07, h:0.07, fill:{color:accent}, line:{color:accent, transparency:100} });
-      addText(slide, it, { x:1.08, y, w:2.80, h:0.34, typeRole:'bodySmall', fontSize:8.8, color:'CBD5E1', fit:'shrink', breakLine:true, valign:'mid' });
+      addText(slide, it, { x:1.08, y, w:2.80, h:0.34, typeRole:'bodySmall', fontSize:8.8, color:leftBodyColor, fit:'shrink', breakLine:true, valign:'mid' });
     });
     addHairline(slide, 0.82, 5.62, 1.06, C.accent, 0, 0.65);
-    addLabel(slide, 'BESS · PV · MICROGRID', { x:0.82, y:5.92, w:2.18, h:0.12, typeRole:'microLabel', fontSize:6.8, color:'7C8BA3', charSpace:0.7 });
+    addLabel(slide, 'BESS · PV · MICROGRID', { x:0.82, y:5.92, w:2.18, h:0.12, typeRole:'microLabel', fontSize:6.8, color:leftMutedColor, charSpace:0.7 });
 
     addLabel(slide, 'UPGRADE DEMANDS', { x:5.62, y:0.72, w:1.48, h:0.12, typeRole:'kicker', fontSize:6.8, color:C.muted, charSpace:1.0 });
     addText(slide, s.rightTitle || '升级诉求', { x:5.58, y:1.10, w:3.0, h:0.30, fontSize:22.0, bold:true, color:C.text });

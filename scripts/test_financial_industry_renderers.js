@@ -261,7 +261,7 @@ function main() {
 
   function assertOperationalBoards() {
     assert(
-      ops.some(op => op.name === 'addLabel' && op.args[1] === 'LOSS SOURCES'),
+      ops.some(op => op.name === 'addLabel' && op.args[1] === '短板排行'),
       'expected downtime Pareto operational board'
     );
     assert(
@@ -290,12 +290,12 @@ function main() {
 
   function assertIndustryChartSlideShell() {
     assert.strictEqual(
-      countRect({ x:0.92, y:2.10, w:2.62, h:3.96 }),
+      countRect({ x:0.92, y:2.10, w:2.62, h:4.16 }),
       6,
       'expected one proof object side panel per industry chart slide'
     );
     assert.strictEqual(
-      countRect({ x:3.92, y:2.10, w:7.76, h:3.96 }),
+      countRect({ x:3.92, y:2.10, w:7.76, h:4.16 }),
       6,
       'expected one chart board shell per industry chart slide'
     );
@@ -465,6 +465,188 @@ function main() {
       `expected beauty chart business logic label ${label}`
     );
   });
+
+  const sparseOps = [];
+  const sparseRenderers = createFinancialIndustryRenderers(createFakeCtx(sparseOps));
+  const repeatedLogicSlide = i => ({
+    type:'industry-chart',
+    variant:'channel-efficiency-matrix',
+    title:`Repeated logic ${i}`,
+    businessLogic:{
+      currentState:'同一经营诊断',
+      cause:'同一原因',
+      action:'同一动作',
+      metric:'同一衡量'
+    },
+    metrics:[
+      { label:'A', value:'10' },
+      { label:'B', value:'8' }
+    ]
+  });
+  const repeatedLogicPlan = { industry:'brand-retail', slides:[1, 2, 3, 4].map(repeatedLogicSlide) };
+  repeatedLogicPlan.slides.forEach((slideSpec, index) => {
+    sparseRenderers.industryChartSlide(createSlide(sparseOps), repeatedLogicPlan, slideSpec, index + 1);
+  });
+  assert(
+    !sparseOps.some(op => op.name === 'addLabel' && op.args[1] === '现状'),
+    'repeated industry chart slides should not auto-render the same business logic card row on every page'
+  );
+
+  const explicitLogicOps = [];
+  const explicitRenderers = createFinancialIndustryRenderers(createFakeCtx(explicitLogicOps));
+  const explicitPlan = { industry:'brand-retail', slides:[1, 2, 3, 4].map(repeatedLogicSlide) };
+  explicitRenderers.industryChartSlide(createSlide(explicitLogicOps), explicitPlan, Object.assign({}, explicitPlan.slides[0], {
+    businessLogicMode:'show'
+  }), 1);
+  assert(
+    explicitLogicOps.some(op => op.name === 'addLabel' && op.args[1] === '现状'),
+    'explicit businessLogicMode=show should still render a diagnostic logic row'
+  );
+
+  const fullBoardOps = [];
+  const fullBoardRenderers = createFinancialIndustryRenderers(createFakeCtx(fullBoardOps));
+  fullBoardRenderers.industryChartSlide(createSlide(fullBoardOps), { slides:[{}] }, {
+    variant:'adoption-funnel',
+    title:'活动复盘要看完整漏斗',
+    subtitle:'不要只看单场 ROAS',
+    adoptionFunnel:[
+      { title:'曝光', value:100 },
+      { title:'点击', value:64 },
+      { title:'加购', value:46 },
+      { title:'复购', value:28 }
+    ]
+  }, 1);
+  assert(
+    fullBoardOps.some(op => op.name === 'addRect'
+      && op.args[1] === 0.92
+      && op.args[2] === 2.10
+      && op.args[3] === 10.84
+      && op.args[4] === 4.16),
+    'full-board industry variants should use the wide content board'
+  );
+  assert(
+    !fullBoardOps.some(op => op.name === 'addLabel' && op.args[1] === '证据对象'),
+    'full-board industry variants should not repeat the left proof rail shell'
+  );
+  assert(
+    fullBoardOps.some(op => op.name === 'addLabel' && op.args[1] === '阶段转化链路'),
+    'adoption funnel should render as a stage conversion board'
+  );
+
+  const largeFunnelOps = [];
+  const largeFunnelRenderers = createFinancialIndustryRenderers(createFakeCtx(largeFunnelOps));
+  largeFunnelRenderers.industryChartSlide(createSlide(largeFunnelOps), { slides:[{}] }, {
+    variant:'adoption-funnel',
+    title:'活动复盘要看完整漏斗',
+    subtitle:'不要把跨量级漏斗画成普通条形图',
+    adoptionFunnel:[
+      { title:'曝光', value:3073197, note:'Prime Day' },
+      { title:'点击', value:85809 },
+      { title:'线索', value:7019 },
+      { title:'订单', value:2533 }
+    ]
+  }, 1);
+  assert(
+    largeFunnelOps.some(op => op.name === 'addText' && op.args[1] === '307.3万'),
+    'large adoption funnel should compact high-volume counts'
+  );
+  assert(
+    largeFunnelOps.some(op => op.name === 'addText' && op.args[1] === '8.58万'),
+    'large adoption funnel should keep mid-volume counts readable'
+  );
+  assert(
+    largeFunnelOps.some(op => op.name === 'addText' && String(op.args[1]).includes('曝光→点击 2.8%')),
+    'large adoption funnel should show adjacent conversion rates'
+  );
+  assert(
+    !largeFunnelOps.some(op => op.name === 'addText' && /3073197%|85809%|7019%|2533%/.test(String(op.args[1]))),
+    'large adoption funnel should not append fake percent units to raw counts'
+  );
+
+  const memberOps = [];
+  const memberCtx = createFakeCtx(memberOps);
+  memberCtx.renderChartSpec = () => {
+    memberOps.push({ name:'renderChartSpecCalled', args:[] });
+    return { rendered:true };
+  };
+  const memberRenderers = createFinancialIndustryRenderers(memberCtx);
+  memberRenderers.industryChartSlide(createSlide(memberOps), { slides:[{}] }, {
+    variant:'member-cohort-ladder',
+    title:'会员结构要用分层动作承接',
+    subtitle:'不能被通用 scorecard 抢占布局',
+    chartSpec:{
+      kind:'scorecard',
+      componentId:'scorecard',
+      series:[{ values:[{ category:'样本量', value:60, rawValue:'60条次' }] }]
+    },
+    memberCohorts:[
+      { title:'新客', value:'31%', body:'首购转化' },
+      { title:'活跃会员', value:'42%', body:'复购贡献' },
+      { title:'高价值会员', value:'18%', body:'客单提升' },
+      { title:'沉睡会员', value:'9%', body:'召回动作' }
+    ]
+  }, 1);
+  assert(
+    memberOps.some(op => op.name === 'addText' && op.args[1] === '新客'),
+    'member-cohort-ladder should render the native cohort ladder'
+  );
+  assert(
+    !memberOps.some(op => op.name === 'renderChartSpecCalled'),
+    'member-cohort-ladder should not let generic chartSpec scorecard consume the board first'
+  );
+
+  const factMetricOps = [];
+  const factMetricCtx = createFakeCtx(factMetricOps);
+  factMetricCtx.renderChartSpec = () => {
+    factMetricOps.push({ name:'renderChartSpecCalled', args:[] });
+    return { rendered:true };
+  };
+  const factMetricRenderers = createFinancialIndustryRenderers(factMetricCtx);
+  factMetricRenderers.industryChartSlide(createSlide(factMetricOps), { slides:[{}] }, {
+    variant:'fact-metrics',
+    title:'事实指标要保留证据对象侧栏',
+    subtitle:'避免全屏四卡片模板吞掉页面设计',
+    chartSpec:{
+      kind:'scorecard',
+      componentId:'scorecard',
+      series:[{ values:[{ category:'样本量', value:60, rawValue:'60条次' }] }]
+    },
+    items:[
+      { title:'样本量', body:'60条次' },
+      { title:'物流顾虑', body:'16次' }
+    ]
+  }, 1);
+  assert(
+    factMetricOps.some(op => op.name === 'addLabel' && op.args[1] === '证据对象'),
+    'fact-metrics should keep the proof-object rail instead of becoming full-page cards'
+  );
+  assert(
+    factMetricOps.some(op => op.name === 'addRect'
+      && op.args[1] === 3.92
+      && op.args[2] === 2.10
+      && op.args[3] === 7.76),
+    'fact-metrics should use the standard board beside the proof rail'
+  );
+  assert(
+    !factMetricOps.some(op => op.name === 'renderChartSpecCalled'),
+    'fact-metrics should not let generic scorecard consume the board first'
+  );
+
+  const longTitleOps = [];
+  const longTitleRenderers = createFinancialIndustryRenderers(createFakeCtx(longTitleOps));
+  longTitleRenderers.industryChartSlide(createSlide(longTitleOps), { slides:[{}] }, {
+    variant:'channel-efficiency-matrix',
+    title:'五个平台收入接近，资源动作必须按效率分层',
+    subtitle:'各平台营收差距不大，但退款率、复购率和 ROAS 结构不同。',
+    channels:[
+      { label:'Amazon', value:'8x', x:22, y:82, size:64 }
+    ]
+  }, 1);
+  const longTitle = longTitleOps.find(op => op.name === 'addText' && op.args[1] === '五个平台收入接近，资源动作必须按效率分层');
+  const longSubtitle = longTitleOps.find(op => op.name === 'addText' && op.args[1] === '各平台营收差距不大，但退款率、复购率和 ROAS 结构不同。');
+  assert(longTitle && longSubtitle, 'expected long-title industry page header');
+  assert.strictEqual((longTitle.args[2] || {}).w, 10.12, 'long-but-not-extra title should get wide header space');
+  assert.strictEqual((longSubtitle.args[2] || {}).y, 1.72, 'single-line long title should not force an excessive subtitle gap');
 
   console.log('financial industry renderers ok');
 }

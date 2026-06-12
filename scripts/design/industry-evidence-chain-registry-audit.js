@@ -11,12 +11,17 @@ const {
 } = require('../render/component-capability-manifest');
 const {
   componentHasRenderPath,
-  componentRenderKindFor,
+  componentEvidenceCapabilityFor,
   componentRenderPathIssues
 } = require('../render/component-render-path-registry');
 
 function addFinding(findings, level, type, message, meta = {}) {
   findings.push(Object.assign({ level, type, message }, meta));
+}
+
+function componentCanCarryIndustryEvidence(id = '') {
+  const capability = componentEvidenceCapabilityFor(id);
+  return capability === 'evidence' || capability === 'evidence-capable-utility';
 }
 
 function auditStageCoveragePolicy(findings, chainId, stage = {}) {
@@ -100,7 +105,7 @@ function auditIndustryEvidenceChainRegistry(chains = INDUSTRY_EVIDENCE_CHAINS) {
         if (!componentHasRenderPath(id)) {
           addFinding(findings, 'fail', 'industryStageComponentRenderPathMissing', `${chainId}/${stageId || 'unknown'} component ${id} has no render path`, { chainId, stageId, componentId:id });
         } else {
-          if (componentRenderKindFor(id) !== 'evidence') {
+          if (!componentCanCarryIndustryEvidence(id)) {
             addFinding(findings, 'fail', 'industryStageComponentRenderKindInvalid', `${chainId}/${stageId || 'unknown'} component ${id} render kind must be evidence`, { chainId, stageId, componentId:id });
           }
           componentRenderPathIssues(id).forEach(issue => {

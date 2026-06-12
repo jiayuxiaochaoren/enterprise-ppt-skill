@@ -46,6 +46,16 @@ assert.equal(diversified[1].normalized, true);
 assert.equal(diversified[2].type, 'case-gallery');
 assert.equal(diversified[3].type, 'timeline');
 
+const guardedDiversity = helpers.applyDataComponentDiversity({}, [
+  { type:'two-column', layoutVariant:'action-board', title:'A', routeLocked:true },
+  { type:'two-column', layoutVariant:'action-board', title:'ROAS 与渠道预算调整', routeLocked:true, dataComponent:'waterfall' },
+  { type:'two-column', layoutVariant:'action-board', title:'风险与渠道预算', rows:[['授权', '高', '先确认']], dataComponent:'waterfall' },
+  { type:'two-column', layoutVariant:'action-board', title:'SKU 梯队与渠道预算', products:[{ name:'SKU A' }], dataComponent:'waterfall' }
+]);
+assert.equal(guardedDiversity[1].type, 'two-column');
+assert.equal(guardedDiversity[2].type, 'two-column');
+assert.equal(guardedDiversity[3].type, 'two-column');
+
 const rhythmic = helpers.applyDeckRhythm({}, [
   { type:'cover', themeIntent:'industry-opening', compositionPlan:{} },
   { type:'metric-comparison', themeIntent:'value-signal', compositionPlan:{ themeCoverage:'low' } },

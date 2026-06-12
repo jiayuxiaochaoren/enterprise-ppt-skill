@@ -8,6 +8,11 @@ const {
 const { auditComponentManifest } = require('./component-capability-audit');
 const { normalizeComponentId } = require('./component-capability-normalization');
 const {
+  componentCapabilityContractFor,
+  componentConsumptionContractFor,
+  componentEvidenceCapabilityFor,
+  componentNativeOwnershipFor,
+  componentOverlayEligibilityFor,
   componentRenderPathsFor
 } = require('./component-render-path-registry');
 
@@ -19,6 +24,11 @@ function capabilityFromRow(row = []) {
     aliases: Object.entries(COMPONENT_ALIASES).filter(([, target]) => target === id).map(([alias]) => alias),
     supportedModes,
     family,
+    renderKind: componentCapabilityContractFor(id).renderKind,
+    evidenceCapability: componentEvidenceCapabilityFor(id),
+    nativeOwnership: componentNativeOwnershipFor(id),
+    overlayEligibility: componentOverlayEligibilityFor(id),
+    consumptionContract: componentConsumptionContractFor(id),
     ownershipPolicy: overlayCapable ? 'native-or-overlay' : 'native-only',
     nativePolicy: supportedModes.includes('native') ? 'allowed' : 'disallowed',
     overlayPolicy: overlayCapable ? 'declared-safe-slot-required' : 'blocked',

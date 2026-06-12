@@ -14,10 +14,11 @@ function createSustainabilityImageEvidencePanels(ctx = {}) {
   } = ctx;
   const C = ctx.colors();
 
-  function drawPrimaryEvidencePanels(slide, images, items) {
+  function drawPrimaryEvidencePanels(slide, images, items, opts = {}) {
+    const y = opts.y || 2.04;
     const panels = [
-      { x:0.92, y:2.04, w:5.18, h:3.88, color:C.accent },
-      { x:6.42, y:2.04, w:5.18, h:3.88, color:C.cyan }
+      { x:0.92, y, w:5.18, h:3.88, color:C.accent },
+      { x:6.42, y, w:5.18, h:3.88, color:C.cyan }
     ];
     panels.forEach((panel, i) => {
       const item = items[i] || {};
@@ -41,10 +42,10 @@ function createSustainabilityImageEvidencePanels(ctx = {}) {
     });
   }
 
-  function drawImageEvidenceSpread(slide, plan, s) {
+  function drawImageEvidenceSpread(slide, plan, s, opts = {}) {
     const images = galleryImages(plan, s);
     const items = (s.cards || s.items || []).slice(0, 4);
-    drawPrimaryEvidencePanels(slide, images, items);
+    drawPrimaryEvidencePanels(slide, images, items, opts);
     drawSupplementalEvidenceRows(slide, items);
   }
 

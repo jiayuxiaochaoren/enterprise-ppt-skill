@@ -26,7 +26,7 @@ function createProductEvidenceStoryRenderer(ctx = {}) {
   }
 
   return function productEvidenceStory(slide, plan, s, idx) {
-    drawLightPageHeader(slide, {
+    const header = drawLightPageHeader(slide, {
       kicker:'PRODUCT EVIDENCE STORY',
       title:s.title || '产品证据故事',
       titleW:6.0,
@@ -37,12 +37,14 @@ function createProductEvidenceStoryRenderer(ctx = {}) {
       idx,
       pageNumber:'chrome'
     });
+    const contentY = Math.max(2.50, Number(header && header.contentTop) || 2.50);
+    const contentH = Math.max(3.20, 6.10 - contentY);
     const images = galleryImages(plan, s);
     const items = productEvidenceItems(s).slice(0, 4);
-    const hero = { x:0.92, y:2.04, w:5.44, h:4.02 };
+    const hero = { x:0.92, y:contentY, w:5.44, h:contentH };
     const lead = items[0] || { title:'明星单品', body:'产品图必须解释购买理由。' };
     drawProductEvidenceHero(slide, lead, images[0], hero);
-    const proof = { x:6.86, y:2.04, w:4.72, h:4.02 };
+    const proof = { x:6.86, y:contentY, w:4.72, h:contentH };
     drawProductEvidenceProofList(slide, items, proof);
     addText(slide, s.note || '产品证据页不能只有漂亮图片，必须解释购买理由和业务作用。', { x:0.94, y:6.42, w:8.8, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
     drawFooter(slide, plan);

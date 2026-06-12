@@ -7,8 +7,8 @@ function createManufacturingIdentityPanel(ctx = {}) {
     addText
   } = ctx;
 
-  function drawManufacturingIdentityPanel(slide, s, company) {
-    const dark = { x:0.92, y:2.10, w:3.06, h:3.72 };
+  function drawManufacturingIdentityPanel(slide, s, company, opts = {}) {
+    const dark = { x:0.92, y:opts.y || 2.10, w:3.06, h:3.72 };
     addRect(slide, dark.x, dark.y, dark.w, dark.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
     addLabel(slide, '制造基础', { x:dark.x+0.30, y:dark.y+0.34, w:1.02, h:0.10, fontSize:5.8, color:C.accent, charSpace:0 });
     addText(slide, company, { x:dark.x+0.30, y:dark.y+0.82, w:2.16, h:0.38, fontSize:17.2, bold:true, color:C.white, fit:'shrink' });

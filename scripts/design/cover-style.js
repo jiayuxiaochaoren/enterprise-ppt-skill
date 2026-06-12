@@ -53,10 +53,18 @@ function inferCoverStyleId(plan = {}, s = {}) {
     s.proof_object
   ].filter(Boolean).join(' '));
 
+  const commerceContext = /cross[-\s]?border|e-?commerce|shopify|amazon|tiktok shop|walmart|marketplace|gmv|acos|roas|sku|跨境|电商|独立站|亚马逊|平台营收|渠道|店铺|商品|单品|复购|会员|零售|消费|品牌|产品/.test(text);
+  const technicalPlatformContext = /architecture|capability|system architecture|reference architecture|topology|api|sdk|saas|ai platform|data platform|infra|infrastructure|workflow engine|架构|能力图|系统架构|拓扑|接口|中台|数据平台|技术平台|服务蓝图/.test(text);
+
   if (/risk|security|cyber|governance|compliance|风控|风险|安全|治理|合规|投后/.test(text)) {
     return 'tactical-telemetry-risk';
   }
-  if (/architecture|platform|capability|system|ai|saas|reference|架构|平台|能力|系统|蓝图/.test(text)) {
+  if (commerceContext) {
+    return /luxury|premium|上市|高端|奢侈|美妆|美容/.test(text)
+      ? 'cold-luxury-product'
+      : 'brand-system-board';
+  }
+  if (technicalPlatformContext || (/platform|平台/.test(text) && !commerceContext)) {
     return 'architecture-blueprint-studio';
   }
   if (/brand|consumer|beauty|retail|launch|品牌|消费|美妆|零售|商业证明/.test(text)) {

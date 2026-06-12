@@ -1,5 +1,5 @@
 const {
-  hamming
+  previewSimilarityRisk
 } = require('./png-analysis');
 
 function findingsFromPreviewSimilarity(previews = []) {
@@ -7,9 +7,9 @@ function findingsFromPreviewSimilarity(previews = []) {
   for (let i = 1; i < previews.length; i++) {
     const prev = previews[i - 1].info;
     const cur = previews[i].info;
-    const dist = prev && cur ? hamming(prev.hash, cur.hash) : null;
-    if (dist != null && dist <= 6) {
-      out.push({ slide:i + 1, level:'review', type:'contactSheetRhythmRepeat', message:`adjacent previews ${i} and ${i + 1} are visually too similar (${dist}/64)` });
+    const risk = previewSimilarityRisk(prev, cur);
+    if (risk.similar) {
+      out.push({ slide:i + 1, level:'review', type:'contactSheetRhythmRepeat', message:`adjacent previews ${i} and ${i + 1} are visually too similar (${risk.dist}/64)` });
     }
   }
   return out;

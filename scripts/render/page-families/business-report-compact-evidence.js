@@ -47,9 +47,10 @@ function createCompactEvidenceRows(ctx = {}) {
         valign:'mid'
       });
     });
-    addHairline(slide, board.x+0.32, board.y+3.86, board.w-0.64, C.line, 18, 0.30);
+    const noteLineY = board.y + board.h - 0.30;
+    addHairline(slide, board.x+0.32, noteLineY, board.w-0.64, C.line, 18, 0.30);
     addText(slide, s.evidenceNote || s.note || '先把证据边界讲清楚，再进入品牌选择判断。', {
-      x:board.x+0.34, y:board.y+3.96, w:compactRightRail ? Math.max(1.0, board.w - 0.68) : 5.86, h:0.12,
+      x:board.x+0.34, y:noteLineY+0.10, w:compactRightRail ? Math.max(1.0, board.w - 0.68) : Math.max(1.0, board.w - 1.60), h:0.12,
       fontSize:compactRightRail ? 6.8 : 7.4, color:C.muted, fit:'shrink'
     });
   }

@@ -1,6 +1,9 @@
 const assert = require('assert/strict');
 const { normalizeDeckPlan, normalizeSlide } = require('./design-system');
 const { createRenderRegistry } = require('./render/registry');
+const {
+  routeIntentDecisionFor
+} = require('./design/route-intent-decision');
 
 function route(plan, slide, options = {}) {
   return normalizeSlide(plan, Object.assign({ type:'content' }, slide), options.index ?? 1, options.total ?? 3);
@@ -116,6 +119,24 @@ const cases = [
     plan:{ industry:'brand-retail' },
     slide:{ title:'产品故事与门店 Lookbook', lookbook:true, images:['look1.png','look2.png','look3.png'] },
     expected:{ type:'case-gallery', variant:'lookbook-story' }
+  },
+  {
+    name:'retail editorial proof without images uses structured board',
+    plan:{ industry:'brand-retail' },
+    slide:{
+      title:'产品角色和消费者反馈先形成视觉证据板',
+      depthDomain:'editorial-proof',
+      chainStage:'visual-claim',
+      proofIntent:'visual claim',
+      industryObjects:{
+        product_skus:['P01 基础款', 'P04 防晒'],
+        platforms_channels:['Amazon', 'TikTok Shop'],
+        customer_or_user_signals:['物流顾虑', '品质升级']
+      },
+      productItems:[{ title:'P04 防晒', body:'承担旺季流量入口。' }],
+      informationGap:{ title:'素材待确认', body:'缺少真实产品图。' }
+    },
+    expected:{ type:'report-board', variant:'editorial-proof-board' }
   },
   {
     name:'energy site evidence gallery',
@@ -327,6 +348,19 @@ const diversified = normalizeDeckPlan({
 });
 assert.equal(diversified.slides[1].type, 'timeline', 'data diversity must not reroute explicit process pages into chart fallbacks');
 assert.equal(diversified.slides[1].layoutVariant, 'process-board');
+assert.equal(diversified.slides[1].routeIntentDecision.semanticLock, true);
+
+const lockedRouteIntent = routeIntentDecisionFor({
+  typePick:{ type:'timeline', reason:'explicit process phases' },
+  recipe:{
+    id:'editorial-proof-scene',
+    renderType:'case-gallery',
+    generatedAsset:'editorial proof cover scene'
+  }
+});
+assert.equal(lockedRouteIntent.semanticLock, true);
+assert.equal(lockedRouteIntent.sourcePriority, 'user-explicit-route');
+assert.deepEqual(lockedRouteIntent.rejectedRewrites.map(item => item.candidateType), ['case-gallery']);
 
 const sanitized = normalizeDeckPlan({
   industry:'finance-investment',

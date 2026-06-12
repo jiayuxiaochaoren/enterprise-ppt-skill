@@ -15,6 +15,9 @@ function createMediaPanelHelpers(core = {}, helpers = {}) {
       return false;
     }
     const fit = opts.fit || 'cover';
+    if (opts.recordFit !== false) {
+      recordImageFit(slide, imagePath, { w, h:hgt }, opts.role || 'evidence', fit);
+    }
     slide.addImage({ path:imagePath, x, y, w, h:hgt, sizing:{ type:fit, x, y, w, h:hgt } });
     const overlay = opts.overlay || (opts.tone === 'light' ? 'FFFFFF' : C.ink);
     h.addRect(slide, x, y, w, hgt, overlay, overlay, {
@@ -45,7 +48,7 @@ function createMediaPanelHelpers(core = {}, helpers = {}) {
     if (normalizedRole.includes('split') && (aspect > slotAspect * 1.45 || aspect < slotAspect * 0.68)) return 'contain';
     if (slotAspect < 0.85 && aspect > slotAspect * 1.70) return 'contain';
     if (role === 'showcase' && (aspect > slotAspect * 1.45 || aspect < slotAspect * 0.68)) return 'contain';
-    if (role === 'evidence' && (aspect > slotAspect * 2.10 || aspect < slotAspect * 0.45)) return 'contain';
+    if (role === 'evidence' && (aspect > slotAspect * 1.65 || aspect < slotAspect * 0.62)) return 'contain';
     return 'cover';
   }
   function recordImageFit(slide, imagePath, slot = {}, role = 'evidence', fit = 'cover') {
@@ -72,7 +75,6 @@ function createMediaPanelHelpers(core = {}, helpers = {}) {
   function addSmartPhotoPanel(slide, imagePath, x, y, w, hgt, opts = {}) {
     const role = opts.role || 'evidence';
     const fit = opts.fit || smartPhotoFit(imagePath, { w, h:hgt }, role);
-    recordImageFit(slide, imagePath, { w, h:hgt }, role, fit);
     return addPhotoPanel(slide, imagePath, x, y, w, hgt, Object.assign({}, opts, { fit }));
   }
   function addCaptionBar(slide, x, y, w, hgt, opts = {}) {

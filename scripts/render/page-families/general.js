@@ -28,12 +28,12 @@ function createGeneralRenderers(ctx = {}) {
       const evidenceText = (s.visual && s.visual.caption) || (s.left || []).slice(0,1).join(' ');
       addText(slide, evidenceText || '图片用于说明现场对象与业务语境，不承载长段正文。', { x:2.72, y:5.18, w:2.18, h:0.22, fontSize:6.8, color:'CBD5E1', fit:'shrink' });
     } else {
-      addRect(slide, 0.92, 2.08, 4.36, 3.86, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-      addText(slide, s.leftTitle || '管理现状', { x:1.20, y:2.44, w:2.56, h:0.22, fontSize:14.8, bold:true, color:C.white });
+      addRect(slide, 0.92, 2.08, 4.36, 3.86, C.white, 'E8EEF6', { fill:{color:C.white, transparency:0}, line:{color:'E8EEF6', transparency:12, width:0.48} });
+      addText(slide, s.leftTitle || '管理现状', { x:1.20, y:2.44, w:2.56, h:0.22, fontSize:14.8, bold:true, color:C.text, valign:'mid' });
       const runs = (s.left || []).slice(0,4).map(v => ({ text:String(v), options:{ bullet:{type:'bullet'}, breakLine:true } }));
-      slide.addText(runs, { x:1.20, y:3.02, w:3.44, h:1.76, fontFace:profileFont(), fontSize:10.8, color:'CBD5E1', fit:'shrink', valign:'top', paraSpaceAfterPt:7, margin:0.02 });
+      slide.addText(runs, { x:1.20, y:3.02, w:3.44, h:1.76, fontFace:profileFont(), fontSize:10.8, color:C.body, fit:'shrink', valign:'mid', paraSpaceAfterPt:7, margin:0.02 });
       addHairline(slide, 1.20, 5.30, 0.82, C.accent, 0, 0.72);
-      addText(slide, '从业务事实出发，先识别运营断点，再进入方案设计。', { x:1.20, y:5.50, w:3.12, h:0.18, fontSize:8.2, color:'94A3B8', fit:'shrink' });
+      addText(slide, '从业务事实出发，先识别运营断点，再进入方案设计。', { x:1.20, y:5.50, w:3.12, h:0.18, fontSize:8.2, color:C.muted, fit:'shrink', valign:'mid' });
     }
 
     addText(slide, s.rightTitle || '升级诉求', { x:6.05, y:1.76, w:3.5, h:0.25, fontSize:15.5, bold:true, color:C.text });
@@ -43,8 +43,8 @@ function createGeneralRenderers(ctx = {}) {
       const accent = i===1 ? C.cyan : C.accent;
       addRect(slide, 6.05, y, 5.18, 0.92, C.white, 'E8EEF6', { line:{color:'E8EEF6', transparency:4, width:0.55} });
       addText(slide, String(i+1).padStart(2,'0'), { x:6.30, y:y+0.18, w:0.34, h:0.11, fontSize:7.2, bold:true, color:accent });
-      addText(slide, c.title, { x:6.78, y:y+0.13, w:2.75, h:0.15, fontSize:11.8, bold:true, color:C.text, fit:'shrink' });
-      addText(slide, c.body, { x:6.78, y:y+0.48, w:3.92, h:0.20, fontSize:7.6, color:C.body, fit:'shrink' });
+      addText(slide, c.title, { x:6.78, y:y+0.13, w:2.75, h:0.15, fontSize:11.8, bold:true, color:C.text, fit:'shrink', valign:'mid' });
+      addText(slide, c.body, { x:6.78, y:y+0.44, w:3.92, h:0.26, fontSize:7.6, color:C.body, fit:'shrink', valign:'mid', breakLine:true });
     });
   }
 

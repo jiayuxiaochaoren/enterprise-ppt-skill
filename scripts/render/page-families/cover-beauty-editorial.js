@@ -66,7 +66,7 @@ function createBeautyBrandEditorialCover(ctx = {}, deps = {}) {
     ctx.addLabel(slide, label, {
       x:box.x + 0.24,
       y:box.y + box.h - 0.36,
-      w:box.w - 0.48,
+      w:Math.min(box.w - 0.48, 2.42),
       h:0.10,
       fontSize:5.8,
       color:'64748B',

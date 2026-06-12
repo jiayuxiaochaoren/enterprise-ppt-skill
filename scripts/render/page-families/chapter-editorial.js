@@ -21,10 +21,12 @@ function createChapterEditorialRenderers(ctx = {}) {
     drawDarkStageShell(slide, { stageOpts:{ field:false } });
     const chapter = s.chapter || String(idx).padStart(2, '0');
     const images = galleryImages(plan, s);
-    const items = chapterItems(s).slice(0,3);
+    const allItems = chapterItems(s);
+    const visualItems = allItems.slice(0, images[0] ? 3 : 5);
+    const copyItems = images[0] ? allItems.slice(0, 3) : [];
     const visual = { x:6.36, y:1.02, w:5.72, h:4.98 };
-    drawChapterEditorialVisualMap(slide, items, images[0], visual);
-    drawChapterEditorialCopy(slide, s, chapter, items);
+    drawChapterEditorialVisualMap(slide, visualItems, images[0], visual);
+    drawChapterEditorialCopy(slide, s, chapter, copyItems);
     drawFooter(slide, plan);
   }
 

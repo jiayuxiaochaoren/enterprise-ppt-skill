@@ -261,7 +261,11 @@ assert.ok(!publicHiddenSourcePolicy.slides[0].componentPlan.componentIds.include
 assert.ok(publicHiddenSourcePolicy.slides[0].componentPlan.componentIds.includes('commentary-panel'));
 assert.deepEqual(publicHiddenSourcePolicy.slides[0].componentPlan.industryEvidenceChain.coveragePolicy.requiredAll, []);
 assert.deepEqual(publicHiddenSourcePolicy.slides[0].componentPlan.industryEvidenceChain.coveragePolicy.inactiveConditionalRequirements.visibleSources, ['source-note']);
-assert.equal(publicHiddenSourcePolicy.slides[0].componentPlan.industryEvidenceChain.coveragePolicy.minHits, 1);
+assert.equal(publicHiddenSourcePolicy.slides[0].componentPlan.industryEvidenceChain.coveragePolicy.minHits, 2);
+assert.equal(
+  auditIndustryEvidenceChain({ industry:'government-public-sector' }, publicHiddenSourcePolicy).findings.some(finding => finding.type === 'industryEvidenceCoverageBelowMinimum'),
+  false
+);
 
 ['no visible source notes', 'do not render source notes'].forEach(policy => {
   const hiddenByPolicy = normalizeDeckPlan({

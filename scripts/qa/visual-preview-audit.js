@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const {
-  hamming,
   pngAnalysis,
-  pngInfo
+  pngInfo,
+  previewSimilarityRisk
 } = require('./png-analysis');
 
 function buildPreviewReports(previewDir = '', slideCount = 0, qa = {}) {
@@ -31,9 +31,9 @@ function buildPreviewReports(previewDir = '', slideCount = 0, qa = {}) {
     const curReport = previewReports[i];
     const prev = prevReport.info;
     const cur = curReport.info;
-    const dist = prev && cur ? hamming(prev.hash, cur.hash) : null;
-    if (dist != null && dist <= 6) {
-      findings.push({ slide:curReport.slide, level:'review', type:'slideSimilarity', message:`slide ${prevReport.slide} and ${curReport.slide} look too similar by preview hash (${dist}/64)` });
+    const risk = previewSimilarityRisk(prev, cur);
+    if (risk.similar) {
+      findings.push({ slide:curReport.slide, level:'review', type:'slideSimilarity', message:`slide ${prevReport.slide} and ${curReport.slide} look too similar by preview hash (${risk.dist}/64)` });
     }
   }
   return { previewReports, findings };

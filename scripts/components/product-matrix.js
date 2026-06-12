@@ -70,8 +70,12 @@ function renderProductMatrix(ctx = {}, items = [], opts = {}) {
     ['证据', 'benefit'],
     ['经营', 'businessMeaning']
   ];
-  const top = y + 0.40;
-  const rowH = Math.min(0.36, Math.max(0.22, (z.h - 0.56) / Math.max(1, list.length)));
+  const headerH = 0.10;
+  const rowGap = 0.05;
+  const availableH = Math.max(0.72, z.h - 0.72);
+  const rowH = Math.min(0.62, Math.max(0.28, (availableH - headerH - 0.14 - rowGap * Math.max(0, list.length - 1)) / Math.max(1, list.length)));
+  const tableH = headerH + 0.18 + list.length * rowH + rowGap * Math.max(0, list.length - 1);
+  const top = y + Math.max(0.42, (z.h - tableH) / 2);
   const colW = (z.w - 0.36) / headers.length;
   headers.forEach(([label], i) => {
     addLabel(slide, label, {
@@ -85,19 +89,20 @@ function renderProductMatrix(ctx = {}, items = [], opts = {}) {
     });
   });
   list.forEach((item, row) => {
-    const rowY = top + 0.18 + row * rowH;
+    const rowY = top + 0.18 + row * (rowH + rowGap);
     headers.forEach(([, key], i) => {
       const value = item[key] || (i === 0 ? itemTitle(item, 'Product') : '');
       addText(slide, compactText(value, 18), {
         x:x + 0.18 + i * colW,
         y:rowY,
         w:Math.max(0.52, colW - 0.04),
-        h:Math.max(0.09, rowH - 0.06),
-        fontSize:5.9,
+        h:Math.max(0.13, rowH - 0.04),
+        fontSize:6.0,
         bold:i === 0,
         color:dark ? C.captionOnImage : C.body,
         fit:'shrink',
-        breakLine:true
+        breakLine:true,
+        valign:'mid'
       });
     });
   });

@@ -18,7 +18,7 @@ function createArchitectureServiceBlueprint(ctx = {}, deps = {}) {
 
   return function architectureServiceBlueprint(slide, plan, s, idx) {
     const claim = s.claim || s.subtitle || '把患者触点、前台服务、后台协同和质量证据放在同一张服务蓝图里。';
-    drawLightPageHeader(slide, {
+    const header = drawLightPageHeader(slide, {
       kicker:'SERVICE BLUEPRINT',
       title:s.title || '医疗服务蓝图',
       titleW:5.8,
@@ -30,8 +30,12 @@ function createArchitectureServiceBlueprint(ctx = {}, deps = {}) {
     });
 
     const { cols, fallback } = serviceBlueprintColumns(s);
-    drawServiceBlueprintRibbon(slide, s);
-    drawServiceBlueprintBoard(slide, s, cols, fallback);
+    const contentY = Math.max(2.04, header.contentTop || 2.04);
+    drawServiceBlueprintRibbon(slide, s, { y:contentY });
+    drawServiceBlueprintBoard(slide, s, cols, fallback, {
+      y:contentY + 0.82,
+      h:Math.max(2.96, 6.22 - (contentY + 0.82))
+    });
     drawFooter(slide, plan);
   };
 }

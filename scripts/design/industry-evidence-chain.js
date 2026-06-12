@@ -1,30 +1,13 @@
 const INDUSTRY_CHAIN_VERSION = 'industry-evidence-chain/v1';
 const {
-  TEXT_METADATA_OMIT_KEYS
-} = require('./text-utils');
-
-const CHAIN_TEXT_OMIT_KEYS = new Set(TEXT_METADATA_OMIT_KEYS);
-
-function compactUnique(values = []) {
-  return [...new Set((values || []).filter(value => value != null && String(value).trim() !== '').map(value => String(value)))];
-}
-
-function normalizeKey(value = '') {
-  return String(value || '').trim().toLowerCase();
-}
-
-function flattenText(value) {
-  if (value == null) return '';
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
-  if (Array.isArray(value)) return value.map(flattenText).join(' ');
-  if (typeof value === 'object') {
-    return Object.keys(value)
-      .filter(key => !CHAIN_TEXT_OMIT_KEYS.has(key))
-      .map(key => flattenText(value[key]))
-      .join(' ');
-  }
-  return '';
-}
+  CHAIN_TEXT_OMIT_KEYS,
+  compactUnique,
+  flattenText,
+  genericCardJudgmentWithoutEvidence,
+  normalizeKey,
+  proofObjectIdForSlide,
+  routeTextForSlide
+} = require('./industry-evidence-chain-text');
 
 const COMMON_SOURCE_FIELDS = ['sourceNote', 'source_note', 'proof.sourceNote', 'proof.source'];
 const COMMON_CAPTION_FIELDS = ['caption', 'subtitle', 'claim', 'proof.explanation', 'visual.caption'];
@@ -43,6 +26,12 @@ const {
 const {
   hasFieldPath
 } = require('./component-evidence-contracts');
+const {
+  createRiskGovernanceFallbackHelpers
+} = require('./industry-evidence-chain-risk-governance');
+const {
+  createIndustryEvidenceChainShapeHelpers
+} = require('./industry-evidence-chain-shape');
 
 const INDUSTRY_EVIDENCE_CHAINS = require('./industry-evidence-chain-definitions');
 
@@ -51,21 +40,6 @@ const INDUSTRY_ALIAS_TO_CHAIN = Object.entries(INDUSTRY_EVIDENCE_CHAINS).reduce(
   (chain.industryIds || []).forEach(industryId => { out[normalizeKey(industryId)] = id; });
   return out;
 }, {});
-
-function routeTextForSlide(slide = {}) {
-  const proofObject = proofObjectIdForSlide(slide);
-  return normalizeKey([
-    slide.type,
-    slide.layoutVariant,
-    slide.variant,
-    proofObject,
-    slide.proof && slide.proof.id
-  ].filter(Boolean).join(':'));
-}
-
-function proofObjectIdForSlide(slide = {}) {
-  return String(slide.proofObject || slide.proof_object || (slide.proof && slide.proof.id) || '').trim();
-}
 
 function normalizeIndustryEvidenceChainId(industry = '', slide = {}) {
   const raw = normalizeKey(industry);
@@ -91,6 +65,11 @@ function scoreStage(stage = {}, slide = {}) {
     type: slide.type,
     layoutVariant: slide.layoutVariant || slide.variant,
     proofObject,
+    businessDomain: slide.businessDomain || slide.business_domain,
+    chainStage: slide.chainStage || slide.chain_stage,
+    depthDomain: slide.depthDomain || slide.depth_domain,
+    proofIntent: slide.proofIntent || slide.proof_intent,
+    industryObjects: slide.industryObjects || slide.industry_objects,
     title: slide.title,
     subtitle: slide.subtitle,
     claim: slide.claim,
@@ -100,6 +79,11 @@ function scoreStage(stage = {}, slide = {}) {
     items: slide.items,
     products: slide.products,
     productStory: slide.productStory,
+    productItems: slide.productItems || slide.product_items,
+    skuMatrix: slide.skuMatrix || slide.sku_matrix,
+    editorialProof: slide.editorialProof || slide.editorial_proof,
+    informationGap: slide.informationGap || slide.information_gap,
+    reviews: slide.reviews,
     metrics: slide.metrics,
     rows: slide.rows,
     risks: slide.risks
@@ -128,98 +112,37 @@ function confidenceForScore(score = 0) {
   return 'neutral';
 }
 
-function genericCardJudgmentWithoutEvidence(slide = {}) {
-  const type = normalizeKey(slide.type);
-  if (!['cards', 'value-tiles', 'executive-blocks', 'two-column', 'two-column-clean'].includes(type)) return false;
-  return ![
-    'visual.image',
-    'visual.images',
-    'image',
-    'images',
-    'product',
-    'products',
-    'productStory',
-    'metrics',
-    'rows',
-    'reviews',
-    'sales'
-  ].some(field => hasFieldPath(slide, field));
-}
+const {
+  isNativeRiskGovernanceSlide,
+  nativeRiskGovernanceChain,
+  nativeRiskGovernanceFields,
+  nativeRiskRouteOutranksMetricOnlyStage
+} = createRiskGovernanceFallbackHelpers({
+  compactUnique,
+  commonCaptionFields: COMMON_CAPTION_FIELDS,
+  hasFieldPath,
+  hasSourceEvidence,
+  normalizeKey,
+  normalizeStageCoveragePolicy,
+  proofObjectIdForSlide,
+  version: INDUSTRY_CHAIN_VERSION
+});
 
-function neutralEvidenceChain(reason = 'industry evidence chain was not inferred') {
-  return {
-    version: INDUSTRY_CHAIN_VERSION,
-    industry: 'neutral-general',
-    chainId: 'neutral-general',
-    chainLabel: '通用/中性',
-    stage: 'neutral',
-    stageId: 'neutral-general',
-    stageLabel: 'neutral/general',
-    position: 0,
-    confidence: 'neutral',
-    components: [],
-    coveragePolicy: normalizeStageCoveragePolicy({ components: [] }),
-    avoidComponents: [],
-    matchedFields: [],
-    matchedKeywords: [],
-    matchedProofObjects: [],
-    matchedRoutes: [],
-    evidenceReasons: [reason],
-    requiresCaption: false,
-    requiresSource: false
-  };
-}
-
-function normalizeIndustryEvidenceChainShape(chain = null) {
-  if (!chain || typeof chain !== 'object' || Array.isArray(chain)) return null;
-  const coveragePolicy = normalizeStageCoveragePolicy({
-    coveragePolicy: chain.coveragePolicy || chain.coverage_policy,
-    components: chain.components
-  });
-  return Object.assign({}, chain, {
-    version: chain.version || INDUSTRY_CHAIN_VERSION,
-    chainId: String(chain.chainId || '').trim(),
-    chainLabel: chain.chainLabel || '',
-    stageId: String(chain.stageId || '').trim(),
-    stageLabel: chain.stageLabel || '',
-    components: compactUnique(Array.isArray(chain.components) ? chain.components : coveragePolicy.components),
-    coveragePolicy,
-    avoidComponents: compactUnique(Array.isArray(chain.avoidComponents) ? chain.avoidComponents : []),
-    matchedFields: compactUnique(Array.isArray(chain.matchedFields) ? chain.matchedFields : []),
-    matchedKeywords: compactUnique(Array.isArray(chain.matchedKeywords) ? chain.matchedKeywords : []),
-    matchedProofObjects: compactUnique(Array.isArray(chain.matchedProofObjects) ? chain.matchedProofObjects : []),
-    matchedRoutes: compactUnique(Array.isArray(chain.matchedRoutes) ? chain.matchedRoutes : []),
-    evidenceReasons: compactUnique(Array.isArray(chain.evidenceReasons) ? chain.evidenceReasons : [])
-  });
-}
-
-function industryEvidenceChainShapeIssues(chain = null) {
-  const issues = [];
-  if (!chain || typeof chain !== 'object' || Array.isArray(chain)) {
-    return ['industryEvidenceChain must be an object'];
-  }
-  if (!String(chain.chainId || '').trim()) issues.push('missing chainId');
-  if (!String(chain.stageId || '').trim()) issues.push('missing stageId');
-  ['components', 'matchedFields', 'matchedProofObjects'].forEach(field => {
-    if (!Array.isArray(chain[field])) issues.push(`${field} must be an array`);
-  });
-  const coveragePolicy = chain.coveragePolicy != null ? chain.coveragePolicy : chain.coverage_policy;
-  if (coveragePolicy != null && (typeof coveragePolicy !== 'object' || Array.isArray(coveragePolicy))) {
-    issues.push('coveragePolicy must be an object when present');
-  } else if (coveragePolicy) {
-    issues.push(...coveragePolicyShapeIssues(coveragePolicy));
-  }
-  ['matchedKeywords', 'matchedRoutes', 'evidenceReasons'].forEach(field => {
-    if (chain[field] != null && !Array.isArray(chain[field])) issues.push(`${field} must be an array when present`);
-  });
-  return issues;
-}
-
-function chainsShareIdentity(a = null, b = null) {
-  return Boolean(a && b && a.chainId && b.chainId && a.stageId && b.stageId &&
-    a.chainId === b.chainId &&
-    a.stageId === b.stageId);
-}
+const {
+  chainsShareIdentity,
+  industryEvidenceChainShapeIssues,
+  nativeProcessOrTimelineSlide,
+  neutralEvidenceChain,
+  normalizeIndustryEvidenceChainShape
+} = createIndustryEvidenceChainShapeHelpers({
+  compactUnique,
+  coveragePolicyShapeIssues,
+  hasFieldPath,
+  normalizeKey,
+  normalizeStageCoveragePolicy,
+  proofObjectIdForSlide,
+  version: INDUSTRY_CHAIN_VERSION
+});
 
 function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
   const chain = industryEvidenceChainFor(plan, slide);
@@ -230,6 +153,9 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
     return neutralEvidenceChain(`${type || 'slide'} requested native-only industry evidence-chain mode`);
   }
   const explicitProofRoute = Boolean(slide.proofObject || slide.proof_object || slide.layoutVariant || slide.layout_variant);
+  if (['toc', 'toc-clean', 'chapter-divider'].includes(type)) {
+    return neutralEvidenceChain(`${type} slide is owned by the native navigation renderer`);
+  }
   if (['cover', 'cover-dark', 'closing'].includes(type) && (!explicitProofRoute || slide.proofObjectInferred)) {
     return neutralEvidenceChain(`${type} slide has no explicit proof route; skipped industry evidence-chain inference`);
   }
@@ -237,13 +163,29 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
   if (type === 'strategy-map' && /value-creation-process-map/.test(layoutVariant)) {
     return neutralEvidenceChain('value-creation-process-map is owned by the native strategy/value-chain renderer');
   }
-  if (genericCardJudgmentWithoutEvidence(slide)) {
+  if (genericCardJudgmentWithoutEvidence(slide, hasFieldPath)) {
     return neutralEvidenceChain(`${type} slide is a judgment/card page without structured evidence fields; skipped industry evidence-chain inference`);
   }
   const scored = chain.stages.map(stage => Object.assign({ stage }, scoreStage(stage, slide)))
     .sort((a, b) => b.score - a.score || a.stage.position - b.stage.position);
   const best = scored[0] || {};
+  const genericProcessFields = new Set(['phases', 'actions', 'steps', 'timeline', 'milestones', 'loopItems', 'workflows', 'workflow']);
+  const substantiveProcessFields = (best.matchedFields || []).filter(field => !genericProcessFields.has(field));
+  if (
+    best.stage &&
+    nativeProcessOrTimelineSlide(slide) &&
+    !best.matchedProofObjects.length &&
+    !substantiveProcessFields.length
+  ) {
+    return neutralEvidenceChain(`${type || 'process'} slide is owned by the native process/timeline renderer`);
+  }
+  if (best.stage && nativeRiskRouteOutranksMetricOnlyStage(best.stage, slide)) {
+    return nativeRiskGovernanceChain(chain, slide, `${type || 'slide'} has native risk/governance evidence but no metric/chart evidence; skipped metric-only industry evidence-chain stage`);
+  }
   if (!best.stage || best.score < 3) {
+    if (isNativeRiskGovernanceSlide(slide) && nativeRiskGovernanceFields(slide).length) {
+      return nativeRiskGovernanceChain(chain, slide, `${type || 'slide'} provided native risk/governance evidence without a precise chain-stage match`);
+    }
     return neutralEvidenceChain(`${chain.label} chain has insufficient route/proof/field evidence`);
   }
   const stage = best.stage;

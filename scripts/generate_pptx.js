@@ -76,6 +76,7 @@ const {
   chooseFourImageLayout,
   copyPolicyList,
   copyPolicyText,
+  componentPlanAudit,
   galleryImages,
   imageDimensions,
   languagePolicyFor,
@@ -103,6 +104,7 @@ const {
 } = require('./components');
 const {
   chartConsumedFields,
+  chartPreflightAudit,
   chartSpecToComponentId,
   routeChartSpec
 } = require('./chart-spec');
@@ -488,6 +490,26 @@ async function main() {
         normalizedPlanHash:shortHash(workingPlan),
         routeSensitiveDiffs:normalizationDiffs
       }
+    }, null, 2));
+    process.exit(1);
+  }
+  const chartPreflight = chartPreflightAudit(workingPlan, workingPlan, { strict: isStrictRenderMode(workingPlan) });
+  if (chartPreflight.status === 'fail') {
+    console.error(JSON.stringify({
+      success:false,
+      error:'chart_preflight_failed',
+      message:'Chart routes must have a valid chartSpec/v1 contract or an explicit information-gap before PPTX rendering.',
+      chartPreflight
+    }, null, 2));
+    process.exit(1);
+  }
+  const componentPreflight = componentPlanAudit(workingPlan, workingPlan);
+  if (componentPreflight.status === 'fail') {
+    console.error(JSON.stringify({
+      success:false,
+      error:'component_preflight_failed',
+      message:'Required components must be valid for the active slide route before PPTX rendering.',
+      componentPreflight
     }, null, 2));
     process.exit(1);
   }

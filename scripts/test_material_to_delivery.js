@@ -3,6 +3,9 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const cp = require('child_process');
+const {
+  resolveAssetStage
+} = require('./material/delivery-stages');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-material-to-delivery');
@@ -37,6 +40,27 @@ assert.equal(pauseResult.status, 'awaiting_model_extraction');
 assert.ok(fs.existsSync(path.join(pauseDir, 'material-bundle.json')));
 assert.ok(fs.existsSync(path.join(pauseDir, 'model-orchestration', '04-extraction.prompt.md')));
 
+const formalAutoDraftDir = path.join(OUT, 'formal-auto-draft');
+const formalAutoDraft = cp.spawnSync(process.execPath, [
+  'scripts/material_to_delivery.js',
+  brief,
+  '--out-dir',
+  formalAutoDraftDir,
+  '--auto-draft',
+  '--quality-mode',
+  'formal',
+  '--skip-preview'
+], {
+  cwd: ROOT,
+  encoding: 'utf8',
+  timeout: 180000
+});
+assert.equal(formalAutoDraft.status, 0, formalAutoDraft.stderr || formalAutoDraft.stdout);
+const formalAutoDraftResult = JSON.parse(formalAutoDraft.stdout);
+assert.equal(formalAutoDraftResult.status, 'awaiting_model_extraction');
+assert.ok(formalAutoDraftResult.nextActions.some(item => /Auto-draft extraction is draft-only/.test(item)));
+assert.equal(fs.existsSync(path.join(formalAutoDraftDir, 'deck-plan.json')), false);
+
 const draftDir = path.join(OUT, 'draft');
 const draft = cp.spawnSync(process.execPath, [
   'scripts/material_to_delivery.js',
@@ -56,19 +80,22 @@ const draft = cp.spawnSync(process.execPath, [
 });
 assert.equal(draft.status, 0, draft.stderr || draft.stdout);
 const draftResult = JSON.parse(draft.stdout);
-assert.equal(draftResult.status, 'complete');
+assert.equal(draftResult.status, 'needs_asset_decisions');
 assert.ok(fs.existsSync(path.join(draftDir, 'deck-plan.json')));
-assert.ok(fs.existsSync(path.join(draftDir, 'deck.pptx')));
-assert.ok(fs.existsSync(path.join(draftDir, 'deck.pptx.render-meta.json')));
+assert.equal(fs.existsSync(path.join(draftDir, 'deck.pptx')), false);
+assert.equal(fs.existsSync(path.join(draftDir, 'deck.pptx.render-meta.json')), false);
 assert.ok(fs.existsSync(path.join(draftDir, 'delivery-summary.md')));
 const report = JSON.parse(fs.readFileSync(path.join(draftDir, 'delivery-report.json'), 'utf8'));
-assert.equal(report.status, 'complete');
+assert.equal(report.status, 'needs_asset_decisions');
 assert.equal(report.report.version, 'delivery-report-summary/v1');
 assert.equal(report.report.kind, 'delivery');
 assert.equal(report.report.meta.previewProvider, 'none');
 assert.ok(Number.isInteger(report.report.meta.ocrPossibleMissingCount));
-assert.equal(report.report.meta.assetGateStatus, 'ready');
+assert.equal(report.report.meta.assetGateStatus, 'needs_user_input');
+assert.ok(report.outputs.assetGateMarkdown, 'delivery report should expose human-readable asset gate markdown');
+assert.ok(fs.existsSync(path.join(draftDir, 'asset-decision-gate.md')));
 assert.ok(report.nextActions.some(item => /Auto-draft/.test(item)));
+assert.ok(report.nextActions.some(item => /asset-decision-gate\.json/.test(item)));
 
 const modelResultsDir = path.join(OUT, 'model-results');
 const draftExtraction = JSON.parse(fs.readFileSync(path.join(draftDir, 'model-orchestration', 'material-extraction.draft.json'), 'utf8'));
@@ -175,5 +202,36 @@ const blockedRun = cp.spawnSync(process.execPath, [
 });
 assert.equal(blockedRun.status, 0, blockedRun.stderr || blockedRun.stdout);
 assert.equal(JSON.parse(blockedRun.stdout).status, 'critic_blocked');
+
+const assetDecisionDir = path.join(OUT, 'asset-decision-pause');
+fs.mkdirSync(assetDecisionDir, { recursive: true });
+const imageLedPlanPath = path.join(assetDecisionDir, 'deck-plan.json');
+fs.writeFileSync(imageLedPlanPath, `${JSON.stringify({
+  title: '事实图片门禁样例',
+  industry: 'brand-retail',
+  slides: [{
+    type: 'case-gallery',
+    title: '客户案例与产品截图',
+    proofObject: 'customer-proof',
+    visual: { role: 'gallery' },
+    items: ['真实客户截图', '真实产品包装']
+  }]
+}, null, 2)}\n`, 'utf8');
+const assetReport = { steps: [], outputs: {}, nextActions: [] };
+const assetStage = resolveAssetStage({
+  deckPlanPath: imageLedPlanPath,
+  opts: { autoDraft: true },
+  outDir: assetDecisionDir,
+  report: assetReport,
+  root: ROOT,
+  rel: file => path.relative(ROOT, file)
+});
+assert.equal(assetStage.stop, true);
+assert.equal(assetReport.status, 'needs_asset_decisions');
+assert.ok(assetReport.outputs.assetGateMarkdown);
+assert.ok(fs.existsSync(path.join(assetDecisionDir, 'asset-decision-gate.md')));
+const gate = JSON.parse(fs.readFileSync(path.join(assetDecisionDir, 'asset-decision-gate.json'), 'utf8'));
+assert.equal(gate.status, 'needs_user_input');
+assert.deepEqual(gate.questions[0].allowedActions, ['provide_assets', 'skip_image']);
 
 console.log('material to delivery orchestrator ok');

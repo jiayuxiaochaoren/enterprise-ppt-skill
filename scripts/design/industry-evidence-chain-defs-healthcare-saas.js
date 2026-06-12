@@ -2,27 +2,16 @@ module.exports = {
   "healthcare-operations": {
     "id": "healthcare-operations",
     "label": "医疗健康",
-    "industryIds": [
-      "healthcare-operations",
-      "healthcare-wellness"
-    ],
-    "avoidComponents": [
-      "product-matrix",
-      "equipment-nameplate",
-      "lookbook-frame"
-    ],
+    "industryIds": ["healthcare-operations", "healthcare-wellness"],
+    "avoidComponents": ["product-matrix", "equipment-nameplate", "lookbook-frame"],
     "stages": [
       {
         "id": "service-commitment",
         "position": 1,
         "label": "服务承诺",
-        "components": [
-          "patient-journey-band"
-        ],
+        "components": ["patient-journey-band"],
         "coveragePolicy": {
-          "requiredAll": [
-            "patient-journey-band"
-          ],
+          "requiredAll": ["patient-journey-band"],
           "minHits": 1
         },
         "proofObjects": [
@@ -57,16 +46,23 @@ module.exports = {
         "label": "流程/触点",
         "components": [
           "patient-journey-band",
-          "service-blueprint-lane"
+          "service-blueprint-lane",
+          "proof-gallery",
+          "caption-bar",
+          "process-rail"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "service-blueprint-lane"
-          ],
           "requiredAny": [
-            "patient-journey-band"
+            "service-blueprint-lane",
+            "patient-journey-band",
+            "proof-gallery",
+            "process-rail"
           ],
-          "minHits": 2
+          "optional": [
+            "caption-bar"
+          ],
+          "minHits": 2,
+          "coverageAliases": {"service-blueprint-lane": ["patient-journey-band"], "process-rail": ["service-blueprint-lane"]}
         },
         "proofObjects": [
           "service-blueprint",
@@ -110,7 +106,8 @@ module.exports = {
             "quality-scorecard",
             "risk-register"
           ],
-          "minHits": 2
+          "minHits": 2,
+          "coverageAliases": {"quality-scorecard": ["risk-register"], "risk-register": ["quality-scorecard"]}
         },
         "proofObjects": [
           "patient-scorecard",
@@ -171,8 +168,7 @@ module.exports = {
           "minHits": 1
         },
         "proofObjects": [
-          "platform-capability-map",
-          "automation-workflow"
+          "platform-capability-map"
         ],
         "routes": [
           "architecture:platform-capability-map",
@@ -207,9 +203,8 @@ module.exports = {
         ],
         "coveragePolicy": {
           "requiredAll": ["workflow-rail"],
-          "requiredAny": ["prototype-frame"],
-          "optional": ["caption-bar"],
-          "minHits": 2
+          "optional": ["prototype-frame", "caption-bar"],
+          "minHits": 1
         },
         "proofObjects": [
           "prototype-flow",
@@ -217,6 +212,7 @@ module.exports = {
         ],
         "routes": [
           "case-gallery:prototype-flow",
+          "timeline:automation-workflow",
           "timeline:workflow",
           "architecture:workflow"
         ],
@@ -228,6 +224,7 @@ module.exports = {
           "prototypeFlow",
           "images",
           "visual",
+          "phases",
           "steps"
         ],
         "keywords": [
@@ -248,27 +245,33 @@ module.exports = {
         "components": [
           "adoption-funnel",
           "permission-audit-tag",
+          "governance-table",
           "kpi-strip"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "adoption-funnel"
-          ],
           "requiredAny": [
-            "permission-audit-tag",
+            "adoption-funnel",
+            "governance-table",
             "kpi-strip"
           ],
-          "minHits": 2
+          "optional": [
+            "permission-audit-tag"
+          ],
+          "minHits": 2,
+          "coverageAliases": {"kpi-strip": ["adoption-funnel"], "governance-table": ["permission-audit-tag"]}
         },
         "proofObjects": [
           "adoption-funnel",
           "adoption-revenue-board",
+          "revenue-board",
           "permission-governance"
         ],
         "routes": [
           "industry-chart:adoption-funnel",
           "metric-comparison:adoption",
-          "risk-table:permission"
+          "metric-comparison:adoption-revenue-board",
+          "risk-table:permission",
+          "risk-table:permission-governance"
         ],
         "fields": [
           "adoptionFunnel",
@@ -276,6 +279,7 @@ module.exports = {
           "cohortFunnel",
           "metrics",
           "permissionGovernance",
+          "rows",
           "risks"
         ],
         "keywords": [

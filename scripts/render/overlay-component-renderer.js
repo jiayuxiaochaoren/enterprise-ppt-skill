@@ -60,9 +60,20 @@ function createOverlayComponentRenderer(deps = {}) {
     const grammarDecision = industryVisualGrammarDecisionFor(plan, s) || {};
     const { slot, ownedByNative, blocked } = guardOverlayRender(componentId, nativeIds, contract, existingOverlays);
     if (blocked) return blocked;
+    if (ownedByNative) {
+      const nativeEvidence = nativeDrawnEvidenceFor(plan, s, componentId, contract, slide);
+      return nativeEvidence || {
+        id:componentId,
+        mode:'native-claimed-undrawn',
+        rendered:false,
+        rendererModule:nativeRendererModule,
+        rendererMethod:'nativeDrawnEvidenceFor',
+        reason:'native renderer declared ownership but did not provide drawn component evidence'
+      };
+    }
     const industryDrawn = industryComponentResult(slide, plan, s, componentId, slot, dark);
     if (industryDrawn) return industryDrawn;
-    if (componentId === 'hero-image' && !ownedByNative) {
+    if (componentId === 'hero-image') {
       const image = mediaForRole(plan, s, slideRole(s));
       if (image && fileExists(image)) {
         const z = slot || { x:8.18, y:1.08, w:3.20, h:2.48 };
@@ -70,7 +81,7 @@ function createOverlayComponentRenderer(deps = {}) {
         return { id:componentId, mode:'overlay', rendered:true, bbox:z };
       }
     }
-    if ((componentId === 'kpi-strip' || componentId === 'metric-strip') && !ownedByNative) {
+    if (componentId === 'kpi-strip' || componentId === 'metric-strip') {
       const metrics = overlayMetricsForSlide(plan, s);
       if (metrics.length) {
         const z = slot || { x:0.86, y:['cover', 'cover-dark'].includes(s.type || '') ? 5.90 : 6.12, w:10.30, h:0.58 };
@@ -78,7 +89,7 @@ function createOverlayComponentRenderer(deps = {}) {
         return Object.assign({ id:componentId, mode:'overlay', rendered:true }, component);
       }
     }
-    if (componentId === 'chart-commentary-panel' && !ownedByNative) {
+    if (componentId === 'chart-commentary-panel') {
       const text = (s.businessLogic && (s.businessLogic.action || s.businessLogic.metric)) ||
         (s.proof && s.proof.explanation) ||
         s.claim || s.subtitle || s.note || '';
@@ -93,13 +104,13 @@ function createOverlayComponentRenderer(deps = {}) {
         return { id:componentId, mode:'overlay', rendered:true, bbox:z };
       }
     }
-    if ((componentId === 'value-chain' || componentId === 'system-rail') && !ownedByNative) {
+    if (componentId === 'value-chain' || componentId === 'system-rail') {
       const points = overlayPointsForSlide(s);
       const z = slot || {};
       const component = drawOverlayValueChain(slide, points, Object.assign({ dark }, z));
       if (component) return Object.assign({ id:componentId, mode:'overlay', rendered:true }, component);
     }
-    if (componentId === 'process-rail' && !ownedByNative) {
+    if (componentId === 'process-rail') {
       const points = overlayPointsForSlide(s);
       if (points.length >= 2) {
         const z = slot || { x:0.94, y:6.18, w:4.48, h:0.54 };
@@ -107,7 +118,7 @@ function createOverlayComponentRenderer(deps = {}) {
         return { id:componentId, mode:'overlay', rendered:true, bbox:z, itemCount:points.slice(0, 5).length };
       }
     }
-    if (componentId === 'proof-gallery' && !ownedByNative) {
+    if (componentId === 'proof-gallery') {
       const items = overlayProofItemsForSlide(plan, s);
       const images = overlayImagesForSlide(plan, s);
       if (!items.length && !images.length) return { id:componentId, mode:'not-rendered', rendered:false, reason:'no-explicit-proof-gallery-content' };
@@ -123,13 +134,13 @@ function createOverlayComponentRenderer(deps = {}) {
       }, z));
       if (component) return Object.assign({ id:componentId, mode:'overlay', rendered:true }, component);
     }
-    if (componentId === 'risk-register' && !ownedByNative) {
+    if (componentId === 'risk-register') {
       const rows = Array.isArray(s.rows) && s.rows.length ? s.rows : overlayProofItemsForSlide(plan, s);
       const z = slot || {};
       const component = deps.renderRiskRegister(componentRendererContext(slide), rows, Object.assign({ dark }, z));
       if (component.rendered) return Object.assign({ id:componentId, mode:'overlay', rendered:true }, component);
     }
-    if (componentId === 'product-matrix' && !ownedByNative) {
+    if (componentId === 'product-matrix') {
       const items = overlayProductItemsForSlide(plan, s).slice(0, 4);
       if (items.length) {
         const z = slot || { x:8.04, y:4.92, w:3.58, h:0.58 };
@@ -142,7 +153,7 @@ function createOverlayComponentRenderer(deps = {}) {
         if (component.rendered) return Object.assign({ id:componentId, mode:'overlay' }, component);
       }
     }
-    if (componentId === 'source-note' && !ownedByNative) {
+    if (componentId === 'source-note') {
       const text = componentSourceNoteText(plan, s);
       if (text) {
         const z = slot || { x:8.10, y:7.05, w:4.20, h:0.16 };
@@ -150,7 +161,7 @@ function createOverlayComponentRenderer(deps = {}) {
         return { id:componentId, mode:'overlay', rendered:true, bbox:z };
       }
     }
-    if (componentId === 'caption-bar' && !ownedByNative) {
+    if (componentId === 'caption-bar') {
       const proof = s.proof || {};
       const caption = s.caption || (s.visual && s.visual.caption) || proof.caption || proof.sourceNote || proof.source_note || '';
       if (caption) {
@@ -164,7 +175,7 @@ function createOverlayComponentRenderer(deps = {}) {
         return { id:componentId, mode:'overlay', rendered:true, bbox:z };
       }
     }
-    if (componentId === 'commentary-panel' && !ownedByNative) {
+    if (componentId === 'commentary-panel') {
       const logic = s.businessLogic || {};
       const text = logic.action || logic.metric || s.decision || s.note || '';
       if (text) {
@@ -178,7 +189,7 @@ function createOverlayComponentRenderer(deps = {}) {
         return { id:componentId, mode:'overlay', rendered:true, bbox:z };
       }
     }
-    if (chartComponentIds.has(componentId) && !ownedByNative) {
+    if (chartComponentIds.has(componentId)) {
       const spec = s.chartSpec || routeChartSpec(plan, s, { index:idx, total:(plan.slides || []).length });
       if (spec) {
         const component = renderChartSpec(componentRendererContext(slide), spec, { x:4.06, y:2.16, w:7.44, h:3.76, showSourceNote });
@@ -187,17 +198,6 @@ function createOverlayComponentRenderer(deps = {}) {
           return Object.assign({ id:componentId, mode:'overlay', rendered:true }, component);
         }
       }
-    }
-    if (ownedByNative) {
-      const nativeEvidence = nativeDrawnEvidenceFor(plan, s, componentId, contract, slide);
-      return nativeEvidence || {
-        id:componentId,
-        mode:'native-claimed-undrawn',
-        rendered:false,
-        rendererModule:nativeRendererModule,
-        rendererMethod:'nativeDrawnEvidenceFor',
-        reason:'native renderer declared ownership but did not provide drawn component evidence'
-      };
     }
     return { id:componentId, mode:'not-rendered', rendered:false };
   }

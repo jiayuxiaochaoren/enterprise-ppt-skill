@@ -21,6 +21,23 @@ assert.deepEqual(
 briefs.forEach(brief => {
   const plan = brief.plan;
   const normalized = normalizeDeckPlan(plan);
+  if (brief.slug === 'financial-results-review') {
+    assert.equal(
+      plan.media && plan.media.cover,
+      'acceptance://financial-results-review/cover.png',
+      'financial acceptance cover should bind an editorial generated asset fixture'
+    );
+    assert.equal(
+      Boolean(normalized.slides[0].generatedAssetPrompt),
+      false,
+      'financial acceptance cover should not leave an unbound generatedAssetPrompt'
+    );
+    assert.equal(
+      normalized.slides[0].assetGeneration && normalized.slides[0].assetGeneration.status,
+      'bound',
+      'financial acceptance cover asset policy should resolve to a bound asset'
+    );
+  }
   assert.ok(normalized.slides.length >= 8 && normalized.slides.length <= 12, `${brief.slug} should be an 8-12 page acceptance deck`);
   const audit = acceptanceAudit(plan, normalized);
   assert.deepEqual(

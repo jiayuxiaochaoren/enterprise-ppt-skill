@@ -2,6 +2,9 @@ const {
   componentAliasTargetFor,
   isComponentAlias
 } = require('../render/component-capability-manifest');
+const {
+  routeComponentCapability
+} = require('./route-component-capabilities');
 
 function createComponentPlanAuditHelpers({
   flattenText = value => String(value || ''),
@@ -49,6 +52,20 @@ function createComponentPlanAuditHelpers({
             level: 'fail',
             type: 'unknownComponentId',
             message: `component has no capability registry entry: ${component.id}`
+          });
+        }
+        const routeCapability = component.routeCapability || routeComponentCapability(component.id, {
+          component,
+          plan: normalized,
+          slide
+        });
+        if (component.required !== false && routeCapability && routeCapability.allowed === false) {
+          findings.push({
+            slide: i + 1,
+            level: 'fail',
+            type: 'componentRouteUnsupported',
+            componentId: component.id,
+            message: `component ${component.id} cannot be consumed by route ${slide.type || 'unknown'}: ${routeCapability.reason || 'unsupported route'}`
           });
         }
       });
@@ -108,15 +125,12 @@ function createComponentPlanAuditHelpers({
           message: 'system-rail requires architecture/strategy route or explicit layers/topology/capability data'
         });
       }
-      const text = flattenText(slide);
-      const hasCurveStructure = slide.loadCurve || slide.loadCurveBand || slide.curve || slide.trend || slide.monthlyTrend || slide.monthlyPulse ||
-        /曲线|趋势|负荷|SOC|load|curve|trend|pulse/i.test(text);
-      if (ids.includes('load-curve-band') && !hasCurveStructure) {
+      if (ids.includes('load-curve-band')) {
         findings.push({
           slide: i + 1,
           level: 'fail',
-          type: 'loadCurveWithoutSemantics',
-          message: 'load-curve-band requires explicit curve/trend/load semantics'
+          type: 'deprecatedLoadCurveBand',
+          message: 'load-curve-band is deprecated; use source-traced chartSpec or dispatch-map evidence instead'
         });
       }
     });

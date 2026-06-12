@@ -35,7 +35,7 @@ function asNumber(value) {
 
 function unitOf(value = '', fallback = '') {
   const text = String(value == null ? '' : value);
-  const match = text.match(/(%|％|bps|bp|pt|pts|x|倍|w|万|亿|bn|m|mn|JPY|RMB|USD|CNY|¥|\$|min|分钟|天|月|年)/i);
+  const match = text.match(/(%|％|bps|bp|pt|pts|x|倍|w|万|亿|个|项|类|家|bn|m|mn|JPY|RMB|USD|CNY|¥|\$|min|分钟|天|月|年)/i);
   return match ? match[1] : fallback;
 }
 

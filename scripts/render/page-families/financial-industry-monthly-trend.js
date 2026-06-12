@@ -15,13 +15,12 @@ function createMonthlyPulseTrendDrawer(ctx = {}) {
   function addTrendSegment(slide, from, to, color) {
     const dx = to.x - from.x;
     const dy = to.y - from.y;
-    slide.addShape('line', {
+    const shape = dy < 0 ? 'lineInv' : 'line';
+    slide.addShape(shape, {
       x: Math.min(from.x, to.x),
       y: Math.min(from.y, to.y),
       w: Math.abs(dx),
       h: Math.abs(dy),
-      flipH: dx < 0,
-      flipV: dy < 0,
       line:{ color, transparency:10, width:1.15 }
     });
   }

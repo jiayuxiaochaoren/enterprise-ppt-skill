@@ -2,6 +2,7 @@ const {
   COMMON_CAPTION_FIELDS,
   INDUSTRY_EVIDENCE_CHAINS,
   canonicalIndustryEvidenceChainForSlide,
+  coverageRoleForComponent,
   coverageStatusForComponents,
   inferIndustryEvidenceChain,
   normalizeIndustryEvidenceChainShape
@@ -12,6 +13,7 @@ const {
 const { industryRenderMetaFindingsForComponent } = require('./industry-evidence-render-meta');
 const { componentEvidenceFieldFindings } = require('./industry-evidence-chain-field-gaps');
 const { buildIndustryEvidenceChainSummary, statusForFindings } = require('./industry-evidence-chain-summary');
+const { recommendationForMissingStage } = require('./industry-evidence-chain-recommendations');
 const {
   consumedComponentForSlide,
   consumedIdsForSlide,
@@ -20,6 +22,7 @@ const {
   hasFieldPath,
   inputChainFindings,
   knownIndustry,
+  nativeNeutralStageAllowed,
   plannedComponentsForSlide,
   plannedIdsForSlide,
   renderedSlideFor
@@ -47,7 +50,6 @@ function componentHintFindings(slideNo, chain = {}, slide = {}) {
 function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
   const slideNo = index + 1;
   const type = String(slide.type || '');
-  const neutralStageAllowed = ['cover', 'cover-dark', 'closing', 'toc', 'toc-clean', 'chapter-divider'].includes(type);
   const suppliedRaw = slide.componentPlan && slide.componentPlan.industryEvidenceChain;
   const supplied = normalizeIndustryEvidenceChainShape(suppliedRaw);
   const canonical = canonicalIndustryEvidenceChainForSlide(plan, slide);
@@ -55,12 +57,14 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
     ? canonical
     : inferIndustryEvidenceChain(plan, slide);
   const planned = plannedIdsForSlide(slide);
+  const neutralStageAllowed = nativeNeutralStageAllowed(slide, planned);
   const expected = Array.isArray(chain.components) ? chain.components : [];
-  const coverageStatus = coverageStatusForComponents(chain.coveragePolicy || { components: expected }, planned);
-  const plannedExpected = expected.filter(id => planned.includes(id));
   const findings = [];
   const rendered = renderedSlideFor(renderMeta, slideNo);
   const consumed = consumedIdsForSlide(rendered);
+  const coverageBasis = rendered ? consumed : planned;
+  const coverageStatus = coverageStatusForComponents(chain.coveragePolicy || { components: expected }, coverageBasis);
+  const plannedExpected = expected.filter(id => planned.includes(id));
 
   findings.push(...inputChainFindings({ canonical, slide, slideNo, suppliedRaw, supplied }));
 
@@ -98,7 +102,10 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
         message: `${chain.stageLabel} hit ${coverageStatus.hitCount}/${coverageStatus.minHits} required evidence-chain component(s)`
       });
     }
-    if (!chain.matchedFields.length && !chain.matchedProofObjects.length) {
+    const routeOnlyVisualClaimAllowed = ['cover', 'cover-dark'].includes(type) &&
+      chain.matchedRoutes.length &&
+      planned.includes('hero-image');
+    if (!chain.matchedFields.length && !chain.matchedProofObjects.length && !routeOnlyVisualClaimAllowed) {
       findings.push({
         slide: slideNo,
         level: 'review',
@@ -114,7 +121,9 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
         message: `${chain.stageLabel} expects captioned evidence but no caption/proof explanation field was found`
       });
     }
-    if (chain.requiresSource && !hasSourceEvidence(slide)) {
+    const sourceOptionalForClosing = ['closing', 'closing-dark'].includes(type) &&
+      (expected.includes('contact-block') || expected.includes('decision-panel'));
+    if (chain.requiresSource && !hasSourceEvidence(slide) && !sourceOptionalForClosing) {
       findings.push({
         slide: slideNo,
         level: 'review',
@@ -137,8 +146,12 @@ function auditSlide(plan = {}, slide = {}, index = 0, renderMeta = null) {
         message: 'render-meta was provided but this slide was not found'
       });
     } else if (rendered) {
+      const consumedCoverageStatus = coverageStatusForComponents(chain.coveragePolicy || { components: expected }, consumed);
       plannedExpected.forEach(id => {
         if (!consumed.includes(id)) {
+          const coverageRole = coverageRoleForComponent(chain.coveragePolicy || {}, id);
+          if (coverageRole === 'optional') return;
+          if (coverageRole === 'requiredAny' && consumedCoverageStatus.requiredAnyHits.length) return;
           findings.push({
             slide: slideNo,
             level: 'fail',
@@ -215,6 +228,9 @@ function stageCoverageFindings(slideAudits = []) {
         level: 'review',
         type: 'chainSegmentMissing',
         chainId,
+        stageId: stage.id || '',
+        stageLabel: stage.label || '',
+        recommendation: recommendationForMissingStage(chainId, stage),
         message: `${chain.label || chainId} chain is missing stage ${position}${stage.label ? ` (${stage.label})` : ''}`
       });
     });

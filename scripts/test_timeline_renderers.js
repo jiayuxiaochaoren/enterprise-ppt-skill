@@ -180,8 +180,8 @@ function assertClosedLoopShell(ops) {
 
   [
     ['ACTION · DATA · REVIEW', { x:1.22, y:2.32, w:2.92, h:0.10, fontSize:5.8, color:'64748B', charSpace:0.75 }],
-    ['DATA BACK TO ACTION', { x:5.48, y:4.25, w:1.72, h:0.09, fontSize:5.2, color:'64748B', align:'center', charSpace:0.62 }],
-    ['SEQUENCE 01 → 02 → 03 → 04 → 01', { x:1.22, y:2.52, w:2.92, h:0.09, fontSize:5.3, color:'94A3B8', charSpace:0.62 }]
+    ['DATA BACK TO ACTION', { x:5.48, y:4.295, w:1.72, h:0.09, fontSize:5.2, color:'64748B', align:'center', charSpace:0.62 }],
+    ['SEQUENCE 01 → 02 → 03 → 04 → 01', { x:8.78, y:2.32, w:2.68, h:0.10, fontSize:5.3, color:'94A3B8', align:'right', charSpace:0.50 }]
   ].forEach(([label, expected]) => {
     const op = ops.find(candidate => {
       if (candidate.name !== 'addLabel' || candidate.args[1] !== label) return false;
@@ -199,7 +199,7 @@ function assertClosedLoopShell(ops) {
     if (op.name !== 'addShape' || op.args[0] !== 'ellipse') return false;
     const opts = op.args[1] || {};
     return Math.abs(opts.x - 5.00) < 0.001
-      && Math.abs(opts.y - 3.35) < 0.001
+      && Math.abs(opts.y - 3.49) < 0.001
       && Math.abs(opts.w - 2.68) < 0.001
       && Math.abs(opts.h - 1.40) < 0.001;
   });

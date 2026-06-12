@@ -48,7 +48,9 @@ function createOverlayNativeEvidence(deps = {}) {
     const hasPrototype = hasImages ||
       (Array.isArray(prototypeFlow) && prototypeFlow.length > 0) ||
       Boolean(prototypeFlow && typeof prototypeFlow === 'object' && (prototypeFlow.screenshot || prototypeFlow.screen || prototypeFlow.image || prototypeFlow.images));
-    const hasWorkflow = s.workflow || s.workflows || s.automationWorkflow || hasFlow || hasArchitecture;
+    const hasPrototypeWorkflow = /prototype-flow|automation-workflow/i.test(`${variant} ${proofObject}`) &&
+      (hasImages || Array.isArray(s.cards) || Array.isArray(s.items) || s.prototypeFlow || s.prototype);
+    const hasWorkflow = s.workflow || s.workflows || s.automationWorkflow || hasFlow || hasArchitecture || hasPrototypeWorkflow;
     const hasPermissions = s.permissionGovernance || s.permissions || s.auditLog || hasRows;
     const hasPortfolioLogic = s.portfolio || s.holdings || s.allocation || s.bridge || s.capitalBridge || /portfolio|allocation|bridge/i.test(`${variant} ${proofObject}`);
     const hasRetailProofCards = Array.isArray(s.cards) && s.cards.length &&
@@ -73,12 +75,30 @@ function createOverlayNativeEvidence(deps = {}) {
         evidence: reason || 'native renderer owns a visible page-family slot'
       };
     };
+    const renderedImageCount = () => {
+      const refs = [];
+      const push = value => {
+        if (Array.isArray(value)) value.forEach(push);
+        else if (value) refs.push(String(value));
+      };
+      push(s.images);
+      if (s.visual) {
+        push(s.visual.images);
+        push(s.visual.image);
+      }
+      push(s.image);
+      return Math.max(1, new Set(refs).size || (hasImages ? 1 : 0));
+    };
     if (componentId === 'page-number') return evidence([/footer|folio|stage|native/i], 1, 'final slide chrome writes page number');
     if (componentId === 'section-kicker' && !['cover', 'cover-dark', 'closing', 'closing-dark'].includes(type)) return evidence([/title|stage|native/i], 1, 'native title block writes section kicker');
     if (componentId === 'navigation-sequence' && ['toc', 'toc-clean', 'chapter-divider'].includes(type)) return evidence([/navigation|path|stage|native/i], Math.max(1, (s.items || s.sections || []).length || 1), 'native TOC renderer draws navigation sequence');
-    if (componentId === 'content-card-grid' && ['two-column', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks', 'report-board'].includes(type)) return evidence([/cards|content|evidence|stage|visual|text|native/i], Math.max(1, (s.cards || s.items || s.modules || s.values || s.sections || []).length || 1), 'native page family draws the main content/card grid');
+    if (componentId === 'content-card-grid' && ['two-column', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks', 'manifesto', 'report-board'].includes(type)) return evidence([/cards|content|evidence|stage|visual|text|native/i], Math.max(1, (s.cards || s.items || s.modules || s.values || s.sections || []).length || 1), 'native page family draws the main content/card grid');
     if (componentId === 'hero-image' && (['cover', 'cover-dark', 'case-gallery', 'gallery', 'portfolio', 'product-showcase'].includes(type) || hasImages || /hero|cover|brand|product|image/i.test(`${variant} ${proofObject}`))) return evidence([/visual|image|cover|stage|photo/i], hasImages ? 1 : 0.5, 'native renderer draws or reserves primary visual stage');
-    if (['kpi-strip', 'metric-strip', 'kpi-primary-metric'].includes(componentId) && (hasMetrics || ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type))) return evidence([/metric|content|stage|board|native/i], hasMetrics ? Math.max(1, s.metrics.length) : 1, 'native metric renderer draws metric readout');
+    if (['kpi-strip', 'metric-strip', 'kpi-primary-metric'].includes(componentId) && (
+      hasMetrics ||
+      ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type) ||
+      (type === 'report-board' && Array.isArray(s.sections) && s.sections.length)
+    )) return evidence([/metric|content|stage|board|native/i], hasMetrics ? Math.max(1, s.metrics.length) : Math.max(1, (s.sections || []).length || 1), 'native metric renderer draws metric readout');
     if (componentId === 'chart-commentary-panel' && ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type)) return evidence([/commentary|content|stage|board|native/i], 1, 'native chart renderer draws commentary/readout panel');
     if (chartComponentIds.has(componentId) && chartRendered) {
       const chartItemCount = componentId === 'scorecard' && hasMetrics ? Math.max(1, s.metrics.length) : 1;
@@ -87,7 +107,7 @@ function createOverlayNativeEvidence(deps = {}) {
     if (componentId === 'caption-bar' && ['architecture', 'architecture-dark'].includes(type) && (s.caption || s.subtitle || (s.proof && s.proof.explanation))) {
       return evidence([/caption|summary|title|content|stage|native/i], 1, 'native architecture renderer draws caption or subtitle boundary');
     }
-    if (['proof-gallery', 'proof-gallery-grid', 'caption-bar'].includes(componentId) && (['case-gallery', 'gallery', 'portfolio', 'product-showcase'].includes(type) || hasImages || hasRetailProofCards || /gallery|proof|lookbook|mosaic|product/i.test(`${variant} ${proofObject}`))) return evidence([/visual|caption|gallery|stage|content|native/i], Math.max(1, (s.images || []).length || (s.cards || []).length || 1), 'native evidence renderer draws gallery/caption system');
+    if (['proof-gallery', 'proof-gallery-grid', 'caption-bar'].includes(componentId) && (['case-gallery', 'gallery', 'portfolio', 'product-showcase'].includes(type) || hasImages || hasRetailProofCards || /gallery|proof|lookbook|mosaic|product/i.test(`${variant} ${proofObject}`))) return evidence([/visual|caption|gallery|stage|content|native/i], Math.max(renderedImageCount(), (s.cards || []).length || 0, 1), 'native evidence renderer draws gallery/caption system');
     if (componentId === 'product-matrix' && (type === 'product-showcase' || Array.isArray(s.products) || Array.isArray(s.productStory) || /product|sku|texture|efficacy/i.test(`${variant} ${proofObject} ${s.title || ''}`))) {
       const productCount = Math.max(
         1,
@@ -110,12 +130,11 @@ function createOverlayNativeEvidence(deps = {}) {
     if (componentId === 'permission-audit-tag' && hasPermissions) return evidence([/permission|audit|risk|governance|content|stage|native/i], Math.max(1, (s.rows || s.risks || s.controls || []).length || 1), 'native SaaS renderer draws permission/audit evidence');
     if (componentId === 'adoption-funnel' && hasAdoption) return evidence([/funnel|metric|adoption|chart|content|stage|native/i], Math.max(1, ((s.adoptionFunnel || s.activationFunnel || s.cohortFunnel || {}).steps || s.metrics || []).length || 1), 'native SaaS renderer draws adoption funnel evidence');
     if (['value-chain', 'value-chain-connector', 'system-rail'].includes(componentId) && (['strategy-map', 'architecture', 'architecture-dark'].includes(type) || hasArchitecture || hasFlow || hasPortfolioLogic || /value|system|brand-world/i.test(`${variant} ${proofObject}`))) return evidence([/architecture|topology|flow|table|stage|content|native/i], 1, 'native system renderer draws flow/architecture rail');
-    if (componentId === 'commentary-panel' && (['strategy-map', 'architecture', 'architecture-dark', 'module-matrix', 'value-tiles', 'report-board'].includes(type) || s.businessLogic || s.claim)) return evidence([/commentary|summary|caption|text|content|stage|native/i], 1, 'native renderer draws a commentary or management-judgment panel');
+    if (componentId === 'commentary-panel' && (['strategy-map', 'architecture', 'architecture-dark', 'module-matrix', 'value-tiles', 'manifesto', 'report-board'].includes(type) || s.businessLogic || s.claim)) return evidence([/commentary|summary|caption|text|content|stage|native/i], 1, 'native renderer draws a commentary or management-judgment panel');
     if (componentId === 'process-rail' && (['timeline', 'timeline-dark'].includes(type) || hasFlow || /process|loop|timeline|flywheel/i.test(`${variant} ${proofObject}`))) return evidence([/process|timeline|loop|stage|content|native/i], Math.max(1, (s.phases || s.actions || s.steps || []).length || 1), 'native timeline renderer draws process rail');
     if (['risk-register', 'risk-matrix', 'governance-table'].includes(componentId) && (['risk-table', 'table'].includes(type) || hasRows || /risk|governance|materiality|control/i.test(`${variant} ${proofObject}`))) return evidence([/risk|table|governance|content|stage|native/i], Math.max(1, (s.rows || s.risks || s.controls || []).length || 1), 'native governance renderer draws risk/table structure');
     if (componentId === 'disclosure-footnote' && (componentSourceNoteText(plan, s) || s.disclosure || s.assumptions || hasSourceEvidence(s))) return evidence([/source|footer|disclosure|stage|native/i], 1, 'native renderer draws disclosure, assumption, or source-evidence boundary');
     if (['decision-panel', 'contact-block', 'editorial-end-card'].includes(componentId) && ['closing', 'closing-dark'].includes(type)) return evidence([/closing|stage|native/i], 1, 'native closing renderer draws decision/contact block');
-    if (componentId === 'load-curve-band' && slide && (slide.__codexDecorations || []).some(decoration => decoration.type === 'load-curve-band')) return evidence([/load-curve|visual|stage|native/i], 1, 'native renderer drew a load-curve-band decoration');
     return null;
   }
 

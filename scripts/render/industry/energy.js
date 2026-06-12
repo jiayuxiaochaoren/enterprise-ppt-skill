@@ -26,7 +26,6 @@ function createEnergyIndustryRenderers(ctx = {}) {
     addVisualPhotoPanel,
     footerText,
     glassPanel,
-    hasEnergyCurveSemantics,
     lightCanvas,
     panelFill,
     stageCanvas,
@@ -81,7 +80,7 @@ function createEnergyIndustryRenderers(ctx = {}) {
       addRect(slide, 8.80, 4.84, 3.34, 1.38, C.ink, C.ink, { fill:{color:C.ink, transparency:12}, line:{color:C.ink, transparency:100} });
     } else {
       addRect(slide, 8.80, 0.98, 3.34, 5.24, C.ink2, '334155', { fill:{color:C.ink2, transparency:46}, line:{color:'334155', transparency:68, width:0.36} });
-      addEnergyLens(slide, 8.94, 1.26, 2.94, C.cyan, { showCurve:hasEnergyCurveSemantics(s) });
+      addEnergyLens(slide, 8.94, 1.26, 2.94, C.cyan);
     }
     addLabel(slide, 'OPERATING BREAKPOINTS', { x:0.84, y:0.72, w:1.90, h:0.12, typeRole:'kicker', fontSize:6.8, color:'64748B', charSpace:1.05 });
     addText(slide, s.title || '从分散巡检到集中运维', { x:0.82, y:1.08, w:5.55, h:0.36, typeRole:'pageTitle', fontSize:24, bold:true, color:C.white, fit:'shrink' });
@@ -89,11 +88,11 @@ function createEnergyIndustryRenderers(ctx = {}) {
     addText(slide, String(idx).padStart(2,'0'), { x:11.62, y:0.70, w:0.58, h:0.18, fontSize:10.5, bold:true, color:'64748B', align:'right' });
 
     addRect(slide, 0.90, 2.20, 7.24, 0.52, C.ink2, '334155', { fill:{color:C.ink2, transparency:54}, line:{color:'334155', transparency:64, width:0.36} });
-    addLabel(slide, 'FROM', { x:1.18, y:2.39, w:0.56, h:0.11, fontSize:6.8, bold:true, color:'64748B', charSpace:0.45 });
-    addText(slide, '分散巡检', { x:1.72, y:2.34, w:1.16, h:0.12, fontSize:8.4, bold:true, color:'CBD5E1' });
+    addLabel(slide, 'FROM', { x:1.18, y:2.38, w:0.56, h:0.13, fontSize:6.8, bold:true, color:'64748B', charSpace:0.45, valign:'mid' });
+    addText(slide, '分散巡检', { x:1.72, y:2.36, w:1.16, h:0.16, fontSize:8.4, bold:true, color:'CBD5E1', valign:'mid' });
     addHairline(slide, 3.06, 2.46, 1.66, C.accent, 42, 0.38);
-    addLabel(slide, 'TO', { x:5.04, y:2.39, w:0.32, h:0.11, fontSize:6.8, bold:true, color:C.cyan, charSpace:0.45 });
-    addText(slide, '集中运维闭环', { x:5.44, y:2.34, w:1.62, h:0.12, fontSize:8.4, bold:true, color:C.white });
+    addLabel(slide, 'TO', { x:5.04, y:2.38, w:0.32, h:0.13, fontSize:6.8, bold:true, color:C.cyan, charSpace:0.45, valign:'mid' });
+    addText(slide, '集中运维闭环', { x:5.44, y:2.36, w:1.62, h:0.16, fontSize:8.4, bold:true, color:C.white, valign:'mid' });
 
     const cards = s.cards || [];
     const pos = [[0.92,3.16],[4.18,3.16],[0.92,4.60],[4.18,4.60]];
@@ -102,12 +101,11 @@ function createEnergyIndustryRenderers(ctx = {}) {
       const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : '94A3B8'));
       addRect(slide, x, y, 2.90, 1.00, C.ink2, '334155', { fill:{color:C.ink2, transparency:i===0?18:36}, line:{color:accent, transparency:i===0?24:58, width:0.42} });
       addNumber(slide, String(i+1).padStart(2,'0'), { x:x+0.24, y:y+0.22, w:0.32, h:0.10, fontSize:6.8, color:accent });
-      addText(slide, card.title, { x:x+0.70, y:y+0.17, w:1.62, h:0.16, fontSize:11.2, bold:true, color:C.white, fit:'shrink' });
-      addText(slide, card.body, { x:x+0.24, y:y+0.52, w:2.34, h:0.30, typeRole:'bodySmall', fontSize:8.8, color:'A8B3C3', fit:'shrink' });
+      addText(slide, card.title, { x:x+0.70, y:y+0.17, w:1.62, h:0.16, fontSize:11.2, bold:true, color:C.white, fit:'shrink', valign:'mid' });
+      addText(slide, card.body, { x:x+0.24, y:y+0.49, w:2.34, h:0.34, typeRole:'bodySmall', fontSize:8.8, color:'A8B3C3', fit:'shrink', valign:'mid', breakLine:true });
     });
     addLabel(slide, 'FIELD SIGNAL', { x:9.12, y:5.16, w:1.18, h:0.11, fontSize:6.8, color:'7C8BA3', charSpace:0.45 });
     addText(slide, '设备状态进入同一张运行图', { x:9.12, y:5.50, w:1.98, h:0.18, fontSize:10.2, bold:true, color:C.white, fit:'shrink' });
-    if (hasEnergyCurveSemantics(s)) ctx.addPulseCurve(slide, 9.12, 5.82, 2.10, 0.28, C.cyan, true, { transparency:46, width:0.36, nodes:false });
     addEnergyFooter(slide, plan, true);
   }
 
@@ -140,7 +138,6 @@ function createEnergyIndustryRenderers(ctx = {}) {
     slide.addShape('ellipse', { x:loopOval.x+0.72, y:loopOval.y+0.44, w:loopOval.w-1.44, h:loopOval.h-0.88, fill:{color:C.ink, transparency:100}, line:{color:'334155', transparency:58, width:0.28} });
     addText(slide, '闭环', { x:7.46, y:3.74, w:1.14, h:0.28, fontSize:20.5, bold:true, color:C.white, align:'center', fit:'shrink' });
     addLabel(slide, 'MONITOR · ALARM · WORKORDER · DISPATCH', { x:6.72, y:4.22, w:2.60, h:0.10, fontSize:5.7, color:'64748B', charSpace:0.7, align:'center' });
-    ctx.addPulseCurve(slide, 6.58, 4.56, 2.86, 0.46, C.cyan, true, { transparency:60, width:0.38, nodes:false });
     [
       [loopOval.x+loopOval.w*0.50, loopOval.y+0.04, C.accent],
       [loopOval.x+loopOval.w-0.04, loopOval.y+loopOval.h*0.50, C.violet],

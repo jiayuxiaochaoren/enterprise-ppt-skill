@@ -20,26 +20,47 @@ module.exports = {
         "label": "视觉主张",
         "components": [
           "hero-image",
-          "caption-bar"
+          "caption-bar",
+          "product-matrix",
+          "information-gap",
+          "proof-gallery"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "hero-image"
+          "requiredAny": [
+            "hero-image",
+            "product-matrix",
+            "information-gap"
           ],
           "optional": [
-            "caption-bar"
+            "caption-bar",
+            "proof-gallery"
           ],
-          "minHits": 1
+          "minHits": 2,
+          "scoreMode": "minHits",
+          "coverageAliases": {
+            "hero-image": [
+              "caption-bar"
+            ],
+            "content-card-grid": [
+              "product-matrix",
+              "information-gap"
+            ],
+            "commentary-panel": [
+              "caption-bar"
+            ]
+          }
         },
         "proofObjects": [
           "beauty-brand-editorial-cover",
           "brand-world-and-business-proof",
+          "editorial-proof-board",
           "lookbook",
           "lookbook-story",
           "lifestyle-editorial-cover"
         ],
         "routes": [
           "cover",
+          "report-board:editorial-proof-board",
           "case-gallery:lookbook",
           "strategy-map:brand-world"
         ],
@@ -47,9 +68,16 @@ module.exports = {
           "visual",
           "image",
           "images",
+          "editorialProof",
           "lookbook",
           "brandWorld",
           "brandStory",
+          "productStory",
+          "productItems",
+          "skuMatrix",
+          "consumerQuotes",
+          "reviews",
+          "informationGap",
           "coverInsight"
         ],
         "keywords": [
@@ -76,17 +104,23 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "product-matrix"
+          "requiredAny": [
+            "product-matrix",
+            "proof-gallery"
           ],
           "optional": [
-            "proof-gallery",
             "caption-bar"
           ],
-          "minHits": 1
+          "minHits": 2,
+          "coverageAliases": {
+            "product-matrix": [
+              "proof-gallery"
+            ]
+          }
         },
         "proofObjects": [
           "product-evidence-story",
+          "product-role-board",
           "product-showcase",
           "product-or-place-gallery"
         ],
@@ -99,6 +133,7 @@ module.exports = {
           "product",
           "products",
           "productStory",
+          "productItems",
           "skuMatrix",
           "cards"
         ],
@@ -127,14 +162,34 @@ module.exports = {
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "kpi-strip"
+          "requiredAny": [
+            "kpi-strip",
+            "proof-gallery"
           ],
           "optional": [
-            "proof-gallery",
             "caption-bar"
           ],
-          "minHits": 1
+          "minHits": 2,
+          "coverageAliases": {
+            "kpi-strip": [
+              "proof-gallery"
+            ],
+            "beauty-member-repurchase": [
+              "proof-gallery"
+            ],
+            "beauty-channel-structure": [
+              "proof-gallery"
+            ],
+            "beauty-social-funnel": [
+              "proof-gallery"
+            ],
+            "beauty-review-sentiment": [
+              "proof-gallery"
+            ],
+            "beauty-price-band-matrix": [
+              "proof-gallery"
+            ]
+          }
         },
         "proofObjects": [
           "consumer-proof-photo-grid",

@@ -10,6 +10,52 @@ function createIndustryKnowledgeAuditHelpers({
   semanticMeaning,
   visualIndustryId
 } = {}) {
+  function recommendationForDepthDomain(domain = '', profile = {}) {
+    const proof = (profile.proofObjects || []).find(item => item.depth === domain) || {};
+    const generic = {
+      depthDomain: domain,
+      recommendedRoute: proof.route || 'report-board',
+      proofObject: proof.id || '',
+      fields: proof.fields || [],
+      assetStrategy: 'use structured evidence fields first; request factual assets only when the page claims real product/site/screenshot/certificate proof'
+    };
+    if (domain === 'editorial-proof') {
+      return Object.assign({}, generic, {
+        recommendedRoute: 'report-board:editorial-proof-board',
+        alternateRoutes: ['case-gallery:lookbook-story', 'cover:beauty-brand-editorial-cover'],
+        proofObject: proof.id === 'beauty-brand-editorial-cover' ? 'editorial-proof-board' : (proof.id || 'editorial-proof-board'),
+        suggestedPage: '产品/品牌/视觉证据页',
+        fields: ['editorialProof', 'productStory', 'productItems', 'skuMatrix', 'consumerQuotes', 'reviews', 'informationGap'],
+        assetStrategy: '真实产品图、平台截图或场景图缺失时进入资产决策；没有事实图时用 editorial-proof-board 承接结构化 SKU/消费者/平台证据或 information gap，不自动生成事实图'
+      });
+    }
+    if (domain === 'channel-efficiency') {
+      return Object.assign({}, generic, {
+        suggestedPage: '渠道效率矩阵页',
+        fields: proof.fields && proof.fields.length ? proof.fields : ['channelEfficiency', 'mediaEfficiency', 'channels', 'metrics']
+      });
+    }
+    if (domain === 'cohort-system') {
+      return Object.assign({}, generic, {
+        suggestedPage: '会员/客群分层页',
+        fields: proof.fields && proof.fields.length ? proof.fields : ['memberCohorts', 'cohorts', 'rfmLadder', 'metrics']
+      });
+    }
+    if (domain === 'business-metric') {
+      return Object.assign({}, generic, {
+        suggestedPage: '经营指标/趋势/目标桥页',
+        fields: proof.fields && proof.fields.length ? proof.fields : ['monthlyPulse', 'monthlyTrend', 'waterfallBridge', 'bridge', 'metrics']
+      });
+    }
+    if (domain === 'growth-loop') {
+      return Object.assign({}, generic, {
+        suggestedPage: '行动闭环/增长飞轮页',
+        fields: proof.fields && proof.fields.length ? proof.fields : ['flywheel', 'loopItems', 'phases', 'actions']
+      });
+    }
+    return generic;
+  }
+
   function industryKnowledgeProfile(plan = {}) {
     const id = normalizeIndustryId(plan.industry);
     const visualId = visualIndustryId(id);
@@ -73,6 +119,8 @@ function createIndustryKnowledgeAuditHelpers({
       findings.push({
         level: 'review',
         type: 'industryDepthMissing',
+        missingDomains,
+        recommendations: missingDomains.map(domain => recommendationForDepthDomain(domain, profile)),
         message: `${profile.label} deck misses depth domains: ${missingDomains.join(', ')}`
       });
     }

@@ -80,6 +80,7 @@ function inferUnitFromSlide(kind = '', slide = {}) {
   if (/反馈|顾虑|投诉|排队|故障|问题|次数|count|pareto|帕累托/.test(text)) return '次';
   if (/订单|服务单|工单/.test(text)) return '单';
   if (/客户|用户|员工|人数|规模/.test(text)) return '人';
+  if (/bridge|waterfall|归因|基线|预算|达成|结果|收益|指数/.test(text)) return '指数';
   return '';
 }
 
@@ -87,12 +88,20 @@ function primaryUnit(data = {}, slide = {}, kind = '') {
   const explicit = slide.unit || slide.metricUnit || slide.unitLabel || '';
   if (explicit) return explicit;
   const values = (data.series || []).flatMap(series => series.values || []);
-  const fromValues = compactUnique(values.map(v => v.unit || unitOf(v.rawValue)));
-  return fromValues.filter(unit => unit !== 'x')[0] || fromValues[0] || inferUnitFromSlide(kind, slide);
+  const fromValues = compactUnique(values.map(v => v.unit || unitOf(v.rawValue)).filter(Boolean));
+  const nonEmptyValues = values.filter(v => v.rawValue != null && String(v.rawValue).trim());
+  const allValuesCarrySameUnit = fromValues.length === 1 && nonEmptyValues.length > 0 &&
+    nonEmptyValues.every(v => (v.unit || unitOf(v.rawValue)) === fromValues[0]);
+  return (allValuesCarrySameUnit ? fromValues[0] : '') || inferUnitFromSlide(kind, slide);
 }
 
 function valuesForSpec(spec = {}) {
   return (spec.series || []).flatMap(series => series.values || []);
+}
+
+function chartSpecHasUnit(spec = {}) {
+  if (spec.unit) return true;
+  return valuesForSpec(spec).some(v => v.unit || unitOf(v.rawValue));
 }
 
 function dataSufficiency(spec = {}) {
@@ -174,6 +183,7 @@ function dataSufficiency(spec = {}) {
 module.exports = {
   dataForKind,
   dataSufficiency,
+  chartSpecHasUnit,
   inferUnitFromSlide,
   primaryUnit,
   valuesForSpec

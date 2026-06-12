@@ -8,6 +8,8 @@ const DESIGN_SYSTEM_EXPORT_NAMES = Object.freeze([
   'INDUSTRY_PACK_LIBRARY',
   'INDUSTRY_BENCHMARKS',
   'COPY_POLICY',
+  'ASSET_DECISION_STATES',
+  'SEMANTIC_LOCKED_ROUTE_TYPES',
   'PALETTES',
   'REFERENCE_LAYOUT_LIBRARY',
   'REFERENCE_RECIPE_LIBRARY',
@@ -19,6 +21,7 @@ const DESIGN_SYSTEM_EXPORT_NAMES = Object.freeze([
   'assetAuthorizationGate',
   'auditDeckPlan',
   'assetTargetContract',
+  'assetDecisionStateFor',
   'applyNarrativeMetadata',
   'applyDeckRhythm',
   'accentRoleFor',
@@ -105,6 +108,7 @@ const DESIGN_SYSTEM_EXPORT_NAMES = Object.freeze([
   'visualAestheticModel',
   'visualDensityFor',
   'rhythmTransitionFor',
+  'routeIntentDecisionFor',
   'visualRole'
 ]);
 

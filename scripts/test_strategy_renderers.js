@@ -233,8 +233,8 @@ function assertBrandWorldShell(ops) {
       && Math.abs(candidate.args[4] - h) < 0.001;
   });
 
-  assert(findRect(0.92, 2.04, 4.72, 4.02), 'expected brand world hero panel');
-  assert(findRect(6.18, 2.04, 5.26, 4.02), 'expected brand proof board');
+  assert(findRect(0.92, 2.50, 4.72, 3.60), 'expected brand world hero panel');
+  assert(findRect(6.18, 2.50, 5.26, 3.60), 'expected brand proof board');
   assert(!findRect(0.92, 6.28, 10.86, 0.42), 'brand proof link strip should not render in delivery pages');
   assert(
     !ops.some(op => op.name === 'genericShowcaseField' && op.args[5] === 'BRAND WORLD'),

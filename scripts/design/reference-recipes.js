@@ -119,7 +119,10 @@ function createReferenceRecipeHelpers({
 
   function selectReferenceRecipe(plan = {}, s = {}, signals = contentSignals(plan, s)) {
     const scores = referenceRecipeCandidates(plan, s, { signals });
-    const best = scores[0];
+    const type = String(s.type || '').trim();
+    const best = type
+      ? scores.find(recipe => recipeCompatibleWithSlideType(recipe, type))
+      : scores[0];
     if (!best) return null;
     return best;
   }

@@ -66,6 +66,15 @@ function createLayoutVariantPicker(deps = {}) {
       if (productCount >= 2 || cardCount >= 3) return 'feature-strip';
       return 'hero-object';
     }
+    if (type === 'report-board') {
+      if (visualIndustry === 'brand-retail' && /editorial-proof|visual-claim|视觉主张|品牌证据|产品角色|SKU|消费者反馈|素材待确认|information gap/i.test(text)) {
+        return 'editorial-proof-board';
+      }
+      if (visualIndustry === 'brand-retail' && /product-role-board|产品角色|SKU|品类|单品|系列/i.test(text)) {
+        return 'product-role-board';
+      }
+      return s.layoutVariant;
+    }
     if (type === 'architecture' || type === 'architecture-dark') {
       if (industry === 'saas-technology' && (s.platformCapabilities || s.capabilityMap || signals.hasSaasCapability)) return 'platform-capability-map';
       if (s.serviceBlueprint || s.touchpoints || s.journeyMap || (industry === 'healthcare-operations' && signals.hasServiceBlueprint)) return 'service-blueprint';

@@ -250,7 +250,8 @@
         "scripts/chart-spec.js",
         "scripts/visual_qa.js",
         "scripts/qa/visual-qa-cli.js",
-        "scripts/qa/render-meta-audits.js"
+        "scripts/qa/render-meta-audits.js",
+        "scripts/render/layout/card-layout.js"
       ],
       "directories": [
         {
@@ -338,6 +339,7 @@
         "scripts/render/page-families/primitive-metrics.js",
         "scripts/render/page-families/primitive-stage-shell.js",
         "scripts/render/page-families/primitives.js",
+        "scripts/render/layout/card-layout.js",
         "scripts/render/text-box-meta.js",
         "scripts/render/text-readability-policy.js",
         "scripts/reports/hardening-readiness-format.js",

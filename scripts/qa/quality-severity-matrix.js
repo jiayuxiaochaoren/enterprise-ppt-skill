@@ -73,6 +73,7 @@ const QUALITY_SEVERITY_MATRIX = {
   renderMetaComponentAliasNotCanonical: entry('unknown_component', { draft:'fail', formal:'fail', delivery:'fail' }, 'render-meta must record canonical component ids'),
   componentPlanMissing: entry('unknown_component', { draft:'fail', formal:'fail', delivery:'fail' }, 'slides need executable component plans for renderer QA'),
   componentNotConsumed: entry('unknown_component', { draft:'fail', formal:'fail', delivery:'fail' }, 'required components must have consumption evidence'),
+  componentRouteUnsupported: entry('unknown_component', { draft:'fail', formal:'fail', delivery:'fail' }, 'required components must be supported by the active slide route'),
   componentModeMismatch: entry('unknown_component', { draft:'fail', formal:'fail', delivery:'fail' }, 'component render mode must match capability policy'),
   renderMetaComponentContractFieldMissing: entry('unknown_component', { draft:'fail', formal:'fail', delivery:'fail' }, 'render-meta planned components must include capability contract fields'),
   renderMetaConsumedComponentEvidenceMissing: entry('unknown_component', { draft:'fail', formal:'fail', delivery:'fail' }, 'native consumed components must carry drawn evidence fields'),
@@ -145,6 +146,10 @@ const QUALITY_SEVERITY_MATRIX = {
   typographyFontPolicyMissing: entry('shrink_risk', FAIL_ALL, 'typography policy must define CJK, Latin, and number fonts'),
   typographyScaleTooFlat: entry('shrink_risk', FORMAL_FAIL, 'typography scale must create visible hierarchy'),
   typographyTokenMissing: entry('shrink_risk', FAIL_ALL, 'required typography tokens must be present'),
+  titleSubtitleCollisionRisk: entry('shrink_risk', { draft:'review', formal:'review', delivery:'fail' }, 'delivery validation treats over-budget title/subtitle combinations as collision risks'),
+  cardContentOverflowRisk: entry('shrink_risk', { draft:'review', formal:'review', delivery:'fail' }, 'delivery validation treats over-budget card copy as an overflow risk'),
+  metricUnitWrapRisk: entry('shrink_risk', { draft:'review', formal:'review', delivery:'fail' }, 'delivery validation treats metric value/unit wrapping risk as a layout defect'),
+  closedLoopCenteringRisk: entry('shrink_risk', { draft:'review', formal:'review', delivery:'fail' }, 'delivery validation treats closed-loop centering risk as a layout defect'),
 
   mainBodyMissingContent: entry('blank_page', { draft:'fail', formal:'fail', delivery:'fail' }, 'content pages must have visible main-body coverage'),
   rightEvidenceRegionMissing: entry('blank_page', { draft:'fail', formal:'fail', delivery:'fail' }, 'evidence pages must populate their evidence region'),
@@ -199,6 +204,7 @@ const QUALITY_SEVERITY_MATRIX = {
   waterfallNotWaterfall: entry('routing_error', FAIL_ALL, 'bridge data must route to a waterfall chart'),
 
   chartAxisLabelsMissing: entry('renderer_layout_bug', FAIL_ALL, 'axis-based charts require category or axis labels'),
+  chartLabelDensityRisk: entry('renderer_layout_bug', { draft:'review', formal:'review', delivery:'fail' }, 'delivery validation treats dense chart labels as a pre-render collision risk'),
   chartLabelOverlap: entry('renderer_layout_bug', FORMAL_FAIL, 'formal chart labels cannot overlap'),
   chartValueOverflow: entry('renderer_layout_bug', FORMAL_FAIL, 'formal chart values cannot overflow their layout'),
   chartNotRendered: entry('renderer_layout_bug', FAIL_ALL, 'planned chart components must render'),
@@ -213,6 +219,7 @@ const QUALITY_SEVERITY_MATRIX = {
   overlaySlotMismatch: entry('overlay_contract', FAIL_ALL, 'overlay bboxes must stay inside their declared safe slots'),
   overlayNativeZoneConflict: entry('overlay_contract', FAIL_ALL, 'overlays cannot intersect native occupied zones outside safe slots'),
   duplicateLoadCurveBand: entry('overlay_contract', FAIL_ALL, 'slides can contain at most one load-curve-band decoration'),
+  deprecatedLoadCurveBand: entry('overlay_contract', FAIL_ALL, 'load-curve-band decorations are deprecated'),
   duplicateBreathingCircle: entry('overlay_contract', FORMAL_FAIL, 'background circle decorations cannot become repeated visual noise'),
   breathingCircleTextZoneConflict: entry('overlay_contract', FAIL_ALL, 'background circles must stay out of text and card zones'),
 

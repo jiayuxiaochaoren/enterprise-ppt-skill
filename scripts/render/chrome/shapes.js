@@ -78,11 +78,10 @@ function createShapeHelpers(core = {}) {
     slide.addShape('ellipse', { x, y, w:size, h:size, fill:{ color, transparency }, line:{ color, transparency:100 } });
   }
   function addPulseCurve(slide, x, y, w, h, accent = C.accent, dark = true, opts = {}) {
-    const isEnergy = activePlan().industry === 'energy-utility';
-    if ((slide.__codexLoadCurveRendered || (isEnergy && slide.__codexEnergyLoadCurveRendered)) && opts.allowMultiple !== true) return false;
-    slide.__codexLoadCurveRendered = true;
-    if (isEnergy) slide.__codexEnergyLoadCurveRendered = true;
-    markDecoration(slide, opts.decorType || 'load-curve-band', zone(opts.decorType || 'load-curve-band', x, y, w, h, 'decoration'));
+    if (slide.__codexPulseCurveRendered && opts.allowMultiple !== true) return false;
+    slide.__codexPulseCurveRendered = true;
+    const decorType = opts.decorType || 'pulse-curve';
+    markDecoration(slide, decorType, zone(decorType, x, y, w, h, 'decoration'));
     const pts = opts.points || [[0.00,0.66],[0.16,0.64],[0.30,0.49],[0.43,0.55],[0.56,0.32],[0.70,0.38],[0.84,0.22],[1.00,0.29]];
     const lineColor = opts.color || accent;
     const trans = opts.transparency ?? (dark ? 36 : 8);

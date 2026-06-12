@@ -1,8 +1,10 @@
 const assert = require('assert/strict');
 const {
   chartAcceptanceGate,
+  chartPreflightAudit,
   chartConsumedFields,
   chartEvidenceQA,
+  chartSpecHasUnit,
   issueCategoryForFinding,
   chartSemanticQA,
   chartSpecToComponentId,
@@ -48,6 +50,24 @@ const fakeTrend = spec(beauty, {
 });
 assert.equal(fakeTrend.kind, 'informationGap');
 assert.match(fakeTrend.informationGap.reason, /折线图/);
+
+const healthcareHandoffPlan = normalizeDeckPlan({
+  industry:'healthcare-operations',
+  slides:[{
+    type:'industry-chart',
+    layoutVariant:'quality-handoff',
+    title:'质量交接图把跨科室责任转成可检查节点',
+    qualityHandoff:[
+      { from:'导诊', to:'检查', title:'身份与项目确认' },
+      { from:'检查', to:'医生', title:'报告节点同步' }
+    ]
+  }]
+});
+assert.equal(
+  chartPreflightAudit(healthcareHandoffPlan, healthcareHandoffPlan).status,
+  'pass',
+  'quality-handoff is a native handoff board, not a chartSpec series/categories route'
+);
 
 const singleKpi = spec({ industry: 'general-operations' }, {
   type: 'content',
@@ -320,6 +340,33 @@ const strictRepairGate = chartAcceptanceGate({ industry: 'general-operations' },
 }), { slides: [{ slide: 1, missingRequiredComponents: [] }] }, { strict: true });
 assert.equal(strictRepairGate.status, 'fail');
 assert.equal(strictRepairGate.findings.some(f => f.type === 'acceptanceChartSpecRepairInStrictMode'), true);
+
+const strictRepairPreflight = chartPreflightAudit({ industry:'general-operations' }, normalizeDeckPlan({
+  industry:'general-operations',
+  outputIntent:'formal',
+  requestedSlideCount:1,
+  slides:[{
+    type:'metric-comparison',
+    title:'Renderer inferred chart spec',
+    claim:'This chart is inferred from metrics.',
+    metrics:[{ label:'A', value:'1%' }, { label:'B', value:'2%' }]
+  }]
+}), { strict:true });
+assert.equal(strictRepairPreflight.status, 'fail');
+assert.equal(strictRepairPreflight.findings.some(f => f.type === 'acceptanceChartSpecRepairInStrictMode'), true);
+
+const insufficientTrendPreflightPlan = normalizeDeckPlan({
+  industry:'general-operations',
+  slides:[{
+    type:'industry-chart',
+    title:'Bad monthly pulse',
+    dataComponent:'trend-line',
+    monthlyPulse:[{ label:'Jan', value:'456w' }]
+  }]
+});
+assert.equal(insufficientTrendPreflightPlan.slides[0].chartSpec.kind, 'informationGap');
+assert.equal(chartPreflightAudit(insufficientTrendPreflightPlan, insufficientTrendPreflightPlan).status, 'pass');
+
 assert.equal(issueCategoryForFinding({ type: 'acceptanceComponentNotConsumed' }), 'component_gap');
 assert.equal(issueCategoryForFinding({ type: 'monthlySeriesNotLine' }), 'routing_error');
 
@@ -335,6 +382,8 @@ const waterfall = spec(beauty, {
 });
 assert.equal(waterfall.kind, 'waterfall');
 assert.equal(chartSpecToComponentId(waterfall), 'waterfall-chart');
+assert.equal(waterfall.unit, '指数');
+assert.equal(chartSpecHasUnit(waterfall), true);
 
 const beautyChannel = spec(beauty, {
   type: 'content',
@@ -406,6 +455,26 @@ const staleProcessRoute = normalizeDeckPlan({
 assert.equal(staleProcessRoute.type, 'timeline');
 assert.notEqual(staleProcessRoute.layoutVariant, 'channel-efficiency-matrix');
 assert.equal(staleProcessRoute.chartSpec, undefined);
+
+const staleMetricBoardRoute = normalizeDeckPlan({
+  industry: 'brand-retail',
+  slides: [{
+    type: 'industry-chart',
+    layoutVariant: 'channel-efficiency-matrix',
+    variant: 'channel-efficiency-matrix',
+    proofObject: 'metric-board',
+    title: '利润质量修复后，费用要绑定现金回款',
+    metrics: [
+      { label: '2025Q4 利润率', value: '-16.0%' },
+      { label: '2026Q1 利润率', value: '17.4%' },
+      { label: '2026Q1 回款', value: '5214.48万' },
+      { label: '2025Q3 销售费用', value: '1486.08万', note: '费用投放增加' }
+    ]
+  }]
+}).slides[0];
+assert.equal(staleMetricBoardRoute.layoutVariant, 'fact-metrics');
+assert.equal(staleMetricBoardRoute.variant, 'fact-metrics');
+assert.equal(staleMetricBoardRoute.previousLayoutVariant, 'channel-efficiency-matrix');
 
 const canonicalGalleryVariant = normalizeDeckPlan({
   industry: 'beauty-consumer',
@@ -704,6 +773,63 @@ assert.equal(
   false,
   'opt-in chart source note should not imply sourceIds match name-only source entries'
 );
+
+const fourMetricScorecardOps = [];
+const fourMetricScorecard = renderChartSpec(chartCtx(fourMetricScorecardOps), {
+  kind:'scorecard',
+  title:'四项指标卡',
+  series:[{ values:[
+    { category:'样本量', value:60, rawValue:'60条' },
+    { category:'物流顾虑', value:16, rawValue:'16次' },
+    { category:'平均 NPS', value:6.1, rawValue:'6.1分' },
+    { category:'品质升级', value:15, rawValue:'15次' }
+  ] }]
+}, { noFrame:true, showTitle:false, compactHeader:true });
+assert.equal(fourMetricScorecard.rendered, true);
+const scorecardRects = fourMetricScorecardOps.filter(op => op.name === 'addRect' && (op.args[3] || 0) > 2.0 && (op.args[4] || 0) > 0.8);
+assert.equal(new Set(scorecardRects.map(op => Number(op.args[1]).toFixed(2))).size, 2, 'four-metric scorecards should use a balanced 2-column grid');
+assert.equal(new Set(scorecardRects.map(op => Number(op.args[2]).toFixed(2))).size, 2, 'four-metric scorecards should use a balanced 2-row grid');
+
+const moneyScorecardOps = [];
+const moneyScorecard = renderChartSpec(chartCtx(moneyScorecardOps), {
+  kind:'scorecard',
+  title:'金额指标卡',
+  series:[{ values:[
+    { category:'2026Q1 回款', value:5214.48, rawValue:'5214.48', unit:'万' },
+    { category:'2025Q3 销售费用', value:1486.08, rawValue:'1486.08', unit:'万' }
+  ] }]
+}, { noFrame:true, showTitle:false, compactHeader:true });
+assert.equal(moneyScorecard.rendered, true);
+assert.equal(chartSpecHasUnit({
+  kind:'scorecard',
+  series:[{ values:[
+    { category:'2026Q1 回款', value:5214.48, rawValue:'5214.48', unit:'万' },
+    { category:'费用率', value:-2.1, rawValue:'-2.1pt', unit:'pt' }
+  ] }]
+}), true);
+['5214.48万', '1486.08万'].forEach(label => {
+  const op = moneyScorecardOps.find(candidate => candidate.name === 'addText' && candidate.args[1] === label);
+  assert(op, `expected money scorecard value ${label}`);
+  assert(
+    (op.args[2] || {}).w >= 1.16,
+    `money scorecard value ${label} should reserve enough width for value and unit on one line`
+  );
+});
+
+const genericFunnelOps = [];
+const genericFunnel = renderChartSpec(chartCtx(genericFunnelOps), {
+  kind:'funnel',
+  title:'活动漏斗',
+  series:[{ values:[
+    { category:'曝光', value:307319, rawValue:'307319万' },
+    { category:'点击', value:85809, rawValue:'85809单' },
+    { category:'线索', value:7019, rawValue:'7019单' },
+    { category:'订单', value:2533, rawValue:'2533单' }
+  ] }]
+}, { noFrame:true, showTitle:false, compactHeader:true });
+assert.equal(genericFunnel.rendered, true);
+const funnelFillRects = genericFunnelOps.filter(op => op.name === 'addRect' && op.args[5] === op.args[6] && ['2563EB', '0891B2', '7C3AED', 'F59E0B'].includes(op.args[5]));
+assert.equal(new Set(funnelFillRects.map(op => Number(op.args[1]).toFixed(2))).size, 1, 'funnel bars should share one left-aligned track origin');
 
 const beautyFunnelOps = [];
 const beautyFunnel = renderChartSpec(chartCtx(beautyFunnelOps), {

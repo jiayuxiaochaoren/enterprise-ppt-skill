@@ -8,10 +8,11 @@ function createManufacturingFactCards(ctx = {}) {
     panelFill
   } = ctx;
 
-  function drawManufacturingFactCards(slide, proofCards) {
+  function drawManufacturingFactCards(slide, proofCards, opts = {}) {
+    const baseY = opts.y || 2.18;
     proofCards.slice(0,4).forEach((m, i) => {
       const x = 4.34 + (i % 2) * 1.94;
-      const y = 2.18 + Math.floor(i / 2) * 1.34;
+      const y = baseY + Math.floor(i / 2) * 1.34;
       const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : (i === 2 ? C.violet : C.muted));
       const value = m.value || m.title || String(i + 1).padStart(2, '0');
       const label = m.label || m.body || m.note || '';

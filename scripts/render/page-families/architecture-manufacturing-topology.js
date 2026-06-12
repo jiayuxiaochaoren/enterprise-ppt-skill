@@ -21,7 +21,7 @@ function createArchitectureManufacturingTopology(ctx = {}, deps = {}) {
 
   return function architectureManufacturingTopology(slide, plan, s, idx) {
     const claim = s.claim || s.subtitle || '把设备接入、工单处置和指标复盘放进同一条产线证据链。';
-    drawLightPageHeader(slide, {
+    const header = drawLightPageHeader(slide, {
       kicker:'LINE SYSTEM TOPOLOGY',
       title:s.title || '设备运维能力架构',
       titleW:5.9,
@@ -33,8 +33,10 @@ function createArchitectureManufacturingTopology(ctx = {}, deps = {}) {
     });
 
     const topology = resolveManufacturingTopologyLayers(s);
-    const side = { x:0.92, y:2.08, w:2.58, h:4.02 };
-    const board = { x:3.82, y:2.08, w:7.78, h:4.02 };
+    const contentY = Math.max(2.08, Number(header && header.contentTop) || 2.08);
+    const contentH = Math.max(3.34, 6.10 - contentY);
+    const side = { x:0.92, y:contentY, w:2.58, h:contentH };
+    const board = { x:3.82, y:contentY, w:7.78, h:contentH };
     addRect(slide, side.x, side.y, side.w, side.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
     addLabel(slide, '产品谱系', { x:side.x+0.30, y:side.y+0.34, w:0.92, h:0.10, fontSize:6.8, color:C.accent, charSpace:0 });
     addText(slide, topology.access.title || '产品与工艺对象', { x:side.x+0.30, y:side.y+0.86, w:1.80, h:0.28, fontSize:14.4, bold:true, color:C.white, fit:'shrink' });

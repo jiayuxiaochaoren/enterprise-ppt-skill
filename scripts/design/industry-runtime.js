@@ -17,6 +17,20 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function normalizedAliasList(pack = {}) {
+  return (pack.aliases || [])
+    .map(value => String(value || '').trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function tokenBoundaryMatch(text = '', alias = '') {
+  const value = String(alias || '').trim().toLowerCase();
+  if (value.length < 4) return false;
+  if (!/[-_\s]/.test(value)) return false;
+  const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(String(text || ''));
+}
+
 function createIndustryRuntime(options = {}) {
   const industryDesignDialects = options.industryDesignDialects || {};
   const visualRouter = options.visualRouter || {};
@@ -56,11 +70,15 @@ function createIndustryRuntime(options = {}) {
     const packs = industryPackLibrary.packs || [];
     const exact = packs.find(pack => pack && pack.id === id);
     if (exact) return exact;
-    return packs.find(pack => {
+    const aliasExact = packs.find(pack => {
       if (!pack) return false;
       if (ids.has(pack.id)) return true;
-      const aliases = (pack.aliases || []).map(v => String(v).toLowerCase());
-      return aliases.includes(text) || aliases.some(alias => alias && text.includes(alias));
+      return normalizedAliasList(pack).includes(text);
+    });
+    if (aliasExact) return aliasExact;
+    return packs.find(pack => {
+      if (!pack) return false;
+      return normalizedAliasList(pack).some(alias => tokenBoundaryMatch(text, alias));
     }) || null;
   }
 

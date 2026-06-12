@@ -55,6 +55,49 @@ function validateExtraction(extraction = {}) {
   return errors;
 }
 
+const CLAIM_DEPTH_FIELDS = ['business_domain', 'chain_stage', 'depth_domain', 'industry_objects', 'proof_intent'];
+
+function extractionDepthFindings(extraction = {}) {
+  const findings = [];
+  (extraction.claim_spine || []).forEach((claim, i) => {
+    const missing = CLAIM_DEPTH_FIELDS.filter(field => {
+      const value = claim[field] !== undefined ? claim[field] : claim[field.replace(/_([a-z])/g, (_, ch) => ch.toUpperCase())];
+      if (value == null) return true;
+      if (Array.isArray(value)) return value.length === 0;
+      if (typeof value === 'object') return Object.keys(value).length === 0;
+      return String(value).trim() === '';
+    });
+    if (missing.length) {
+      findings.push({
+        level: 'review',
+        type: 'extractionDepthFieldsMissing',
+        claimId: claim.id || `claim-${i + 1}`,
+        claimIndex: i,
+        missingFields: missing,
+        message: `claim_spine[${i}] is missing industry depth field(s): ${missing.join(', ')}`
+      });
+    }
+  });
+  return findings;
+}
+
+function isConsumerRetailIndustry(industry = '') {
+  return /^(brand-retail|beauty-consumer|consumer-retail)$/i.test(String(industry || ''));
+}
+
+function openingProofForIndustry(industry = '', companyIntro = false) {
+  if (companyIntro || !isConsumerRetailIndustry(industry)) return {};
+  return {
+    proofObject: 'beauty-brand-editorial-cover',
+    themeIntent: 'industry-opening',
+    accentRole: 'brand',
+    depthDomain: 'editorial-proof',
+    chainStage: 'visual-claim',
+    businessDomain: 'editorial-proof',
+    proofIntent: 'visual claim'
+  };
+}
+
 function paletteForIndustry(industry = '', extraction = {}) {
   const art = extraction.deck_art_direction || extraction.deckArtDirection || {};
   const requested = art.palette || art.paletteName || '';
@@ -129,7 +172,9 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
       type: 'auto',
       title: displayTitle,
       subtitle: companyIntro && title !== displayTitle ? title.replace(displayTitle, '').replace(/^[\s｜|/·-]+/, '') || subtitle : subtitle,
-      visual: firstImage ? { mode: 'photo', role: companyIntro ? 'showcase' : 'cover', image: firstImage } : undefined
+      visual: firstImage ? { mode: 'photo', role: companyIntro ? 'showcase' : 'cover', image: firstImage } : undefined,
+      coverInsight: subtitle,
+      ...openingProofForIndustry(industry, companyIntro)
     }
   ];
   if (companyIntro) {
@@ -159,6 +204,7 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
     slides.push({
       type: 'chapter-divider',
       title: '汇报路径',
+      industryEvidenceChainMode: 'native-only',
       claim: bodyClaims.length
         ? (zhDeck
             ? `本报告沿着${bodyClaims.slice(0, 4).map(c => agendaTitleForClaim(c)).join('、')}展开证据路径。`
@@ -237,6 +283,7 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
       pptType: doc.ppt_type || '',
       missingInfo: extraction.missing_info || [],
       commercialRisks: extraction.commercial_risks || [],
+      extractionDepthFindings: extractionDepthFindings(extraction),
       assetRights: extraction.asset_rights || '',
       clarifications: extraction.clarifications || [],
       claimSpine: claimSpineContract(claims, extraction, bundle),
@@ -268,5 +315,6 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
 
 module.exports = {
   compileDeckPlan,
+  extractionDepthFindings,
   validateExtraction
 };

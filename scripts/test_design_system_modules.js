@@ -177,6 +177,8 @@ const {
 
 assert.equal(visualIndustryId('industrial-energy'), 'manufacturing-operations');
 assert.ok(industryMatchIds('brand-retail').includes('beauty-consumer'));
+assert.equal(designSystem.industryPackFor('brand-retail').id, 'beauty-consumer');
+assert.notEqual(designSystem.industryPackFor('brand-retail').id, 'saas-ai-technology');
 assert.deepEqual(Object.keys(designSystem), DESIGN_SYSTEM_EXPORT_NAMES);
 assert.equal(buildDesignSystemExports({ constants:{ ASSET_DIR:'asset-dir' }, core:{ visualRole:'role' } }).ASSET_DIR, 'asset-dir');
 assert.equal(buildDesignSystemExports({ constants:{ ASSET_DIR:'asset-dir' }, core:{ visualRole:'role' } }).visualRole, 'role');
@@ -273,6 +275,13 @@ assert.equal(
   imageOnlyBoundarySlide,
   'plan-authored fallback should not overwrite image-only provenance'
 );
+const sourceNoteOnlyTrace = sourceTraceCore.applyPlanAuthoredSourceTrace(
+  { title:'Fixture', sourceTracePolicy:{ mode:'plan-authored', authorizationStatus:'cleared' } },
+  { type:'content', title:'Policy context', sourceNote:'政策口径：年度治理复盘材料' },
+  1
+);
+assert.ok(sourceNoteOnlyTrace.proof && sourceNoteOnlyTrace.proof.sourceIds.length, 'sourceNote-only slides should get explainable proof/source ids');
+assert.equal(sourceNoteOnlyTrace.sourceTrace.sourceNote, '政策口径：年度治理复盘材料');
 const sourceTraceAuditHelpers = createSourceTraceAuditHelpers(Object.assign({
   compactUnique: values => Array.from(new Set((values || []).filter(Boolean))),
   normalizeDeckPlan: plan => plan,
@@ -1447,6 +1456,7 @@ const runtime = createIndustryRuntime({
   visualRouter: { industries: { routed: {} } },
   industryPackLibrary: {
     packs: [
+      { id:'short-ai', aliases:['AI'] },
       { id:'target', aliases:['custom alias'] }
     ]
   },
@@ -1481,6 +1491,8 @@ const runtime = createIndustryRuntime({
 assert.equal(runtime.visualIndustryId('aliasTarget'), 'target');
 assert.ok(runtime.industryMatchIds('target').includes('aliasTarget'));
 assert.equal(runtime.industryPackFor('custom alias').id, 'target');
+assert.equal(runtime.industryPackFor('retail-ai-label'), null, 'short aliases such as AI must not substring-match unrelated ids');
+assert.equal(runtime.industryPackFor('AI').id, 'short-ai', 'short aliases still work as exact aliases');
 assert.equal(runtime.copyPolicyText('aliasOnly', 'headline'), 'target headline');
 const tags = runtime.copyPolicyList('aliasOnly', 'tags');
 tags.push('mutated');
@@ -1791,6 +1803,36 @@ assert.equal(referenceRecipeHelpers.selectReferenceRecipe(
   { industry:'finance-investment', documentType:'financial-results' },
   { type:'metric-comparison', proofObject:'financial-kpi-snapshot', title:'Q1 financial KPI' }
 ).id, 'finance-kpi');
+const incompatibleRecipeHelpers = createReferenceRecipeHelpers({
+  compactUnique: values => Array.from(new Set(values.filter(Boolean))),
+  contentSignals: () => ({ hasMetrics:true, hasGallery:false }),
+  flattenText: value => JSON.stringify(value),
+  highValuePageFamilies: new Set(['consumer-proof-photo-grid']),
+  industryMatchIds: value => [value],
+  referenceLayoutLibrary: {
+    recipes:[{
+      id:'image-led-proof-grid',
+      layoutVariant:'consumer-proof-photo-grid',
+      proofObject:'consumer-proof-photo-grid',
+      renderType:'case-gallery',
+      slideType:'case-gallery',
+      industryFit:['brand-retail'],
+      signals:['brand-retail'],
+      scores:{ overall:90 }
+    }]
+  },
+  referenceRecipeLibrary: { recipes:[] },
+  slideRole: () => 'content',
+  themeIntentFor: () => 'industry-opening'
+});
+assert.equal(
+  incompatibleRecipeHelpers.selectReferenceRecipe(
+    { industry:'brand-retail' },
+    { type:'report-board', proofObject:'report-board', title:'经营底座' }
+  ),
+  null,
+  'report-board should not execute image-led gallery reference recipes'
+);
 assert.equal(referenceRecipeHelpers.recipeCompatibleWithSlideType(referenceCandidates[0], 'metric-comparison'), true);
 const directReferenceScoring = createReferenceRecipeScoringHelpers({
   compactUnique: values => Array.from(new Set(values.filter(Boolean))),

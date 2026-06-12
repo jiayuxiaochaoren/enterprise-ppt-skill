@@ -16,6 +16,7 @@ const MICROCOPY_DOMAIN_TRANSLATIONS_ZH = {
   'START SMALL · PROVE LOOP · SCALE REGIONALLY': '小范围启动 · 验证闭环 · 区域推广',
   'FAULT · WORKORDER · SPARE PART · OEE': '故障 · 工单 · 备件 · OEE',
   'ACTION · DATA · REVIEW': '行动 · 数据 · 复盘',
+  'SEQUENCE 01 → 02 → 03 → 04 → 01': '序列 01 → 02 → 03 → 04 → 01',
   'DATA BACK TO ACTION': '数据回到行动',
   'INPUT · ACTION · SIGNAL · REVIEW': '输入 · 行动 · 信号 · 复盘',
   'COMPOUNDING LOOP': '复利闭环',

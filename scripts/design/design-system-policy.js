@@ -59,12 +59,7 @@ function createIndustryPolicyHelpers({
   }
 
   function dialectComponentsFor(plan = {}, s = {}) {
-    const components = dialectBucketsFor(plan, s, 'components');
-    if (plan.industry !== 'energy-utility') return components;
-    const text = flattenText(s);
-    const explicitCurve = s.loadCurve || s.loadCurveBand || s.curve || s.trend || s.monthlyTrend || s.monthlyPulse ||
-      /曲线|趋势|负荷|SOC|load|curve|trend|pulse/i.test(text);
-    return explicitCurve ? components : components.filter(component => component !== 'load-curve-band');
+    return dialectBucketsFor(plan, s, 'components').filter(component => component !== 'load-curve-band');
   }
 
   function dialectColorCarriersFor(plan = {}, s = {}) {

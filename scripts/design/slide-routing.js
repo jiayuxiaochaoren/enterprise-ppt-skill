@@ -52,6 +52,31 @@ function createSlideRoutingHelpers(deps = {}) {
     return true;
   }
 
+  function depthRouteText(s = {}) {
+    return flattenText({
+      businessDomain: s.businessDomain || s.business_domain,
+      chainStage: s.chainStage || s.chain_stage,
+      depthDomain: s.depthDomain || s.depth_domain,
+      proofIntent: s.proofIntent || s.proof_intent,
+      proofObject: s.proofObject || s.proof_object,
+      industryObjects: s.industryObjects || s.industry_objects
+    });
+  }
+
+  function hasStructuredProductEvidence(s = {}) {
+    return Boolean(
+      s.product ||
+      (Array.isArray(s.products) && s.products.length) ||
+      (Array.isArray(s.productItems) && s.productItems.length) ||
+      (Array.isArray(s.product_items) && s.product_items.length) ||
+      (Array.isArray(s.skuMatrix) && s.skuMatrix.length) ||
+      (Array.isArray(s.sku_matrix) && s.sku_matrix.length) ||
+      (Array.isArray(s.editorialProof) && s.editorialProof.length) ||
+      (Array.isArray(s.consumerQuotes) && s.consumerQuotes.length) ||
+      (Array.isArray(s.reviews) && s.reviews.length)
+    );
+  }
+
   function recommendSlideType(plan = {}, s = {}, index = 0, total = 1) {
     const signals = contentSignals(plan, s, index, total);
     if (s.type && s.type !== 'auto' && s.type !== 'content') {
@@ -73,6 +98,24 @@ function createSlideRoutingHelpers(deps = {}) {
     if (s.quote || s.statement) return { type: 'quote-proof', reason: 'explicit quote/statement field' };
     if (s.serviceBlueprint || s.touchpoints || s.journeyMap) return { type: 'architecture', reason: 'explicit service blueprint fields' };
     if (s.productionLine) return { type: 'architecture', reason: 'explicit production topology field' };
+    const depthText = depthRouteText(s);
+    if (/editorial-proof|visual-claim|视觉主张|品牌证据|产品角色|product role/i.test(depthText)) {
+      if ((Array.isArray(s.images) && s.images.length) || (s.visual && (s.visual.image || (Array.isArray(s.visual.images) && s.visual.images.length))) || s.lookbook || s.productStory) {
+        return { type: 'case-gallery', reason: 'depth-domain editorial proof with visual/product story evidence' };
+      }
+      if (hasStructuredProductEvidence(s) || Array.isArray(s.cards) || s.informationGap || s.information_gap) {
+        return { type: 'report-board', reason: 'depth-domain editorial proof structured board' };
+      }
+    }
+    if (/activity-funnel|adoption-funnel|活动漏斗|转化漏斗|funnel/i.test(depthText) && (s.adoptionFunnel || s.funnel || s.socialFunnel || s.activationFunnel || Array.isArray(s.steps))) {
+      return { type: 'industry-chart', reason: 'depth-domain funnel evidence' };
+    }
+    if (/financial-quality|finance-quality|profit|cash|利润|现金|回款|费用/i.test(depthText) && (Array.isArray(s.metrics) && s.metrics.length)) {
+      return { type: 'metric-comparison', reason: 'depth-domain financial quality evidence' };
+    }
+    if (/growth-loop|action-loop|operating-loop|行动闭环|复盘闭环|闭环/i.test(depthText) && (Array.isArray(s.phases) || Array.isArray(s.actions) || Array.isArray(s.loopItems))) {
+      return { type: 'timeline', reason: 'depth-domain action loop evidence' };
+    }
     if (s.downtimePareto || s.valuationSensitivity || s.qualityHandoff || s.memberCohorts || s.channelEfficiency || s.mediaEfficiency || s.monthlyPulse || s.monthlyTrend || s.waterfallBridge || s.targetBridge || s.dispatchMap || s.adoptionFunnel) {
       return { type: 'industry-chart', reason: `industry proof object: ${semantic.proofObject || 'explicit-chart'}` };
     }

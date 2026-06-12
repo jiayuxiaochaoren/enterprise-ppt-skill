@@ -45,6 +45,15 @@ function createDeckStructureAuditHelpers({
     const slides = normalized.slides || [];
     const findings = [];
     const bodySlides = slides.filter(s => !['cover', 'closing', 'toc', 'toc-clean', 'chapter-divider'].includes(s.type || ''));
+    const isCompanyIntro = /company-intro|公司介绍|能力介绍|企业介绍/i.test(String(
+      (normalized.materialIntelligence && normalized.materialIntelligence.pptType) ||
+      (plan.materialIntelligence && plan.materialIntelligence.pptType) ||
+      normalized.ppt_type ||
+      plan.ppt_type ||
+      normalized.title ||
+      plan.title ||
+      ''
+    ));
     const proofCount = bodySlides.filter(s => proofObjectIdForSlide(s)).length;
     const logicCount = bodySlides.filter(hasCommercialLogicChain).length;
     const componentPlanCount = bodySlides.filter(s => s.componentPlan && s.componentPlan.version === 'component-plan/v1').length;
@@ -62,7 +71,7 @@ function createDeckStructureAuditHelpers({
         message: `${proofCount}/${bodySlides.length} body slides expose proof objects; report may feel like a template showcase`
       });
     }
-    if (slides.length >= 8 && logicCount < Math.max(2, Math.ceil(bodySlides.length * 0.30))) {
+    if (!isCompanyIntro && slides.length >= 8 && logicCount < Math.max(2, Math.ceil(bodySlides.length * 0.30))) {
       findings.push({
         level: 'review',
         type: 'reportLogicThin',

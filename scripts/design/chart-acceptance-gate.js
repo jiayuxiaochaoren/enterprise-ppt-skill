@@ -8,6 +8,9 @@ const {
   routeChartSpec
 } = require('./chart-spec-routing');
 const {
+  chartSpecHasUnit
+} = require('./chart-data-shape');
+const {
   slideHasChartIntent
 } = require('./chart-intent');
 const {
@@ -82,7 +85,7 @@ function createChartAcceptanceGate(deps = {}) {
           : null;
         const chartSpec = chart && (routedSpec || chart.spec || null);
         if (chart && chartSpec && chartSpec.kind !== 'informationGap') {
-          if (!chartSpec.unit && ['bar', 'line', 'waterfall', 'funnel', 'pareto', 'kpi', 'scorecard'].includes(chartSpec.kind)) {
+          if (!chartSpecHasUnit(chartSpec) && ['bar', 'line', 'waterfall', 'funnel', 'pareto', 'kpi', 'scorecard'].includes(chartSpec.kind)) {
             findings.push({ slide: slide.slide, level: 'review', type: 'acceptanceChartUnitMissing', issueCategory: 'data_contract_gap', message: 'chart lacks unit' });
           }
           const trace = chartSpec.sourceTrace || {};

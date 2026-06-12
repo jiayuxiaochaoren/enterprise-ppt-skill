@@ -25,7 +25,6 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     ctx.masterDark(slide, plan, '', null, '', { field:false });
     const coverVariant = ctx.variantOf(s, '');
     if (coverVariant === 'beauty-brand-editorial-cover') return beautyBrandEditorialCover(slide, plan, s);
-    if (coverVariant === 'airy-concept-opening') return airyConceptOpening(slide, plan, s);
     const industry = ctx.industryProfile(plan);
     const rawTitle = String(s.title || plan.title || '');
     const title = plan.industry === 'energy-utility' ? rawTitle.replace(/\n/g, '') : coverTitleText(rawTitle);
@@ -33,6 +32,7 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     const coverTone = ctx.presentationSpec().coverTone || 'dark';
     const hasCoverImage = coverDesign.imagePath && fileExists(coverDesign.imagePath);
     if (coverStyleRenderer && coverStyleRenderer(slide, plan, s, industry, title)) return;
+    if (coverVariant === 'airy-concept-opening') return airyConceptOpening(slide, plan, s);
     if (plan.industry === 'finance-investment' && plan.visualIntent === 'case-led' && hasCoverImage) {
       if (coverShowcase(slide, plan, s, industry, title)) return;
     }

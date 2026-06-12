@@ -29,8 +29,8 @@ function createRetailLoyaltyHeroRenderer(ctx = {}) {
     } else {
       addNumber(slide, compactValue, { x:hero.x+0.26, y:hero.y+1.20, w:1.32, h:0.42, fontSize:28, color:C.white, fit:'shrink' });
     }
-    addRect(slide, hero.x+1.60, hero.y+1.34, 0.54, 0.20, C.accent, C.accent, { fill:{color:C.accent, transparency:10}, line:{color:C.accent, transparency:100} });
-    addText(slide, repurchase.note || '重点', { x:hero.x+1.60, y:hero.y+1.34, w:0.54, h:0.20, fontSize:6.0, bold:true, color:C.white, align:'center', valign:'mid', fit:'shrink', margin:0 });
+    addRect(slide, hero.x+1.36, hero.y+1.34, 0.88, 0.20, C.accent, C.accent, { fill:{color:C.accent, transparency:10}, line:{color:C.accent, transparency:100} });
+    addText(slide, repurchase.note || '重点', { x:hero.x+1.38, y:hero.y+1.34, w:0.84, h:0.20, fontSize:6.0, bold:true, color:C.white, align:'center', valign:'mid', fit:'shrink', margin:0 });
     addHairline(slide, hero.x+0.28, hero.y+2.08, 0.86, C.accent, 0, 0.54);
     addText(slide, '高频顾虑会直接抬高复购门槛，需要回到履约、商品和门店动作处理。', { x:hero.x+0.28, y:hero.y+2.34, w:1.72, h:0.34, fontSize:7.0, color:C.captionOnImage, fit:'shrink', breakLine:true, valign:'mid' });
   }

@@ -27,7 +27,12 @@ assert.ok(Object.prototype.hasOwnProperty.call(schema, 'visible_language_policy'
   'source_pages',
   'source_excerpts',
   'theme_intent',
-  'accent_role'
+  'accent_role',
+  'business_domain',
+  'chain_stage',
+  'depth_domain',
+  'industry_objects',
+  'proof_intent'
 ].forEach(field => assert.ok(Object.prototype.hasOwnProperty.call(claimSchema, field), `extraction schema should include ${field}`));
 assert.match(
   claimSchema.source_note,
@@ -67,7 +72,13 @@ const promptText = extractionPrompt(promptBundle);
   'source_note/provenance_note',
   'clarification_candidates',
   'visible_language_policy',
-  'localize_non_essential_microcopy'
+  'localize_non_essential_microcopy',
+  'business_domain',
+  'chain_stage',
+  'depth_domain',
+  'industry_objects',
+  'proof_intent',
+  '不能只抽指标页'
 ].forEach(term => assert.ok(promptText.includes(term), `orchestration prompt should require ${term}`));
 assert.match(
   promptText,

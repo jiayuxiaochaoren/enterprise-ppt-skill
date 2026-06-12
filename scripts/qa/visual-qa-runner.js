@@ -26,6 +26,9 @@ const {
   pptxInput,
   readRenderMeta
 } = require('./visual-qa-cli');
+const {
+  acceptanceReadinessForFindings
+} = require('./acceptance-readiness');
 
 function sortedSlideEntries(entries = []) {
   return entries.filter(x => /^ppt\/slides\/slide\d+\.xml$/.test(x))
@@ -34,6 +37,16 @@ function sortedSlideEntries(entries = []) {
 
 function appendFindings(target = [], qaResult = {}) {
   (qaResult.findings || []).forEach(f => target.push(f));
+}
+
+function readinessForFindings(findings = [], commercialReadiness = null) {
+  const readiness = acceptanceReadinessForFindings(findings);
+  return Object.assign({}, readiness, {
+    compatibilityVersion: 'qa-readiness/v1',
+    failTypes: readiness.blockingTypes,
+    commercialReadinessLevel: commercialReadiness && commercialReadiness.level || '',
+    commercialAllowedUse: commercialReadiness && commercialReadiness.allowedUse || ''
+  });
 }
 
 function runVisualQa(options = {}) {
@@ -86,6 +99,7 @@ function runVisualQa(options = {}) {
   const effectiveFindings = severity.findings;
   const failCount = effectiveFindings.filter(f => f.level === 'fail').length;
   const reviewCount = effectiveFindings.filter(f => f.level !== 'fail').length;
+  const readiness = readinessForFindings(effectiveFindings, planQA.planCommercialReadiness);
   return {
     success: failCount === 0,
     file,
@@ -95,6 +109,7 @@ function runVisualQa(options = {}) {
     quality_mode: qualityMode,
     severity_policy: severity.policy,
     severity_summary: severity.policy.summary,
+    readiness,
     findings: effectiveFindings,
     slides: slideReports,
     previews: previewReports,
@@ -123,6 +138,7 @@ function runVisualQa(options = {}) {
     chart_semantic_qa: planQA.planChartSemantic,
     chart_visual_qa: planQA.planChartVisual,
     chart_evidence_qa: planQA.planChartEvidence,
+    layout_preflight_qa: planQA.planLayoutPreflight,
     page_chart_scores: planQA.planChartScores,
     chart_acceptance_gate: planQA.planChartAcceptanceGate,
     secondary_visual_review: planQA.secondaryAestheticReview,
@@ -132,6 +148,7 @@ function runVisualQa(options = {}) {
 }
 
 module.exports = {
+  readinessForFindings,
   runVisualQa,
   sortedSlideEntries
 };

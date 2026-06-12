@@ -158,10 +158,11 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
     slide.addShape('ellipse', { x, y, w:size, h:size, fill:{ color:accent, transparency:98 }, line:{ color:accent, transparency:86, width:0.42 } });
     slide.addShape('ellipse', { x:x + size * 0.20, y:y + size * 0.20, w:size * 0.60, h:size * 0.60, fill:{ color:C.ink, transparency:100 }, line:{ color:C.cyan, transparency:91, width:0.34 } });
     slide.addShape('ellipse', { x:x + size * 0.37, y:y + size * 0.37, w:size * 0.26, h:size * 0.26, fill:{ color:C.ink2, transparency:42 }, line:{ color:'334155', transparency:72, width:0.32 } });
-    if (opts.showCurve) h.addPulseCurve(slide, x + size * 0.18, y + size * 0.57, size * 0.62, size * 0.18, accent, true, { transparency:42, width:0.54, nodes:false });
-    h.addLabel(slide, 'LOAD', { x:x + size * 0.16, y:y + size * 0.78, w:0.62, h:0.11, fontSize:6.8, color:'64748B', charSpace:0.45 });
-    h.addLabel(slide, 'SOC', { x:x + size * 0.72, y:y + size * 0.30, w:0.52, h:0.11, fontSize:6.8, color:'64748B', charSpace:0.45, align:'right' });
-    h.addLabel(slide, 'DISPATCH', { x:x + size * 0.41, y:y + size * 0.47, w:0.96, h:0.11, fontSize:6.8, color:'7C8BA3', charSpace:0.4, align:'center' });
+    if (opts.showLabels === true) {
+      h.addLabel(slide, opts.leftLabel || 'LOAD', { x:x + size * 0.16, y:y + size * 0.78, w:0.62, h:0.11, fontSize:6.8, color:'64748B', charSpace:0.45 });
+      h.addLabel(slide, opts.rightLabel || 'SOC', { x:x + size * 0.72, y:y + size * 0.30, w:0.52, h:0.11, fontSize:6.8, color:'64748B', charSpace:0.45, align:'right' });
+      h.addLabel(slide, opts.centerLabel || 'DISPATCH', { x:x + size * 0.41, y:y + size * 0.47, w:0.96, h:0.11, fontSize:6.8, color:'7C8BA3', charSpace:0.4, align:'center' });
+    }
   }
   function finalizeSlideChrome(slide, plan, s, idx) {
     PageNumber(slide, idx, { mask:false, dark:h.slideRenderedDark(slide, s) });

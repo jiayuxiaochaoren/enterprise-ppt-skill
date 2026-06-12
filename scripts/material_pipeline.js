@@ -10,6 +10,7 @@ const {
 } = require('./material/extraction-schema');
 const {
   compileDeckPlan,
+  extractionDepthFindings,
   validateExtraction
 } = require('./material/deck-plan-compiler');
 const {
@@ -28,6 +29,7 @@ module.exports = {
   bundleForPrompt,
   compileDeckPlan,
   detectIndustry,
+  extractionDepthFindings,
   extractionSchema,
   ingestMaterials,
   readJson,

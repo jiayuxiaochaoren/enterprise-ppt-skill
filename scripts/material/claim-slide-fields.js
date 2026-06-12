@@ -87,9 +87,10 @@ function dataComponentForClaim(claim = {}) {
 function agendaTitleForClaim(claim = {}) {
   if (claim.agenda_title || claim.short_title) return claim.agenda_title || claim.short_title;
   const text = String(claim.claim || claim.title || '');
+  const zh = /[\u3400-\u9fff]/.test(text);
   const pairs = [
     [/brand icon|operating engine|90-country|ART\/BEAUTY\/SCIENCE/i, 'Brand operating role'],
-    [/product story|SKU|ingredient|Power Fermented|Camellia|30 years/i, 'Product proof'],
+    [/product story|SKU|ingredient|Power Fermented|Camellia|30 years/i, zh ? 'SKU 组合' : 'Product proof'],
     [/award|awards|consumer-facing proof/i, 'Award evidence'],
     [/Group results|profit recovery|top-line pressure|net sales|core operating/i, 'Group results'],
     [/second-half|2H|regional|forecast|SHISEIDO 2H/i, 'Recovery signal'],

@@ -32,6 +32,7 @@ const MICROCOPY_CORE_TRANSLATIONS_ZH = {
   'DATA · PROCESS · GOVERNANCE': '数据 · 流程 · 治理',
   'SYSTEM READOUT': '系统读数',
   'EVIDENCE': '证据',
+  'FOUNDATION BOARD': '经营底座',
   'EVIDENCE BOARD': '证据看板',
   'EVIDENCE STACK': '证据栈',
   'EQUIPMENT PROOF': '设备证据',

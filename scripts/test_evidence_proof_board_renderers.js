@@ -122,16 +122,16 @@ function assertProofBoardHeaders(ops) {
 
 function assertConsumerProofGridShell(ops) {
   [
-    [0.92, 2.04, 2.54, 3.94],
-    [3.74, 2.04, 2.54, 3.94],
-    [6.56, 2.04, 2.54, 3.94],
-    [9.38, 2.04, 2.54, 3.94]
+    [0.92, 2.50, 2.54, 3.52],
+    [3.74, 2.50, 2.54, 3.52],
+    [6.56, 2.50, 2.54, 3.52],
+    [9.38, 2.50, 2.54, 3.52]
   ].forEach(([x, y, w, h]) => {
     const op = ops.find(candidate => candidate.name === 'addRect'
-      && candidate.args[1] === x
-      && candidate.args[2] === y
-      && candidate.args[3] === w
-      && candidate.args[4] === h);
+      && Math.abs(candidate.args[1] - x) < 0.0001
+      && Math.abs(candidate.args[2] - y) < 0.0001
+      && Math.abs(candidate.args[3] - w) < 0.0001
+      && Math.abs(candidate.args[4] - h) < 0.0001);
     assert(op, `expected consumer proof grid slot ${x}/${y}`);
   });
   ['SCENE', 'REASON', 'CHANNEL', 'BOUNDARY'].forEach(label => {
@@ -163,9 +163,9 @@ function hasRect(ops, expected) {
 }
 
 function assertProductEvidenceStoryShell(ops) {
-  assert(hasRect(ops, { x:0.92, y:2.04, w:5.44, h:4.02 }), 'expected product evidence hero panel');
-  assert(hasRect(ops, { x:0.92, y:5.16, w:5.44, h:0.90 }), 'expected product evidence hero caption band');
-  assert(hasRect(ops, { x:6.86, y:2.04, w:4.72, h:4.02 }), 'expected product evidence proof list panel');
+  assert(hasRect(ops, { x:0.92, y:2.50, w:5.44, h:3.60 }), 'expected product evidence hero panel');
+  assert(hasRect(ops, { x:0.92, y:5.20, w:5.44, h:0.90 }), 'expected product evidence hero caption band');
+  assert(hasRect(ops, { x:6.86, y:2.50, w:4.72, h:3.60 }), 'expected product evidence proof list panel');
   assert(
     ops.some(op => op.name === 'genericShowcaseField' && op.args.includes('HERO PRODUCT')),
     'expected product evidence hero image fallback'

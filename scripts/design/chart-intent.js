@@ -36,7 +36,10 @@ function slideHasChartIntent(slide = {}) {
   if (hasChartFieldData(slide)) return true;
   const type = String(slide.type || '');
   const variant = String(slide.layoutVariant || slide.variant || slide.proofObject || slide.proof_object || '').toLowerCase();
-  if (['industry-chart', 'finance-bridge'].includes(type)) return true;
+  if (['industry-chart', 'finance-bridge'].includes(type)) {
+    if (variant && NON_CHART_VARIANT_RE.test(variant) && !CHART_VARIANT_RE.test(variant) && !hasChartFieldData(slide)) return false;
+    return true;
+  }
   if (type === 'metric-comparison') {
     if (variant && NON_CHART_VARIANT_RE.test(variant) && !CHART_VARIANT_RE.test(variant)) return false;
     return !variant || CHART_VARIANT_RE.test(variant) || coerceItems(slide.metrics).length >= 2;

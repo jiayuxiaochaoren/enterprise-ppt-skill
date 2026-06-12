@@ -86,7 +86,7 @@ const expectedComponentsBySample = {
   'beauty-brand-product-user-evidence-chain': ['hero-image', 'product-matrix', 'proof-gallery', 'caption-bar', 'kpi-strip'],
   'finance-thesis-portfolio-risk-evidence-chain': ['value-chain', 'governance-table', 'risk-register', 'disclosure-footnote', 'kpi-strip'],
   'healthcare-service-handoff-quality-evidence-chain': ['patient-journey-band', 'service-blueprint-lane', 'quality-scorecard', 'risk-register'],
-  'saas-platform-workflow-adoption-evidence-chain': ['workflow-rail', 'prototype-frame', 'adoption-funnel', 'permission-audit-tag', 'kpi-strip'],
+  'saas-platform-workflow-adoption-evidence-chain': ['workflow-rail', 'caption-bar', 'adoption-funnel', 'kpi-strip'],
   'lifestyle-experience-journey-retention-evidence-chain': ['hero-image', 'value-chain', 'kpi-strip'],
   'public-governance-resource-risk-evidence-chain': ['commentary-panel', 'value-chain', 'governance-table', 'kpi-strip', 'risk-register'],
   'people-culture-behavior-growth-evidence-chain': ['value-chain', 'caption-bar', 'proof-gallery', 'kpi-strip']

@@ -34,9 +34,9 @@ function createEnergyDeploymentRenderers(ctx = {}, deps = {}) {
       const y = y0 + i*0.76;
       const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : '94A3B8'));
       addRect(slide, 0.92, y, 5.38, 0.56, C.ink2, '334155', { fill:{color:C.ink2, transparency:i===0?18:44}, line:{color:accent, transparency:i===0?30:70, width:0.38} });
-      addNumber(slide, String(i+1).padStart(2,'0'), { x:1.18, y:y+0.20, w:0.28, h:0.10, typeRole:'number', fontSize:7.0, color:accent });
-      addText(slide, phase.title, { x:1.66, y:y+0.13, w:1.12, h:0.12, fontSize:8.8, bold:true, color:C.white, fit:'shrink' });
-      addText(slide, phase.body, { x:2.92, y:y+0.09, w:2.72, h:0.24, fontSize:8.8, color:'A8B3C3', fit:'shrink', valign:'mid' });
+      addNumber(slide, String(i+1).padStart(2,'0'), { x:1.18, y:y+0.22, w:0.28, h:0.10, typeRole:'number', fontSize:7.0, color:accent, valign:'mid' });
+      addText(slide, phase.title, { x:1.66, y:y+0.20, w:1.12, h:0.14, fontSize:8.8, bold:true, color:C.white, fit:'shrink', valign:'mid' });
+      addText(slide, phase.body, { x:2.92, y:y+0.14, w:2.72, h:0.26, fontSize:8.8, color:'A8B3C3', fit:'shrink', valign:'mid', breakLine:true });
     });
 
     const panel = { x:7.05, y:1.78, w:4.72, h:3.70 };

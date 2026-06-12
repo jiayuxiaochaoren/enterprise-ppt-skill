@@ -12,8 +12,8 @@ const INDUSTRY_EXPRESSION_RULES = {
     proofObjects: ['service-blueprint', 'patient-scorecard', 'quality-handoff', 'responsibility-loop']
   },
   'brand-retail': {
-    requiredRoutes: ['case-gallery:lookbook-story', 'metric-comparison:member-growth-board', 'timeline:flywheel', 'industry-chart:member-cohort-ladder', 'industry-chart:channel-efficiency-matrix', 'industry-chart:monthly-pulse-trend', 'industry-chart:waterfall-bridge'],
-    proofObjects: ['lookbook', 'member-growth-board', 'growth-flywheel', 'member-cohort-ladder', 'channel-efficiency-matrix', 'monthly-pulse-trend', 'waterfall-bridge']
+    requiredRoutes: ['cover:beauty-brand-editorial-cover', 'report-board:editorial-proof-board', 'case-gallery:lookbook-story', 'metric-comparison:member-growth-board', 'timeline:flywheel', 'timeline:closed-loop', 'industry-chart:member-cohort-ladder', 'industry-chart:channel-efficiency-matrix', 'industry-chart:monthly-pulse-trend', 'industry-chart:waterfall-bridge'],
+    proofObjects: ['beauty-brand-editorial-cover', 'editorial-proof-board', 'lookbook', 'product-role-board', 'member-growth-board', 'growth-flywheel', 'closed-loop', 'member-cohort-ladder', 'channel-efficiency-matrix', 'monthly-pulse-trend', 'waterfall-bridge']
   },
   'energy-utility': {
     requiredRoutes: [
@@ -26,6 +26,8 @@ const INDUSTRY_EXPRESSION_RULES = {
       'industry-chart:waterfall-bridge',
       'industry-chart:channel-efficiency-matrix',
       'industry-chart:downtime-pareto',
+      'value-tiles:business-metric-board',
+      'risk-table:operations-assurance',
       'report-board'
     ],
     proofObjects: [
@@ -38,13 +40,15 @@ const INDUSTRY_EXPRESSION_RULES = {
       'waterfall-bridge',
       'channel-efficiency-matrix',
       'downtime-pareto',
+      'business-metric-board',
+      'operations-assurance',
       'report-board',
       'quarterly-results-summary'
     ]
   },
   'saas-technology': {
-    requiredRoutes: ['architecture:platform-capability-map', 'metric-comparison:adoption-revenue-board', 'case-gallery:prototype-flow', 'industry-chart:adoption-funnel'],
-    proofObjects: ['platform-capability-map', 'adoption-funnel', 'prototype-flow', 'revenue-board']
+    requiredRoutes: ['architecture:platform-capability-map', 'metric-comparison:adoption-revenue-board', 'case-gallery:prototype-flow', 'industry-chart:adoption-funnel', 'risk-table:permission-governance', 'timeline:automation-workflow'],
+    proofObjects: ['platform-capability-map', 'adoption-funnel', 'prototype-flow', 'revenue-board', 'permission-governance', 'automation-workflow']
   },
   'beauty-consumer': {
     requiredRoutes: ['case-gallery:lookbook-story', 'case-gallery:consumer-proof-photo-grid', 'metric-comparison:member-growth-board', 'strategy-map:brand-world-and-business-proof', 'industry-chart:channel-efficiency-matrix', 'industry-chart:monthly-pulse-trend', 'industry-chart:waterfall-bridge'],
@@ -142,15 +146,19 @@ const INDUSTRY_KNOWLEDGE_BASE = {
       metric: ['复购率', '客单价', '连带率', '会员贡献', '转化率', '动销率']
     },
     proofObjects: [
+      { id: 'beauty-brand-editorial-cover', route: 'cover:beauty-brand-editorial-cover', fields: ['visual', 'image', 'images', 'coverInsight', 'subtitle'], keywords: ['品牌', '视觉主张', '主视觉', '封面', '品牌经营', 'editorial', 'brand'], depth: 'editorial-proof' },
+      { id: 'editorial-proof-board', route: 'report-board:editorial-proof-board', fields: ['editorialProof', 'productStory', 'productItems', 'skuMatrix', 'consumerQuotes', 'reviews', 'informationGap', 'missingInfo'], keywords: ['视觉主张', '品牌证据', '产品角色', 'SKU', '消费者原话', '评价', 'editorial proof'], depth: 'editorial-proof' },
       { id: 'lookbook', route: 'case-gallery:lookbook-story', fields: ['lookbook', 'productStory', 'images'], keywords: ['lookbook', '产品故事', '搭配', '陈列', '门店场景'], depth: 'editorial-proof' },
+      { id: 'product-role-board', route: 'report-board:product-role-board', fields: ['productStory', 'productItems', 'skuMatrix', 'products', 'cards'], keywords: ['SKU', '产品角色', '品类', '产品宽度', '单品', '系列'], depth: 'editorial-proof' },
       { id: 'channel-efficiency-matrix', route: 'industry-chart:channel-efficiency-matrix', fields: ['channelEfficiency', 'mediaEfficiency', 'scatter', 'channels'], keywords: ['投放', '花费', 'ROAS', 'ROI', '渠道', '搜索', '广告', '抖音', '小红书', 'KOC', 'KOL', 'media efficiency'], depth: 'channel-efficiency' },
       { id: 'monthly-pulse-trend', route: 'industry-chart:monthly-pulse-trend', fields: ['monthlyPulse', 'monthlyTrend', 'trend'], keywords: ['月度', '1月', '2月', '3月', '低谷', '环比', '趋势', 'monthly', 'pulse'], depth: 'business-metric' },
       { id: 'waterfall-bridge', route: 'industry-chart:waterfall-bridge', fields: ['waterfallBridge', 'targetBridge', 'bridge'], keywords: ['目标差额', '目标桥', '缺口', '净销', 'GMV', '退款', '实收', 'Q2目标', 'bridge', 'waterfall'], depth: 'business-metric' },
       { id: 'member-cohort-ladder', route: 'industry-chart:member-cohort-ladder', fields: ['memberCohorts', 'cohorts', 'rfmLadder'], keywords: ['会员分层', 'RFM', '复购阶梯', '客群阶梯', 'cohort'], depth: 'cohort-system' },
       { id: 'member-growth-board', route: 'metric-comparison:member-growth-board', fields: ['metrics'], keywords: ['复购率', '客单价', '会员贡献', '连带率'], depth: 'growth-scorecard' },
-      { id: 'growth-flywheel', route: 'timeline:flywheel', fields: ['flywheel', 'loopItems'], keywords: ['增长飞轮', '运营闭环', '内容转化', '复购'], depth: 'growth-loop' }
+      { id: 'growth-flywheel', route: 'timeline:flywheel', fields: ['flywheel', 'loopItems'], keywords: ['增长飞轮', '运营闭环', '内容转化', '复购'], depth: 'growth-loop' },
+      { id: 'closed-loop', route: 'timeline:closed-loop', fields: ['phases', 'actions', 'loopItems', 'timeline'], keywords: ['行动闭环', '复盘', '下一步', '运营闭环', '闭环'], depth: 'growth-loop' }
     ],
-    depthGates: { minProofObjects: 2, requiredDomains: ['editorial-proof', 'cohort-system'] }
+    depthGates: { minProofObjects: 4, requiredDomains: ['editorial-proof', 'channel-efficiency', 'cohort-system', 'business-metric', 'growth-loop'] }
   },
   'energy-utility': {
     label: '能源/站点运营',
@@ -169,6 +177,8 @@ const INDUSTRY_KNOWLEDGE_BASE = {
       { id: 'waterfall-bridge', route: 'industry-chart:waterfall-bridge', fields: ['waterfallBridge', 'targetBridge', 'bridge'], keywords: ['业务线', '收入结构', '自营快充站', '车队', '聚合平台', '目的地站', '收入接近均衡'], depth: 'revenue-structure' },
       { id: 'channel-efficiency-matrix', route: 'industry-chart:channel-efficiency-matrix', fields: ['channelEfficiency', 'mediaEfficiency', 'scatter', 'channels'], keywords: ['渠道', 'ROI', '预算', '新增客户', '获客', '分层'], depth: 'channel-economics' },
       { id: 'downtime-pareto', route: 'industry-chart:downtime-pareto', fields: ['downtimePareto', 'pareto', 'lossPareto', 'reviewSentiment'], keywords: ['高峰排队', '站点故障', '价格规则', '停车费', '体验短板', '帕累托'], depth: 'operations-quality' },
+      { id: 'business-metric-board', route: 'value-tiles:business-metric-board', fields: ['businessLogic', 'metrics'], keywords: ['关键指标', '指标覆盖率', '收益复盘', '毛利率', '收入', '现金转换', 'KPI'], depth: 'business-metric' },
+      { id: 'operations-assurance', route: 'risk-table:operations-assurance', fields: ['rows', 'risks', 'controls'], keywords: ['风险', '保障', '高频高影响告警', '现场执行', '响应标准', '安全', '责任机制'], depth: 'operations-quality' },
       { id: 'report-board', route: 'report-board', fields: ['businessLogic', 'sections'], keywords: ['经营口径', '管理动作', '业务线', '套餐', '复购', '运营质量'], depth: 'operating-loop' },
       { id: 'quarterly-results-summary', route: 'metric-comparison:quarterly-results-summary', fields: ['metrics'], keywords: ['利润修复', '回款', '毛利率', '现金转换', 'KPI'], depth: 'finance-quality' },
       { id: 'hub-spoke', route: 'architecture:hub-spoke', fields: ['nodes', 'hubs', 'layers'], keywords: ['区域集控', '站点网络', 'hub', 'spoke', '多站'], depth: 'network-architecture' }
@@ -188,7 +198,9 @@ const INDUSTRY_KNOWLEDGE_BASE = {
       { id: 'platform-capability-map', route: 'architecture:platform-capability-map', fields: ['platformCapabilities', 'capabilityMap', 'layers'], keywords: ['平台能力', '能力地图', '工作流', '自动化', 'API', 'SSO'], depth: 'platform-map' },
       { id: 'adoption-funnel', route: 'industry-chart:adoption-funnel', fields: ['adoptionFunnel', 'activationFunnel', 'cohortFunnel'], keywords: ['采用漏斗', '激活漏斗', 'activation', 'adoption', '留存'], depth: 'adoption-model' },
       { id: 'prototype-flow', route: 'case-gallery:prototype-flow', fields: ['images', 'visual'], keywords: ['原型', '界面', '工作流', 'screen', 'prototype'], depth: 'product-proof' },
-      { id: 'revenue-board', route: 'metric-comparison:adoption-revenue-board', fields: ['metrics'], keywords: ['ARR', 'NRR', '席位扩展', '收入扩展', '转化率'], depth: 'business-metric' }
+      { id: 'revenue-board', route: 'metric-comparison:adoption-revenue-board', fields: ['metrics'], keywords: ['ARR', 'NRR', '席位扩展', '收入扩展', '转化率'], depth: 'business-metric' },
+      { id: 'permission-governance', route: 'risk-table:permission-governance', fields: ['rows', 'permissionGovernance', 'risks'], keywords: ['权限', '审计', '治理', 'SSO', '数据边界', '合规'], depth: 'governance-control' },
+      { id: 'automation-workflow', route: 'timeline:automation-workflow', fields: ['phases', 'actions', 'steps', 'workflow', 'workflows', 'automationWorkflow'], keywords: ['落地路径', '自动化工作流', '扩展席位', '经营复盘', 'workflow', 'automation'], depth: 'workflow-rollout' }
     ],
     depthGates: { minProofObjects: 2, requiredDomains: ['platform-map', 'adoption-model'] }
   }

@@ -37,12 +37,10 @@ function createNativeOnlyOptionalComponentAllowed({
     if (id === 'page-number') return true;
     if (id === 'section-kicker') return !['cover', 'cover-dark', 'closing', 'closing-dark'].includes(type);
     if (id === 'navigation-sequence') return ['toc', 'toc-clean'].includes(type);
-    if (id === 'content-card-grid') return ['two-column', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks'].includes(type);
+    if (id === 'content-card-grid') return ['two-column', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks', 'manifesto'].includes(type);
     if (id === 'contact-block') return ['closing', 'closing-dark'].includes(type) && hasContactBlockData(plan, s);
     if (['governance-table', 'control-tag'].includes(id)) return ['risk-table', 'table'].includes(type) || hasRows || signals.hasResponsibilityLoop;
     if (id === 'kpi-primary-metric') return hasMetrics || ['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type);
-    if (id === 'load-curve-band') return Boolean(s.loadCurve || s.loadCurveBand || s.curve || s.trend || s.monthlyTrend || s.monthlyPulse) ||
-      /曲线|趋势|负荷|SOC|load|curve|trend|pulse/i.test(flattenText(s));
     if (id === 'decision-panel') return ['closing', 'closing-dark'].includes(type);
     if (['system-rail', 'capability-layer-stack'].includes(id)) return ['architecture', 'architecture-dark', 'strategy-map'].includes(type) || hasArchitecture;
     if (['process-rail', 'dispatch-rail'].includes(id)) return ['timeline', 'timeline-dark'].includes(type) && id === 'process-rail';

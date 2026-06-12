@@ -5,6 +5,9 @@ const {
   routeChartSpec
 } = require('./chart-spec-routing');
 const {
+  chartSpecHasUnit
+} = require('./chart-data-shape');
+const {
   sourceTraceObjectIsExplainable
 } = require('./source-evidence');
 
@@ -25,7 +28,7 @@ function chartVisualQA(plan = {}, normalizedPlan = null, renderMeta = null) {
     if (needsAxis && !(spec.categories || []).length && !(spec.matrix && spec.matrix.rows && spec.matrix.columns)) {
       findings.push({ slide: i + 1, level: 'fail', type: 'chartAxisLabelsMissing', issueCategory: 'renderer_layout_bug', message: `${spec.kind} chart lacks category/axis labels` });
     }
-    if (needsUnit && !spec.unit) {
+    if (needsUnit && !chartSpecHasUnit(spec)) {
       findings.push({ slide: i + 1, level: 'review', type: 'chartUnitMissing', issueCategory: 'data_contract_gap', message: `${spec.kind} chart lacks unit` });
     }
     if (!sourceTraceObjectIsExplainable(spec.sourceTrace || {}, { requireSourceId:true })) {

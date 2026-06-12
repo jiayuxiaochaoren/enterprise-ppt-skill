@@ -52,6 +52,161 @@ function isCompanyProfileMetricClaim(claim = {}) {
   return profileSignal && !operatingProblemSignal && !externalUseCaveatText(text);
 }
 
+function metricClaimText(claim = {}, metrics = []) {
+  return [
+    claimVisibleText(claim),
+    ...metrics.map(metric => `${metric.label || ''} ${metric.value || ''} ${metric.note || ''}`)
+  ].filter(Boolean).join(' ');
+}
+
+function isOperatingFoundationMetricClaim(claim = {}, metrics = []) {
+  if (!metrics.length) return false;
+  const text = metricClaimText(claim, metrics);
+  const foundationMetricCount = metrics.filter(metric => /经营底座|基础|规模|成立|员工|团队|SKU|产品宽度|平台|渠道数|门店|站点|覆盖|产能|工厂|厂区|profile|foundation|capacity|scale/i.test(`${metric.label || ''} ${metric.note || ''}`)).length;
+  const financeMetricCount = metrics.filter(metric => /利润|费用|回款|现金|毛利|亏损|ROAS|ROI|退款|复购|漏斗|转化|NPS|OEE|MTTR|风险|问题|原因|根因/i.test(`${metric.label || ''} ${metric.note || ''}`)).length;
+  const foundationSignal = foundationMetricCount >= 2 || /经营底座|基础规模|规模基础|company profile|foundation/i.test(text);
+  return foundationSignal && financeMetricCount < 2 && !externalUseCaveatText(text);
+}
+
+function isFinancialQualityMetricClaim(claim = {}, metrics = []) {
+  if (metrics.length < 2) return false;
+  const text = metricClaimText(claim, metrics);
+  const financeSignal = /利润|毛利|费用|现金|回款|亏损|收入增长|营收增长|EBIT|margin|profit|cash|expense/i.test(text);
+  const bridgeSignal = /绑定|修复|承压|回收|周期|质量|变化|波动|前后|Q[1-4]|季度|quarter/i.test(text);
+  return financeSignal && bridgeSignal && !externalUseCaveatText(text);
+}
+
+function foundationReportBoardFromClaim(slide = {}, claim = {}, metrics = []) {
+  return Object.assign(slide, {
+    type: 'report-board',
+    label: claim.label || '经营底座',
+    layoutVariant: slide.layoutVariant === 'fact-metrics' ? undefined : slide.layoutVariant,
+    variant: slide.variant === 'fact-metrics' ? undefined : slide.variant,
+    proofObject: 'report-board',
+    referenceRecipe: undefined,
+    referenceRecipeId: undefined,
+    referenceRecipeIds: undefined,
+    assetRequirements: [],
+    coreTitle: claim.coreTitle || claim.core_title || '经营底座',
+    coreBody: claim.coreBody || claim.core_body || slide.subtitle || '把规模、团队、产品和目标拆成经营判断的输入。',
+    summary: claim.summary || slide.subtitle || slide.claim || '',
+    sections: metrics.slice(0, 4).map(metric => ({
+      title: metric.label || '核心指标',
+      body: [metric.value, metric.note].filter(Boolean).join(' · ')
+    }))
+  });
+}
+
+function financialSnapshotFromClaim(slide = {}, claim = {}, metrics = []) {
+  return Object.assign(slide, {
+    type: 'metric-comparison',
+    layoutVariant: claim.layoutVariant || claim.variant || 'financial-kpi-snapshot',
+    variant: claim.layoutVariant || claim.variant || 'financial-kpi-snapshot',
+    proofObject: 'financial-kpi-snapshot',
+    dataComponent: 'comparison',
+    referenceRecipe: undefined,
+    referenceRecipeId: undefined,
+    referenceRecipeIds: undefined,
+    metrics: metrics.slice(0, 4)
+  });
+}
+
+function claimValue(claim = {}, snake = '', camel = '') {
+  const camelKey = camel || snake.replace(/_([a-z])/g, (_, ch) => ch.toUpperCase());
+  return claim[snake] !== undefined ? claim[snake] : claim[camelKey];
+}
+
+function isEditorialProofClaim(claim = {}) {
+  const text = [
+    claimValue(claim, 'business_domain'),
+    claimValue(claim, 'chain_stage'),
+    claimValue(claim, 'depth_domain'),
+    claimValue(claim, 'proof_intent'),
+    claim.proof_object,
+    claim.proofObject,
+    claim.claim,
+    claim.support
+  ].filter(Boolean).join(' ');
+  return /editorial-proof|visual-claim|视觉主张|品牌视觉|品牌证据|product-role-board|editorial-proof-board/i.test(text);
+}
+
+function pushSection(out = [], title = '', body = '') {
+  const cleanTitle = String(title || '').trim();
+  const cleanBody = String(body || '').trim();
+  if (!cleanTitle && !cleanBody) return;
+  out.push({
+    title: cleanTitle || '证据项',
+    body: cleanBody || cleanTitle
+  });
+}
+
+function sectionsFromIndustryObjects(industryObjects = {}) {
+  const sections = [];
+  [
+    ['产品/SKU', industryObjects.product_skus || industryObjects.productSkus],
+    ['平台/渠道', industryObjects.platforms_channels || industryObjects.platformsChannels],
+    ['消费者反馈', industryObjects.customer_or_user_signals || industryObjects.customerOrUserSignals],
+    ['经营链路', industryObjects.operations_or_process || industryObjects.operationsOrProcess],
+    ['指标对象', industryObjects.financial_or_metric_objects || industryObjects.financialOrMetricObjects],
+    ['视觉/素材对象', industryObjects.visual_or_asset_objects || industryObjects.visualOrAssetObjects]
+  ].forEach(([title, value]) => {
+    const list = Array.isArray(value) ? value.filter(Boolean).slice(0, 4) : [value].filter(Boolean);
+    if (list.length) pushSection(sections, title, list.join('、'));
+  });
+  return sections;
+}
+
+function editorialProofBoardFromClaim(slide = {}, claim = {}, images = []) {
+  const industryObjects = claim.industry_objects || claim.industryObjects || {};
+  const explicitSections = Array.isArray(claim.sections) && claim.sections.length ? claim.sections : [];
+  const structuredSections = [
+    ...sectionsFromIndustryObjects(industryObjects),
+    ...textItems(claim.editorialProof || claim.editorial_proof || [], []),
+    ...textItems(claim.productItems || claim.product_items || claim.skuMatrix || claim.sku_matrix || [], []),
+    ...textItems(claim.consumerQuotes || claim.consumer_quotes || claim.reviews || [], [])
+  ].slice(0, 6);
+  const fallbackSections = textItems(claim.cards || claim.bullets, [slide.subtitle || slide.title]).slice(0, 4);
+  const assetRequirements = Array.isArray(claim.asset_requirements || claim.assetRequirements)
+    ? (claim.asset_requirements || claim.assetRequirements)
+    : [];
+  const missingInfo = claim.missing_info || claim.missingInfo || claim.informationGap || claim.information_gap;
+  const needsFactualAsset = assetRequirements.some(item =>
+    item && item.required !== false && /product|site|screenshot|certificate|store|scene|evidence|background/i.test(String(item.role || ''))
+  );
+  const informationGap = !images.length && (needsFactualAsset || missingInfo)
+    ? {
+        title: '素材待确认',
+        body: Array.isArray(missingInfo) ? missingInfo.join('；') : (missingInfo || '缺少可外发展示的真实产品、平台截图或场景素材，需进入资产决策。')
+      }
+    : undefined;
+  const proof = String(claim.proof_object || claim.proofObject || '').toLowerCase();
+  const proofObject = /product-role-board/.test(proof) ? 'product-role-board' : 'editorial-proof-board';
+  return Object.assign(slide, {
+    type: 'report-board',
+    layoutVariant: claim.layoutVariant || claim.variant || 'editorial-proof-board',
+    variant: claim.layoutVariant || claim.variant || 'editorial-proof-board',
+    proofObject,
+    label: claim.label || '视觉证据',
+    coreTitle: claim.coreTitle || claim.core_title || '品牌与产品证据',
+    coreBody: claim.coreBody || claim.core_body || slide.subtitle || '用产品/SKU、渠道场景、消费者反馈或素材缺口承接视觉主张。',
+    summary: claim.summary || slide.subtitle || '',
+    sections: explicitSections.length ? explicitSections : (structuredSections.length ? structuredSections : fallbackSections),
+    editorialProof: structuredSections,
+    informationGap,
+    assetRequirements,
+    assetGeneration: needsFactualAsset
+      ? Object.assign({}, slide.assetGeneration || {}, {
+          status: 'blocked',
+          role: 'product',
+          originalRole: 'product',
+          resolvedRole: 'factual-product-or-platform-evidence',
+          mustBind: true,
+          reason: 'editorial proof requires user-provided factual product, platform screenshot, or scene asset'
+        })
+      : slide.assetGeneration
+  });
+}
+
 function slideFromCompanyIntroClaim(claim = {}, extraction = {}, bundle = {}, industry = '') {
   const proof = String(claim.proof_object || '').toLowerCase();
   if (industry === 'manufacturing-operations' && proof.includes('report-board') && externalUseCaveatText(claimVisibleText(claim))) {
@@ -83,6 +238,11 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
   if (claim.layout_energy || claim.layoutEnergy) slide.layoutEnergy = claim.layout_energy || claim.layoutEnergy;
   if (claim.visual_density || claim.visualDensity) slide.visualDensity = claim.visual_density || claim.visualDensity;
   if (claim.rhythm_transition || claim.rhythmTransition) slide.rhythmTransition = claim.rhythm_transition || claim.rhythmTransition;
+  if (claim.business_domain || claim.businessDomain) slide.businessDomain = claim.business_domain || claim.businessDomain;
+  if (claim.chain_stage || claim.chainStage) slide.chainStage = claim.chain_stage || claim.chainStage;
+  if (claim.depth_domain || claim.depthDomain) slide.depthDomain = claim.depth_domain || claim.depthDomain;
+  if (claim.proof_intent || claim.proofIntent) slide.proofIntent = claim.proof_intent || claim.proofIntent;
+  if (claim.industry_objects || claim.industryObjects) slide.industryObjects = claim.industry_objects || claim.industryObjects;
   if (claim.reference_recipe_id || claim.referenceRecipeId) slide.referenceRecipeId = claim.reference_recipe_id || claim.referenceRecipeId;
   if (Array.isArray(claim.reference_recipe_ids || claim.referenceRecipeIds)) {
     slide.referenceRecipeIds = claim.reference_recipe_ids || claim.referenceRecipeIds;
@@ -99,6 +259,33 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
     const inputComponentPlan = claim.componentPlan || claim.component_plan;
     slide.previousComponentPlan = inputComponentPlan;
   }
+  [
+    ['industryEvidenceChainMode', 'industry_evidence_chain_mode'],
+    ['disableIndustryEvidenceChain', 'disable_industry_evidence_chain']
+  ].forEach(([camel, snake]) => {
+    if (claim[camel] !== undefined || claim[snake] !== undefined) {
+      slide[camel] = claim[camel] !== undefined ? claim[camel] : claim[snake];
+    }
+  });
+  [
+    'product',
+    'products',
+    'productStory',
+    'productItems',
+    'skuMatrix',
+    'skus',
+    'editorialProof',
+    'consumerQuotes',
+    'reviews',
+    'informationGap',
+    'missingInfo',
+    'lookbook',
+    'proofItems',
+    'evidenceItems',
+    'galleryItems'
+  ].forEach(field => {
+    if (claim[field] !== undefined) slide[field] = claim[field];
+  });
   if (Array.isArray(claim.asset_requirements || claim.assetRequirements)) slide.assetRequirements = claim.asset_requirements || claim.assetRequirements;
   if (claim.source_note || claim.sourceNote || claim.provenance_note || claim.provenanceNote) {
     slide.sourceNote = claim.source_note || claim.sourceNote || claim.provenance_note || claim.provenanceNote;
@@ -125,9 +312,12 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
     slide.bridge = Array.isArray(claim.bridge) ? claim.bridge : metrics.map((m, i) => ({ label: m.label, value: parseFloat(String(m.value).replace(/[^\d.-]/g, '')) || (i === 0 ? 10 : 3), note: m.note }));
     return slide;
   }
+  if (isEditorialProofClaim(claim)) {
+    return editorialProofBoardFromClaim(slide, claim, images);
+  }
   if (proof === 'report-board' || proof.includes('report-board')) {
     slide.type = 'report-board';
-    slide.label = claim.label || 'EVIDENCE BOARD';
+    slide.label = claim.label || '证据看板';
     slide.coreTitle = claim.coreTitle || claim.core_title || '材料证据';
     slide.coreBody = claim.coreBody || claim.core_body || subtitle;
     slide.summary = claim.summary || subtitle;
@@ -196,6 +386,12 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
   }
   if (metrics.length >= 2 || proof.includes('metric') || claim.narrative_role === 'proof') {
     slide.metrics = metrics;
+    if (isOperatingFoundationMetricClaim(claim, metrics)) {
+      return foundationReportBoardFromClaim(slide, claim, metrics);
+    }
+    if (isFinancialQualityMetricClaim(claim, metrics)) {
+      return financialSnapshotFromClaim(slide, claim, metrics);
+    }
     const metricText = metrics.map(m => `${m.label || ''} ${m.value || ''} ${m.note || ''}`).join(' ');
     if (proof.includes('metric-board') && !/OEE|MTTR|MTBF|停机|稼动/i.test(metricText)) {
       slide.variant = 'fact-metrics';

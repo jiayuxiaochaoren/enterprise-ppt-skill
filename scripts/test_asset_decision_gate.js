@@ -9,13 +9,75 @@ const {
   generatedAssetTargetSpec
 } = require('./design/asset-generation');
 const {
+  assetDecisionStateFor
+} = require('./design/asset-decision-state');
+const {
   runPlanAudits
 } = require('./qa/visual-plan-audit');
+const {
+  normalizeDeckPlan
+} = require('./design-system');
+const {
+  boundAssetsForMeta
+} = require('./render/asset-meta-helpers');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-asset-decision-gate');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+
+const normalizedSaasStructureDeck = normalizeDeckPlan({
+  industry:'saas-technology',
+  visualIntent:'image-rich',
+  title:'SaaS structure asset policy regression',
+  slides:[{
+    type:'timeline',
+    layoutVariant:'automation-workflow',
+    title:'落地路径从一个核心工作流扩展到多部门平台化',
+    phases:[{ title:'首个团队' }, { title:'系统集成' }, { title:'扩展席位' }]
+  }, {
+    type:'metric-comparison',
+    layoutVariant:'adoption-revenue-board',
+    title:'收入扩展来自激活率、集成深度和席位增长',
+    metrics:[{ label:'NRR', value:'118%' }, { label:'激活率', value:'64%' }]
+  }]
+});
+assert.equal(normalizedSaasStructureDeck.slides[0].assetGeneration.status, 'none');
+assert.equal(normalizedSaasStructureDeck.slides[0].assetGeneration.assetDecisionState.status, 'structure-only');
+assert.deepEqual(normalizedSaasStructureDeck.slides[0].assetGeneration.assetDecisionState.allowedActions, []);
+assert.equal(normalizedSaasStructureDeck.slides[0].generatedAssetPrompt, undefined);
+assert.equal(normalizedSaasStructureDeck.slides[1].assetGeneration.status, 'none');
+assert.equal(normalizedSaasStructureDeck.slides[1].generatedAssetPrompt, undefined);
+assert.deepEqual(assetDecisionStateFor({ status:'blocked', factual:true }).allowedActions, ['provide_assets', 'skip_image']);
+assert.equal(assetDecisionStateFor({ status:'required', mustBind:true }).canAutoGenerate, true);
+
+const normalizedLifestyleStructureDeck = normalizeDeckPlan({
+  industry:'lifestyle-food-tourism-fashion',
+  visualIntent:'image-rich',
+  title:'Lifestyle structure asset policy regression',
+  slides:[{
+    type:'strategy-map',
+    layoutVariant:'scene-conversion-board',
+    proofObject:'customer-journey-map',
+    title:'场景经营看板把空间、活动、内容和供应链连起来',
+    claim:'用路线设计和商户联动形成可复盘的体验产品。',
+    drivers:['空间场景', '主题活动', '社交内容'],
+    actions:['路线设计', '商户联动', '会员权益'],
+    outcomes:['停留变长', '连带提升', '复游改善']
+  }]
+});
+assert.equal(normalizedLifestyleStructureDeck.slides[0].assetGeneration.status, 'none');
+assert.equal(normalizedLifestyleStructureDeck.slides[0].assetGeneration.reason, 'native structural route renders without generated imagery');
+assert.equal(normalizedLifestyleStructureDeck.slides[0].generatedAssetPrompt, undefined);
+
+const rendererCropAssets = boundAssetsForMeta({}, [], ['cover-crop.png'], [{
+  fit:'cover',
+  slot:{ w:2, h:2 },
+  slotAspectRatio:1,
+  imageAspectRatio:1.5,
+  aspectMismatch:0.5
+}], { aspectRatio:1.778, fitPolicy:'cover' });
+assert.equal(rendererCropAssets[0].aspectMismatchAllowed, true);
 
 function writePngHeader(file, w, h) {
   const b = Buffer.alloc(33);
@@ -34,6 +96,7 @@ function writePngHeader(file, w, h) {
 
 const planPath = path.join(OUT, 'beauty-plan.json');
 const gatePath = path.join(OUT, 'asset-gate.json');
+const gateSummaryPath = path.join(OUT, 'asset-gate.md');
 const answersPath = path.join(OUT, 'asset-answers.json');
 const resolvedGatePath = path.join(OUT, 'asset-gate-resolved.json');
 const resolvedPlanPath = path.join(OUT, 'beauty-plan.resolved.json');
@@ -44,6 +107,10 @@ const blockedResolvedGatePath = path.join(OUT, 'blocked-gate-resolved.json');
 const blockedResolvedPlanPath = path.join(OUT, 'blocked-plan.resolved.json');
 const productBlockedPlanPath = path.join(OUT, 'product-blocked-plan.json');
 const productBlockedGatePath = path.join(OUT, 'product-blocked-gate.json');
+const commerceCoverPlanPath = path.join(OUT, 'commerce-cover-plan.json');
+const commerceCoverGatePath = path.join(OUT, 'commerce-cover-gate.json');
+const factualCoverPlanPath = path.join(OUT, 'factual-cover-plan.json');
+const factualCoverGatePath = path.join(OUT, 'factual-cover-gate.json');
 const promptPlanPath = path.join(OUT, 'prompt-plan.json');
 const promptOutPath = path.join(OUT, 'asset-prompts.json');
 const splitPromptPlanPath = path.join(OUT, 'split-prompt-plan.json');
@@ -100,16 +167,20 @@ fs.writeFileSync(planPath, JSON.stringify({
   ]
 }, null, 2));
 
-cp.execFileSync('node', ['scripts/deck_asset_decision_gate.js', planPath, '--out', gatePath], {
+cp.execFileSync('node', ['scripts/deck_asset_decision_gate.js', planPath, '--out', gatePath, '--summary-md', gateSummaryPath], {
   cwd: ROOT,
   stdio: 'pipe'
 });
 const gate = JSON.parse(fs.readFileSync(gatePath, 'utf8'));
+const gateSummary = fs.readFileSync(gateSummaryPath, 'utf8');
 assert.equal(gate.status, 'needs_user_input');
 assert.ok(gate.questions.length >= 2, 'image-led beauty plan should ask for missing visual decisions');
 assert.ok(gate.questions.every(q => q.options.some(o => o.action === 'provide_assets') && q.options.some(o => o.action === 'auto_generate') && q.options.some(o => o.action === 'skip_image')));
 assert.equal(gate.severityPolicy.matrixVersion, 'quality-severity-matrix/v1');
 assert.ok(gate.questions.every(q => q.severityPolicy && q.severityPolicy.formal === 'fail'));
+assert.match(gateSummary, /资产决策清单/);
+assert.match(gateSummary, /Allowed actions/);
+assert.match(gateSummary, /auto_generate/);
 
 const bridgeUnavailable = JSON.parse(cp.execFileSync(process.execPath, [
   'scripts/resolve_visual_assets.js',
@@ -278,6 +349,60 @@ assert.equal(productBlockedGate.questions[0].blocked, true);
 assert.equal(productBlockedGate.questions[0].options.some(o => o.action === 'auto_generate'), false);
 assert.match(productBlockedGate.questions[0].reason, /factual|真实|proof|substitute/i);
 
+fs.writeFileSync(commerceCoverPlanPath, JSON.stringify({
+  industry: 'cross-border-ecommerce',
+  visualIntent: 'image-rich',
+  title: '跨境电商 SKU 平台增长复盘',
+  slides: [{
+    type: 'cover',
+    title: '跨境电商 SKU 平台增长复盘',
+    subtitle: '从平台、商品和履约证据看增长动作',
+    visual: {
+      mode: 'generated',
+      role: 'showcase',
+      prompt: '跨境电商经营网络的抽象封面视觉，不出现真实品牌或真实商品'
+    }
+  }]
+}, null, 2));
+cp.execFileSync('node', ['scripts/deck_asset_decision_gate.js', commerceCoverPlanPath, '--out', commerceCoverGatePath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const commerceCoverGate = JSON.parse(fs.readFileSync(commerceCoverGatePath, 'utf8'));
+assert.equal(commerceCoverGate.status, 'needs_user_input');
+assert.equal(commerceCoverGate.questions.length, 1);
+assert.equal(commerceCoverGate.questions[0].blocked, false, 'abstract commerce cover should not be treated as factual proof');
+assert.equal(commerceCoverGate.questions[0].allowedActions.includes('auto_generate'), true);
+assert.equal(commerceCoverGate.questions[0].recommendedAction, 'auto_generate');
+assert.match(commerceCoverGate.questions[0].generatedAssetPrompt, /premium enterprise PPT cover/i);
+assert.doesNotMatch(commerceCoverGate.questions[0].generatedAssetPrompt, /text-safe zone|safe zone/i);
+assert.match(commerceCoverGate.questions[0].generatedAssetPrompt, /right-side hero panel|no vertical mask/i);
+
+fs.writeFileSync(factualCoverPlanPath, JSON.stringify({
+  industry: 'cross-border-ecommerce',
+  visualIntent: 'image-rich',
+  title: '跨境电商真实产品图验证',
+  slides: [{
+    type: 'cover',
+    title: '跨境电商真实产品图验证',
+    subtitle: '需要真实素材时不能自动生成',
+    visual: {
+      mode: 'generated',
+      role: 'showcase',
+      prompt: '真实SKU产品图、平台截图和授权客户案例画面'
+    }
+  }]
+}, null, 2));
+cp.execFileSync('node', ['scripts/deck_asset_decision_gate.js', factualCoverPlanPath, '--out', factualCoverGatePath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const factualCoverGate = JSON.parse(fs.readFileSync(factualCoverGatePath, 'utf8'));
+assert.equal(factualCoverGate.status, 'needs_user_input');
+assert.equal(factualCoverGate.questions.length, 1);
+assert.equal(factualCoverGate.questions[0].blocked, true, 'explicit factual cover visual should stay blocked');
+assert.equal(factualCoverGate.questions[0].allowedActions.includes('auto_generate'), false);
+
 fs.writeFileSync(promptPlanPath, JSON.stringify({
   industry: 'beauty-consumer',
   title: 'Prompt blocked validation',
@@ -371,6 +496,11 @@ assert.doesNotMatch(splitPromptZh, /16\s*[:：]\s*9|4\s*[:：]\s*3|横图|宽屏
 assert.equal(generatedPromptAspectConflict(splitPromptZh, splitTarget), false);
 const coverTarget = assetTargetContract({}, { type: 'cover', visual: { role: 'background' } }, 'background');
 assert.equal(generatedPromptAspectConflict('竖图，海报图，portrait crop', coverTarget), true);
+const coverShowcaseTarget = assetTargetContract({}, { type: 'cover', coverStyle:'brand-system-board', visual: { role: 'showcase' } }, 'showcase');
+assert.equal(coverShowcaseTarget.targetSource, 'renderer-slot:cover-showcase-right-panel');
+assert.equal(coverShowcaseTarget.orientation, 'balanced');
+assert.notEqual(coverShowcaseTarget.aspectRatio, coverTarget.aspectRatio);
+assert.doesNotMatch(coverShowcaseTarget.instruction, /text-safe zone/i);
 
 const rendererSplitTarget = assetTargetContract({}, {
   type: 'executive-blocks',

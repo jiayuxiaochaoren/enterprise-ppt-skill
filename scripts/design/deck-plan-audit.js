@@ -72,6 +72,7 @@ function createDeckPlanAuditHelpers({
       const signals = contentSignals(normalized, slide, i, slides.length);
       const captions = (Array.isArray(slide.cards) ? slide.cards.length : 0) +
         (Array.isArray(slide.items) ? slide.items.length : 0) +
+        (Array.isArray(slide.metrics) ? slide.metrics.length : 0) +
         (Array.isArray(slide.lookbook) ? slide.lookbook.length : 0) +
         (Array.isArray(slide.productStory) ? slide.productStory.length : 0);
       if (signals.imageCount >= 3 && captions < Math.min(3, signals.imageCount)) {
@@ -111,7 +112,8 @@ function createDeckPlanAuditHelpers({
       const loopText = [slide.title, slide.centerTitle, slide.loopTitle].filter(Boolean).join(' ');
       const closedLoopOk = slide.type === 'timeline' || slide.layoutVariant === 'responsibility-loop' || slide.layoutVariant === 'flywheel' || slide.layoutVariant === 'closed-loop';
       const energyLoopOk = plan.industry === 'energy-utility' && ['module-matrix', 'metric-comparison'].includes(slide.type);
-      if (/闭环|循环|能力环|loop|cycle/i.test(loopText) && !closedLoopOk && !energyLoopOk && !slide.centerTitle && !['cover', 'closing', 'chapter-divider', 'toc', 'toc-clean'].includes(slide.type)) {
+      const loopMetricOnly = /闭环率|闭环指标|闭环数/.test(loopText) && ['metric-comparison', 'industry-chart'].includes(slide.type);
+      if (/闭环|循环|能力环|loop|cycle/i.test(loopText) && !loopMetricOnly && !closedLoopOk && !energyLoopOk && !slide.centerTitle && !['cover', 'closing', 'chapter-divider', 'toc', 'toc-clean'].includes(slide.type)) {
         findings.push({ slide: i + 1, level: 'review', type: 'loopSemantics', message: 'loop language is present but the slide is not routed to a loop or responsibility grammar' });
       }
       if (slide.layoutVariant === 'risk-matrix' && !slide.matrix && (!Array.isArray(slide.rows) || slide.rows.length < 3)) {

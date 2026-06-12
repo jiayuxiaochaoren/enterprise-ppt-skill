@@ -1,19 +1,14 @@
-const CHART_SPEC_SUPPRESSED_NATIVE_VARIANTS = new Set([
-  'brand-world-and-business-proof',
-  'consumer-proof-photo-grid',
-  'control-stack',
-  'lookbook-story',
-  'process-board',
-  'product-evidence-story',
-  'value-creation-process-map'
-]);
 const {
   CHART_ROUTE_TYPES,
   createRouteSanitizationHelpers
 } = require('./slide-route-sanitization');
 const {
-  ASSET_GENERATION_DECISION_SOURCE
-} = require('./asset-generation');
+  CHART_SPEC_SUPPRESSED_NATIVE_VARIANTS,
+  createSlideNormalizationUtilityHelpers
+} = require('./slide-normalization-utils');
+const {
+  routeIntentDecisionFor
+} = require('./route-intent-decision');
 
 function createSlideNormalizationHelpers(deps = {}) {
   const {
@@ -46,31 +41,12 @@ function createSlideNormalizationHelpers(deps = {}) {
     highValuePageFamilies,
     layoutVariantCompatibleWithType
   });
-
-  function nativeVariantOwnsChartZone(s = {}) {
-    const variant = String(s.layoutVariant || s.variant || '');
-    return CHART_SPEC_SUPPRESSED_NATIVE_VARIANTS.has(variant) && !(s.chartSpec && s.chartSpec.version === 'chartSpec/v1');
-  }
-
-  function deriveMetricsFromSlide(s = {}) {
-    if (Array.isArray(s.metrics)) return s.metrics;
-    const cards = Array.isArray(s.cards) ? s.cards : [];
-    const fromCards = cards.map(c => {
-      const text = `${c.title || ''} ${c.body || ''}`;
-      const num = (text.match(/[+-]?\d[\d,]*(?:\.\d+)?\s*(?:%|％|pt|倍|亿元|万元|件|台)?/) || [''])[0];
-      return num ? { label: c.title || '核心指标', value: num, note: c.body || '' } : null;
-    }).filter(Boolean);
-    if (fromCards.length) return fromCards;
-    const text = flattenText(s);
-    const nums = text.match(/[+-]?\d[\d,]*(?:\.\d+)?\s*(?:%|％|pt|倍|亿元|万元|件|台)?/g) || [];
-    return nums.slice(0, 3).map((value, i) => ({ label: ['核心指标', '变化幅度', '目标进度'][i] || '指标', value, note: s.claim || s.subtitle || '' }));
-  }
-
-  function currentAssetGenerationDecision(decision = {}) {
-    return Object.assign({
-      decisionSource: ASSET_GENERATION_DECISION_SOURCE
-    }, decision || {});
-  }
+  const {
+    channelEfficiencyVariantNeedsDowngrade,
+    currentAssetGenerationDecision,
+    deriveMetricsFromSlide,
+    nativeVariantOwnsChartZone
+  } = createSlideNormalizationUtilityHelpers({ flattenText });
 
   function normalizeSlide(plan = {}, s = {}, index = 0, total = 1) {
     const typePick = recommendSlideType(plan, s, index, total);
@@ -86,7 +62,9 @@ function createSlideNormalizationHelpers(deps = {}) {
     const recipe = selectReferenceRecipe(plan, Object.assign({}, routedInput, { type:typePick.type }), signals);
     const out = Object.assign({}, routedInput, {
       type: typePick.type,
+      routeLocked: routedInput.routeLocked === true || routedInput.route_lock === true || typePick.locked === true,
       layoutRationale: routedInput.layoutRationale || typePick.reason,
+      routeIntentDecision: routeIntentDecisionFor({ typePick, recipe }),
       referenceRecipe: routedInput.referenceRecipe || (recipe ? {
         id: recipe.id,
         score: recipe.score,
@@ -123,6 +101,16 @@ function createSlideNormalizationHelpers(deps = {}) {
         out.proofObjectInferred = true;
         out.proofObjectSource = out.proofObjectSource || 'semantic-frame';
       }
+    }
+    if (out.type === 'industry-chart' && channelEfficiencyVariantNeedsDowngrade(out)) {
+      out.previousLayoutVariant = out.previousLayoutVariant || out.layoutVariant;
+      out.previousVariant = out.previousVariant || out.variant;
+      out.layoutVariant = 'fact-metrics';
+      out.variant = 'fact-metrics';
+      routeSanitization.recomputed.push({
+        field: 'layoutVariant',
+        reason: 'channel-efficiency-matrix requires channel/media/provenance fields; metric-board evidence downgraded to fact-metrics'
+      });
     }
     const claimRules = (visualSystem.contentIntelligence && visualSystem.contentIntelligence.claimSpine) || {};
     if (!out.claim) {
@@ -243,7 +231,24 @@ function createSlideNormalizationHelpers(deps = {}) {
     } else {
       out.assetGeneration = out.assetGeneration || assetGeneration;
     }
-    if (assetGeneration.status === 'required' && !(out.image || (out.visual && out.visual.image))) {
+    const effectiveAssetGeneration = out.assetGeneration || assetGeneration || {};
+    const effectiveAssetStatus = String(effectiveAssetGeneration.status || '').toLowerCase();
+    const effectiveAssetAction = String(
+      effectiveAssetGeneration.action ||
+      effectiveAssetGeneration.decision ||
+      effectiveAssetGeneration.assetDecisionAction ||
+      effectiveAssetGeneration.asset_decision_action ||
+      ''
+    ).toLowerCase();
+    const effectiveAssetMode = String(effectiveAssetGeneration.mode || '').toLowerCase();
+    const effectiveAssetReason = String(effectiveAssetGeneration.reason || '').toLowerCase();
+    const assetExplicitlySkipped = effectiveAssetAction === 'skip_image' ||
+      effectiveAssetMode === 'structure-only' ||
+      /skip|structure-only|native structure|结构页|跳过/.test(effectiveAssetReason);
+    if (assetExplicitlySkipped || effectiveAssetStatus === 'none') {
+      delete out.generatedAssetPrompt;
+    }
+    if (effectiveAssetStatus === 'required' && !assetExplicitlySkipped && !(out.image || (out.visual && out.visual.image))) {
       out.generatedAssetPrompt = out.generatedAssetPrompt || generatedAssetPrompt(plan, out, recipe);
     }
     routeSanitization.after = {

@@ -42,6 +42,7 @@ function createDeckRhythmHelpers(deps = {}) {
     return slides.map((slide, i) => {
       const key = routeKey(slide);
       const body = !['cover', 'closing', 'toc', 'toc-clean', 'chapter-divider'].includes(slide.type || '');
+      const lockedRoute = slide.routeLocked === true || slide.route_lock === true || (slide.renderRoute && slide.renderRoute.routeLocked === true);
       const imageCaseRoute = ['case-gallery', 'gallery', 'portfolio', 'product-showcase'].includes(slide.type || '') ||
         (imageRefsForSlide(slide).length > 0 && /gallery|proof|photo|mosaic|evidence|product|lookbook/i.test(proofObjectIdForSlide(slide)));
       const processRoute = ['timeline', 'timeline-dark'].includes(slide.type || '') ||
@@ -51,9 +52,21 @@ function createDeckRhythmHelpers(deps = {}) {
         Array.isArray(slide.timeline) ||
         Array.isArray(slide.milestones) ||
         /process|timeline|pathway|flywheel|loop/i.test(String(slide.layoutVariant || slide.variant || ''));
+      const riskRoute = ['risk-table', 'table'].includes(slide.type || '') ||
+        Array.isArray(slide.rows) ||
+        Array.isArray(slide.risks) ||
+        Array.isArray(slide.controls) ||
+        Boolean(slide.riskRegister || slide.riskMatrix || slide.controlsMatrix || slide.matrix) ||
+        /risk|governance|control|责任|风险|治理/i.test(String(slide.layoutVariant || slide.variant || slide.proofObject || slide.proof_object || ''));
+      const productRoute = slide.type === 'product-showcase' ||
+        Boolean(slide.product) ||
+        Array.isArray(slide.products) ||
+        Array.isArray(slide.productStory) ||
+        Array.isArray(slide.skus);
+      const semanticLockedRoute = lockedRoute || imageCaseRoute || processRoute || riskRoute || productRoute || slide.type === 'report-board';
       const grammarVariant = dataGrammarVariant(plan, slide, contentSignals(plan, slide, i, slides.length));
       let next = slide;
-      if (body && !imageCaseRoute && !processRoute && seenRoutes.has(key) && grammarVariant && key !== `industry-chart:${grammarVariant}`) {
+      if (body && !semanticLockedRoute && seenRoutes.has(key) && grammarVariant && key !== `industry-chart:${grammarVariant}`) {
         next = Object.assign({}, slide, {
           type: 'industry-chart',
           layoutVariant: grammarVariant,

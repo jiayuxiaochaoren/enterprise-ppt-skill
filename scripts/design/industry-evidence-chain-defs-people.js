@@ -17,17 +17,21 @@ module.exports = {
         "position": 1,
         "label": "使命/文化主张",
         "components": [
+          "content-card-grid",
+          "commentary-panel",
           "value-chain",
           "caption-bar"
         ],
         "coveragePolicy": {
-          "requiredAll": [
+          "requiredAny": [
+            "content-card-grid",
+            "commentary-panel",
             "value-chain"
           ],
           "optional": [
             "caption-bar"
           ],
-          "minHits": 1
+          "minHits": 2
         },
         "proofObjects": [
           "culture-cover-with-soft-geometry",
@@ -103,16 +107,22 @@ module.exports = {
         "label": "组织/成长证据",
         "components": [
           "kpi-strip",
+          "scorecard",
+          "decision-panel",
+          "contact-block",
           "source-note"
         ],
         "coveragePolicy": {
-          "requiredAll": [
-            "kpi-strip"
+          "requiredAny": [
+            "kpi-strip",
+            "scorecard",
+            "decision-panel",
+            "contact-block"
           ],
           "optional": [
             "source-note"
           ],
-          "minHits": 1
+          "minHits": 2
         },
         "proofObjects": [
           "company-profile-proof",

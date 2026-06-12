@@ -14,7 +14,7 @@ function createConsumerProofPhotoGridRenderer(ctx = {}) {
   const { drawConsumerProofGridSlot } = createConsumerProofGridSlotRenderer(ctx);
 
   return function consumerProofPhotoGrid(slide, plan, s, idx) {
-    drawLightPageHeader(slide, {
+    const header = drawLightPageHeader(slide, {
       kicker:'CONSUMER PROOF PHOTO GRID',
       title:s.title || '消费者场景证据',
       titleW:6.1,
@@ -25,9 +25,14 @@ function createConsumerProofPhotoGridRenderer(ctx = {}) {
       idx,
       pageNumber:'chrome'
     });
+    const contentY = Math.max(2.50, Number(header && header.contentTop) || 2.50);
+    const contentH = Math.max(3.20, 6.02 - contentY);
     const images = galleryImages(plan, s);
     const items = (s.cards || s.items || s.lookbook || []).slice(0, 4);
-    const slots = consumerProofGridSlots(C);
+    const slots = consumerProofGridSlots(C).map(slot => Object.assign({}, slot, {
+      y: contentY,
+      h: contentH
+    }));
     slots.forEach((slot, i) => {
       const item = items[i] || {};
       const slotImage = images[i] || images[0];

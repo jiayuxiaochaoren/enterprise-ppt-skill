@@ -18,6 +18,7 @@ const NATIVE_VARIANT_COMPONENTS = {
   'process-board': ['process-rail', 'value-chain'],
   'product-evidence-story': ['proof-gallery', 'caption-bar', 'hero-image', 'product-matrix'],
   'quarterly-results-summary': ['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'scorecard'],
+  'scene-conversion-board': ['value-chain', 'value-chain-connector', 'system-rail', 'commentary-panel', 'process-rail'],
   'single-object-concept-map': ['hero-image', 'value-chain', 'commentary-panel'],
   'sustainability-proof-spread': ['proof-gallery', 'caption-bar'],
   'value-creation-process-map': ['value-chain', 'value-chain-connector', 'system-rail', 'commentary-panel'],
@@ -90,7 +91,6 @@ function isEnergyNativeRenderer(plan = {}, rendererName = '') {
 function energyNativeOwnedComponentIds() {
   return new Set([
     'commentary-panel',
-    'load-curve-band',
     'navigation-sequence',
     'process-rail',
     'risk-register',
@@ -138,11 +138,14 @@ function createNativeComponentIdHelpers({
         (Array.isArray(s.sections) && s.sections.length)
       ))
     ) ids.add('navigation-sequence');
-    if (['two-column', 'two-column-clean', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks'].includes(type)) {
+    if (['two-column', 'two-column-clean', 'cards', 'module-matrix', 'value-tiles', 'executive-blocks', 'manifesto'].includes(type)) {
       ids.add('content-card-grid');
       if ((s.visual && s.visual.image) || s.image || (Array.isArray(s.images) && s.images.length) || (s.visual && Array.isArray(s.visual.images) && s.visual.images.length)) {
         ['hero-image', 'proof-gallery', 'caption-bar'].forEach(id => ids.add(id));
       }
+    }
+    if (type === 'company-profile-spread') {
+      ['hero-image', 'proof-gallery', 'caption-bar', 'quality-scorecard', 'kpi-strip', 'metric-strip'].forEach(id => ids.add(id));
     }
     if (type === 'portfolio-table') {
       ['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'product-matrix', 'table-with-commentary', 'scorecard'].forEach(id => ids.add(id));
@@ -151,7 +154,7 @@ function createNativeComponentIdHelpers({
       ['proof-gallery', 'proof-gallery-grid', 'caption-bar', 'luxury-caption-bar', 'brand-proof-caption', 'product-story-caption', 'evidence-frame', 'source-caption', 'hero-image', 'product-matrix'].forEach(id => ids.add(id));
     }
     if (type === 'strategy-map') {
-      ['value-chain', 'value-chain-connector', 'business-proof-rail', 'commentary-panel', 'system-rail', 'brand-world-hero'].forEach(id => ids.add(id));
+      ['value-chain', 'value-chain-connector', 'business-proof-rail', 'commentary-panel', 'system-rail', 'brand-world-hero', 'process-rail'].forEach(id => ids.add(id));
     }
     if (type === 'architecture' || type === 'architecture-dark') {
       ['system-rail', 'capability-layer-stack', 'commentary-panel', 'caption-bar'].forEach(id => ids.add(id));
@@ -160,7 +163,8 @@ function createNativeComponentIdHelpers({
       ['process-rail', 'campaign-to-member-rail', 'launch-rhythm-strip'].forEach(id => ids.add(id));
     }
     if (type === 'risk-table' || type === 'table') {
-      ['risk-register', 'governance-table', 'control-tag'].forEach(id => ids.add(id));
+      ['governance-table', 'control-tag'].forEach(id => ids.add(id));
+      if (s.riskRegister || /risk-register/i.test(variant)) ids.add('risk-register');
       if (Array.isArray(s.metrics) && s.metrics.length) ids.add('kpi-strip');
       if (Array.isArray(s.phases) || Array.isArray(s.actions) || Array.isArray(s.steps) || Array.isArray(s.timeline) || Array.isArray(s.milestones)) {
         ids.add('process-rail');
@@ -169,6 +173,9 @@ function createNativeComponentIdHelpers({
     }
     if (type === 'report-board') {
       ['proof-board', 'commentary-panel', 'content-card-grid'].forEach(id => ids.add(id));
+      if ((Array.isArray(s.metrics) && s.metrics.length) || (Array.isArray(s.sections) && s.sections.length)) {
+        ['kpi-strip', 'metric-strip', 'kpi-primary-metric'].forEach(id => ids.add(id));
+      }
     }
     if (type === 'closing') {
       ['decision-panel', 'contact-block', 'editorial-end-card'].forEach(id => ids.add(id));
