@@ -829,4 +829,11 @@ assert.equal(invalidPayload.success, false);
 assert.ok(invalidPayload.errors.some(e => e.type === 'slideOutOfRange'));
 assert.ok(invalidPayload.errors.some(e => e.type === 'assetFileMissing'));
 
+const resolveHelp = cp.spawnSync(process.execPath, ['scripts/resolve_visual_assets.js', '--help'], {
+  cwd: ROOT,
+  encoding: 'utf8'
+});
+assert.equal(resolveHelp.status, 0, 'resolve_visual_assets --help should exit successfully');
+assert.ok(/resolve_visual_assets\.js <deck-plan\.json>/.test(resolveHelp.stderr), 'resolve_visual_assets --help should print usage');
+
 console.log('asset decision gate ok');

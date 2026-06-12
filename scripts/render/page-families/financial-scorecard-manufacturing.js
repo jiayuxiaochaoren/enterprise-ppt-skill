@@ -29,7 +29,10 @@ function createManufacturingOeeBoard(ctx = {}, deps = {}) {
       kicker:'OEE / LINE READOUT',
       title:'OEE 与产线效率复盘',
       titleW:5.9,
+      titleMaxLines:1,
+      titleBreakLine:false,
       subtitle:'把稼动、节拍、良率、停机和维修动作放到同一张产线复盘页。',
+      useProvidedSubtitle:true,
       subtitleW:7.0,
       subtitleSize:10.2
     });

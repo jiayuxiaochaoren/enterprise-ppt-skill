@@ -7,7 +7,7 @@
    - asset map supplied: bind generated/provided bitmaps and continue. */
 const { resolveVisualAssetsFromFiles } = require('./assets/resolution-facade');
 
-function usage() {
+function usage(exitCode = 2) {
   console.error([
     'Usage:',
     '  node scripts/resolve_visual_assets.js <deck-plan.json> --out-dir out/run [--imagegen-capability available|unavailable]',
@@ -23,17 +23,16 @@ function usage() {
     'This script never calls an image API. When it returns needs_image_generation,',
     'use the prompts with an imagegen-capable agent, save assets locally, then bind them.'
   ].join('\n'));
-  process.exit(2);
+  process.exit(exitCode);
 }
 
 function parseArgs(argv) {
   const opts = {
-    plan: argv[0],
     imagegenCapability: 'unavailable',
     missingAssetAction: 'require_user_input',
     blockedAction: 'require_user_input'
   };
-  for (let i = 1; i < argv.length; i++) {
+  for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--out-dir') opts.outDir = argv[++i];
     else if (arg === '--imagegen-capability' || arg === '--imagegen') opts.imagegenCapability = String(argv[++i] || '');
@@ -44,6 +43,7 @@ function parseArgs(argv) {
     else if (arg === '--missing-asset-action') opts.missingAssetAction = String(argv[++i] || '');
     else if (arg === '--blocked-action') opts.blockedAction = String(argv[++i] || '');
     else if (arg === '--help' || arg === '-h') opts.help = true;
+    else if (!opts.plan && !String(arg || '').startsWith('-')) opts.plan = arg;
     else usage();
   }
   return opts;
@@ -52,7 +52,8 @@ function parseArgs(argv) {
 function runCli(argv = process.argv.slice(2)) {
   try {
     const opts = parseArgs(argv);
-    if (opts.help || !opts.plan) usage();
+    if (opts.help) usage(0);
+    if (!opts.plan) usage();
     const result = resolveVisualAssetsFromFiles(opts);
     console.log(JSON.stringify(result.summary, null, 2));
     if (result.report.status === 'error') process.exit(1);

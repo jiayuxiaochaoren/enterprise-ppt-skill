@@ -93,7 +93,7 @@ function assertHeaderText(ops, text, expected) {
 
 function assertScorecardHeaders(ops) {
   [
-    ['Manufacturing Scorecard', 'Manufacturing scorecard subtitle', { titleW:5.9, subtitleW:7.0, subtitleSize:10.2 }],
+    ['Manufacturing Scorecard', '把稼动、节拍、良率、停机和维修动作放到同一张产线复盘页。', { titleW:5.9, subtitleW:7.0, subtitleSize:10.2 }],
     ['Healthcare Scorecard', 'Healthcare scorecard subtitle', { titleW:5.9, subtitleW:7.0, subtitleSize:10.0 }],
     ['Retail Scorecard', 'Retail scorecard subtitle', { titleW:5.8, subtitleW:6.8, subtitleSize:10.0 }],
     ['SaaS Scorecard', 'SaaS scorecard subtitle', { titleW:5.9, subtitleW:7.0, subtitleSize:10.0 }]

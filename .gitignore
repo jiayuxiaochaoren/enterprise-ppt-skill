@@ -5,6 +5,8 @@ out/
 *.tmp
 *.pptx
 *.png
+!docs/readme/
+!docs/readme/*.png
 !.gitkeep
 .env
 .env.*

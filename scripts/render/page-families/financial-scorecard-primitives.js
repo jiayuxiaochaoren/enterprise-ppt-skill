@@ -16,14 +16,19 @@ function createFinancialScorecardPrimitives(ctx = {}) {
   const { drawLightPageHeader } = createPageFamilyPrimitives(ctx);
 
   function drawScorecardHeader(slide, s, idx, opts = {}) {
+    const subtitle = opts.useProvidedSubtitle
+      ? opts.subtitle
+      : (s.claim || s.subtitle || opts.subtitle);
     drawLightPageHeader(slide, {
       kicker:opts.kicker,
       title:s.title || opts.title,
       titleY:1.06,
       titleW:opts.titleW,
       titleH:0.36,
-      titleSize:24,
-      subtitle:s.claim || s.subtitle || opts.subtitle,
+      titleSize:opts.titleSize || 24,
+      titleMaxLines:opts.titleMaxLines,
+      titleBreakLine:opts.titleBreakLine,
+      subtitle,
       subtitleY:1.54,
       subtitleW:opts.subtitleW,
       subtitleH:0.20,

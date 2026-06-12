@@ -188,8 +188,8 @@ function main() {
   assertKicker(ops, 'PLATFORM CAPABILITY MAP');
   assertKicker(ops, 'LINE SYSTEM TOPOLOGY');
   assert(ops.some(op => op.name === 'addArrowLine'), 'expected manufacturing topology arrows');
-  assert(ops.some(op => op.name === 'addShape' && op.args[0] === 'ellipse'), 'expected SaaS capability center nodes');
-  assert(ops.some(op => op.name === 'addShape' && op.args[0] === 'line'), 'expected SaaS capability connectors');
+  assert.equal(ops.filter(op => op.name === 'addShape' && op.args[0] === 'ellipse').length, 1, 'expected one SaaS capability center ring');
+  assert.equal(ops.filter(op => op.name === 'addShape' && op.args[0] === 'line').length, 0, 'SaaS capability map should not draw imprecise diagonal connectors');
   assertServiceBlueprintShell(ops);
   assertArchitectureHeaders();
   assertStandardFooters(ops, 3);

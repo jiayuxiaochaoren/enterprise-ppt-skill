@@ -22,6 +22,7 @@ raw materials
   -> scripts/material_orchestration_prompt.js
   -> source audit / story architecture / clarification gate / extraction / critic
   -> scripts/material_to_deck_plan.js
+  -> asset decision gate / scripts/resolve_visual_assets.js
   -> scripts/generate_pptx.js
   -> scripts/validate_pptx.js
   -> scripts/visual_qa.js
@@ -29,6 +30,7 @@ raw materials
 
 For small structured examples, `scripts/generate_pptx.js` can consume a deck plan directly.
 For real client/company materials, use the staged material pipeline.
+For one-command delivery runs, prefer `scripts/material_to_delivery.js`; it may stop at model, clarification, asset-decision, or image-generation pause points instead of silently skipping missing visuals.
 
 ## Files To Read First
 
@@ -89,6 +91,7 @@ Deck plan compilation:
 
 - `scripts/material_to_deck_plan.js`
 - `scripts/material_pipeline.js`
+- `scripts/material_to_delivery.js`
 - `scripts/test_material_pipeline.js`
 - `scripts/test_orchestration_contract.js`
 
@@ -110,6 +113,7 @@ QA and validation:
 Assets and generated imagery:
 
 - `scripts/deck_asset_decision_gate.js`
+- `scripts/resolve_visual_assets.js`
 - `scripts/asset_prompt_planner.js`
 - `scripts/bind_generated_assets.js`
 - `assets/media/ATTRIBUTION.md`

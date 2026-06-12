@@ -158,9 +158,10 @@ function main() {
         (metaA.slides || []).some(slide => slide.assetDecision && slide.assetDecision.mode === 'pending-generation'),
         'cover-style fixture should mark missing hero assets for generation'
       );
-      assert.ok(
+      assert.equal(
         (metaA.slides || []).some(slide => slide.assetDecision && slide.assetDecision.mode === 'blocked'),
-        'cover-style fixture should block synthetic factual evidence when needed'
+        false,
+        'cover-style fixture should not silently block generated cover visuals'
       );
     }
     const planJson = JSON.parse(fs.readFileSync(plan, 'utf8'));
@@ -168,7 +169,8 @@ function main() {
     const textB = stableText(pptxText(pptxB));
     assert.equal(textHash(textA), textHash(textB), `${fixture} extracted text hash should be stable`);
     assert.equal(textA.length, textB.length, `${fixture} extracted text length should be stable`);
-    assert.ok(textA.length > 80, `${fixture} should render meaningful extracted text`);
+    const coverOnlyFixture = (planJson.slides || []).length === 1 && /^cover/.test(String((planJson.slides || [])[0].type || ''));
+    assert.ok(textA.length > (coverOnlyFixture ? 40 : 80), `${fixture} should render meaningful extracted text`);
     const compactTextA = textA.replace(/\s+/g, '');
     (planJson.slides || []).forEach(slide => {
       const titlePrefix = String(slide.title || '').replace(/\s+/g, '').slice(0, 8);

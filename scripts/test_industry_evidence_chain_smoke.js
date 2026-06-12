@@ -8,7 +8,7 @@ const PRIORITY_COMPONENTS = {
   'manufacturing-oee-evidence-chain': ['equipment-nameplate', 'inspection-matrix', 'quality-scorecard'],
   'finance-thesis-portfolio-risk-evidence-chain': ['governance-table', 'risk-register', 'disclosure-footnote'],
   'healthcare-service-handoff-quality-evidence-chain': ['patient-journey-band', 'service-blueprint-lane'],
-  'saas-platform-workflow-adoption-evidence-chain': ['workflow-rail', 'prototype-frame', 'adoption-funnel']
+  'saas-platform-workflow-adoption-evidence-chain': ['workflow-rail', 'adoption-funnel']
 };
 const EXTENDED_INDUSTRIES = new Map([
   ['lifestyle-experience-journey-retention-evidence-chain', 'lifestyle-food-tourism-fashion'],

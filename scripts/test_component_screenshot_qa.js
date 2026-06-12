@@ -65,9 +65,14 @@ const plan = {
       title: '风险台账组件可视性',
       subtitle: '风险动作同屏。',
       rows: [
-        ['授权未确认', '高', '先完成素材授权 gate'],
+        ['输入缺口', '高', '补齐来源字段'],
         ['指标口径不清', '中', '补页码与摘录'],
-        ['外发对象未定', '中', '确认受众和版本']
+        ['受众版本未定', '中', '确认阅读对象']
+      ],
+      riskRegister: [
+        ['输入缺口', '高', '补齐来源字段'],
+        ['指标口径不清', '中', '补页码与摘录'],
+        ['受众版本未定', '中', '确认阅读对象']
       ],
       sourceTrace: sourceTrace('component-risk', 'Risk register lists authorization, metric basis, and audience boundary risks.'),
       componentHints: [{ id: 'risk-register', required: true }]
@@ -125,9 +130,14 @@ const qa = JSON.parse(cp.execFileSync(process.execPath, [
 const meta = JSON.parse(fs.readFileSync(META, 'utf8'));
 const consumed = meta.slides.flatMap(slide => slide.consumedComponents || []);
 requiredComponents.forEach(id => {
-  const hit = consumed.find(component => component.id === id && component.rendered && component.mode === 'overlay');
-  assert.ok(hit, `${id} should be rendered by overlay component renderer`);
-  assert.ok(hit.rendererModule && hit.rendererModule.includes('components/'), `${id} should report component renderer module`);
+  const hit = consumed.find(component => component.id === id && component.rendered);
+  assert.ok(hit, `${id} should be rendered by a supported component path`);
+  assert.ok(['overlay', 'native-renderer'].includes(hit.mode), `${id} should report a supported component consumption mode`);
+  if (hit.mode === 'overlay') {
+    assert.ok(hit.rendererModule && hit.rendererModule.includes('components/'), `${id} should report component renderer module`);
+  } else {
+    assert.ok(hit.rendererModule && hit.rendererModule.includes('native-page-renderer'), `${id} should report native renderer module`);
+  }
   assert.ok(hit.bbox && hit.bbox.w > 0.4 && hit.bbox.h > 0.2, `${id} should report a visible bbox`);
   assert.ok(hit.bbox.x >= 0 && hit.bbox.y >= 0, `${id} bbox should stay on canvas`);
   assert.ok(hit.bbox.x + hit.bbox.w <= 13.333, `${id} bbox should fit canvas width`);

@@ -100,11 +100,21 @@ user materials
   -> structured extraction
   -> model critic
   -> scripts/material_to_deck_plan.js
+  -> asset decision gate
+  -> scripts/resolve_visual_assets.js
   -> scripts/generate_pptx.js
   -> validate + visual QA
 ```
 
-Commands:
+Recommended one-command orchestrator:
+
+```bash
+node scripts/material_to_delivery.js <materials...> --out-dir out/run --model-results model-results.json --quality-mode draft --preview-optional
+```
+
+`scripts/material_to_delivery.js` ingests materials, writes staged prompts, accepts standard model results, runs the clarification gate when source audit and story architecture are present, compiles the deck plan, runs the asset decision gate and visual asset resolution, renders PPTX, and validates with preview/visual QA unless skipped.
+
+Manual debug commands:
 
 ```bash
 node scripts/material_ingest.js <materials...> --out out/material-bundle.json
@@ -112,10 +122,12 @@ node scripts/material_orchestration_prompt.js --bundle out/material-bundle.json 
 node scripts/material_clarification_gate.js --bundle out/material-bundle.json --source-audit out/model-orchestration/source-audit.json --story-plan out/model-orchestration/story-architecture.json --out out/model-orchestration/clarification-gate.json
 node scripts/material_orchestration_prompt.js --bundle out/material-bundle.json --stage extraction --source-audit out/model-orchestration/source-audit.json --story-plan out/model-orchestration/story-architecture.json --clarifications out/model-orchestration/clarification-gate.json --out out/model-orchestration/04-extraction.prompt.md
 node scripts/material_to_deck_plan.js --bundle out/material-bundle.json --model-json out/material-extraction.json --out out/deck-plan.json
+node scripts/deck_asset_decision_gate.js out/deck-plan.json --out out/asset-gate.json --summary-md out/asset-gate.md
+node scripts/resolve_visual_assets.js out/deck-plan.json --out-dir out --out-plan out/deck-plan.assets-resolved.json
 ```
 
 `scripts/material_model_prompt.js` is only a compatibility shortcut for very small, low-risk inputs.
-`scripts/material_to_delivery.js` is the orchestration CLI. It may stop at clarification/model-extraction/asset-decision pause points; use `--auto-draft` only for internal draft runs. External model tools can pass standard staged results through `--model-results FILE|-`; scanned/OCR material can pass external OCR through `--ocr-json FILE|-` or an optional local command through `--ocr-command`; `--summary-md` writes a human-readable run summary.
+`scripts/material_to_delivery.js` may stop at model-extraction, clarification, asset-decision, or image-generation pause points; use `--auto-draft` only for internal draft runs. External model tools can pass standard staged results through `--model-results FILE|-`; scanned/OCR material can pass external OCR through `--ocr-json FILE|-` or an optional local command through `--ocr-command`; `--summary-md` writes a human-readable run summary.
 
 ## Commercial Readiness
 
