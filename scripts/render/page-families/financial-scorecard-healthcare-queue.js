@@ -12,9 +12,9 @@ function createHealthcareQueueRenderer(ctx = {}) {
   function drawHealthcareServiceQueue(slide, wait, satisfaction, closure, queue) {
     addRect(slide, queue.x, queue.y, queue.w, queue.h, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:8}, line:{color:C.line, transparency:100} });
     [
-      ['WAIT', wait],
-      ['SATISFACTION', satisfaction],
-      ['CLOSURE', closure]
+      ['等待响应', wait],
+      ['满意度', satisfaction],
+      ['反馈处理', closure]
     ].forEach((row,i)=>{
       const x = queue.x + 0.28 + i*2.04;
       const color = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);

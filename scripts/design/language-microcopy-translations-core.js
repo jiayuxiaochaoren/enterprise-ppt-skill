@@ -34,7 +34,7 @@ const MICROCOPY_CORE_TRANSLATIONS_ZH = {
   'EVIDENCE': '证据',
   'FOUNDATION BOARD': '经营底座',
   'EVIDENCE BOARD': '证据看板',
-  'EVIDENCE STACK': '证据栈',
+  'EVIDENCE STACK': '关键依据',
   'EQUIPMENT PROOF': '设备证据',
   'MANUFACTURING PROOF': '制造证据',
   'VISUAL EVIDENCE': '视觉证据',

@@ -136,7 +136,7 @@ function assertGovernanceTableEditorialShell(ops) {
   assert(hasRect(ops, { x:3.54, y:2.06, w:8.00, h:3.86 }), 'expected governance action table panel');
   assert(hasRect(ops, { x:3.72, y:2.70, w:7.64, h:0.56 }), 'expected first governance row shell');
   assert(hasRect(ops, { x:3.72, y:3.44, w:7.64, h:0.56 }), 'expected second governance row shell');
-  ['EDITORIAL CORE', 'OWNER · CADENCE · EVIDENCE · DECISION'].forEach(label => {
+  ['治理重点', '责任 · 节奏 · 记录 · 决策'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected governance editorial label ${label}`
@@ -221,7 +221,7 @@ function main() {
 
   assertKicker(ops, '风险矩阵');
   assertKicker(ops, 'CONTROL SYSTEM');
-  assertKicker(ops, 'RESPONSIBILITY LOOP');
+  assertKicker(ops, '责任分工');
   assertKicker(ops, 'GUIDANCE AND RISK BOARD');
   assertKicker(ops, 'MATERIALITY MATRIX');
   assertKicker(ops, 'GOVERNANCE TABLE EDITORIAL');
@@ -231,6 +231,25 @@ function main() {
   assertMaterialityMatrixBoardShell(ops);
   assertGovernanceTableEditorialShell(ops);
   assert(ops.some(op => op.name === 'addClockwiseLoopConnectors'), 'expected responsibility loop connectors');
+  const loopConnectors = ops.find(op => op.name === 'addClockwiseLoopConnectors');
+  const loopSlots = (loopConnectors && loopConnectors.args[1]) || [];
+  const loopOptions = (loopConnectors && loopConnectors.args[3]) || {};
+  assert(loopSlots.length === 4, 'expected four responsibility loop card slots');
+  assert(
+    loopSlots[2].y - (loopSlots[1].y + loopSlots[1].h) > 0.62,
+    'responsibility loop should leave enough vertical span for balanced right-side arrows'
+  );
+  assert(loopOptions.gap <= 0.12, 'responsibility loop connectors should not be shortened by a large gap');
+  const processEvidence = ops.find(op => op.name === 'addText' && op.args[1] === '过程留痕');
+  assert(processEvidence, 'expected readable process-evidence label in responsibility core panel');
+  assert.strictEqual((processEvidence.args[2] || {}).color, 'E2E8F0', 'process evidence text should not use low-contrast gray');
+  ['RESPONSIBILITY LOOP', 'RISK · OWNER · ACTION', 'NO ORPHAN RISK', 'EDITORIAL CORE', 'OWNER · CADENCE · EVIDENCE · DECISION'].forEach(label => {
+    assert(
+      !ops.some(op => op.name === 'sectionKicker' && op.args[1] === label) &&
+        !ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `risk renderers should not emit English template label ${label}`
+    );
+  });
   assert(ops.some(op => op.name === 'addShape'), 'expected matrix native shapes');
   assert(ops.filter(op => op.name === 'addText').length >= 80, 'expected risk board text output');
   assert.strictEqual(

@@ -301,6 +301,26 @@ function main() {
     'financial KPI snapshot should use sourceTrace note as an opt-in fallback'
   );
 
+  const unitKpiOps = [];
+  createFinancialResultsRenderers(createFakeCtx(unitKpiOps)).financialKpiSnapshot({}, {}, section({
+    metrics:[
+      { label:'2026 YTD 营收', value:'4830万元', note:'同比 2025 同期 +21.7%' },
+      { label:'Cash', value:'42m', note:'collection' },
+      { label:'Risk', value:'Low', note:'exposure' },
+      { label:'Margin', value:'36%', note:'discipline' }
+    ]
+  }), 1);
+  assert(
+    !unitKpiOps.some(op => op.name === 'addNumber' && op.args[1] === '4830万元'),
+    'financial KPI hero should not render a long value+unit through the oversized number primitive'
+  );
+  const kpiValue = unitKpiOps.find(op => op.name === 'addText' && op.args[1] === '4830万元');
+  assert(kpiValue, 'financial KPI hero should render value and CJK unit as one controlled line');
+  assert((kpiValue.args[2] || {}).fontSize <= 32, 'financial KPI hero value should use a controlled scale for long CJK units');
+  assert.strictEqual((kpiValue.args[2] || {}).align, 'center', 'financial KPI hero value should stay centered');
+  const kpiNote = unitKpiOps.find(op => op.name === 'addText' && op.args[1] === '同比 2025 同期 +21.7%');
+  assert(kpiNote && (kpiNote.args[2] || {}).y < 5.60, 'financial KPI hero bottom note should sit above the panel edge');
+
   console.log('financial results renderers ok');
 }
 

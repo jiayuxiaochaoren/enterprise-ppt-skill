@@ -32,9 +32,10 @@ function createArchitectureServiceBlueprint(ctx = {}, deps = {}) {
     const { cols, fallback } = serviceBlueprintColumns(s);
     const contentY = Math.max(2.04, header.contentTop || 2.04);
     drawServiceBlueprintRibbon(slide, s, { y:contentY });
+    const boardY = contentY + 0.82;
     drawServiceBlueprintBoard(slide, s, cols, fallback, {
-      y:contentY + 0.82,
-      h:Math.max(2.96, 6.22 - (contentY + 0.82))
+      y:boardY,
+      h:Math.max(3.08, 6.32 - boardY)
     });
     drawFooter(slide, plan);
   };

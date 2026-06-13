@@ -26,7 +26,7 @@ function createFinancialIndustryChartSlidePanels(ctx = {}) {
 
   function drawProofObjectPanel(slide, s, side, variantLabel) {
     addRect(slide, side.x, side.y, side.w, side.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-    addLabel(slide, '证据对象', { x:side.x+0.28, y:side.y+0.34, w:1.28, h:0.12, fontSize:6.8, color:C.accent, charSpace:0 });
+    addLabel(slide, '经营依据', { x:side.x+0.28, y:side.y+0.34, w:1.28, h:0.12, fontSize:6.8, color:C.accent, charSpace:0 });
     addText(slide, visibleCoreTitle(s.coreTitle, variantLabel || '行业读数'), { x:side.x+0.28, y:side.y+0.86, w:1.72, h:0.32, fontSize:14.2, bold:true, color:C.white, fit:'shrink' });
     addText(slide, s.coreBody || s.decision || s.claim || s.subtitle || '把关键经营指标放回判断场景。', { x:side.x+0.28, y:side.y+1.56, w:1.86, h:0.66, fontSize:8.8, color:'CBD5E1', fit:'shrink', breakLine:true });
     addHairline(slide, side.x+0.28, side.y+2.62, 0.78, C.accent, 0, 0.55);

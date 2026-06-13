@@ -261,6 +261,8 @@ function main() {
 
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'REPORT BOARD'), 'expected report board branch');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === '经营底座'), 'expected localized report board branch');
+  assert(ops.some(op => op.name === 'addLabel' && op.args[1] === '关键依据'), 'expected public report-board evidence label');
+  assert(!ops.some(op => op.name === 'addLabel' && op.args[1] === '证据栈'), 'report-board should not emit developer evidence-stack copy');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'COMPARISON'), 'expected comparison branch');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'VALUE SIGNAL'), 'expected value tiles branch');
   assertReportBoardHeader(ops);
@@ -271,6 +273,23 @@ function main() {
   assert(ops.filter(op => op.name === 'PageNumber').length >= 2, 'expected page number helper paths');
   assertBusinessFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 45, 'expected business text output');
+
+  const denseOps = [];
+  createBusinessRenderers(createFakeCtx(denseOps)).reportBoard(createSlide(denseOps), {}, businessSection({
+    sections:[
+      { title:'体质辨识服务', body:'收入贡献高，适合承接会员转化和复诊计划。' },
+      { title:'企业员工健康日', body:'客单稳定，适合联动企业团购和体检后调理。' },
+      { title:'火龙灸温养套餐', body:'新品爬坡快，需要提升复购承接和排班稳定性。' },
+      { title:'女性宫寒调理', body:'复购表现好，适合做季节化服务包。' },
+      { title:'正骨评估与治疗', body:'毛利率高，但交付排期需要更稳定。' },
+      { title:'穴位埋线管理', body:'会员转化好，需要强化疗程跟进。' }
+    ]
+  }), 9);
+  assert(
+    denseOps.some(op => op.name === 'addText' && op.args[1] === '体质辨识服务') &&
+      denseOps.some(op => op.name === 'addNumber' && op.args[1] === '06'),
+    'dense report-board should render a readable indexed list for six evidence items'
+  );
 
   console.log('business renderers ok');
 }

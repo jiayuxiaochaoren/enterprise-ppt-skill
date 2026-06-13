@@ -146,7 +146,7 @@
     {
       "type": "industry-chart",
       "layoutVariant": "monthly-pulse-trend",
-      "title": "月度脉冲趋势解释波峰波谷",
+      "title": "月度趋势解释波峰波谷",
       "coreTitle": "MONTHLY PULSE",
       "coreBody": "用月度趋势识别活动节点和自然低谷。",
       "monthlyPulse": [

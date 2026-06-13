@@ -37,7 +37,7 @@
     {
       "type": "risk-table",
       "layoutVariant": "responsibility-loop",
-      "title": "责任闭环避免风险无人认领",
+      "title": "责任分工避免风险无人认领",
       "responsibilities": [
         { "title": "定责", "owner": "材料 Owner", "body": "确认材料来源" },
         { "title": "处置", "owner": "项目 Owner", "body": "推动补证和替换" },

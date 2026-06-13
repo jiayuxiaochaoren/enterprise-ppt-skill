@@ -73,12 +73,12 @@ function assertServiceBlueprintShell(ops) {
     && op.args[4] === 0.60);
   assert(ribbon, 'expected service blueprint journey ribbon');
   const board = ops.find(op => op.name === 'addRect'
-    && op.args[1] === 0.92
-    && op.args[2] === 2.86
-    && op.args[3] === 10.84
-    && op.args[4] === 3.36);
+    && Math.abs(op.args[1] - 0.92) < 0.001
+    && Math.abs(op.args[2] - 2.86) < 0.001
+    && Math.abs(op.args[3] - 10.84) < 0.001
+    && Math.abs(op.args[4] - 3.46) < 0.001);
   assert(board, 'expected service blueprint board panel');
-  ['CARE JOURNEY', 'TOUCHPOINTS · FRONTSTAGE · BACKSTAGE · QUALITY'].forEach(label => {
+  ['CARE JOURNEY', '触点 · 前台 · 后台 · 质量'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected service blueprint label ${label}`
@@ -107,7 +107,9 @@ function main() {
     subtitle: 'Service blueprint subtitle',
     serviceBlueprint: [
       { title:'Book', patient:'Book online', frontstage:'Confirm need', backstage:'Schedule resources', evidence:'Wait time' },
-      { title:'Visit', patient:'Check in', frontstage:'Guide flow', backstage:'Sync rooms', evidence:'Queue state' }
+      { title:'Visit', patient:'Check in', frontstage:'Guide flow', backstage:'Sync rooms', evidence:'Queue state' },
+      { title:'Treat', patient:'Receive care', frontstage:'Explain plan', backstage:'Prepare room', evidence:'Care record' },
+      { title:'Renew', patient:'Follow up', frontstage:'Confirm next step', backstage:'Close loop', evidence:'Retention rate' }
     ]
   }, 6);
   renderers.architectureSaasCapabilityMap(createSlide(ops), {}, {
@@ -191,6 +193,28 @@ function main() {
   assert.equal(ops.filter(op => op.name === 'addShape' && op.args[0] === 'ellipse').length, 1, 'expected one SaaS capability center ring');
   assert.equal(ops.filter(op => op.name === 'addShape' && op.args[0] === 'line').length, 0, 'SaaS capability map should not draw imprecise diagonal connectors');
   assertServiceBlueprintShell(ops);
+  const stepNumber01 = ops.find(op => op.name === 'addNumber' && op.args[1] === '01' && (op.args[2] || {}).y > 3.40);
+  const stepNumber02 = ops.find(op => op.name === 'addNumber' && op.args[1] === '02' && (op.args[2] || {}).y > 3.40);
+  assert(stepNumber01 && stepNumber02, 'expected service blueprint step numbers');
+  assert(
+    (stepNumber01.args[2] || {}).x > 2.30,
+    'service blueprint step numbers should align with the content grid instead of drifting left'
+  );
+  const headerLines = ops.filter(op => op.name === 'addHairline'
+    && Math.abs((op.args[2] || 0) - (2.86 + 0.70)) < 0.001);
+  headerLines.forEach(line => {
+    const lineX = line.args[1];
+    const lineW = line.args[3];
+    [stepNumber02, ops.find(op => op.name === 'addNumber' && op.args[1] === '03' && (op.args[2] || {}).y > 3.40), ops.find(op => op.name === 'addNumber' && op.args[1] === '04' && (op.args[2] || {}).y > 3.40)]
+      .filter(Boolean)
+      .forEach(numberOp => {
+        const box = numberOp.args[2] || {};
+        assert(
+          lineX + lineW < box.x || lineX > box.x + box.w,
+          'service blueprint header connector should keep a safety gap around step numbers'
+        );
+      });
+  });
   assertArchitectureHeaders();
   assertStandardFooters(ops, 3);
   assert(ops.filter(op => op.name === 'addText').length >= 45, 'expected architecture text output');

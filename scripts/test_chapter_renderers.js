@@ -375,6 +375,22 @@ function main() {
   assertChapterFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 45, 'expected chapter text output');
 
+  const navOps = [];
+  createChapterRenderers(createFakeCtx(navOps)).chapterDivider(createSlide(navOps), {}, section({
+    variant:'chapter-hero',
+    title:'汇报路径',
+    chapter:'01',
+    industryEvidenceChainMode:'native-only'
+  }), 2);
+  assert(
+    navOps.some(op => op.name === 'addText' && op.args[1] === '导览'),
+    'navigation chapter should display a guide marker instead of a fake chapter number'
+  );
+  assert(
+    !navOps.some(op => op.name === 'addText' && op.args[1] === '01' && (op.args[2] || {}).x === 0.82),
+    'navigation chapter should not repeat 01 beside page number 02'
+  );
+
   console.log('chapter renderers ok');
 }
 

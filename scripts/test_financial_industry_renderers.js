@@ -9,6 +9,9 @@ const {
 const {
   createChannelEfficiencyMatrixDrawer
 } = require('./render/page-families/financial-industry-channel-efficiency');
+const {
+  createMonthlyPulseTrendDrawer
+} = require('./render/page-families/financial-industry-monthly-trend');
 
 function createSlide(ops) {
   return {
@@ -300,21 +303,21 @@ function main() {
       'expected one chart board shell per industry chart slide'
     );
     assert.strictEqual(
-      ops.filter(op => op.name === 'addLabel' && op.args[1] === '证据对象').length,
+      ops.filter(op => op.name === 'addLabel' && op.args[1] === '经营依据').length,
       6,
-      'expected proof object label on each industry chart slide'
+      'expected operating basis label on each industry chart slide'
     );
-    ['月度脉冲', '目标桥', '渠道效率', '停机帕累托', '质量交接', '调度地图'].forEach(text => {
+    ['月度趋势', '目标桥', '渠道效率', '停机帕累托', '质量交接', '调度地图'].forEach(text => {
       assert(
         ops.some(op => op.name === 'addText' && op.args[1] === text),
-        `expected proof object title ${text}`
+        `expected industry chart side title ${text}`
       );
     });
   }
 
   assert(
-    ops.some(op => op.name === 'sectionKicker' && op.args[1] === '月度脉冲'),
-    'expected monthly pulse branch'
+    ops.some(op => op.name === 'sectionKicker' && op.args[1] === '月度趋势'),
+    'expected monthly trend branch'
   );
   assert(
     ops.some(op => op.name === 'addLabel' && op.args[1] === '月度营收趋势'),
@@ -406,6 +409,79 @@ function main() {
     !unitOps.some(op => op.name === 'addText' && /万\s+万/.test(String(op.args[1]))),
     'rank board should not append duplicate 万 units'
   );
+  const denseChannelOps = [];
+  createChannelEfficiencyMatrixDrawer(createFakeCtx(denseChannelOps))(
+    createSlide(denseChannelOps),
+    { x:3.92, y:2.10, w:7.76, h:3.96 },
+    {
+      title:'五个平台收入接近，资源动作必须按效率分层',
+      channels:[
+        { label:'大众点评', value:'7.7x', x:12, y:18, size:62, body:'低花费高复购' },
+        { label:'私域社群', value:'7.6x', x:18, y:20, size:60, body:'老客续费稳定' },
+        { label:'抖音直播', value:'7.5x', x:22, y:21, size:58, body:'转化波动' },
+        { label:'线下转介绍', value:'6.9x', x:20, y:19, size:56, body:'到店率高' },
+        { label:'企业团购', value:'6.2x', x:25, y:22, size:54, body:'规模触达' },
+        { label:'搜索广告', value:'4.8x', x:28, y:16, size:50, body:'需优化' },
+        { label:'社区义诊', value:'4.6x', x:24, y:17, size:48, body:'补充触点' }
+      ]
+    }
+  );
+  assert(
+    denseChannelOps.some(op => op.name === 'addText' && op.args[1] === '效率') &&
+      denseChannelOps.some(op => op.name === 'addText' && op.args[1] === '投入'),
+    'dense coordinate board should use compact Chinese axes'
+  );
+  assert(
+    denseChannelOps.some(op => op.name === 'addText' && op.args[1] === '01') &&
+      denseChannelOps.some(op => op.name === 'addText' && op.args[1] === '大众点评'),
+    'dense coordinate board should connect numbered bubbles to a readable rank list'
+  );
+  assert(
+    !denseChannelOps.some(op => op.name === 'addText' && op.args[1] === 'ROAS'),
+    'dense coordinate board should avoid the crowded scatter label mode'
+  );
+  const denseBubbles = denseChannelOps.filter(op => op.name === 'addShape' && op.args[0] === 'ellipse');
+  assert(
+    denseBubbles.length === 7 && denseBubbles.every(op => ((op.args[1] || {}).w || 0) <= 0.30),
+    'dense coordinate board should use compact bubbles instead of oversized overlapping scatter marks'
+  );
+  ['大众点评', '私域社群', '抖音直播', '线下转介绍', '企业团购', '搜索广告', '社区义诊'].forEach(label => {
+    assert(
+      denseChannelOps.some(op => op.name === 'addText' && op.args[1] === label),
+      `dense coordinate board should keep a readable list row for ${label}`
+    );
+  });
+  const bubbleBoxes = denseBubbles.map(op => op.args[1] || {});
+  const bubbleXs = bubbleBoxes.map(box => box.x + box.w / 2);
+  const bubbleYs = bubbleBoxes.map(box => box.y + box.h / 2);
+  assert(
+    Math.max(...bubbleXs) - Math.min(...bubbleXs) > 1.20 &&
+      Math.max(...bubbleYs) - Math.min(...bubbleYs) > 1.20,
+    'dense coordinate board should normalize clustered real values into a readable plot spread'
+  );
+
+  const denseTrendOps = [];
+  createMonthlyPulseTrendDrawer(createFakeCtx(denseTrendOps))(
+    createSlide(denseTrendOps),
+    { x:3.92, y:2.10, w:7.76, h:3.96 },
+    {
+      monthlyPulse:[
+        { label:'2025-01', value:'873.65' },
+        { label:'2025-02', value:'666.03' },
+        { label:'2025-03', value:'842.10' },
+        { label:'2025-04', value:'798.44' },
+        { label:'2025-05', value:'720.35' },
+        { label:'2025-06', value:'850.22' },
+        { label:'2025-07', value:'837.49' }
+      ]
+    }
+  );
+  ['873.65', '666.03', '842.10', '798.44', '720.35', '850.22', '837.49'].forEach(value => {
+    assert(
+      denseTrendOps.some(op => op.name === 'addText' && op.args[1] === value),
+      `dense monthly trend should keep value label ${value}`
+    );
+  });
 
   const beautyOps = [];
   const beautyRenderers = createFinancialRenderers(createFakeCtx(beautyOps));
@@ -435,7 +511,7 @@ function main() {
     ]
   }, 1);
   assert(
-    beautyOps.some(op => op.name === 'sectionKicker' && op.args[1] === '月度脉冲'),
+    beautyOps.some(op => op.name === 'sectionKicker' && op.args[1] === '月度趋势'),
     'beauty chart evidence should route metric-comparison through industry chart slide'
   );
   assert(
@@ -526,7 +602,7 @@ function main() {
     'full-board industry variants should use the wide content board'
   );
   assert(
-    !fullBoardOps.some(op => op.name === 'addLabel' && op.args[1] === '证据对象'),
+    !fullBoardOps.some(op => op.name === 'addLabel' && op.args[1] === '经营依据'),
     'full-board industry variants should not repeat the left proof rail shell'
   );
   assert(
@@ -605,7 +681,7 @@ function main() {
   const factMetricRenderers = createFinancialIndustryRenderers(factMetricCtx);
   factMetricRenderers.industryChartSlide(createSlide(factMetricOps), { slides:[{}] }, {
     variant:'fact-metrics',
-    title:'事实指标要保留证据对象侧栏',
+    title:'事实指标要保留经营依据侧栏',
     subtitle:'避免全屏四卡片模板吞掉页面设计',
     chartSpec:{
       kind:'scorecard',
@@ -618,8 +694,8 @@ function main() {
     ]
   }, 1);
   assert(
-    factMetricOps.some(op => op.name === 'addLabel' && op.args[1] === '证据对象'),
-    'fact-metrics should keep the proof-object rail instead of becoming full-page cards'
+    factMetricOps.some(op => op.name === 'addLabel' && op.args[1] === '经营依据'),
+    'fact-metrics should keep the operating-basis rail instead of becoming full-page cards'
   );
   assert(
     factMetricOps.some(op => op.name === 'addRect'

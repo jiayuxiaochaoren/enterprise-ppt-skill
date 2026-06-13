@@ -5,7 +5,7 @@ const INDUSTRY_CHART_VARIANT_LABELS = {
   'patient-bottleneck': '服务瓶颈',
   'member-cohort-ladder': '会员分层',
   'channel-efficiency-matrix': '渠道效率',
-  'monthly-pulse-trend': '月度脉冲',
+  'monthly-pulse-trend': '月度趋势',
   'waterfall-bridge': '目标桥',
   'fact-metrics': '指标读数',
   'dispatch-map': '调度地图',
