@@ -104,9 +104,9 @@ function main() {
     ]
   }, 4);
   renderers.industryChartSlide(createSlide(ops), { slides:[{}] }, {
-    variant: 'downtime-pareto',
-    title: 'Downtime Pareto',
-    subtitle: 'Downtime pareto subtitle',
+    variant: 'loss-pareto',
+    title: 'Loss Ranking',
+    subtitle: 'Loss ranking subtitle',
     downtimePareto: [
       { title:'Line stop', value:42, unit:'min' },
       { title:'Material wait', value:24, unit:'min' },
@@ -178,7 +178,7 @@ function main() {
       ['Monthly Pulse', 'Monthly pulse subtitle', '02'],
       ['Target Bridge', 'Target bridge subtitle', '03'],
       ['Channel Efficiency', 'Channel efficiency subtitle', '04'],
-      ['Downtime Pareto', 'Downtime pareto subtitle', '05'],
+      ['Loss Ranking', 'Loss ranking subtitle', '05'],
       ['Quality Handoff', 'Quality handoff subtitle', '06'],
       ['Dispatch Map', 'Dispatch map subtitle', '07']
     ].forEach(([title, subtitle, page]) => {
@@ -264,8 +264,8 @@ function main() {
 
   function assertOperationalBoards() {
     assert(
-      ops.some(op => op.name === 'addLabel' && op.args[1] === '短板排行'),
-      'expected downtime Pareto operational board'
+      ops.some(op => op.name === 'addLabel' && op.args[1] === '停机损失排序'),
+      'expected loss ranking operational board'
     );
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === 'ROLE HANDOFFS'),
@@ -279,7 +279,7 @@ function main() {
     assert.strictEqual(handoffArrows.length, 2, 'expected quality handoff connectors');
     assert(
       ops.some(op => op.name === 'addText' && op.args[1] === '42min'),
-      'expected downtime Pareto value/unit label'
+      'expected loss ranking value/unit label'
     );
   }
 
@@ -307,7 +307,7 @@ function main() {
       6,
       'expected operating basis label on each industry chart slide'
     );
-    ['月度趋势', '目标桥', '渠道效率', '停机帕累托', '质量交接', '调度地图'].forEach(text => {
+    ['月度趋势', '目标桥', '渠道效率', '停机损失排序', '质量交接', '调度地图'].forEach(text => {
       assert(
         ops.some(op => op.name === 'addText' && op.args[1] === text),
         `expected industry chart side title ${text}`

@@ -1,5 +1,7 @@
 const INDUSTRY_CHART_VARIANT_LABELS = {
-  'downtime-pareto': '停机帕累托',
+  'loss-pareto': '停机损失排序',
+  'issue-frequency-ranking': '高频问题排序',
+  'review-sentiment-ranking': '反馈主题排序',
   'valuation-sensitivity': '估值敏感性',
   'quality-handoff': '质量交接',
   'patient-bottleneck': '服务瓶颈',

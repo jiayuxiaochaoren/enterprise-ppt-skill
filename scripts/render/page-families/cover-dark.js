@@ -15,6 +15,7 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     coverShowcase,
     coverStyleRenderer,
     coverTitleText,
+    cultureCoverSoftGeometry,
     fileExists,
   } = deps;
   const { drawEnergyCoverCopy } = createCoverDarkEnergyCopy(ctx, deps);
@@ -25,6 +26,7 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     ctx.masterDark(slide, plan, '', null, '', { field:false });
     const coverVariant = ctx.variantOf(s, '');
     if (coverVariant === 'beauty-brand-editorial-cover') return beautyBrandEditorialCover(slide, plan, s);
+    if (coverVariant === 'culture-cover-with-soft-geometry') return cultureCoverSoftGeometry(slide, plan, s, 1);
     const industry = ctx.industryProfile(plan);
     const rawTitle = String(s.title || plan.title || '');
     const title = plan.industry === 'energy-utility' ? rawTitle.replace(/\n/g, '') : coverTitleText(rawTitle);

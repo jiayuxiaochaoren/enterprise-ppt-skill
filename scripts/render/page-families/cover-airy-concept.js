@@ -21,8 +21,6 @@ function createAiryConceptOpening(ctx = {}, deps = {}) {
     ctx.addText(slide, s.subtitle || s.coverInsight || plan.subtitle || ctx.copyFallback(plan, 'industryInsight'), {
       x:0.90, y:2.86, w:4.88, h:0.22, fontSize:11.0, color:C.body, fit:'shrink'
     });
-    ctx.addRect(slide, 0.92, 3.44, 0.92, 0.04, C.accent, C.accent);
-    ctx.addRect(slide, 2.00, 3.44, 0.32, 0.04, C.cyan, C.cyan, { fill:{color:C.cyan, transparency:36}, line:{color:C.cyan, transparency:100} });
 
     const object = { x:7.70, y:1.28, w:2.78, h:2.78 };
     const hasImage = imagePath && fileExists(imagePath);

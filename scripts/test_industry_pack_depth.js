@@ -14,7 +14,13 @@ const requiredPackFields = [
   'proofObjectCatalog',
   'componentRules',
   'visualGrammar',
-  'missingMaterialQuestions'
+  'missingMaterialQuestions',
+  'coverArchetype',
+  'dividerArchetype',
+  'bodyLayoutPool',
+  'closingArchetype',
+  'paletteTokenSet',
+  'textureBackgroundPolicy'
 ];
 
 assert.ok(packs.length >= 8, 'industry pack library should cover the active industry set');
@@ -27,6 +33,8 @@ packs.forEach(pack => {
   assert.ok((pack.componentRules || []).length >= 4, `${pack.id} should include component rules`);
   assert.ok((pack.missingMaterialQuestions || []).length >= 5, `${pack.id} should include missing-material questions`);
   assert.ok((pack.visualGrammar.layoutRules || []).length >= 4, `${pack.id} should include visual grammar layout rules`);
+  assert.ok(Array.isArray(pack.bodyLayoutPool) && pack.bodyLayoutPool.length >= 4, `${pack.id} should include a reusable body layout pool`);
+  assert.ok(typeof pack.paletteTokenSet === 'object' && Object.keys(pack.paletteTokenSet || {}).length >= 2, `${pack.id} should include palette token guidance`);
 });
 
 const benchmarks = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'industry-benchmarks.json'), 'utf8'));

@@ -177,23 +177,54 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
     }
   }
   function addLightThemeMotifs(slide, plan, s, idx) {
-    if (compositionHas(s, 'accent-rail')) {
-      h.addRect(slide, 0.82, 6.76, 2.36, 0.035, C.accent, C.accent, { line:{ color:C.accent, transparency:100 } });
-      h.addRect(slide, 3.34, 6.76, 0.54, 0.035, C.cyan, C.cyan, { fill:{ color:C.cyan, transparency:32 }, line:{ color:C.cyan, transparency:100 } });
-    }
     addBrandFolio(slide, plan, s, idx, false);
   }
   function addDarkThemeMotifs(slide, plan, s, idx) {
     addBrandFolio(slide, plan, s, idx, true);
+  }
+  function addIndustrialLightTexture(slide) {
+    const glow = C.panelAlt || C.softBlue || 'EEF6FF';
+    h.addRect(slide, 8.56, 0.52, 3.92, 2.92, glow, C.accent, {
+      fill:{ color:glow, transparency:90 },
+      line:{ color:C.accent, transparency:88, width:0.26 }
+    });
+    h.addRect(slide, 9.10, 1.04, 2.86, 1.94, 'FFFFFF', C.cyan, {
+      fill:{ color:'FFFFFF', transparency:100 },
+      line:{ color:C.cyan, transparency:90, width:0.22 }
+    });
+    h.addRect(slide, 8.88, 1.74, 2.26, 0.018, C.accent, C.accent, {
+      fill:{ color:C.accent, transparency:82 },
+      line:{ color:C.accent, transparency:100 }
+    });
+    h.addRect(slide, 10.02, 1.24, 0.018, 1.96, C.cyan, C.cyan, {
+      fill:{ color:C.cyan, transparency:86 },
+      line:{ color:C.cyan, transparency:100 }
+    });
+    h.addRect(slide, 11.14, 1.74, 1.06, 0.018, C.line, C.line, {
+      fill:{ color:C.line, transparency:68 },
+      line:{ color:C.line, transparency:100 }
+    });
+    h.addRect(slide, 10.56, 2.42, 1.62, 0.018, C.line, C.line, {
+      fill:{ color:C.line, transparency:74 },
+      line:{ color:C.line, transparency:100 }
+    });
   }
   function stageCanvas(slide, opts = {}) {
     TintedBackground(slide, { tone:'dark' });
     addCanvasMotif(slide, activePlan(), activeSlide(), 'dark', opts);
     addDarkThemeMotifs(slide, activePlan(), activeSlide(), activeIndex());
   }
-  function lightCanvas(slide, opts = {}) {
-    TintedBackground(slide, { header:true });
-    addCanvasMotif(slide, activePlan(), activeSlide(), 'light', opts);
+	  function lightCanvas(slide, opts = {}) {
+	    TintedBackground(slide, { header:true });
+	    const texturePolicy = String(
+	      activePlan().textureBackgroundPolicy ||
+	      (activeSlide().compositionPlan && activeSlide().compositionPlan.industryExpression && activeSlide().compositionPlan.industryExpression.textureBackgroundPolicy) ||
+	      ''
+	    ).toLowerCase();
+	    if ((texturePolicy === 'industrial-structure-light' || activePlan().industry === 'manufacturing-operations') && opts.texture !== false) {
+	      addIndustrialLightTexture(slide);
+	    }
+	    addCanvasMotif(slide, activePlan(), activeSlide(), 'light', opts);
     addLightThemeMotifs(slide, activePlan(), activeSlide(), activeIndex());
   }
   function glassPanel(slide, x, y, w, hgt, dark = true) {

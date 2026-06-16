@@ -1,9 +1,14 @@
+const {
+  normalizeActionLoopProof
+} = require('./proof-taxonomy');
+
 function createLayoutVariantPicker(deps = {}) {
   const {
     contentSignals,
     flattenText,
     highValuePageFamilies,
     industryChartVariant,
+    industryPackFor,
     layoutVariantCompatibleWithType,
     visualIndustryId
   } = deps;
@@ -19,30 +24,54 @@ function createLayoutVariantPicker(deps = {}) {
       .some(field => Array.isArray(matrix[field]) && matrix[field].length);
   }
 
-  function pickLayoutVariant(plan = {}, s = {}, type = s.type, signals = contentSignals(plan, s)) {
+	  function pickLayoutVariant(plan = {}, s = {}, type = s.type, signals = contentSignals(plan, s)) {
     if (s.layoutVariant || s.variant) return s.layoutVariant || s.variant;
     const industry = plan.industry || '';
     const visualIndustry = visualIndustryId(industry);
     const text = flattenText(s);
-    const proofVariant = String(s.proofObject || s.proof_object || '').trim();
-    if (proofVariant && highValuePageFamilies.has(proofVariant) && layoutVariantCompatibleWithType(type, proofVariant)) return proofVariant;
+	    const genericIndustry = new Set(['brand-retail', 'general-operations']);
+	    const pack = typeof industryPackFor === 'function' && !genericIndustry.has(String(industry || '').trim())
+	      ? (industryPackFor(plan) || {})
+	      : {};
+	    const proofVariant = String(s.proofObject || s.proof_object || '').trim();
+	    const coverArchetype = String(s.coverArchetype || s.cover_archetype || plan.coverArchetype || plan.cover_archetype || pack.coverArchetype || '').toLowerCase();
+	    const dividerArchetype = String(s.dividerArchetype || s.divider_archetype || plan.dividerArchetype || plan.divider_archetype || pack.dividerArchetype || '').toLowerCase();
+	    const closingArchetype = String(s.closingArchetype || s.closing_archetype || plan.closingArchetype || plan.closing_archetype || pack.closingArchetype || '').toLowerCase();
+	    if (proofVariant && highValuePageFamilies.has(proofVariant) && layoutVariantCompatibleWithType(type, proofVariant)) return proofVariant;
     const imageCount = signals.imageCount;
     const cardCount = signals.cardCount;
     const rowCount = signals.rowCount;
     const phaseCount = signals.phaseCount;
     const layerCount = signals.layerCount;
     const productCount = signals.productCount;
-    if (type === 'cover' || type === 'cover-dark') {
-      if (industry === 'beauty-consumer' || /美妆|美容|护肤|彩妆|香氛|beauty|cosmetic/i.test(text)) return 'beauty-brand-editorial-cover';
-      if (industry === 'people-culture' || /文化|使命|招聘|团队|culture|hiring/i.test(text)) return 'culture-cover-with-soft-geometry';
-      if (/概念|opening|开场|愿景|minimal|airy/i.test(text)) return 'airy-concept-opening';
-      return s.layoutVariant;
-    }
+	    if (type === 'cover' || type === 'cover-dark') {
+	      if (coverArchetype === 'native-industrial-structure-cover') return '';
+	      if (coverArchetype === 'boardroom-proof-cover') return 'editorial-cover';
+	      if (coverArchetype === 'platform-system-cover') return 'airy-concept-opening';
+	      if (coverArchetype === 'editorial-brand-cover') return 'beauty-brand-editorial-cover';
+	      if (coverArchetype === 'clinical-quality-cover') return 'editorial-cover';
+	      if (coverArchetype === 'civic-executive-cover') return 'editorial-cover';
+	      if (coverArchetype === 'lifestyle-editorial-cover') return 'airy-concept-opening';
+	      if (coverArchetype === 'culture-soft-cover') return 'culture-cover-with-soft-geometry';
+	      if (industry === 'manufacturing-operations') return '';
+	      if (industry === 'beauty-consumer' || /美妆|美容|护肤|彩妆|香氛|beauty|cosmetic/i.test(text)) return 'beauty-brand-editorial-cover';
+	      if (industry === 'people-culture' || industry === 'people-culture-company' || /文化|使命|招聘|团队|culture|hiring/i.test(text)) return 'culture-cover-with-soft-geometry';
+	      if (/概念|opening|开场|愿景|minimal|airy/i.test(text)) return 'airy-concept-opening';
+	      return s.layoutVariant;
+	    }
     if (type === 'industry-chart') {
       return industryChartVariant(plan, s, signals);
     }
-    if (type === 'chapter-divider' || type === 'toc' || type === 'toc-clean') {
-      if (industry === 'energy-utility') return 'energy-sequence';
+	    if (type === 'chapter-divider' || type === 'toc' || type === 'toc-clean') {
+	      if (industry === 'energy-utility') return 'energy-sequence';
+	      if (dividerArchetype === 'board-briefing-divider') return 'agenda-board';
+	      if (dividerArchetype === 'industrial-structure-divider') return 'line-agenda';
+	      if (dividerArchetype === 'adoption-briefing-divider') return 'adoption-agenda';
+	      if (dividerArchetype === 'editorial-agenda-divider') return 'editorial-agenda';
+	      if (dividerArchetype === 'pathway-map-divider') return 'pathway-map';
+	      if (dividerArchetype === 'experience-journey-divider') return 'pathway-map';
+	      if (dividerArchetype === 'governance-briefing-divider') return 'board-briefing';
+	      if (dividerArchetype === 'culture-sequence-divider') return 'chapter-hero';
       if (/董事会|管理层|高管|决策摘要|汇报重点|审议|board|briefing|executive/i.test(text) && industry !== 'finance-investment') return 'board-briefing';
       if (visualIndustry === 'brand-retail' || signals.hasGallery || /画册|品牌|门店|产品故事|lookbook|editorial|美妆|美容|消费/i.test(text)) return 'editorial-agenda';
       if (industry === 'finance-investment' || /投委会|议题|决策|配置|agenda|committee/i.test(text)) return 'agenda-board';
@@ -117,7 +146,16 @@ function createLayoutVariantPicker(deps = {}) {
       return 'triptych-gallery';
     }
     if (type === 'risk-table' || type === 'table') {
-      if (s.responsibilities || s.owners || s.raci || s.accountabilities || (/责任闭环|责任矩阵|RACI/i.test(flattenText(s)))) return 'responsibility-loop';
+      if (s.responsibilities || s.owners || s.raci || s.accountabilities || (/责任闭环|责任矩阵|RACI/i.test(flattenText(s)))) {
+	        return normalizeActionLoopProof('', {
+	          industry,
+	          text,
+          proofIntent: s.proofIntent || s.proof_intent,
+          displayCopy: s.displayCopy || s.display_copy,
+          slide: s,
+          signals
+        });
+      }
       if (/materiality|重要性|双重重要性|议题矩阵/i.test(text)) return 'materiality-matrix-board';
       if (/guidance|指引|业绩指引|风险看板|risk board/i.test(text)) return 'guidance-and-risk-board';
       const riskVariantText = `${s.layoutVariant || ''} ${s.variant || ''} ${s.proofObject || s.proof_object || ''}`;
@@ -125,17 +163,34 @@ function createLayoutVariantPicker(deps = {}) {
       const riskRegisterIntent = /(^|[\s:_-])risk-register($|[\s:_-])/i.test(riskVariantText);
       if (hasExplicitRiskMatrixData(s) || explicitRiskMatrix || (!riskRegisterIntent && /风险矩阵|概率|可能性|影响等级|影响程度|impact|likelihood/i.test(text))) return 'risk-matrix';
       if (/governance|治理|董事会|委员会|合规/i.test(text)) return 'governance-table-editorial';
-      if (signals.hasResponsibilityLoop && !hasExplicitRiskMatrixData(s)) return 'responsibility-loop';
+      if (signals.hasResponsibilityLoop && !hasExplicitRiskMatrixData(s)) {
+	        return normalizeActionLoopProof('', {
+	          industry,
+	          text,
+          proofIntent: s.proofIntent || s.proof_intent,
+          displayCopy: s.displayCopy || s.display_copy,
+          slide: s,
+          signals
+        });
+      }
       if (rowCount >= 5 || signals.hasGovernance) return 'control-stack';
       return 'governance-board';
     }
-    if (type === 'closing' || type === 'closing-dark') {
-      const text = flattenText(s);
-      const isCompanyIntro = /company-intro|公司介绍|能力介绍|企业介绍|企业简介|宣传册/i.test(String((plan.materialIntelligence && plan.materialIntelligence.pptType) || plan.ppt_type || plan.pptType || plan.title || ''));
-      if (s.closingVariant) return s.closingVariant;
-      if (isCompanyIntro && /谢谢|感谢|观看|联系|交流|答疑|Q&A/i.test(text)) return 'company-thanks';
+	    if (type === 'closing' || type === 'closing-dark') {
+	      const text = flattenText(s);
+	      const isCompanyIntro = /company-intro|公司介绍|能力介绍|企业介绍|企业简介|宣传册/i.test(String((plan.materialIntelligence && plan.materialIntelligence.pptType) || plan.ppt_type || plan.pptType || plan.title || ''));
+	      if (s.closingVariant) return s.closingVariant;
+	      if (industry === 'energy-utility') return 'energy-stage';
+	      if (isCompanyIntro && /谢谢|感谢|观看|联系|交流|答疑|Q&A/i.test(text)) return 'company-thanks';
+	      if (closingArchetype === 'decision-rollout-close') return 'pilot-rollout';
+	      if (closingArchetype === 'investment-decision-close') return 'investment-decision';
+	      if (closingArchetype === 'quality-handoff-close') return 'quality-handoff';
+	      if (closingArchetype === 'adoption-rollout-close') return 'adoption-close';
+	      if (closingArchetype === 'premium-editorial-close') return 'premium-closing-anchor';
+	      if (closingArchetype === 'experience-rollout-close') return 'experience-rollout';
+	      if (closingArchetype === 'governance-next-step-close') return 'governance-next-step';
+	      if (closingArchetype === 'contact-closing-close') return isCompanyIntro ? 'company-thanks' : 'contact-closing';
       if (s.contact || s.contacts || /谢谢|感谢|观看|thank|thanks|答疑|Q&A/i.test(text)) return 'thank-you';
-      if (industry === 'energy-utility') return 'energy-stage';
       if (industry === 'finance-investment') return 'investment-decision';
       if (industry === 'manufacturing-operations') return 'pilot-rollout';
       if (industry === 'healthcare-operations') return 'quality-handoff';

@@ -23,7 +23,6 @@ function createQuoteProofRenderer(ctx = {}, deps = {}) {
     const quote = s.quote || s.statement || s.title || '一句来自用户、客户或团队的关键声音。';
     addText(slide, `“${quote}”`, { x:0.82, y:1.72, w:6.90, h:1.05, fontSize:27, bold:true, color:C.white, fit:'shrink', breakLine:true });
     addText(slide, s.attribution || s.subtitle || '', { x:0.88, y:3.12, w:4.20, h:0.16, fontSize:9.2, color:C.captionOnImage, fit:'shrink' });
-    addHairline(slide, 0.88, 3.54, 0.86, C.accent, 0, 0.75);
     const proofs = (s.items || s.cards || []).slice(0,3);
     proofs.forEach((p,i)=>{
       const x = 0.92 + i*3.18;

@@ -27,6 +27,18 @@ assert.equal(
 );
 
 assert.equal(
+  coverStyleForPlan({ industry:'government-public-sector' }, { type:'cover', title:'产业园区治理与招商汇报' }),
+  'signal-atlas-command',
+  'government cover should inherit civic cover style from industry pack archetype'
+);
+
+assert.equal(
+  coverStyleForPlan({ industry:'healthcare-operations' }, { type:'cover', title:'门诊服务质量改善方案' }),
+  'editorial-proof-report',
+  'healthcare cover should inherit clinical cover style from industry pack archetype'
+);
+
+assert.equal(
   coverStyleForPlan({ coverStyle:'auto', industry:'brand-retail' }, { type:'cover', title:'NorthBay Living 跨境电商经营复盘', subtitle:'五个平台收入、SKU 组合和复购承接' }),
   'brand-system-board',
   'commerce platform wording should infer retail brand style instead of architecture blueprint'
@@ -80,6 +92,10 @@ assert.match(cover.generatedAssetPrompt, /paper sculpture|still life|text-safe z
 const content = normalized.slides[1];
 assert.equal(content.coverStyle, 'eastern-void-object');
 assert.equal(content.contentTheme.backgroundPolicy, 'warm-paper-void');
+
+const closing = normalized.slides[2];
+assert.equal(closing.coverStyle || '', '', 'closing should not inherit cover-only style authority');
+assert.equal(closing.contentTheme || null, null, 'closing should not persist cover content theme');
 
 const normalizedAuto = normalizeDeckPlan({
   title: '产线重构计划',

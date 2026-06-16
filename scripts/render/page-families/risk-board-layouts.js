@@ -60,7 +60,9 @@ function riskAdaptive(slide, plan, s, idx) {
   if (variant === 'governance-table-editorial') return governanceRenderers.governanceTableEditorial(slide, plan, s, idx);
   if (variant === 'risk-matrix') return riskMatrixSlide(slide, plan, s, idx);
   if (variant === 'control-stack') return riskControlStack(slide, plan, s, idx);
-  if (variant === 'responsibility-loop') return riskResponsibilityLoop(slide, plan, s, idx);
+  if (['manufacturing-action-loop', 'healthcare-quality-loop', 'saas-governance-loop', 'generic-action-loop'].includes(variant)) {
+    return riskResponsibilityLoop(slide, plan, s, idx);
+  }
   return riskTable(slide, plan, s, idx);
 }
 

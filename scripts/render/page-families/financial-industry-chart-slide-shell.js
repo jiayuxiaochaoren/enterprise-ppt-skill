@@ -73,12 +73,14 @@ function createFinancialIndustryChartSlideShell(ctx = {}, deps = {}) {
   }
 
   function nativeVariantOwnsBoard(variant = '') {
-    return new Set([
-      'adoption-funnel',
-      'dispatch-map',
-      'downtime-pareto',
-      'fact-metrics',
-      'member-cohort-ladder',
+	    return new Set([
+	      'adoption-funnel',
+	      'dispatch-map',
+	      'loss-pareto',
+	      'issue-frequency-ranking',
+	      'review-sentiment-ranking',
+	      'fact-metrics',
+	      'member-cohort-ladder',
       'patient-bottleneck',
       'quality-handoff',
       'valuation-sensitivity'

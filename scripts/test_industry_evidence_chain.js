@@ -170,7 +170,7 @@ const saasPermissionGovernance = normalizeSlide({ industry:'saas-technology' }, 
   title:'企业客户采购前必须看清权限、审计和数据边界',
   rows:[['权限边界不清', '高', 'SSO、角色和数据范围同步定义']]
 }, 7, 9);
-assert.equal(saasPermissionGovernance.proofObject, 'permission-governance');
+assert.equal(saasPermissionGovernance.proofObject, 'saas-governance-loop');
 assert.equal(saasPermissionGovernance.componentPlan.componentIds.includes('governance-table'), true);
 assert.equal(saasPermissionGovernance.componentPlan.industryEvidenceChain.coveragePolicy.requiredAny.includes('governance-table'), true);
 
@@ -452,6 +452,37 @@ const peopleMissionStatement = normalizeSlide(
 assert.equal(peopleMissionStatement.componentPlan.industryEvidenceChain.stageId, 'mission-culture-claim');
 assert.equal(peopleMissionStatement.componentPlan.componentIds.includes('content-card-grid'), true);
 assert.equal(peopleMissionStatement.componentPlan.componentIds.includes('value-chain'), false);
+
+const peopleCultureCover = normalizeSlide(
+  { industry:'people-culture-company', title:'文化证据', media:{ cover:'acceptance://people-culture-company/cover.png' } },
+  {
+    type:'cover',
+    layoutVariant:'airy-concept-opening',
+    title:'星火数科文化与组织介绍',
+    subtitle:'用使命、团队证据和价值观行为说明公司为什么值得加入'
+  },
+  0,
+  5
+);
+assert.equal(peopleCultureCover.layoutVariant, 'culture-cover-with-soft-geometry');
+assert.equal(peopleCultureCover.proofObject, 'culture-cover-with-soft-geometry');
+assert.equal(peopleCultureCover.componentPlan.industryEvidenceChain.stageId, 'culture-opening-claim');
+assert.equal(peopleCultureCover.componentPlan.componentIds.includes('hero-image'), true);
+assert.equal(peopleCultureCover.componentPlan.componentIds.includes('commentary-panel'), true);
+
+const peopleGrowthTimeline = normalizeSlide(
+  { industry:'people-culture-company', title:'成长机制' },
+  {
+    type:'timeline',
+    layoutVariant:'closed-loop',
+    title:'新人从入职、跟项目到独立负责有清晰成长路径',
+    phases:[{ title:'入职' }, { title:'跟项目' }, { title:'独立负责' }]
+  },
+  3,
+  5
+);
+assert.equal(peopleGrowthTimeline.componentPlan.industryEvidenceChain.stageId, 'neutral-general');
+assert.equal(peopleGrowthTimeline.componentPlan.componentIds.includes('process-rail'), true);
 
 const peopleClosingAnchor = normalizeSlide(
   { industry:'people-culture-company', title:'组织收口' },

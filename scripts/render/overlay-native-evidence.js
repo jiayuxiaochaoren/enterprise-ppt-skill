@@ -104,7 +104,13 @@ function createOverlayNativeEvidence(deps = {}) {
       const chartItemCount = componentId === 'scorecard' && hasMetrics ? Math.max(1, s.metrics.length) : 1;
       return evidence([/chart|content|stage|board|native/i], chartItemCount, 'native chartSpec renderer owns chart board');
     }
-    if (componentId === 'caption-bar' && ['architecture', 'architecture-dark'].includes(type) && (s.caption || s.subtitle || (s.proof && s.proof.explanation))) {
+    if (
+      componentId === 'caption-bar' &&
+      (
+        (['architecture', 'architecture-dark'].includes(type) && (s.caption || s.subtitle || (s.proof && s.proof.explanation))) ||
+        ((type === 'cover' || type === 'cover-dark') && /culture-cover-with-soft-geometry/.test(`${variant} ${proofObject}`) && (s.caption || s.subtitle || s.claim || (s.proof && s.proof.explanation)))
+      )
+    ) {
       return evidence([/caption|summary|title|content|stage|native/i], 1, 'native architecture renderer draws caption or subtitle boundary');
     }
     if (['proof-gallery', 'proof-gallery-grid', 'caption-bar'].includes(componentId) && (['case-gallery', 'gallery', 'portfolio', 'product-showcase'].includes(type) || hasImages || hasRetailProofCards || /gallery|proof|lookbook|mosaic|product/i.test(`${variant} ${proofObject}`))) return evidence([/visual|caption|gallery|stage|content|native/i], Math.max(renderedImageCount(), (s.cards || []).length || 0, 1), 'native evidence renderer draws gallery/caption system');
@@ -130,7 +136,15 @@ function createOverlayNativeEvidence(deps = {}) {
     if (componentId === 'permission-audit-tag' && hasPermissions) return evidence([/permission|audit|risk|governance|content|stage|native/i], Math.max(1, (s.rows || s.risks || s.controls || []).length || 1), 'native SaaS renderer draws permission/audit evidence');
     if (componentId === 'adoption-funnel' && hasAdoption) return evidence([/funnel|metric|adoption|chart|content|stage|native/i], Math.max(1, ((s.adoptionFunnel || s.activationFunnel || s.cohortFunnel || {}).steps || s.metrics || []).length || 1), 'native SaaS renderer draws adoption funnel evidence');
     if (['value-chain', 'value-chain-connector', 'system-rail'].includes(componentId) && (['strategy-map', 'architecture', 'architecture-dark'].includes(type) || hasArchitecture || hasFlow || hasPortfolioLogic || /value|system|brand-world/i.test(`${variant} ${proofObject}`))) return evidence([/architecture|topology|flow|table|stage|content|native/i], 1, 'native system renderer draws flow/architecture rail');
-    if (componentId === 'commentary-panel' && (['strategy-map', 'architecture', 'architecture-dark', 'module-matrix', 'value-tiles', 'manifesto', 'report-board'].includes(type) || s.businessLogic || s.claim)) return evidence([/commentary|summary|caption|text|content|stage|native/i], 1, 'native renderer draws a commentary or management-judgment panel');
+    if (
+      componentId === 'commentary-panel' &&
+      (
+        ['strategy-map', 'architecture', 'architecture-dark', 'module-matrix', 'value-tiles', 'manifesto', 'report-board'].includes(type) ||
+        ((type === 'cover' || type === 'cover-dark') && /culture-cover-with-soft-geometry/.test(`${variant} ${proofObject}`)) ||
+        s.businessLogic ||
+        s.claim
+      )
+    ) return evidence([/commentary|summary|caption|text|content|stage|native/i], 1, 'native renderer draws a commentary or management-judgment panel');
     if (componentId === 'process-rail' && (['timeline', 'timeline-dark'].includes(type) || hasFlow || /process|loop|timeline|flywheel/i.test(`${variant} ${proofObject}`))) return evidence([/process|timeline|loop|stage|content|native/i], Math.max(1, (s.phases || s.actions || s.steps || []).length || 1), 'native timeline renderer draws process rail');
     if (['risk-register', 'risk-matrix', 'governance-table'].includes(componentId) && (['risk-table', 'table'].includes(type) || hasRows || /risk|governance|materiality|control/i.test(`${variant} ${proofObject}`))) return evidence([/risk|table|governance|content|stage|native/i], Math.max(1, (s.rows || s.risks || s.controls || []).length || 1), 'native governance renderer draws risk/table structure');
     if (componentId === 'disclosure-footnote' && (componentSourceNoteText(plan, s) || s.disclosure || s.assumptions || hasSourceEvidence(s))) return evidence([/source|footer|disclosure|stage|native/i], 1, 'native renderer draws disclosure, assumption, or source-evidence boundary');

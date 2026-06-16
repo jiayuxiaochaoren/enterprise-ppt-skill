@@ -141,13 +141,13 @@ module.exports = {
         },
         "proofObjects": [
           "oee-board",
-          "downtime-pareto",
+          "loss-pareto",
           "site-evidence",
           "asset-readout"
         ],
         "routes": [
           "metric-comparison:oee",
-          "industry-chart:downtime",
+          "industry-chart:loss-pareto",
           "case-gallery:site-evidence",
           "case-gallery:evidence-board",
           "case-gallery"

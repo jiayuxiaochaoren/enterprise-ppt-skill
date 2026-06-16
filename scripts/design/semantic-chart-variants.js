@@ -1,3 +1,7 @@
+const {
+  normalizeProofObject
+} = require('./proof-taxonomy');
+
 function createSemanticChartVariantHelpers(deps = {}) {
   const {
     contentSignals = () => ({}),
@@ -31,7 +35,19 @@ function createSemanticChartVariantHelpers(deps = {}) {
     const chartProof = industryProofCandidates(plan, s, signals)
       .find(p => String(p.route || '').startsWith('industry-chart:') && p.score >= 3);
     if (chartProof) return String(chartProof.route).split(':')[1] || chartProof.id;
-    if (hasValueField(s, ['downtimePareto', 'pareto', 'lossPareto', 'oeeLosses']) || /停机.*(Pareto|帕累托|TOP|排行)|故障.*(Pareto|帕累托)|节拍损失|OEE.*损失/i.test(text)) return 'downtime-pareto';
+    if (hasValueField(s, ['reviewSentiment']) || /评论|评价|反馈主题|review sentiment|voice of customer/i.test(text)) {
+      return 'review-sentiment-ranking';
+    }
+	    if (hasValueField(s, ['downtimePareto', 'pareto', 'lossPareto', 'oeeLosses']) || /停机.*(Pareto|帕累托|TOP|排行)|故障.*(Pareto|帕累托)|节拍损失|OEE.*损失/i.test(text)) {
+	      return normalizeProofObject('loss-pareto', {
+	        industry,
+	        text,
+        proofIntent: s.proofIntent || s.proof_intent,
+        displayCopy: s.displayCopy || s.display_copy,
+        slide: s,
+        signals
+      });
+    }
     if (hasValueField(s, ['valuationSensitivity', 'sensitivity', 'exitScenarios', 'irrSensitivity']) || /敏感性|估值矩阵|退出情景|IRR.*DPI|valuation sensitivity|scenario/i.test(text)) return 'valuation-sensitivity';
     if (hasValueField(s, ['qualityHandoff', 'handoffs', 'handoffMap']) || /交接|handoff|护理交接|科室交接|质量交接/i.test(text)) return 'quality-handoff';
     if (hasValueField(s, ['patientBottlenecks', 'waitBottlenecks']) || /等待瓶颈|排队瓶颈|患者等待|候诊|bottleneck/i.test(text)) return 'patient-bottleneck';
@@ -41,7 +57,7 @@ function createSemanticChartVariantHelpers(deps = {}) {
     if (hasValueField(s, ['waterfallBridge', 'targetBridge'])) return 'waterfall-bridge';
     if (hasValueField(s, ['dispatchMap', 'siteDispatch', 'loadStorageDispatch']) || /调度地图|站点调度|负荷.*储能|SOC|dispatch/i.test(text)) return 'dispatch-map';
     if (hasValueField(s, ['adoptionFunnel', 'activationFunnel', 'cohortFunnel']) || /采用漏斗|激活漏斗|扩展漏斗|activation funnel|adoption funnel/i.test(text)) return 'adoption-funnel';
-    if (industry === 'manufacturing-operations' && signals.hasOeeBoard) return 'downtime-pareto';
+    if (industry === 'manufacturing-operations' && signals.hasOeeBoard) return 'loss-pareto';
     if (industry === 'finance-investment' && signals.isNumberHeavy) return 'valuation-sensitivity';
     if (industry === 'healthcare-operations' && signals.hasServiceBlueprint) return 'quality-handoff';
     if ((industry === 'brand-retail' || industry === 'beauty-consumer' || visualIndustry === 'brand-retail') && /会员|复购|RFM|cohort/i.test(text)) return 'member-cohort-ladder';

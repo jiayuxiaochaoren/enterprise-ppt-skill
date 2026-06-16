@@ -165,12 +165,22 @@ function hasRect(ops, expected) {
     && Math.abs(op.args[4] - expected.h) < 0.001);
 }
 
+function hasHairline(ops, expected) {
+  return ops.some(op => op.name === 'addHairline'
+    && Math.abs(op.args[1] - expected.x) < 0.001
+    && Math.abs(op.args[2] - expected.y) < 0.001
+    && Math.abs(op.args[3] - expected.w) < 0.001
+    && op.args[4] === expected.color);
+}
+
 function assertLightEditorialShell(ops) {
   assert(hasRect(ops, { x:0, y:0, w:13.333, h:7.5 }), 'expected light editorial full background');
   assert(hasRect(ops, { x:8.50, y:1.34, w:2.90, h:4.86 }), 'expected light editorial proof panel');
   assert(hasRect(ops, { x:8.335, y:1.34, w:0.035, h:4.86 }), 'expected light editorial proof rail aligned with panel');
   const oldDetachedRail = hasRect(ops, { x:8.54, y:0.92, w:0.024, h:4.90 });
   assert(!oldDetachedRail, 'old detached editorial proof rail should not render');
+  assert(!hasRect(ops, { x:0.86, y:3.82, w:0.88, h:0.045 }), 'light editorial cover should not render a middle accent rule');
+  assert(!hasRect(ops, { x:1.86, y:3.82, w:0.34, h:0.045 }), 'light editorial cover should not render a middle cyan rule');
   assert(!ops.some(op => op.name === 'addLightBreathingCircle'), 'light editorial proof panel should not add a right-side circle motif');
   [
     ['01', { x:8.92, y:1.76, w:0.44, h:0.18, fontSize:10.2, color:'2563EB' }],
@@ -206,12 +216,14 @@ function assertDarkStandardCoverShell(ops) {
   assertTextBox(ops, 'Industry insight', {
     x:0.92, y:3.36, w:5.7, h:0.20, fontSize:11.5, color:'CBD5E1', fit:'shrink'
   });
-  const accentRule = ops.find(op => op.name === 'addHairline'
-    && op.args[1] === 0.92
-    && op.args[2] === 3.78
-    && op.args[3] === 0.82
-    && op.args[4] === '2563EB');
-  assert(accentRule, 'expected standard dark cover accent rule');
+  assert(
+    !hasHairline(ops, { x:0.92, y:3.78, w:0.82, color:'2563EB' }),
+    'standard dark cover should not render a middle accent rule'
+  );
+  assert(
+    !hasHairline(ops, { x:1.86, y:3.78, w:0.34, color:'0891B2' }),
+    'standard dark cover should not render a middle cyan rule'
+  );
   const meta = ops.find(op => op.name === 'addDeckMeta'
     && (op.args[2] || {}).x === 0.92
     && (op.args[2] || {}).y === 6.30
@@ -226,8 +238,8 @@ function assertEnergyCoverShell(ops) {
   assertTextBox(ops, 'Industry insight', {
     x:0.88, y:3.48, w:5.85, h:0.22, fontSize:11.2, color:'CBD5E1', fit:'shrink'
   });
-  assert(hasRect(ops, { x:0.88, y:3.92, w:0.82, h:0.035 }), 'expected energy cover accent rule');
-  assert(hasRect(ops, { x:1.82, y:3.92, w:0.34, h:0.035 }), 'expected energy cover cyan rule');
+  assert(!hasRect(ops, { x:0.88, y:3.92, w:0.82, h:0.035 }), 'energy cover should not render a middle accent rule');
+  assert(!hasRect(ops, { x:1.82, y:3.92, w:0.34, h:0.035 }), 'energy cover should not render a middle cyan rule');
   const meta = ops.find(op => op.name === 'addDeckMeta'
     && (op.args[2] || {}).x === 0.88
     && (op.args[2] || {}).y === 6.24
@@ -301,6 +313,10 @@ function main() {
   });
   assert(hasOp(ops, 'addLabel', 'CONCEPT OPENING'), 'expected airy cover branch');
   assert(hasOp(ops, 'addLabel', 'MANUFACTURING PROOF'), 'expected manufacturing cover branch');
+  assert(!hasRect(ops, { x:0.86, y:3.78, w:0.82, h:0.045 }), 'showcase cover should not render a middle accent rule');
+  assert(!hasRect(ops, { x:1.82, y:3.78, w:0.34, h:0.045 }), 'showcase cover should not render a middle cyan rule');
+  assert(!hasRect(ops, { x:0.92, y:3.44, w:0.92, h:0.04 }), 'airy cover should not render a middle accent rule');
+  assert(!hasRect(ops, { x:2.00, y:3.44, w:0.32, h:0.04 }), 'airy cover should not render a middle cyan rule');
   assertShowcaseStageShell(ops);
   assertDarkStandardCoverShell(ops);
   assertEnergyCoverShell(ops);
@@ -334,6 +350,10 @@ function main() {
     (brandPhoto.args[6] || {}).transparency >= 80,
     'brand product showcase should not wash out cover imagery with an opaque white overlay'
   );
+  assert(
+    !hasRect(styleOps, { x:0.86, y:3.62, w:0.86, h:0.045 }),
+    'cover style showcase should not render a middle accent rule'
+  );
   const leftSurface = styleOps.find(op => op.name === 'addRect'
     && op.args[1] === 0
     && op.args[2] === 0
@@ -365,6 +385,10 @@ function main() {
   assert(
     noImageOps.some(op => op.name === 'addLabel' && op.args[1] === '经营信号板'),
     'brand product showcase skip-image branch should render a native signal board'
+  );
+  assert(
+    !hasRect(noImageOps, { x:0.86, y:3.62, w:0.86, h:0.045 }),
+    'native showcase fallback should not render a middle accent rule'
   );
   ['渠道效率', 'SKU 组合', '复购质量'].forEach(text => {
     assert(

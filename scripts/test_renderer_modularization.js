@@ -105,7 +105,7 @@ assert.deepEqual(routeSensitiveDiffs(
 assert.equal(containsCjk('业务增长'), true);
 assert.equal(
   normalizePublicSlideCopy('责任闭环、证据栈、证据对象、月度脉冲、风险·责任·行动'),
-  '责任分工、关键依据、经营依据、月度趋势、问题 · 责任 · 动作'
+  '责任闭环、关键依据、经营依据、月度趋势、风险·责任·行动'
 );
 const textRects = [];
 const textHelpers = createTextRenderHelpers({
@@ -130,7 +130,7 @@ assert.equal(textSlide.__codexTextBoxes[0].region, 'chrome');
 assert.equal(textSlide.__codexTextBoxes[0].shrinkRisk, false);
 const normalizedCopySlide = { added:[], addText(text, opts) { this.added.push({ text, opts }); } };
 assert.equal(textHelpers.addText(normalizedCopySlide, '利润需要进入责任闭环', { x:1, y:1, w:3, h:0.20, fontSize:10 }), true);
-assert.equal(normalizedCopySlide.added[0].text, '利润需要进入责任分工');
+assert.equal(normalizedCopySlide.added[0].text, '利润需要进入责任闭环');
 const tinyCjkSlide = { added:[], addText(text, opts) { this.added.push({ text, opts }); } };
 assert.equal(textHelpers.addText(tinyCjkSlide, '中文标签', { x:1, y:6.8, w:1.2, h:0.10, fontSize:6, fit:'shrink', allowTiny:true, typeRole:'caption' }), true);
 assert.ok(tinyCjkSlide.added[0].opts.fontSize >= 8.0);

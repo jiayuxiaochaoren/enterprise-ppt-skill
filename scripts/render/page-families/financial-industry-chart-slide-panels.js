@@ -9,7 +9,7 @@ function visibleCoreTitle(value, fallback = '行业读数') {
   const text = String(value || '').replace(/\s+/g, ' ').trim();
   if (!text) return fallback;
   const generatedEnglish = /^[A-Z0-9\s/·&().+-]+$/.test(text) &&
-    /TREND|MATRIX|SCORECARD|READOUT|BRIDGE|FUNNEL|PULSE|EFFICIENCY|PROOF|OBJECT|LADDER|COHORT|CHANNEL|METRIC|FACT|ADOPTION|DISPATCH/.test(text);
+    /TREND|MATRIX|SCORECARD|READOUT|BRIDGE|FUNNEL|PULSE|EFFICIENCY|PROOF|OBJECT|LADDER|COHORT|CHANNEL|METRIC|FACT|ADOPTION|DISPATCH|PARETO|DOWNTIME|LOSS|OEE/.test(text);
   return generatedEnglish ? fallback : text;
 }
 

@@ -128,6 +128,32 @@ function createRouteSanitizationHelpers(deps = {}) {
       delete routedInput.compositionPlan;
       delete routedInput.composition_plan;
     }
+    if ((previousCompositionPlan || previousAssetGeneration) && routedInput.coverStyle) {
+      routedInput.previousCoverStyle = routedInput.previousCoverStyle || routedInput.coverStyle;
+      recordRemoval(
+        'coverStyle',
+        routedInput.coverStyle,
+        previousCompositionPlan
+          ? 'cover style removed because composition metadata is being recomputed'
+          : 'cover style removed because asset-generation decision is being recomputed'
+      );
+      delete routedInput.coverStyle;
+      delete routedInput.cover_style;
+      delete routedInput.coverStyleSource;
+      delete routedInput.cover_style_source;
+    }
+    if ((previousCompositionPlan || previousAssetGeneration) && routedInput.contentTheme) {
+      routedInput.previousContentTheme = routedInput.previousContentTheme || routedInput.contentTheme;
+      recordRemoval(
+        'contentTheme',
+        routedInput.contentTheme,
+        previousCompositionPlan
+          ? 'content theme removed because composition metadata is being recomputed'
+          : 'content theme removed because asset-generation decision is being recomputed'
+      );
+      delete routedInput.contentTheme;
+      delete routedInput.content_theme;
+    }
     if (previousAssetGeneration) {
       routedInput.previousAssetGeneration = routedInput.previousAssetGeneration || previousAssetGeneration;
       recordSuppression(

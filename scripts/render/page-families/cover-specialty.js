@@ -7,11 +7,15 @@ const {
 const {
   createBeautyBrandEditorialCover
 } = require('./cover-beauty-editorial');
+const {
+  createCultureCoverSoftGeometry
+} = require('./manifesto-culture-cover');
 
 function createSpecialtyCoverRenderers(ctx = {}, helpers = {}) {
   const colors = helpers.colors || (() => ctx.colors());
   const fileExists = helpers.fileExists || (file => typeof ctx.fileExists === 'function' ? ctx.fileExists(file) : false);
   const {
+    drawDarkStageShell,
     drawFooter,
     drawLightCanvasShell
   } = createPageFamilyPrimitives(Object.assign({}, ctx, { colors }));
@@ -24,10 +28,15 @@ function createSpecialtyCoverRenderers(ctx = {}, helpers = {}) {
   };
   const airyConceptOpening = createAiryConceptOpening(ctx, specialtyDeps);
   const beautyBrandEditorialCover = createBeautyBrandEditorialCover(ctx, specialtyDeps);
+  const cultureCoverSoftGeometry = createCultureCoverSoftGeometry(ctx, {
+    drawDarkStageShell,
+    drawFooter
+  });
 
   return {
     airyConceptOpening,
-    beautyBrandEditorialCover
+    beautyBrandEditorialCover,
+    cultureCoverSoftGeometry
   };
 }
 

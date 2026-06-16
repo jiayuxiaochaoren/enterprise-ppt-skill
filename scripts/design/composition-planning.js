@@ -86,14 +86,20 @@ function createCompositionPlanningHelpers(deps = {}) {
         ...recipeComponents.slice(0, 8)
       ]),
       rhythmRole: rhythmRoleFor(plan, s, index, total),
-      industryExpression: {
-        dialect: dialect.name || '',
-        motif: dialect.motif || '',
-        principle: dialect.principle || '',
-        primaryColorLogic: dialect.primaryColorLogic || '',
-        components: dialectComponents,
-        visualGrammar: pack && pack.visualGrammar ? pack.visualGrammar : null
-      },
+	      industryExpression: {
+	        dialect: dialect.name || '',
+	        motif: dialect.motif || '',
+	        principle: dialect.principle || '',
+	        primaryColorLogic: dialect.primaryColorLogic || '',
+	        components: dialectComponents,
+	        visualGrammar: pack && pack.visualGrammar ? pack.visualGrammar : null,
+	        coverArchetype: pack && pack.coverArchetype ? pack.coverArchetype : '',
+	        dividerArchetype: pack && pack.dividerArchetype ? pack.dividerArchetype : '',
+	        bodyLayoutPool: pack && Array.isArray(pack.bodyLayoutPool) ? pack.bodyLayoutPool : [],
+	        closingArchetype: pack && pack.closingArchetype ? pack.closingArchetype : '',
+	        paletteTokenSet: pack && pack.paletteTokenSet ? pack.paletteTokenSet : {},
+	        textureBackgroundPolicy: pack && pack.textureBackgroundPolicy ? pack.textureBackgroundPolicy : ''
+	      },
       referenceRecipeId: recipe ? recipe.id : '',
       density: visualDensity
     };

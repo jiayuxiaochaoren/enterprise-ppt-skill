@@ -154,7 +154,25 @@ const cases = [
     name:'responsibility governance',
     plan:base,
     slide:{ title:'责任闭环', responsibilities:[{owner:'业务', action:'确认'}, {owner:'财务', action:'复核'}] },
-    expected:{ type:'risk-table', variant:'responsibility-loop' }
+    expected:{ type:'risk-table', variant:'generic-action-loop' }
+  },
+  {
+    name:'manufacturing action loop',
+    plan:{ industry:'manufacturing-operations' },
+    slide:{ title:'经营动作闭环', responsibilities:[{owner:'销售', action:'确认认证范围'}, {owner:'交付', action:'安排验收'}] },
+    expected:{ type:'risk-table', variant:'manufacturing-action-loop' }
+  },
+  {
+    name:'healthcare quality loop',
+    plan:{ industry:'healthcare-operations' },
+    slide:{ title:'服务质量闭环', responsibilities:[{owner:'护士长', action:'跟踪整改'}, {owner:'质控办', action:'月度复盘'}] },
+    expected:{ type:'risk-table', variant:'healthcare-quality-loop' }
+  },
+  {
+    name:'saas governance loop',
+    plan:{ industry:'saas-technology' },
+    slide:{ title:'权限治理闭环', responsibilities:[{owner:'管理员', action:'审批权限'}, {owner:'安全负责人', action:'审计留痕'}] },
+    expected:{ type:'risk-table', variant:'saas-governance-loop' }
   },
   {
     name:'risk matrix',
@@ -304,6 +322,62 @@ const cases = [
     slide:{ title:'把产品采用转成收入增长', actions:[{ title:'采用' }, { title:'集成' }, { title:'收入' }] },
     expected:{ type:'closing', variant:'adoption-close' },
     options:{ index:2, total:3 }
+  },
+  {
+    name:'lifestyle experience closing',
+    plan:{ industry:'lifestyle-food-tourism-fashion' },
+    slide:{ title:'把体验资产转成可复盘增长动作', actions:[{ title:'场景' }, { title:'转化' }, { title:'复游' }] },
+    expected:{ type:'closing', variant:'experience-rollout' },
+    options:{ index:2, total:3 }
+  },
+  {
+    name:'government next-step closing',
+    plan:{ industry:'government-public-sector' },
+    slide:{ title:'确认项目清单和月度推进机制', actions:[{ title:'项目' }, { title:'责任' }, { title:'复盘' }] },
+    expected:{ type:'closing', variant:'governance-next-step' },
+    options:{ index:2, total:3 }
+  },
+  {
+    name:'people culture contact closing',
+    plan:{ industry:'people-culture-company', materialIntelligence:{ pptType:'company-intro' }, title:'星火数科文化与组织介绍' },
+    slide:{ title:'期待和真实问题同行的人加入', contacts:['talent@spark-example.cn'], actions:[{ title:'岗位' }, { title:'项目' }, { title:'团队' }] },
+    expected:{ type:'closing', variant:'company-thanks' },
+    options:{ index:2, total:3 }
+  },
+  {
+    name:'people culture stale premium closing normalizes to contact closing',
+    plan:{ industry:'people-culture-company', title:'星火数科文化与组织介绍' },
+    slide:{ type:'closing', layoutVariant:'premium-closing-anchor', closingArchetype:'contact-closing-close', title:'期待和真实问题同行的人加入', contacts:['talent@spark-example.cn'] },
+    expected:{ type:'closing', variant:'contact-closing' },
+    options:{ index:2, total:3 }
+  },
+  {
+    name:'government stale decision summary normalizes to governance next step',
+    plan:{ industry:'government-public-sector', title:'产业园区治理与招商汇报' },
+    slide:{ type:'closing', layoutVariant:'decision-summary', closingArchetype:'governance-next-step-close', title:'确认项目清单和月度推进机制', actions:[{ title:'项目' }, { title:'责任' }, { title:'复盘' }] },
+    expected:{ type:'closing', variant:'governance-next-step' },
+    options:{ index:2, total:3 }
+  },
+  {
+    name:'government stale divider normalizes to board briefing',
+    plan:{ industry:'government-public-sector', title:'产业园区治理与招商汇报' },
+    slide:{ type:'toc-clean', layoutVariant:'chapter-hero', title:'阅读路径', items:['政策背景', '资源地图', '推进机制'] },
+    expected:{ type:'toc-clean', variant:'board-briefing' },
+    options:{ index:1, total:3 }
+  },
+  {
+    name:'manufacturing stale cover clears to native structure',
+    plan:{ industry:'manufacturing-operations', title:'恒越精工能力介绍' },
+    slide:{ type:'cover', layoutVariant:'airy-concept-opening', title:'恒越精工能力介绍', subtitle:'围绕产线对象、交付能力与制造动作展开' },
+    expected:{ type:'cover', variant:'' },
+    options:{ index:0, total:3 }
+  },
+  {
+    name:'people culture stale cover normalizes to culture soft cover',
+    plan:{ industry:'people-culture-company', title:'星火数科文化与组织介绍' },
+    slide:{ type:'cover', layoutVariant:'airy-concept-opening', title:'星火数科文化与组织介绍', subtitle:'用使命、团队证据和价值观行为说明公司为什么值得加入' },
+    expected:{ type:'cover', variant:'culture-cover-with-soft-geometry' },
+    options:{ index:0, total:3 }
   },
   {
     name:'energy closing keeps energy stage',

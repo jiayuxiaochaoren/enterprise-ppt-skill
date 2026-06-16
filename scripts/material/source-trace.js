@@ -1,5 +1,9 @@
 const { compactUnique } = require('./common');
 const {
+  displayCopyFromClaim,
+  normalizeProofObject
+} = require('../design/proof-taxonomy');
+const {
   preferredAuthorizationStatus,
   sourceIdValues,
   toArray
@@ -132,12 +136,30 @@ function proofObjectForClaim(claim = {}, extraction = {}, bundle = {}, opts = {}
   const hasBoundAssetEvidence = toArray(sourceTrace.imageProvenance).length > 0;
   const hasRealEvidence = Boolean(sourceIds.length || toArray(sourceTrace.sources).length || hasBoundAssetEvidence);
   const generatedIllustration = /generated|synthetic|model|示意|生成/i.test(generatedSignals) && !hasBoundAssetEvidence;
+  const displayCopy = displayCopyFromClaim(claim);
+  const normalizedProof = normalizeProofObject(claim.proof_object || claim.proofObject || claim.layoutVariant || claim.variant, {
+    text: [
+      claim.claim,
+      claim.title,
+      claim.support,
+      claim.summary,
+      claim.note,
+      claim.business_domain,
+      claim.chain_stage,
+      claim.depth_domain,
+      claim.proof_intent
+    ].filter(Boolean).join(' '),
+    proofIntent: claim.proof_intent || claim.proofIntent,
+    displayCopy,
+    slide: claim
+  });
   const provenance = generatedIllustration && !hasBoundAssetEvidence
     ? 'model-generated-illustration'
     : (hasRealEvidence ? (hasBoundAssetEvidence ? 'real-asset-evidence' : 'source-derived-evidence') : 'unproven');
   return {
     version: 'proof-object/v1',
-    id: claim.proof_object || claim.proofObject || 'report-board',
+    id: normalizedProof || claim.proof_object || claim.proofObject || 'report-board',
+    legacyId: normalizedProof && normalizedProof !== (claim.proof_object || claim.proofObject || '') ? (claim.proof_object || claim.proofObject || '') : undefined,
     kind: evidenceTypes[0] || claim.data_component || claim.dataComponent || 'source-summary',
     claimId: claim.id || '',
     evidenceIds,

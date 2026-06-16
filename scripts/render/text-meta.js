@@ -10,12 +10,9 @@ const {
 } = require('./text-readability-policy');
 
 const PUBLIC_COPY_REPLACEMENTS = [
-  [/责任闭环/g, '责任分工'],
   [/证据栈/g, '关键依据'],
   [/证据对象/g, '经营依据'],
-  [/月度脉冲/g, '月度趋势'],
-  [/风险[·・]\s*责任[·・]\s*行动/g, '问题 · 责任 · 动作'],
-  [/风险\s*·\s*责任\s*·\s*行动/g, '问题 · 责任 · 动作']
+  [/月度脉冲/g, '月度趋势']
 ];
 
 function normalizePublicSlideCopy(text) {

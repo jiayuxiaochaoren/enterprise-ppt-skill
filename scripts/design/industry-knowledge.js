@@ -1,15 +1,15 @@
 const INDUSTRY_EXPRESSION_RULES = {
   'manufacturing-operations': {
-    requiredRoutes: ['metric-comparison:oee-board', 'architecture:production-topology', 'timeline:closed-loop', 'industry-chart:downtime-pareto'],
-    proofObjects: ['OEE', 'production-topology', 'maintenance-loop', 'downtime-pareto']
+    requiredRoutes: ['metric-comparison:oee-board', 'architecture:production-topology', 'timeline:closed-loop', 'industry-chart:loss-pareto', 'industry-chart:issue-frequency-ranking', 'risk-table:manufacturing-action-loop'],
+    proofObjects: ['OEE', 'production-topology', 'maintenance-loop', 'loss-pareto', 'issue-frequency-ranking', 'manufacturing-action-loop']
   },
   'finance-investment': {
     requiredRoutes: ['finance-bridge', 'portfolio-table', 'risk-table:risk-matrix', 'industry-chart:valuation-sensitivity'],
     proofObjects: ['return-bridge', 'portfolio-action-table', 'risk-matrix', 'valuation-sensitivity']
   },
   'healthcare-operations': {
-    requiredRoutes: ['architecture:service-blueprint', 'metric-comparison:patient-service-scorecard', 'risk-table:responsibility-loop', 'industry-chart:quality-handoff'],
-    proofObjects: ['service-blueprint', 'patient-scorecard', 'quality-handoff', 'responsibility-loop']
+    requiredRoutes: ['architecture:service-blueprint', 'metric-comparison:patient-service-scorecard', 'risk-table:healthcare-quality-loop', 'industry-chart:quality-handoff'],
+    proofObjects: ['service-blueprint', 'patient-scorecard', 'quality-handoff', 'healthcare-quality-loop']
   },
   'brand-retail': {
     requiredRoutes: ['cover:beauty-brand-editorial-cover', 'report-board:editorial-proof-board', 'case-gallery:lookbook-story', 'metric-comparison:member-growth-board', 'timeline:flywheel', 'timeline:closed-loop', 'industry-chart:member-cohort-ladder', 'industry-chart:channel-efficiency-matrix', 'industry-chart:monthly-pulse-trend', 'industry-chart:waterfall-bridge'],
@@ -25,7 +25,8 @@ const INDUSTRY_EXPRESSION_RULES = {
       'industry-chart:monthly-pulse-trend',
       'industry-chart:waterfall-bridge',
       'industry-chart:channel-efficiency-matrix',
-      'industry-chart:downtime-pareto',
+      'industry-chart:loss-pareto',
+      'industry-chart:issue-frequency-ranking',
       'value-tiles:business-metric-board',
       'risk-table:operations-assurance',
       'report-board'
@@ -39,7 +40,8 @@ const INDUSTRY_EXPRESSION_RULES = {
       'monthly-pulse-trend',
       'waterfall-bridge',
       'channel-efficiency-matrix',
-      'downtime-pareto',
+      'loss-pareto',
+      'issue-frequency-ranking',
       'business-metric-board',
       'operations-assurance',
       'report-board',
@@ -47,15 +49,15 @@ const INDUSTRY_EXPRESSION_RULES = {
     ]
   },
   'saas-technology': {
-    requiredRoutes: ['architecture:platform-capability-map', 'metric-comparison:adoption-revenue-board', 'case-gallery:prototype-flow', 'industry-chart:adoption-funnel', 'risk-table:permission-governance', 'timeline:automation-workflow'],
-    proofObjects: ['platform-capability-map', 'adoption-funnel', 'prototype-flow', 'revenue-board', 'permission-governance', 'automation-workflow']
+    requiredRoutes: ['architecture:platform-capability-map', 'metric-comparison:adoption-revenue-board', 'case-gallery:prototype-flow', 'industry-chart:adoption-funnel', 'risk-table:saas-governance-loop', 'timeline:automation-workflow'],
+    proofObjects: ['platform-capability-map', 'adoption-funnel', 'prototype-flow', 'revenue-board', 'saas-governance-loop', 'automation-workflow']
   },
   'beauty-consumer': {
     requiredRoutes: ['case-gallery:lookbook-story', 'case-gallery:consumer-proof-photo-grid', 'metric-comparison:member-growth-board', 'strategy-map:brand-world-and-business-proof', 'industry-chart:channel-efficiency-matrix', 'industry-chart:monthly-pulse-trend', 'industry-chart:waterfall-bridge'],
     proofObjects: ['beauty-brand-editorial-cover', 'brand-world-and-business-proof', 'consumer-proof-photo-grid', 'product-evidence-story', 'channel-efficiency-matrix', 'monthly-pulse-trend', 'waterfall-bridge']
   },
   'people-culture': {
-    requiredRoutes: ['manifesto:mission-statement-stage', 'case-gallery:people-proof-mosaic', 'manifesto:value-principle-cards'],
+    requiredRoutes: ['cover:culture-cover-with-soft-geometry', 'manifesto:mission-statement-stage', 'case-gallery:people-proof-mosaic', 'manifesto:value-principle-cards'],
     proofObjects: ['culture-cover-with-soft-geometry', 'mission-statement-stage', 'people-proof-mosaic', 'value-principle-cards']
   },
   'government-public-sector': {
@@ -95,9 +97,11 @@ const INDUSTRY_KNOWLEDGE_BASE = {
       metric: ['OEE', '稼动率', '停机时长', 'MTTR', 'MTBF', '良率', '一次通过率']
     },
     proofObjects: [
-      { id: 'downtime-pareto', route: 'industry-chart:downtime-pareto', fields: ['downtimePareto', 'pareto', 'lossPareto', 'oeeLosses'], keywords: ['停机', '帕累托', 'Pareto', '故障排行', '节拍损失', 'TOP损失'], depth: 'metric-root-cause' },
+      { id: 'loss-pareto', route: 'industry-chart:loss-pareto', fields: ['downtimePareto', 'pareto', 'lossPareto', 'oeeLosses'], keywords: ['停机', 'Pareto', '故障排行', '节拍损失', 'TOP损失', 'OEE损失'], depth: 'metric-root-cause' },
+      { id: 'issue-frequency-ranking', route: 'industry-chart:issue-frequency-ranking', fields: ['downtimePareto', 'pareto', 'reviewSentiment'], keywords: ['客户调研', '客户声音', '高频顾虑', '痛点排序', '海外认证', '交付周期'], depth: 'issue-ranking' },
       { id: 'production-topology', route: 'architecture:production-topology', fields: ['productionLine', 'nodes', 'layers'], keywords: ['产线拓扑', 'PLC', '传感器', '点检终端', '备件台账'], depth: 'system-map' },
       { id: 'maintenance-loop', route: 'timeline:closed-loop', fields: ['phases', 'loopItems', 'flywheel'], keywords: ['发现', '派工', '处置', '复盘', '维修闭环', '工单闭环'], depth: 'operating-loop' },
+      { id: 'manufacturing-action-loop', route: 'risk-table:manufacturing-action-loop', fields: ['responsibilities', 'owners', 'raci'], keywords: ['经营动作', '认证验收', '角色分工', '制造交付', '复盘机制'], depth: 'operating-loop' },
       { id: 'oee-board', route: 'metric-comparison:oee-board', fields: ['oee', 'oeeComponents', 'metrics'], keywords: ['OEE', '稼动', '性能', '良率', 'MTTR', 'MTBF'], depth: 'metric-board' }
     ],
     depthGates: { minProofObjects: 2, requiredDomains: ['metric-root-cause', 'operating-loop'] }
@@ -132,7 +136,7 @@ const INDUSTRY_KNOWLEDGE_BASE = {
       { id: 'service-blueprint', route: 'architecture:service-blueprint', fields: ['serviceBlueprint', 'touchpoints', 'journeyMap'], keywords: ['服务蓝图', '患者旅程', '触点', 'frontstage', 'backstage'], depth: 'journey-system' },
       { id: 'quality-handoff', route: 'industry-chart:quality-handoff', fields: ['qualityHandoff', 'handoffs', 'handoffMap'], keywords: ['质量交接', '护理交接', '科室交接', 'handoff', '质控'], depth: 'handoff-control' },
       { id: 'patient-scorecard', route: 'metric-comparison:patient-service-scorecard', fields: ['metrics'], keywords: ['等待时长', '满意度', '不良事件', '周转率', '服务评分'], depth: 'quality-scorecard' },
-      { id: 'responsibility-loop', route: 'risk-table:responsibility-loop', fields: ['responsibilities', 'owners', 'raci'], keywords: ['责任闭环', '定责', '留痕', 'SLA', 'RACI'], depth: 'clinical-governance' }
+      { id: 'healthcare-quality-loop', route: 'risk-table:healthcare-quality-loop', fields: ['responsibilities', 'owners', 'raci'], keywords: ['责任闭环', '定责', '留痕', 'SLA', 'RACI', '整改机制'], depth: 'clinical-governance' }
     ],
     depthGates: { minProofObjects: 2, requiredDomains: ['journey-system', 'handoff-control'] }
   },
@@ -176,7 +180,8 @@ const INDUSTRY_KNOWLEDGE_BASE = {
       { id: 'monthly-pulse-trend', route: 'industry-chart:monthly-pulse-trend', fields: ['monthlyPulse', 'monthlyTrend', 'trend'], keywords: ['月度', '同比', '环比', '收入趋势', '增长信号', '1月', '2月', '3月'], depth: 'business-metric' },
       { id: 'waterfall-bridge', route: 'industry-chart:waterfall-bridge', fields: ['waterfallBridge', 'targetBridge', 'bridge'], keywords: ['业务线', '收入结构', '自营快充站', '车队', '聚合平台', '目的地站', '收入接近均衡'], depth: 'revenue-structure' },
       { id: 'channel-efficiency-matrix', route: 'industry-chart:channel-efficiency-matrix', fields: ['channelEfficiency', 'mediaEfficiency', 'scatter', 'channels'], keywords: ['渠道', 'ROI', '预算', '新增客户', '获客', '分层'], depth: 'channel-economics' },
-      { id: 'downtime-pareto', route: 'industry-chart:downtime-pareto', fields: ['downtimePareto', 'pareto', 'lossPareto', 'reviewSentiment'], keywords: ['高峰排队', '站点故障', '价格规则', '停车费', '体验短板', '帕累托'], depth: 'operations-quality' },
+      { id: 'loss-pareto', route: 'industry-chart:loss-pareto', fields: ['downtimePareto', 'pareto', 'lossPareto'], keywords: ['站点故障', '设备损失', '高频告警', '收益损失', '停机'], depth: 'operations-quality' },
+      { id: 'issue-frequency-ranking', route: 'industry-chart:issue-frequency-ranking', fields: ['downtimePareto', 'pareto', 'reviewSentiment'], keywords: ['高峰排队', '价格规则', '停车费', '体验短板', '客户反馈', '高频问题'], depth: 'operations-quality' },
       { id: 'business-metric-board', route: 'value-tiles:business-metric-board', fields: ['businessLogic', 'metrics'], keywords: ['关键指标', '指标覆盖率', '收益复盘', '毛利率', '收入', '现金转换', 'KPI'], depth: 'business-metric' },
       { id: 'operations-assurance', route: 'risk-table:operations-assurance', fields: ['rows', 'risks', 'controls'], keywords: ['风险', '保障', '高频高影响告警', '现场执行', '响应标准', '安全', '责任机制'], depth: 'operations-quality' },
       { id: 'report-board', route: 'report-board', fields: ['businessLogic', 'sections'], keywords: ['经营口径', '管理动作', '业务线', '套餐', '复购', '运营质量'], depth: 'operating-loop' },
@@ -199,7 +204,7 @@ const INDUSTRY_KNOWLEDGE_BASE = {
       { id: 'adoption-funnel', route: 'industry-chart:adoption-funnel', fields: ['adoptionFunnel', 'activationFunnel', 'cohortFunnel'], keywords: ['采用漏斗', '激活漏斗', 'activation', 'adoption', '留存'], depth: 'adoption-model' },
       { id: 'prototype-flow', route: 'case-gallery:prototype-flow', fields: ['images', 'visual'], keywords: ['原型', '界面', '工作流', 'screen', 'prototype'], depth: 'product-proof' },
       { id: 'revenue-board', route: 'metric-comparison:adoption-revenue-board', fields: ['metrics'], keywords: ['ARR', 'NRR', '席位扩展', '收入扩展', '转化率'], depth: 'business-metric' },
-      { id: 'permission-governance', route: 'risk-table:permission-governance', fields: ['rows', 'permissionGovernance', 'risks'], keywords: ['权限', '审计', '治理', 'SSO', '数据边界', '合规'], depth: 'governance-control' },
+      { id: 'saas-governance-loop', route: 'risk-table:saas-governance-loop', fields: ['rows', 'permissionGovernance', 'risks'], keywords: ['权限', '审计', '治理', 'SSO', '数据边界', '合规'], depth: 'governance-control' },
       { id: 'automation-workflow', route: 'timeline:automation-workflow', fields: ['phases', 'actions', 'steps', 'workflow', 'workflows', 'automationWorkflow'], keywords: ['落地路径', '自动化工作流', '扩展席位', '经营复盘', 'workflow', 'automation'], depth: 'workflow-rollout' }
     ],
     depthGates: { minProofObjects: 2, requiredDomains: ['platform-map', 'adoption-model'] }

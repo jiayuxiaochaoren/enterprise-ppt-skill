@@ -221,7 +221,7 @@ function main() {
 
   assertKicker(ops, '风险矩阵');
   assertKicker(ops, 'CONTROL SYSTEM');
-  assertKicker(ops, '责任分工');
+  assertKicker(ops, '治理动作');
   assertKicker(ops, 'GUIDANCE AND RISK BOARD');
   assertKicker(ops, 'MATERIALITY MATRIX');
   assertKicker(ops, 'GOVERNANCE TABLE EDITORIAL');

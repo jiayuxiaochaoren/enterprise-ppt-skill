@@ -44,7 +44,8 @@ function createCoverCoreRenderers(ctx = {}) {
   } = createCoverCopyHelpers(ctx);
   const {
     airyConceptOpening,
-    beautyBrandEditorialCover
+    beautyBrandEditorialCover,
+    cultureCoverSoftGeometry
   } = createSpecialtyCoverRenderers(ctx, { colors, coverTitleText, fileExists });
   const {
     coverFieldRendererFor
@@ -80,6 +81,7 @@ function createCoverCoreRenderers(ctx = {}) {
     coverShowcase,
     coverStyleRenderer,
     coverTitleText,
+    cultureCoverSoftGeometry,
     fileExists,
     splitEnergyTitle
   });

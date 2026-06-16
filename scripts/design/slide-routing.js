@@ -8,6 +8,7 @@ function createSlideRoutingHelpers(deps = {}) {
     flattenText,
     highValuePageFamilies,
     industryChartVariant,
+    industryPackFor,
     layoutVariantCompatibleWithType,
     selectReferenceRecipe,
     semanticFrame,
@@ -20,6 +21,7 @@ function createSlideRoutingHelpers(deps = {}) {
     flattenText,
     highValuePageFamilies,
     industryChartVariant,
+    industryPackFor,
     layoutVariantCompatibleWithType,
     visualIndustryId
   });
@@ -116,7 +118,7 @@ function createSlideRoutingHelpers(deps = {}) {
     if (/growth-loop|action-loop|operating-loop|行动闭环|复盘闭环|闭环/i.test(depthText) && (Array.isArray(s.phases) || Array.isArray(s.actions) || Array.isArray(s.loopItems))) {
       return { type: 'timeline', reason: 'depth-domain action loop evidence' };
     }
-    if (s.downtimePareto || s.valuationSensitivity || s.qualityHandoff || s.memberCohorts || s.channelEfficiency || s.mediaEfficiency || s.monthlyPulse || s.monthlyTrend || s.waterfallBridge || s.targetBridge || s.dispatchMap || s.adoptionFunnel) {
+    if (s.downtimePareto || s.reviewSentiment || s.valuationSensitivity || s.qualityHandoff || s.memberCohorts || s.channelEfficiency || s.mediaEfficiency || s.monthlyPulse || s.monthlyTrend || s.waterfallBridge || s.targetBridge || s.dispatchMap || s.adoptionFunnel) {
       return { type: 'industry-chart', reason: `industry proof object: ${semantic.proofObject || 'explicit-chart'}` };
     }
     if (s.oee || s.oeeComponents) return { type: 'metric-comparison', reason: 'explicit OEE metrics fields' };

@@ -32,7 +32,12 @@ const helpers = createSlideNormalizationHelpers({
     : JSON.stringify(value),
   generatedAssetPolicy: (plan, slide) => ({ status:slide.assetStatus || 'none' }),
   generatedAssetPrompt: () => 'GENERATED PROMPT',
-  highValuePageFamilies: new Set(['bad-proof']),
+  highValuePageFamilies: new Set(['bad-proof', 'culture-cover-with-soft-geometry']),
+  industryPackFor: plan => ({
+    'people-culture-company': { coverArchetype:'culture-soft-cover', dividerArchetype:'culture-sequence-divider' },
+    'government-public-sector': { coverArchetype:'civic-executive-cover', dividerArchetype:'governance-briefing-divider' },
+    'manufacturing-operations': { coverArchetype:'native-industrial-structure-cover', dividerArchetype:'industrial-structure-divider' }
+  }[plan.industry] || null),
   layoutVariantCompatibleWithType: (type, variant) => !['bad-variant', 'bad-proof'].includes(variant),
   palettes: { dark:{ presentation:{ coverTone:'dark' } } },
   pickLayoutVariant: (plan, slide) => slide.pickedVariant,
@@ -235,5 +240,38 @@ assert.equal(metric.chartSpec.version, 'chartSpec/v1');
 assert.equal(metric.chartSpecInferred, true);
 assert.equal(metric.themeIntent, 'value-signal');
 assert.equal(metric.accentRole, 'data');
+
+const normalizedGovernmentDivider = helpers.normalizeSlide({ industry:'government-public-sector' }, {
+  forceType:'toc-clean',
+  type:'toc-clean',
+  layoutVariant:'chapter-hero',
+  title:'阅读路径',
+  items:['政策来源', '资源地图', '推进机制']
+}, 1, 3);
+assert.equal(normalizedGovernmentDivider.layoutVariant, 'board-briefing');
+assert.equal(normalizedGovernmentDivider.previousLayoutVariant, 'chapter-hero');
+
+const normalizedManufacturingCover = helpers.normalizeSlide({ industry:'manufacturing-operations' }, {
+  forceType:'cover',
+  type:'cover',
+  layoutVariant:'airy-concept-opening',
+  title:'恒越精工能力介绍'
+}, 0, 1);
+assert.equal(normalizedManufacturingCover.layoutVariant, '');
+assert.equal(normalizedManufacturingCover.variant, '');
+assert.equal(normalizedManufacturingCover.previousLayoutVariant, 'airy-concept-opening');
+
+const normalizedPeopleCultureCover = helpers.normalizeSlide({ industry:'people-culture-company' }, {
+  forceType:'cover',
+  type:'cover',
+  layoutVariant:'airy-concept-opening',
+  title:'星火数科文化与组织介绍',
+  subtitle:'用使命、团队证据和价值观行为说明公司为什么值得加入'
+}, 0, 1);
+assert.equal(normalizedPeopleCultureCover.layoutVariant, 'culture-cover-with-soft-geometry');
+assert.equal(normalizedPeopleCultureCover.variant, 'culture-cover-with-soft-geometry');
+assert.equal(normalizedPeopleCultureCover.previousLayoutVariant, 'airy-concept-opening');
+assert.equal(normalizedPeopleCultureCover.proofObject, 'culture-cover-with-soft-geometry');
+assert.equal(normalizedPeopleCultureCover.renderFamilySelected, 'cover:culture-cover-with-soft-geometry');
 
 console.log('slide normalization helpers ok');

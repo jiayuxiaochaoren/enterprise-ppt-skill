@@ -22,7 +22,7 @@ function createArchitectureManufacturingTopology(ctx = {}, deps = {}) {
   return function architectureManufacturingTopology(slide, plan, s, idx) {
     const claim = s.claim || s.subtitle || '把设备接入、工单处置和指标复盘放进同一条产线证据链。';
     const header = drawLightPageHeader(slide, {
-      kicker:'LINE SYSTEM TOPOLOGY',
+      kicker:'产线系统拓扑',
       title:s.title || '设备运维能力架构',
       titleW:5.9,
       titleSize:24,
@@ -50,9 +50,9 @@ function createArchitectureManufacturingTopology(ctx = {}, deps = {}) {
 
     drawManufacturingReadout(slide, board, topology);
 
-    addRect(slide, 0.92, 6.34, 9.82, 0.26, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:18}, line:{color:C.line, transparency:100} });
+    addRect(slide, 0.92, 6.34, 9.82, 0.28, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:0}, line:{color:C.line, transparency:100} });
     addText(slide, s.bottomLine || '产品对象、制造动作与交付资料保持一一对应，方便客户快速判断适配范围。', {
-      x:1.12, y:6.40, w:9.24, h:0.10, fontSize:7.4, color:C.body, fit:'shrink'
+      x:1.12, y:6.41, w:9.24, h:0.11, fontSize:7.2, color:C.body, fit:'shrink'
     });
     drawFooter(slide, plan);
   };

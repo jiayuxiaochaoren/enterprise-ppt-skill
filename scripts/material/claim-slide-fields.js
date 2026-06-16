@@ -1,6 +1,11 @@
 const { extractNumbers } = require('./common');
 const { evidenceById, sourceById } = require('./source-trace');
 const {
+  chartFieldForNormalizedProof,
+  displayCopyFromClaim,
+  normalizeProofObject
+} = require('../design/proof-taxonomy');
+const {
   sourceIdValues,
   toArray
 } = require('../design/source-evidence');
@@ -75,7 +80,7 @@ function dataComponentForClaim(claim = {}) {
   if (/channel|media|efficiency|scatter|bubble|roas|roi/.test(proof)) return 'scatter-bubble';
   if (/monthly|pulse|trend|月度|趋势/.test(proof)) return 'trend-line';
   if (/waterfall|bridge|target|目标桥|目标差额/.test(proof)) return 'waterfall-bridge';
-  if (/pareto|root|cause|downtime/.test(proof)) return 'root-cause-matrix';
+  if (/pareto|root|cause|downtime|loss-pareto|issue-frequency|review-sentiment|ranking/.test(proof)) return 'root-cause-matrix';
   if (/funnel|adoption/.test(proof)) return 'funnel';
   if (/journey|handoff|service/.test(proof)) return 'journey-breakpoint';
   if (/comparison|before|after/.test(proof)) return 'before-after';
@@ -140,17 +145,7 @@ function imagesForClaim(claim = {}, extraction = {}, bundle = {}) {
 }
 
 function chartFieldForProof(proof = '') {
-  const p = String(proof || '').toLowerCase();
-  if (p.includes('downtime') || p.includes('pareto')) return 'downtimePareto';
-  if (p.includes('valuation') || p.includes('sensitivity')) return 'valuationSensitivity';
-  if (p.includes('quality') || p.includes('handoff')) return 'qualityHandoff';
-  if (p.includes('member') || p.includes('cohort') || p.includes('rfm')) return 'memberCohorts';
-  if (p.includes('channel') || p.includes('media') || p.includes('efficiency') || p.includes('scatter') || p.includes('bubble') || p.includes('roas') || p.includes('roi')) return 'channelEfficiency';
-  if (p.includes('monthly') || p.includes('pulse') || p.includes('trend')) return 'monthlyPulse';
-  if (p.includes('waterfall') || p.includes('target-bridge') || p.includes('target bridge')) return 'waterfallBridge';
-  if (p.includes('dispatch') || p.includes('site')) return 'dispatchMap';
-  if (p.includes('adoption') || p.includes('funnel') || p.includes('activation')) return 'adoptionFunnel';
-  return '';
+  return chartFieldForNormalizedProof(proof);
 }
 
 function tableRowsFromClaim(claim = {}) {
@@ -175,13 +170,26 @@ function externalUseCaveatText(value = '') {
 
 
 function claimVisibleText(claim = {}) {
+  const displayCopy = displayCopyFromClaim(claim);
+  const normalizedProof = normalizeProofObject(claim.proof_object || claim.proofObject || claim.layoutVariant || claim.variant, {
+    text: [claim.claim, claim.title, claim.support, claim.summary, claim.note].filter(Boolean).join(' '),
+    proofIntent: claim.proof_intent || claim.proofIntent,
+    displayCopy,
+    slide: claim
+  });
   return [
+    displayCopy.title,
+    displayCopy.subtitle,
+    displayCopy.core_title,
+    displayCopy.core_body,
+    displayCopy.kicker,
+    displayCopy.note,
     claim.claim,
     claim.title,
     claim.support,
     claim.summary,
     claim.note,
-    claim.proof_object,
+    normalizedProof || claim.proof_object,
     claim.narrative_role,
     ...(Array.isArray(claim.bullets) ? claim.bullets : [])
   ].filter(Boolean).join(' ');

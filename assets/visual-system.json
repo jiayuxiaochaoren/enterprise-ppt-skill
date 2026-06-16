@@ -1137,7 +1137,7 @@
         "architecture": ["patient-journey-band", "service-blueprint-lane", "frontstage-backstage-tag"],
         "timeline": ["patient-journey-band", "handoff-checkpoint"],
         "value": ["quality-scorecard", "sla-chip"],
-        "risk": ["responsibility-loop", "quality-risk-tag"],
+        "risk": ["healthcare-quality-loop", "quality-risk-tag"],
         "closing": ["care-loop-anchor", "contact-block"]
       },
       "colorCarriers": {
@@ -1145,7 +1145,7 @@
         "architecture": ["service-lane-fill"],
         "timeline": ["handoff-checkpoint"],
         "value": ["quality-scorecard"],
-        "risk": ["responsibility-loop"]
+        "risk": ["healthcare-quality-loop"]
       },
       "avoidComponents": ["equipment-nameplate", "technical-ruler", "lookbook-frame"]
     },

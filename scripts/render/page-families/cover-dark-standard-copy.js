@@ -19,8 +19,6 @@ function createCoverDarkStandardCopy(ctx = {}, deps = {}) {
       x:0.92, y:3.36, w:5.7, h:0.20,
       fontSize:11.5, color:'CBD5E1', fit:'shrink'
     });
-    ctx.addHairline(slide, 0.92, 3.78, 0.82, C.accent, 0, 0.65);
-    ctx.addHairline(slide, 1.86, 3.78, 0.34, C.cyan, 38, 0.50);
     ctx.addDeckMeta(slide, plan, {
       x:0.92, y:6.30, w:7.1, h:0.16,
       fontSize:8.2, color:'CBD5E1'

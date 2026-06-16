@@ -96,6 +96,7 @@ assert.ok(schema.claim_spine[0].source_pages);
 ['business_domain', 'chain_stage', 'depth_domain', 'industry_objects', 'proof_intent'].forEach(field => {
   assert.ok(Object.prototype.hasOwnProperty.call(schema.claim_spine[0], field), `claim schema should include ${field}`);
 });
+assert.ok(Object.prototype.hasOwnProperty.call(schema.claim_spine[0], 'display_copy'));
 assert.equal(chartFieldForProof('monthly-pulse-trend'), 'monthlyPulse');
 assert.deepEqual(metricsFromClaim({ claim:'OEE 提升至 78%，计划达到 85%' }).map(m => m.value), ['78%', '85%']);
 assert.ok(claimVisibleText({ claim:'核心判断', bullets:['证据一'] }).includes('证据一'));
@@ -126,6 +127,35 @@ assert.equal(slideFromClaim({
   source_ids:['src-001'],
   metrics:[{ label:'OEE', value:'78%' }]
 }, { evidence: [] }, { sources: [{ id:'src-001', kind:'text', name:'brief.md' }] }).monthlyPulse.length, 1);
+const customerParetoSlide = slideFromClaim({
+  claim:'客户痛点呈现帕累托：交付周期与海外认证并列第一',
+  support:'60 份调研中，项目交付周期长和海外认证周期不确定各出现 16 次。',
+  proof_object:'downtime-pareto',
+  coreTitle:'复购不只是价格问题',
+  source_ids:['src-001'],
+  metrics:[
+    { label:'交付周期长', value:'16次', note:'客户顾虑' },
+    { label:'海外认证不确定', value:'16次', note:'客户顾虑' }
+  ]
+}, { evidence: [] }, { sources: [{ id:'src-001', kind:'text', name:'research.csv' }] });
+assert.equal(customerParetoSlide.title, '客户痛点排序：交付周期与海外认证并列第一');
+assert.equal(customerParetoSlide.coreTitle, '复购不只是价格问题');
+assert.equal(customerParetoSlide.proofObject, 'issue-frequency-ranking');
+const displayCopyPrioritySlide = slideFromClaim({
+  claim:'内部旧标题：DOWNTIME PARETO',
+  support:'旧副标题',
+  proof_object:'responsibility-loop',
+  display_copy:{
+    title:'经营动作闭环',
+    subtitle:'按角色、资料与复盘节奏推进重点事项。',
+    core_title:'动作闭环',
+    core_body:'避免通用责任文案外泄。'
+  },
+  bullets:['制造交付', '认证验收']
+}, { evidence: [] }, { sources: [] });
+assert.equal(displayCopyPrioritySlide.title, '经营动作闭环');
+assert.equal(displayCopyPrioritySlide.subtitle, '按角色、资料与复盘节奏推进重点事项。');
+assert.equal(displayCopyPrioritySlide.proofObject, 'generic-action-loop');
 const foundationMetricSlide = slideFromClaim({
   claim:'多渠道经营底座已成型，后续转向质量增长',
   support:'SKU、平台和团队规模构成增长基础。',

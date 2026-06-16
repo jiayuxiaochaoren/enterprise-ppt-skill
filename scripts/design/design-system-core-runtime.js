@@ -15,6 +15,7 @@ function createDesignSystemCoreRuntime(deps = {}) {
     compactUnique,
     flattenText,
     industryDesignDialects,
+    industryPackFor,
     mediaAssets,
     normalizeAssetRole,
     visualIndustryId,
@@ -40,6 +41,7 @@ function createDesignSystemCoreRuntime(deps = {}) {
   const visualMedia = createVisualMediaHelpers({
     assetDir,
     assetRoleNeedsImage,
+    industryPackFor,
     industryVisualPolicy,
     mediaAssets,
     normalizeAssetRole,

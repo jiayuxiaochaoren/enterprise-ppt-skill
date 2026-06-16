@@ -1,3 +1,8 @@
+const {
+  normalizeProofObject,
+  renderFamilyForProof
+} = require('./proof-taxonomy');
+
 function createSemanticProofCandidateHelpers(deps = {}) {
   const {
     contentSignals,
@@ -21,6 +26,12 @@ function createSemanticProofCandidateHelpers(deps = {}) {
     const text = flattenText(s);
     return profile.proofObjects
       .map(proof => {
+        const normalizedId = normalizeProofObject(proof.id, {
+          industry: plan.industry || '',
+          text,
+          proofIntent: s.proofIntent || s.proof_intent,
+          slide: s
+        });
         const fieldScore = fieldHitScore(s, proof.fields || []);
         const keywordHits = matchKeywordList(text, proof.keywords || []);
         let score = fieldScore + keywordHits.length * 1.8;
@@ -29,6 +40,9 @@ function createSemanticProofCandidateHelpers(deps = {}) {
         if (signals.hasLoop && /loop|control|governance/i.test(proof.depth || '')) score += 1.2;
         if (signals.hasArchitecture && /map|architecture|system/i.test(proof.depth || '')) score += 1.2;
         return Object.assign({}, proof, {
+          id: normalizedId || proof.id,
+          legacyId: normalizedId && normalizedId !== proof.id ? proof.id : undefined,
+          route: renderFamilyForProof(normalizedId || proof.id) || proof.route,
           score: Number(score.toFixed(2)),
           fieldScore,
           keywordHits

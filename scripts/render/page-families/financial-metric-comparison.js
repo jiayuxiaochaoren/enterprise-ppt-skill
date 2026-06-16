@@ -42,7 +42,13 @@ function createMetricComparisonRenderer(ctx = {}, renderers = {}) {
   return function metricComparison(slide, plan, s, idx) {
     const variant = ctx.variantOf(s, '');
     const industryChartVariant = industryChartVariantFor(s);
-    if (industryChartSlide && industryChartVariant && (plan.industry === 'beauty-consumer' || isVisualIndustry(plan, 'brand-retail'))) {
+    const shouldUseIndustryChart = industryChartSlide && industryChartVariant && (
+      plan.industry === 'beauty-consumer' ||
+      plan.industry === 'manufacturing-operations' ||
+      isVisualIndustry(plan, 'brand-retail') ||
+      isVisualIndustry(plan, 'manufacturing-operations')
+    );
+    if (shouldUseIndustryChart) {
       return industryChartSlide(slide, plan, Object.assign({}, s, {
         layoutVariant: industryChartVariant,
         variant: industryChartVariant

@@ -30,8 +30,6 @@ function createMissionStatementStage(ctx = {}) {
       x:0.82, y:1.42, w:7.10, h:1.10, fontSize:34.0, bold:true, color:C.white, fit:'shrink', breakLine:true
     });
     addText(slide, s.claim || s.subtitle || '使命页必须用行为原则和证据支撑。', { x:0.86, y:2.82, w:5.60, h:0.20, fontSize:10.0, color:C.captionOnImage, fit:'shrink' });
-    addRect(slide, 0.88, 3.30, 0.94, 0.05, C.accent, C.accent);
-    addRect(slide, 1.96, 3.30, 0.34, 0.05, C.cyan, C.cyan, { fill:{color:C.cyan, transparency:38}, line:{color:C.cyan, transparency:100} });
 
     const values = (s.values || s.items || []).slice(0, 4);
     const board = { x:0.92, y:4.24, w:10.54, h:1.42 };

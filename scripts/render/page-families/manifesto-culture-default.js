@@ -22,7 +22,6 @@ function createCultureManifestoDefault(ctx = {}, deps = {}) {
     const statement = s.statement || s.title || '共识不是口号，而是持续行动的方式';
     addText(slide, statement, { x:0.82, y:1.72, w:6.88, h:0.92, fontSize:30, bold:true, color:C.white, fit:'shrink', breakLine:true });
     addText(slide, s.claim || s.subtitle || s.intro || '', { x:0.86, y:3.02, w:5.80, h:0.25, fontSize:11.0, color:'CBD5E1', fit:'shrink' });
-    addHairline(slide, 0.88, 3.54, 0.86, C.accent, 0, 0.75);
     const values = (s.values || s.items || []).slice(0,4);
     values.forEach((v,i)=>{
       const x = 0.92 + i*2.78;

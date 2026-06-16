@@ -112,12 +112,12 @@ module.exports = {
         "proofObjects": [
           "patient-scorecard",
           "patient-service-scorecard",
-          "responsibility-loop",
+          "healthcare-quality-loop",
           "risk-governance"
         ],
         "routes": [
           "metric-comparison:patient",
-          "risk-table:responsibility"
+          "risk-table:healthcare-quality-loop"
         ],
         "fields": [
           "metrics",
@@ -264,14 +264,14 @@ module.exports = {
           "adoption-funnel",
           "adoption-revenue-board",
           "revenue-board",
-          "permission-governance"
+          "saas-governance-loop"
         ],
         "routes": [
           "industry-chart:adoption-funnel",
           "metric-comparison:adoption",
           "metric-comparison:adoption-revenue-board",
           "risk-table:permission",
-          "risk-table:permission-governance"
+          "risk-table:saas-governance-loop"
         ],
         "fields": [
           "adoptionFunnel",

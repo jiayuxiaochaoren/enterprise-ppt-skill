@@ -34,6 +34,16 @@ function createAssetGenerationHelpers({
     return s.type === 'cover' || design.role === 'cover' || slideRole(s) === 'cover';
   }
 
+  function coverArchetype(plan = {}, s = {}) {
+    return String(
+      s.coverArchetype ||
+      s.cover_archetype ||
+      plan.coverArchetype ||
+      plan.cover_archetype ||
+      ''
+    ).trim().toLowerCase();
+  }
+
   function explicitFactualVisualRequest(s = {}, recipe = null, design = null, role = '') {
     const visual = s.visual || {};
     const text = flattenText([
@@ -166,6 +176,7 @@ function createAssetGenerationHelpers({
         ].filter(Boolean).join(' ')))
       );
     const coverPreset = design && design.coverStylePreset ? design.coverStylePreset : null;
+    const coverArchetypeId = coverArchetype(plan, s);
     const coverStyleRequestsAsset = isCoverSlide(plan, s, design) &&
       coverPreset &&
       coverPreset.assetPolicy &&
@@ -182,6 +193,12 @@ function createAssetGenerationHelpers({
       !hasBoundAsset &&
       !requested &&
       !coverStyleNeedsAsset &&
+      !imageLedSlideRequest;
+    const nativeIndustrialCoverWithoutAsset = isCoverSlide(plan, s, design) &&
+      coverArchetypeId === 'native-industrial-structure-cover' &&
+      !slideHasImages &&
+      !hasBoundAsset &&
+      !requested &&
       !imageLedSlideRequest;
     const syntheticOnly = /synthetic|abstract|generic|placeholder|mood|atmospheric|concept|mock/i.test(String(recipe && recipe.generatedAsset || '')) ||
       ['background', 'showcase', 'gallery', 'abstract'].includes(role) ||
@@ -225,6 +242,20 @@ function createAssetGenerationHelpers({
         structureOnly: true,
         syntheticOnly: true,
         reason: 'native structural route renders without generated imagery'
+      });
+    }
+    if (nativeIndustrialCoverWithoutAsset) {
+      const structuralTarget = assetTargetContract(plan, s, 'abstract', { normalizedRole: 'abstract' });
+      return withDecisionSource({
+        status: 'none',
+        role: 'abstract',
+        originalRole: target.originalRole || originalRole,
+        resolvedRole: 'abstract',
+        target: structuralTarget,
+        mustBind: false,
+        structureOnly: true,
+        syntheticOnly: true,
+        reason: 'native industrial cover archetype renders without generated imagery when no bound asset is available'
       });
     }
     if (!shouldGenerate) {

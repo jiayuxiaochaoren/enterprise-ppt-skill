@@ -13,6 +13,38 @@ module.exports = {
     ],
     "stages": [
       {
+        "id": "culture-opening-claim",
+        "position": 1,
+        "label": "文化开场主张",
+        "components": [
+          "hero-image",
+          "commentary-panel",
+          "caption-bar"
+        ],
+        "coveragePolicy": {
+          "requiredAny": [
+            "hero-image",
+            "commentary-panel"
+          ],
+          "optional": [
+            "caption-bar"
+          ],
+          "minHits": 2
+        },
+        "proofObjects": [
+          "culture-cover-with-soft-geometry"
+        ],
+        "routes": [
+          "cover:culture-cover-with-soft-geometry"
+        ],
+        "fields": [
+          "media.cover",
+          "visual.image",
+          "image"
+        ],
+        "keywords": []
+      },
+      {
         "id": "mission-culture-claim",
         "position": 1,
         "label": "使命/文化主张",
@@ -34,7 +66,6 @@ module.exports = {
           "minHits": 2
         },
         "proofObjects": [
-          "culture-cover-with-soft-geometry",
           "mission-statement-stage",
           "value-principle-cards"
         ],

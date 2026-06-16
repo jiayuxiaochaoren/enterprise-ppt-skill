@@ -1,6 +1,7 @@
 const {
   assetAuthorizationGate,
   inferDeckLanguage,
+  industryPackFor,
   languagePolicyFor,
   normalizeDeckPlan
 } = require('../design-system');
@@ -48,6 +49,18 @@ function validateExtraction(extraction = {}) {
       claim.support,
       claim.summary,
       claim.note,
+      claim.display_copy && claim.display_copy.title,
+      claim.display_copy && claim.display_copy.subtitle,
+      claim.display_copy && claim.display_copy.core_title,
+      claim.display_copy && claim.display_copy.core_body,
+      claim.display_copy && claim.display_copy.kicker,
+      claim.display_copy && claim.display_copy.note,
+      claim.displayCopy && claim.displayCopy.title,
+      claim.displayCopy && claim.displayCopy.subtitle,
+      claim.displayCopy && claim.displayCopy.coreTitle,
+      claim.displayCopy && claim.displayCopy.coreBody,
+      claim.displayCopy && claim.displayCopy.kicker,
+      claim.displayCopy && claim.displayCopy.note,
       ...(Array.isArray(claim.bullets) ? claim.bullets : [])
     ].filter(Boolean).join(' ');
     if (hasBadVisibleCopy(visibleCopy)) errors.push(`claim_spine[${i}] contains production-note wording that would leak into visible slides`);
@@ -140,6 +153,7 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
   const title = doc.title || options.title || '材料整理汇报';
   const subtitle = doc.subtitle || doc.decision_goal || '围绕事实、证据与下一步行动形成清晰汇报';
   const companyIntro = doc.ppt_type === 'company-intro';
+  const industryPack = industryPackFor(industry) || {};
   const language = doc.language || doc.target_language || doc.output_language || extraction.language || inferDeckLanguage({
     title,
     subtitle,
@@ -242,6 +256,8 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
     label: companyIntro ? '致谢' : undefined,
     showMeta: companyIntro ? false : undefined,
     contacts: companyIntro ? contacts : (contacts.length ? contacts : undefined),
+    rows: companyIntro || !decision ? undefined : (decision.rows || decision.controls || decision.phases || decision.steps || undefined),
+    inspectionMatrix: companyIntro || !decision ? undefined : (decision.rows || decision.controls || decision.phases || decision.steps || undefined),
     actions: companyIntro
       ? (contacts.length ? undefined : [
           { title: '目标场景确认', body: '对齐行业、工艺段和产线边界。' },
@@ -261,6 +277,12 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
     claimSpine: claimSpineContract(claims, extraction, bundle),
     deckArtDirection,
     palette: paletteForIndustry(industry, extraction),
+    coverArchetype: industryPack.coverArchetype,
+    dividerArchetype: industryPack.dividerArchetype,
+    bodyLayoutPool: industryPack.bodyLayoutPool,
+    closingArchetype: industryPack.closingArchetype,
+    paletteTokenSet: industryPack.paletteTokenSet,
+    textureBackgroundPolicy: industryPack.textureBackgroundPolicy,
     visualMode: 'auto',
     visualIntent: (bundle.images || []).length >= 3 ? 'case-led' : 'strategy',
     title: displayTitle,
@@ -289,7 +311,7 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
       claimSpine: claimSpineContract(claims, extraction, bundle),
       targetSlides: Object.assign({}, targetContract, { actual: slides.length }),
       deckArtDirection,
-      referenceContext: referenceContextForPrompt(bundle, { industry }),
+	      referenceContext: referenceContextForPrompt(bundle, { industry }),
       materialHygiene: materialHygieneSummary(bundle),
       dedupedSlides: dedupeReport,
       facts: extraction.facts || [],

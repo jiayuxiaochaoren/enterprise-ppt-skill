@@ -37,8 +37,6 @@ function createCoverLightEditorialRenderer(ctx = {}, deps = {}) {
     });
     const insight = s.coverInsight || plan.coverInsight || industry.insight || s.subtitle || plan.subtitle;
     ctx.addText(slide, insight, { x:x0+0.02, y:3.34, w:5.55, h:0.20, fontSize:10.8, color:C.body, fit:'shrink' });
-    ctx.addRect(slide, x0+0.02, 3.82, 0.88, 0.045, C.accent, C.accent);
-    ctx.addRect(slide, x0+1.02, 3.82, 0.34, 0.045, C.cyan, C.cyan, { fill:{color:C.cyan, transparency:38}, line:{color:C.cyan, transparency:100} });
 
     if (motif !== 'ivory-editorial') {
       drawLightEditorialProofPanel(slide, plan, s, insight, panel, companyIntro);

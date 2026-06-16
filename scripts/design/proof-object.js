@@ -2,7 +2,8 @@ function createProofObjectHelpers({
   compactUnique,
   flattenText,
   highValuePageFamilies,
-  layoutVariantCompatibleWithType
+  layoutVariantCompatibleWithType,
+  normalizeProofObject = value => String(value || '').trim().toLowerCase()
 } = {}) {
   const unique = typeof compactUnique === 'function'
     ? compactUnique
@@ -34,16 +35,17 @@ function createProofObjectHelpers({
   }
 
   function proofObjectIdForSlide(s = {}) {
-    const value = String(
+    const value = normalizeProofObject(
       s.proofObject ||
       s.proof_object ||
       (s.proof && s.proof.id) ||
       s.layoutVariant ||
       s.variant ||
-      ''
+      '',
+      { slide: s, text: flatten(s), industry: s.industry || '' }
     );
     if (value && pageFamilies.has(value) && s.type && !variantCompatible(s.type, value)) {
-      return String(s.layoutVariant || s.variant || '');
+      return normalizeProofObject(s.layoutVariant || s.variant || '', { slide: s, text: flatten(s), industry: s.industry || '' });
     }
     return value;
   }
