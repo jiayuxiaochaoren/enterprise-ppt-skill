@@ -3,7 +3,8 @@ function createAiryConceptOpening(ctx = {}, deps = {}) {
     colors,
     drawFooter,
     drawLightCanvasShell,
-    fileExists
+    fileExists,
+    shouldUseCoverImage
   } = deps;
 
   return function airyConceptOpening(slide, plan, s) {
@@ -23,7 +24,9 @@ function createAiryConceptOpening(ctx = {}, deps = {}) {
     });
 
     const object = { x:7.70, y:1.28, w:2.78, h:2.78 };
-    const hasImage = imagePath && fileExists(imagePath);
+    const hasImage = shouldUseCoverImage
+      ? shouldUseCoverImage(s, { imagePath }, { requireTrustedEvidence:true }) && fileExists(imagePath)
+      : imagePath && fileExists(imagePath);
     slide.addShape('ellipse', { x:object.x-0.54, y:object.y-0.54, w:object.w+1.08, h:object.h+1.08, fill:{color:C.softBlue || 'EFF6FF', transparency:34}, line:{color:C.softBlue || 'EFF6FF', transparency:100} });
     if (hasImage) {
       ctx.addRect(slide, object.x, object.y, object.w, object.h, ctx.panelFill(), C.line, { fill:{color:ctx.panelFill(), transparency:0}, line:{color:C.line, transparency:18, width:0.44} });

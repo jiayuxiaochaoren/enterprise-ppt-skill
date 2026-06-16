@@ -12,6 +12,9 @@ const {
 const {
   createCoverCopyHelpers
 } = require('./render/page-families/cover-copy');
+const {
+  shouldUseCoverImage
+} = require('./render/page-families/cover-image-policy');
 
 function createSlide(ops) {
   return {
@@ -331,7 +334,8 @@ function main() {
   const styleCopy = createCoverCopyHelpers(styleCtx);
   const styleRenderer = createCoverStyleRenderer(styleCtx, {
     addCoverKicker: styleCopy.addCoverKicker,
-    colors: () => styleCtx.colors()
+    colors: () => styleCtx.colors(),
+    shouldUseCoverImage
   });
   assert.equal(styleRenderer(
     createSlide(styleOps),
@@ -370,7 +374,8 @@ function main() {
   const noImageCopy = createCoverCopyHelpers(noImageCtx);
   const noImageRenderer = createCoverStyleRenderer(noImageCtx, {
     addCoverKicker: noImageCopy.addCoverKicker,
-    colors: () => noImageCtx.colors()
+    colors: () => noImageCtx.colors(),
+    shouldUseCoverImage
   });
   assert.equal(noImageRenderer(
     createSlide(noImageOps),
@@ -396,6 +401,77 @@ function main() {
       `expected native cover signal ${text}`
     );
   });
+
+  const syntheticProofOps = [];
+  const syntheticProofCtx = createFakeCtx(syntheticProofOps, styleSpecRef);
+  const syntheticProofRenderers = createCoverCoreRenderers(syntheticProofCtx);
+  syntheticProofRenderers.coverDark(createSlide(syntheticProofOps), {
+    title:'Board Proof Cover',
+    coverTone:'light',
+    coverImagePath:'/exists/proof-cover.png',
+    coverStylePreset:{ rendererFlavor:'light-editorial-proof' }
+  }, {
+    type:'cover',
+    title:'Board Proof Cover',
+    assetGeneration:{ syntheticOnly:true }
+  });
+  assert(
+    !syntheticProofOps.some(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/proof-cover.png'),
+    'synthetic editorial proof covers should fall back to native proof-card rendering'
+  );
+  assert(
+    syntheticProofOps.some(op => op.name === 'addText' && op.args[1] === 'Proof title'),
+    'synthetic editorial proof covers should still render native proof title copy'
+  );
+
+  const airyFallbackOps = [];
+  const airyFallbackSpecRef = { current:{ coverTone:'dark', coverMotif:'editorial-rule' } };
+  const airyFallbackCtx = createFakeCtx(airyFallbackOps, airyFallbackSpecRef);
+  const airyFallbackRenderers = createCoverCoreRenderers(airyFallbackCtx);
+  airyFallbackRenderers.coverDark(createSlide(airyFallbackOps), {
+    title:'Architecture Cover',
+    industry:'saas-technology',
+    coverImagePath:'/exists/blueprint-cover.png',
+    coverStylePreset:{
+      rendererFlavor:'image-led-left-copy',
+      backgroundPolicy:'blueprint-studio'
+    }
+  }, {
+    type:'cover',
+    layoutVariant:'airy-concept-opening',
+    title:'Architecture Cover',
+    assetGeneration:{ syntheticOnly:true }
+  });
+  assert(
+    !airyFallbackOps.some(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/blueprint-cover.png'),
+    'synthetic blueprint covers should not force a generated background image into airy concept openings'
+  );
+  assert(
+    airyFallbackOps.some(op => op.name === 'addLabel' && op.args[1] === 'CONCEPT OPENING'),
+    'synthetic blueprint covers should fall back to the native airy concept cover'
+  );
+
+  const healthcareFallbackOps = [];
+  const healthcareFallbackCtx = createFakeCtx(healthcareFallbackOps, styleSpecRef);
+  const healthcareFallbackRenderers = createCoverCoreRenderers(healthcareFallbackCtx);
+  healthcareFallbackRenderers.coverDark(createSlide(healthcareFallbackOps), {
+    title:'门诊服务质量改善方案',
+    industry:'healthcare-operations',
+    coverImagePath:'/exists/clinical-proof.png',
+    coverStylePreset:{ rendererFlavor:'light-editorial-proof' }
+  }, {
+    type:'cover',
+    title:'门诊服务质量改善方案',
+    assetGeneration:{ syntheticOnly:true }
+  });
+  assert(
+    healthcareFallbackOps.some(op => op.name === 'addLabel' && op.args[1] === '服务质量路径'),
+    'synthetic healthcare editorial covers should fall back to the clinical stage cover'
+  );
+  assert(
+    !healthcareFallbackOps.some(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/clinical-proof.png'),
+    'clinical stage cover should suppress synthetic proof-card imagery'
+  );
 
   console.log('cover core renderers ok');
 }

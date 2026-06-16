@@ -2,7 +2,8 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
   const {
     addCoverKicker,
     colors,
-    drawFooter
+    drawFooter,
+    shouldUseCoverImage
   } = deps;
   const W = () => (typeof ctx.canvasWidth === 'function' ? ctx.canvasWidth() : 13.333);
   const H = () => (typeof ctx.canvasHeight === 'function' ? ctx.canvasHeight() : 7.5);
@@ -44,6 +45,12 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
   }
 
   function drawImageLedLeftCopy(slide, plan, s, industry, title, design, preset) {
+    if (shouldUseCoverImage &&
+      !shouldUseCoverImage(s, design, {
+        requireTrustedEvidence:/blueprint|command|risk/i.test(String((preset && preset.backgroundPolicy) || ''))
+      })) {
+      return false;
+    }
     const C = colors();
     const imagePath = design.imagePath || '';
     ctx.addPhotoPanel(slide, imagePath, 0, 0, W(), H(), {
@@ -76,11 +83,15 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
   function drawLightEditorialProof(slide, plan, s, industry, title, design) {
     const C = colors();
     const surface = ctx.surfaceFill();
+    const imageAvailable = Boolean(design.imagePath);
+    const useTrustedImage = design.imagePath &&
+      (!shouldUseCoverImage || shouldUseCoverImage(s, design, { requireTrustedEvidence:true }));
+    if (imageAvailable && !useTrustedImage && shouldUseCoverImage) return false;
     ctx.addRect(slide, 0, 0, W(), H(), surface, surface, {
       fill:{ color:surface, transparency:0 },
       line:{ color:surface, transparency:100 }
     });
-    if (design.imagePath) {
+    if (useTrustedImage) {
       ctx.addPhotoPanel(slide, design.imagePath, 5.82, 0, W() - 5.82, H(), {
         tone:'light',
         transparency:34,

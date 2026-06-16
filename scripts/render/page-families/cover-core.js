@@ -25,6 +25,9 @@ const {
 const {
   createCoverDarkRenderer
 } = require('./cover-dark');
+const {
+  shouldUseCoverImage
+} = require('./cover-image-policy');
 
 function createCoverCoreRenderers(ctx = {}) {
   assertRendererContext(ctx, ['cover'], { label:'cover renderer context' });
@@ -45,8 +48,9 @@ function createCoverCoreRenderers(ctx = {}) {
   const {
     airyConceptOpening,
     beautyBrandEditorialCover,
+    clinicalQualityCover,
     cultureCoverSoftGeometry
-  } = createSpecialtyCoverRenderers(ctx, { colors, coverTitleText, fileExists });
+  } = createSpecialtyCoverRenderers(ctx, { addCoverKicker, colors, coverTitleText, fileExists, shouldUseCoverImage });
   const {
     coverFieldRendererFor
   } = createCoverFieldRenderers(ctx, { colors });
@@ -57,7 +61,8 @@ function createCoverCoreRenderers(ctx = {}) {
     colors,
     drawFooter,
     fileExists,
-    profile
+    profile,
+    shouldUseCoverImage
   });
   const coverShowcase = createCoverShowcaseRenderer(ctx, {
     addCoverKicker,
@@ -69,12 +74,14 @@ function createCoverCoreRenderers(ctx = {}) {
   const coverStyleRenderer = createCoverStyleRenderer(ctx, {
     addCoverKicker,
     colors,
-    drawFooter
+    drawFooter,
+    shouldUseCoverImage
   });
   const coverDark = createCoverDarkRenderer(ctx, {
     addCoverKicker,
     airyConceptOpening,
     beautyBrandEditorialCover,
+    clinicalQualityCover,
     colors,
     coverFieldRendererFor,
     coverLightEditorial,

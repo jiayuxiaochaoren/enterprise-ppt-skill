@@ -10,12 +10,14 @@ function createCoverLightEditorialRenderer(ctx = {}, deps = {}) {
     addCoverKicker,
     colors,
     drawFooter,
-    fileExists
+    fileExists,
+    shouldUseCoverImage
   } = deps;
   const { drawLightEditorialMotif } = createCoverLightEditorialMotif(ctx, deps);
   const { drawLightEditorialProofPanel } = createCoverLightEditorialProofPanel(ctx, {
     colors,
-    fileExists
+    fileExists,
+    shouldUseCoverImage
   });
 
   return function coverLightEditorial(slide, plan, s, industry, title) {

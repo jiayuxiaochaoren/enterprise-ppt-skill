@@ -9,6 +9,7 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
   const {
     airyConceptOpening,
     beautyBrandEditorialCover,
+    clinicalQualityCover,
     colors,
     coverFieldRendererFor,
     coverLightEditorial,
@@ -34,6 +35,9 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     const coverTone = ctx.presentationSpec().coverTone || 'dark';
     const hasCoverImage = coverDesign.imagePath && fileExists(coverDesign.imagePath);
     if (coverStyleRenderer && coverStyleRenderer(slide, plan, s, industry, title)) return;
+    if (plan.industry === 'healthcare-operations' && coverVariant !== 'culture-cover-with-soft-geometry') {
+      return clinicalQualityCover(slide, plan, s, 1);
+    }
     if (coverVariant === 'airy-concept-opening') return airyConceptOpening(slide, plan, s);
     if (plan.industry === 'finance-investment' && plan.visualIntent === 'case-led' && hasCoverImage) {
       if (coverShowcase(slide, plan, s, industry, title)) return;

@@ -123,5 +123,12 @@ const prompted = generatedAssetPrompt(
   { type:'cover', title:'平台架构能力蓝图' }
 );
 assert.match(prompted, /architecture blueprint studio|text-safe zone|no readable text/i);
+assert.match(prompted, /avoid wireframe placeholder bars|long horizontal guide lines/i);
+
+const editorialPrompt = generatedAssetPrompt(
+  { coverStyle:'editorial-proof-report' },
+  { type:'cover', title:'季度经营复盘' }
+);
+assert.match(editorialPrompt, /avoid wireframe dividers|centered horizontal rules/i);
 
 console.log('cover style contract ok');
