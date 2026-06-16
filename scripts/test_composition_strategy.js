@@ -18,6 +18,7 @@ const helpers = createCompositionStrategyHelpers({
   industryDesignDialect: () => ({ avoidComponents:['blocked-component'] }),
   industryPackFor: plan => {
     const map = {
+      'finance-investment': { coverArchetype:'boardroom-proof-cover', closingArchetype:'investment-decision-close' },
       'manufacturing-operations': { coverArchetype:'native-industrial-structure-cover', closingArchetype:'decision-rollout-close' },
       'healthcare-operations': { coverArchetype:'clinical-quality-cover', closingArchetype:'quality-handoff-close' },
       'saas-technology': { coverArchetype:'platform-system-cover', closingArchetype:'adoption-rollout-close' },
@@ -50,6 +51,10 @@ assert.equal(
 assert.equal(
   helpers.compositionNameFor({}, {}, 'cover'),
   'brand-hero-stage'
+);
+assert.equal(
+  helpers.compositionNameFor({ industry:'finance-investment' }, {}, 'cover'),
+  'boardroom-proof-stage'
 );
 assert.equal(
   helpers.compositionNameFor({ industry:'healthcare-operations' }, {}, 'cover'),

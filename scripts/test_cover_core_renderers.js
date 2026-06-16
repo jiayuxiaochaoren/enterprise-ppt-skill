@@ -473,6 +473,32 @@ function main() {
     'clinical stage cover should suppress synthetic proof-card imagery'
   );
 
+  const financeFallbackOps = [];
+  const financeFallbackCtx = createFakeCtx(financeFallbackOps, styleSpecRef);
+  const financeFallbackRenderers = createCoverCoreRenderers(financeFallbackCtx);
+  financeFallbackRenderers.coverDark(createSlide(financeFallbackOps), {
+    title:'2026 Q1 经营结果与资本配置复盘',
+    industry:'finance-investment',
+    coverImagePath:'/exists/finance-proof.png',
+    coverStylePreset:{ rendererFlavor:'light-editorial-proof' }
+  }, {
+    type:'cover',
+    title:'2026 Q1 经营结果与资本配置复盘',
+    assetGeneration:{ syntheticOnly:true }
+  });
+  assert(
+    financeFallbackOps.some(op => op.name === 'addLabel' && op.args[1] === '审议带'),
+    'synthetic finance editorial covers should fall back to the boardroom decision cover'
+  );
+  assert(
+    !financeFallbackOps.some(op => op.name === 'addText' && op.args[1] === 'Proof title'),
+    'boardroom fallback should not reuse the generic editorial proof card copy'
+  );
+  assert(
+    !financeFallbackOps.some(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/finance-proof.png'),
+    'boardroom fallback should suppress synthetic proof-card imagery'
+  );
+
   console.log('cover core renderers ok');
 }
 

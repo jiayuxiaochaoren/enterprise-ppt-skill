@@ -13,6 +13,9 @@ const {
 const {
   createClinicalQualityCover
 } = require('./cover-clinical-quality');
+const {
+  createFinanceBoardroomCover
+} = require('./cover-finance-boardroom');
 
 function createSpecialtyCoverRenderers(ctx = {}, helpers = {}) {
   const colors = helpers.colors || (() => ctx.colors());
@@ -34,6 +37,7 @@ function createSpecialtyCoverRenderers(ctx = {}, helpers = {}) {
   const airyConceptOpening = createAiryConceptOpening(ctx, specialtyDeps);
   const beautyBrandEditorialCover = createBeautyBrandEditorialCover(ctx, specialtyDeps);
   const clinicalQualityCover = createClinicalQualityCover(ctx, specialtyDeps);
+  const financeBoardroomCover = createFinanceBoardroomCover(ctx, specialtyDeps);
   const cultureCoverSoftGeometry = createCultureCoverSoftGeometry(ctx, {
     drawDarkStageShell,
     drawFooter
@@ -43,6 +47,7 @@ function createSpecialtyCoverRenderers(ctx = {}, helpers = {}) {
     airyConceptOpening,
     beautyBrandEditorialCover,
     clinicalQualityCover,
+    financeBoardroomCover,
     cultureCoverSoftGeometry
   };
 }

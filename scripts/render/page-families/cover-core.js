@@ -49,6 +49,7 @@ function createCoverCoreRenderers(ctx = {}) {
     airyConceptOpening,
     beautyBrandEditorialCover,
     clinicalQualityCover,
+    financeBoardroomCover,
     cultureCoverSoftGeometry
   } = createSpecialtyCoverRenderers(ctx, { addCoverKicker, colors, coverTitleText, fileExists, shouldUseCoverImage });
   const {
@@ -82,6 +83,7 @@ function createCoverCoreRenderers(ctx = {}) {
     airyConceptOpening,
     beautyBrandEditorialCover,
     clinicalQualityCover,
+    financeBoardroomCover,
     colors,
     coverFieldRendererFor,
     coverLightEditorial,

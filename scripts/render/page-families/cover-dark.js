@@ -10,6 +10,7 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     airyConceptOpening,
     beautyBrandEditorialCover,
     clinicalQualityCover,
+    financeBoardroomCover,
     colors,
     coverFieldRendererFor,
     coverLightEditorial,
@@ -41,6 +42,9 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     if (coverVariant === 'airy-concept-opening') return airyConceptOpening(slide, plan, s);
     if (plan.industry === 'finance-investment' && plan.visualIntent === 'case-led' && hasCoverImage) {
       if (coverShowcase(slide, plan, s, industry, title)) return;
+    }
+    if (plan.industry === 'finance-investment') {
+      return financeBoardroomCover(slide, plan, s, 1);
     }
     if (plan.industry !== 'energy-utility' && (coverTone === 'light' || coverTone === 'split')) {
       return coverLightEditorial(slide, plan, s, industry, title);
