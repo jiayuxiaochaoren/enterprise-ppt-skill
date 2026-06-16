@@ -1,6 +1,7 @@
 function createQuarterlyPeriodPanel(ctx = {}) {
   const C = ctx.colors();
   const {
+    compactEvidenceCaption,
     addHairline,
     addLabel,
     addRect,
@@ -15,15 +16,30 @@ function createQuarterlyPeriodPanel(ctx = {}) {
     addLabel(slide, '报告周期', {
       x:periodBox.x+0.28, y:periodBox.y+0.34, w:1.36, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8
     });
+    addLabel(slide, '董事会口径', {
+      x:periodBox.x+1.42, y:periodBox.y+0.34, w:0.76, h:0.10, fontSize:5.4, color:'94A3B8', charSpace:0
+    });
     addText(slide, period, {
       x:periodBox.x+0.28, y:periodBox.y+0.86, w:1.44, h:0.26, fontSize:15.2, bold:true, color:C.white, fit:'shrink'
     });
-    addText(slide, logic.currentState || '本期结果好于预算基线。', {
-      x:periodBox.x+0.28, y:periodBox.y+1.52, w:1.64, h:0.48, fontSize:8.6, color:C.captionOnImage, fit:'shrink', breakLine:true
-    });
-    addHairline(slide, periodBox.x+0.28, periodBox.y+2.54, 0.78, C.accent, 0, 0.62);
-    addText(slide, logic.nextMove || s.note || '按目标差异拆解动作，避免平均加码。', {
-      x:periodBox.x+0.28, y:periodBox.y+2.88, w:1.64, h:0.30, fontSize:7.2, color:'CBD5E1', fit:'shrink', breakLine:true
+    [
+      ['结果', logic.currentState || '本期结果好于预算基线。', C.accent],
+      ['原因', logic.cause || '客户复购、价格纪律和费用边界共同推动结果。', C.cyan],
+      ['边界', logic.metric || logic.nextMove || s.note || '按结果、现金和毛利三条边界安排动作。', C.violet]
+    ].forEach((item, i) => {
+      const y = periodBox.y + 1.44 + i * 0.58;
+      addRect(slide, periodBox.x+0.24, y, periodBox.w-0.48, 0.42, i === 0 ? C.ink2 || '111827' : C.ink, item[2], {
+        fill:{ color:i === 0 ? (C.ink2 || '111827') : C.ink, transparency:i === 0 ? 0 : 10 },
+        line:{ color:item[2], transparency:42, width:0.28 }
+      });
+      addLabel(slide, item[0], {
+        x:periodBox.x+0.34, y:y+0.15, w:0.34, h:0.08,
+        fontSize:5.4, color:item[2], charSpace:0
+      });
+      addText(slide, compactEvidenceCaption(item[1], 24), {
+        x:periodBox.x+0.74, y:y+0.10, w:1.34, h:0.16,
+        fontSize:6.8, color:C.captionOnImage, fit:'shrink', breakLine:true
+      });
     });
   }
 

@@ -46,13 +46,13 @@ function createHealthcareServiceScorecard(ctx = {}, deps = {}) {
     addRect(slide, stage.x, stage.y, stage.w, stage.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.52} });
 
     const hero = { x:1.22, y:stage.y+0.34, w:2.28, h:Math.min(2.98, stage.h-0.92) };
-    drawHealthcareExperienceHero(slide, satisfaction, hero);
+    drawHealthcareExperienceHero(slide, wait, satisfaction, closure, hero);
 
     const flowX = 4.06;
     const flowY = stage.y + 0.50;
     drawHealthcareJourneyReadout(slide, wait, satisfaction, closure, { x:flowX, y:flowY });
 
-    const queue = { x:4.02, y:Math.min(stage.y + stage.h - 0.94, flowY + 2.04), w:6.70, h:0.62 };
+    const queue = { x:4.02, y:Math.min(stage.y + stage.h - 1.08, flowY + 1.92), w:6.70, h:0.94 };
     drawHealthcareServiceQueue(slide, wait, satisfaction, closure, queue);
     addText(slide, s.note || '患者指标页要能回到服务触点、责任动作和质量复盘。', { x:0.94, y:6.42, w:8.8, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
     drawFooter(slide, plan);

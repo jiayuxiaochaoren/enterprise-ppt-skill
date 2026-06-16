@@ -28,9 +28,9 @@ function createGuidanceAndRiskBoardRenderer(ctx = {}, helpers = {}) {
     const contentY = Math.max(2.04, Number(header && header.contentTop) || 2.04);
     const contentH = Math.max(3.48, 6.04 - contentY);
     const core = { x:0.92, y:contentY, w:2.82, h:contentH };
-    drawGuidanceAssumptionCore(slide, s, rows, assumptions, core);
+    drawGuidanceAssumptionCore(slide, plan, s, rows, assumptions, core);
     const board = { x:4.02, y:contentY, w:7.54, h:contentH };
-    drawGuidanceRiskActionBoard(slide, rows, board);
+    drawGuidanceRiskActionBoard(slide, plan, rows, board);
     drawRiskBoardFooter(slide, plan);
   };
 }

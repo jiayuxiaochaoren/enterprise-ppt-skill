@@ -27,9 +27,9 @@ function createGovernanceTableEditorialRenderer(ctx = {}, helpers = {}) {
     });
     const rows = (s.rows || []).slice(0, 4);
     const intro = { x:0.92, y:2.06, w:2.36, h:3.86 };
-    drawGovernanceEditorialCore(slide, s, intro);
+    drawGovernanceEditorialCore(slide, plan, s, intro);
     const table = { x:3.54, y:2.06, w:8.00, h:3.86 };
-    drawGovernanceActionTable(slide, rows, table);
+    drawGovernanceActionTable(slide, plan, rows, table);
     addText(slide, s.note || '治理表格不是风险清单，而是可追踪的管理机制。', { x:0.94, y:6.42, w:8.8, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });
     drawRiskBoardFooter(slide, plan);
   };

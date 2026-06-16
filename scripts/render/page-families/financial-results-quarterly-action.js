@@ -21,15 +21,24 @@ function createQuarterlyActionRail(ctx = {}) {
       ['管理动作', logic.action || s.guidance || '继续按月复盘回款、毛利和费用效率。'],
       ['指引边界', s.guidance || logic.impact || '下季度保持核心投入，但不突破预算上限。']
     ].forEach((row, i) => {
-      const y = action.y + 0.82 + i * 0.86;
+      const y = action.y + 0.78 + i * 0.92;
       const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : C.violet);
+      addRect(slide, action.x+0.20, y-0.02, action.w-0.40, 0.74, 'FFFFFF', accent, {
+        fill:{ color:'FFFFFF', transparency:0 },
+        line:{ color:accent, transparency:34, width:0.30 }
+      });
       addText(slide, row[0], {
-        x:action.x+0.24, y, w:0.86, h:0.13, fontSize:8.6, bold:true, color:C.text, fit:'shrink'
+        x:action.x+0.34, y:y+0.14, w:0.92, h:0.12, fontSize:8.4, bold:true, color:accent, fit:'shrink'
       });
       addText(slide, compactEvidenceCaption(row[1], 34), {
-        x:action.x+1.22, y:y-0.02, w:1.28, h:0.20, fontSize:7.2, color:C.body, fit:'shrink', breakLine:true
+        x:action.x+0.34, y:y+0.34, w:2.16, h:0.18, fontSize:7.0, color:C.body, fit:'shrink', breakLine:true
       });
-      addRect(slide, action.x+0.24, y+0.44, 0.46, 0.035, accent, accent, {
+      addRect(slide, action.x+action.w-0.72, y+0.24, 0.30, 0.03, accent, accent, {
+        fill:{ color:accent, transparency:18 },
+        line:{color:accent, transparency:100}
+      });
+      addRect(slide, action.x+action.w-0.58, y+0.48, 0.44, 0.03, accent, accent, {
+        fill:{ color:accent, transparency:0 },
         line:{color:accent, transparency:100}
       });
     });

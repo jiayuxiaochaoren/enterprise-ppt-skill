@@ -218,17 +218,53 @@ function assertQuarterlyResultsShell(ops) {
     assert(op, `expected quarterly results panel ${x}/${y}`);
   });
 
-  ['REPORTING PERIOD', 'SOURCE', 'REPORTED METRICS', 'VARIANCE / ACTION'].forEach(label => {
+  ['报告周期', '董事会口径', 'REPORTED METRICS', 'VARIANCE / ACTION', '结果', '原因', '边界'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected quarterly results label ${label}`
     );
   });
 
-  ['Q1', 'Ahead of plan', 'Management reporting', 'Revenue', '128m', 'growth quality', 'Better mix', 'Hold spend discipline'].forEach(text => {
+  ['差异解释', '管理动作', '指引边界'].forEach(text => {
+    assert(
+      ops.some(op => op.name === 'addText' && op.args[1] === text),
+      `expected quarterly results action heading ${text}`
+    );
+  });
+
+  [
+    'Q1',
+    'Ahead of plan',
+    'Better mix',
+    'Revenue',
+    '128m',
+    'growth quality',
+    'Hold spend discipline'
+  ].forEach(text => {
     assert(
       ops.some(op => op.args.includes(text)),
       `expected quarterly results content ${text}`
+    );
+  });
+
+  [
+    [8.66, 2.82, 2.56, 0.74],
+    [8.66, 3.74, 2.56, 0.74],
+    [8.66, 4.66, 2.56, 0.74]
+  ].forEach(([x, y, w, h]) => {
+    const actionCard = ops.find(candidate => candidate.name === 'addRect'
+      && Math.abs(candidate.args[1] - x) < 0.001
+      && Math.abs(candidate.args[2] - y) < 0.001
+      && Math.abs(candidate.args[3] - w) < 0.001
+      && Math.abs(candidate.args[4] - h) < 0.001);
+    assert(actionCard, `expected quarterly action card ${x}/${y}`);
+  });
+
+  ['REPORTING PERIOD', 'SOURCE', 'Management reporting'].forEach(label => {
+    assert(
+      !ops.some(op => op.name === 'addLabel' && op.args[1] === label) &&
+        !ops.some(op => op.args.includes(label)),
+      `quarterly results should not emit stale template copy ${label}`
     );
   });
 }

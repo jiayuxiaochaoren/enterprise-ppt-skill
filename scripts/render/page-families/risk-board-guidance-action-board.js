@@ -10,12 +10,13 @@ function createGuidanceRiskActionBoard(ctx = {}) {
     panelFill
   } = ctx;
 
-  function drawGuidanceRiskActionBoard(slide, rows, board) {
+  function drawGuidanceRiskActionBoard(slide, plan, rows, board) {
+    const isFinance = plan && plan.industry === 'finance-investment';
     addRect(slide, board.x, board.y, board.w, board.h, panelFill(), C.line, {
       fill:{color:panelFill(), transparency:0},
       line:{color:C.line, transparency:14, width:0.46}
     });
-    ['RISK', 'TRIGGER', 'OWNER / ACTION'].forEach((label, i) => {
+    (isFinance ? ['风险事项', '触发阈值', '管理动作'] : ['RISK', 'TRIGGER', 'OWNER / ACTION']).forEach((label, i) => {
       const x = board.x + [0.30, 2.24, 4.08][i];
       addLabel(slide, label, {
         x, y:board.y+0.30, w:i === 2 ? 1.58 : 0.96, h:0.09,
@@ -36,10 +37,21 @@ function createGuidanceRiskActionBoard(ctx = {}) {
         x:board.x+0.36, y:y+0.06, w:1.46, h:0.13,
         fontSize:8.2, bold:true, color:C.text, fit:false
       });
-      addText(slide, level === '高' ? '触发后即升级' : '达到阈值后跟踪', {
-        x:board.x+2.30, y:y+0.06, w:1.34, h:0.13,
-        fontSize:8.0, color:accent, fit:false
-      });
+      if (isFinance) {
+        addRect(slide, board.x+2.30, y+0.02, 1.18, 0.18, accent, accent, {
+          fill:{ color:accent, transparency:20 },
+          line:{ color:accent, transparency:100 }
+        });
+        addText(slide, level === '高' ? '立即升级' : '达到阈值跟踪', {
+          x:board.x+2.40, y:y+0.05, w:0.98, h:0.10,
+          fontSize:6.6, color:accent, fit:false
+        });
+      } else {
+        addText(slide, level === '高' ? '触发后即升级' : '达到阈值后跟踪', {
+          x:board.x+2.30, y:y+0.06, w:1.34, h:0.13,
+          fontSize:8.0, color:accent, fit:false
+        });
+      }
       addText(slide, compactEvidenceCaption(action || '明确责任人和处置节奏。', 32), {
         x:board.x+4.14, y:y+0.02, w:2.46, h:0.28,
         fontSize:8.1, color:C.body, fit:false, breakLine:true, valign:'mid'

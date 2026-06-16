@@ -191,12 +191,30 @@ function assertHealthcareScorecardShell(ops) {
     && Math.abs(op.args[3] - 2.28) < 0.001
     && Math.abs(op.args[4] - 2.88) < 0.001);
   assert(hero, 'expected healthcare primary experience hero panel');
+  const accentStrip = ops.find(op => op.name === 'addRect'
+    && op.args[1] === 1.22
+    && Math.abs(op.args[2] - 2.64) < 0.001
+    && op.args[3] === 0.06
+    && op.args[4] === 2.88);
+  assert(accentStrip, 'expected healthcare hero accent strip');
   const queue = ops.find(op => op.name === 'addRect'
     && op.args[1] === 4.02
-    && op.args[2] === 4.84
+    && op.args[2] === 4.72
     && op.args[3] === 6.70
-    && op.args[4] === 0.62);
+    && op.args[4] === 0.94);
   assert(queue, 'expected healthcare service queue panel');
+  [
+    [4.22, 4.84, 1.86, 0.70],
+    [6.32, 4.84, 1.86, 0.70],
+    [8.42, 4.84, 1.86, 0.70]
+  ].forEach(([x, y, w, h]) => {
+    const queueCard = ops.find(op => op.name === 'addRect'
+      && op.args[1] === x
+      && op.args[2] === y
+      && op.args[3] === w
+      && op.args[4] === h);
+    assert(queueCard, `expected healthcare queue card ${x}/${y}`);
+  });
   ['核心体验', '患者旅程', '等待响应', '满意度', '反馈处理'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
@@ -219,7 +237,11 @@ function assertHealthcareScorecardShell(ops) {
   const primaryValue = ops.find(op => op.name === 'addText' && op.args[1] === '93%');
   assert(primaryValue, 'healthcare primary experience value should render as focused hero text');
   const valueBox = primaryValue.args[2] || {};
-  assert(valueBox.align === 'center' && valueBox.bold === true, 'healthcare primary value should be centered and bold');
+  assertNear(valueBox.x, 1.48, 'healthcare primary value x');
+  assertNear(valueBox.y, 3.90, 'healthcare primary value y');
+  assertNear(valueBox.w, 1.76, 'healthcare primary value width');
+  assert.strictEqual(valueBox.bold, true, 'healthcare primary value should stay bold');
+  assert.strictEqual(valueBox.color, 'FFFFFF', 'healthcare primary value should use white text');
   assert(valueBox.fontSize >= 30, 'healthcare primary value should use prominent numeric scale');
 }
 

@@ -9,6 +9,7 @@ function createMetricComparisonRenderer(ctx = {}, renderers = {}) {
     financialKpiSnapshot,
     healthcareServiceScorecard,
     manufacturingOeeBoard,
+    peopleCultureGrowthBoard,
     quarterlyResultsSummary,
     retailMemberGrowthBoard,
     saasAdoptionRevenueBoard,
@@ -61,6 +62,7 @@ function createMetricComparisonRenderer(ctx = {}, renderers = {}) {
     if (variant === 'financial-kpi-snapshot') return financialKpiSnapshot(slide, plan, s, idx);
     if (variant === 'chart-grid-with-commentary') return chartGridWithCommentary(slide, plan, s, idx);
     if (variant === 'quarterly-results-summary') return quarterlyResultsSummary(slide, plan, s, idx);
+    if (variant === 'company-profile-proof' && peopleCultureGrowthBoard) return peopleCultureGrowthBoard(slide, plan, s, idx);
     if (variant === 'oee-board' || s.oee || s.oeeComponents) return manufacturingOeeBoard(slide, plan, s, idx);
     if (variant === 'patient-service-scorecard' || plan.industry === 'healthcare-operations') return healthcareServiceScorecard(slide, plan, s, idx);
     if (variant === 'member-growth-board' || isVisualIndustry(plan, 'brand-retail')) return retailMemberGrowthBoard(slide, plan, s, idx);

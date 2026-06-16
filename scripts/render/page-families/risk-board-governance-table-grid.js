@@ -8,11 +8,12 @@ function createRiskBoardGovernanceTableGrid(ctx = {}) {
     panelFill
   } = ctx;
 
-  function drawGovernanceActionTable(slide, rows, table) {
+  function drawGovernanceActionTable(slide, plan, rows, table) {
+    const isPeopleCulture = plan && plan.industry === 'people-culture-company';
     const headers = [
-      { label:'责任', x:0.28, w:1.70, color:C.accent },
-      { label:'节奏', x:2.38, w:0.86, color:C.cyan },
-      { label:'应对动作', x:3.62, w:3.70, color:C.violet }
+      { label:isPeopleCulture ? '风险事项' : '责任', x:0.28, w:1.70, color:C.accent },
+      { label:isPeopleCulture ? '校准节奏' : '节奏', x:2.38, w:0.86, color:C.cyan },
+      { label:isPeopleCulture ? '沟通动作' : '应对动作', x:3.62, w:3.70, color:C.violet }
     ];
     addRect(slide, table.x, table.y, table.w, table.h, panelFill(), C.line, {
       fill:{color:panelFill(), transparency:0},
@@ -36,7 +37,9 @@ function createRiskBoardGovernanceTableGrid(ctx = {}) {
         x:table.x+0.28, y:y+0.02, w:1.72, h:0.26,
         fontSize:8.4, bold:true, color:C.text, fit:false, breakLine:true
       });
-      addText(slide, level === '高' ? '季度审议' : (level === '低' ? '年度留痕' : '月度复盘'), {
+      addText(slide, level === '高'
+        ? (isPeopleCulture ? '季度审议' : '季度审议')
+        : (level === '低' ? (isPeopleCulture ? '年度留档' : '年度留痕') : '月度复盘'), {
         x:table.x+2.38, y:y+0.08, w:0.86, h:0.14,
         fontSize:7.4, color:accent, fit:false
       });
