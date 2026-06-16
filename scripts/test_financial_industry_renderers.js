@@ -294,18 +294,23 @@ function main() {
   function assertIndustryChartSlideShell() {
     assert.strictEqual(
       countRect({ x:0.92, y:2.10, w:2.62, h:4.16 }),
-      6,
-      'expected one proof object side panel per industry chart slide'
+      5,
+      'expected five standard proof object side panels for non-handoff industry chart slides'
     );
     assert.strictEqual(
       countRect({ x:3.92, y:2.10, w:7.76, h:4.16 }),
-      6,
-      'expected one chart board shell per industry chart slide'
+      5,
+      'expected five standard chart board shells for non-handoff industry chart slides'
+    );
+    assert.strictEqual(
+      countRect({ x:0.92, y:2.10, w:10.84, h:4.16 }),
+      1,
+      'expected quality handoff to use a full-width stage board'
     );
     assert.strictEqual(
       ops.filter(op => op.name === 'addLabel' && op.args[1] === '经营依据').length,
-      6,
-      'expected operating basis label on each industry chart slide'
+      5,
+      'expected operating basis label on standard industry chart slides only'
     );
     ['月度趋势', '目标桥', '渠道效率', '停机损失排序', '质量交接', '调度地图'].forEach(text => {
       assert(

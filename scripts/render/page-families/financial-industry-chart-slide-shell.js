@@ -68,6 +68,7 @@ function createFinancialIndustryChartSlideShell(ctx = {}, deps = {}) {
     return new Set([
       'adoption-funnel',
       'member-cohort-ladder',
+      'quality-handoff',
       'patient-bottleneck'
     ]).has(String(variant || ''));
   }

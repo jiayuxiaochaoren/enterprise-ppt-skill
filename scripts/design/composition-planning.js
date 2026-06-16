@@ -25,6 +25,7 @@ function createCompositionPlanningHelpers(deps = {}) {
   function zonePlanFor(plan = {}, s = {}, signals = contentSignals(plan, s), design = slideDesign(plan, s)) {
     const type = s.type || '';
     const variant = s.layoutVariant || '';
+    const industry = String(plan.industry || '');
     if (['cover', 'closing'].includes(type)) {
       return { primaryZone: 'hero-claim', secondaryZone: 'visual-anchor', proofZone: 'meta-or-contact-block' };
     }
@@ -36,6 +37,12 @@ function createCompositionPlanningHelpers(deps = {}) {
       if (variant === 'evidence-board') return { primaryZone: 'evidence-grid', secondaryZone: 'caption-system', proofZone: 'evidence-boundary' };
       return { primaryZone: 'image-story', secondaryZone: 'caption-and-context', proofZone: 'evidence-labels' };
     }
+    if (type === 'metric-comparison' && variant === 'company-profile-proof' && industry === 'people-culture-company') {
+      return { primaryZone: 'growth-evidence-rail', secondaryZone: 'client-and-talent-columns', proofZone: 'growth-summary-strip' };
+    }
+    if (type === 'industry-chart' && variant === 'quality-handoff' && industry === 'healthcare-operations') {
+      return { primaryZone: 'handoff-stage', secondaryZone: 'quality-summary-strip', proofZone: 'role-transfer-evidence' };
+    }
     if (['metric-comparison', 'industry-chart', 'finance-bridge'].includes(type)) {
       return { primaryZone: 'metric-readout', secondaryZone: 'explanation-panel', proofZone: 'driver-or-caveat-strip' };
     }
@@ -44,6 +51,15 @@ function createCompositionPlanningHelpers(deps = {}) {
     }
     if (['timeline', 'timeline-dark'].includes(type)) {
       return { primaryZone: 'process-rail', secondaryZone: 'phase-cards', proofZone: 'control-points' };
+    }
+    if (type === 'risk-table' && variant === 'guidance-and-risk-board' && industry === 'finance-investment') {
+      return { primaryZone: 'assumption-boundary-band', secondaryZone: 'risk-trigger-table', proofZone: 'budget-threshold-chips' };
+    }
+    if (type === 'risk-table' && variant === 'governance-table-editorial' && industry === 'people-culture-company') {
+      return { primaryZone: 'governance-banner', secondaryZone: 'communication-governance-table', proofZone: 'authorization-chip-strip' };
+    }
+    if (type === 'risk-table' && variant === 'healthcare-quality-loop' && industry === 'healthcare-operations') {
+      return { primaryZone: 'service-quality-brief', secondaryZone: 'quality-loop-stage', proofZone: 'sla-recovery-strip' };
     }
     if (['risk-table', 'table'].includes(type)) {
       return { primaryZone: 'risk-or-control-board', secondaryZone: 'owner/action-detail', proofZone: 'priority-signal' };

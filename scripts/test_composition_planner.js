@@ -250,6 +250,85 @@ assert.ok(healthcareJourney.compositionPlan.microComponents.includes('service-bl
 assert.ok(healthcareJourney.compositionPlan.microComponents.includes('patient-journey-band'));
 assert.equal(healthcareJourney.compositionPlan.microComponents.includes('equipment-nameplate'), false);
 
+const financeGuidanceBoard = normalizeSlide(
+  { industry:'finance-investment', title:'季度经营复盘' },
+  {
+    type:'risk-table',
+    layoutVariant:'guidance-and-risk-board',
+    title:'下季度指引需要同时锁定增长假设和风险边界',
+    rows:[
+      ['需求恢复低于预期', '高', '重点客户建立现金预测'],
+      ['回款节奏波动', '中', '按周更新订单与回款数据']
+    ],
+    assumptions:['需求恢复低于预期 不越过预算阈值', '回款节奏波动 不越过现金警戒值', '毛利率承压 不越过预警阈值']
+  },
+  4,
+  8
+);
+assert.equal(financeGuidanceBoard.compositionPlan.composition, 'finance-boundary-band-board');
+assert.equal(financeGuidanceBoard.compositionPlan.primaryZone, 'assumption-boundary-band');
+assert.equal(financeGuidanceBoard.compositionPlan.secondaryZone, 'risk-trigger-table');
+assert.equal(financeGuidanceBoard.compositionPlan.proofZone, 'budget-threshold-chips');
+
+const healthcareHandoff = normalizeSlide(
+  { industry:'healthcare-operations', title:'门诊服务质量改善方案' },
+  {
+    type:'industry-chart',
+    layoutVariant:'quality-handoff',
+    title:'质量交接图把跨科室责任转成可检查节点',
+    qualityHandoff:[
+      { from:'导诊', to:'检查', title:'身份与项目确认', body:'避免重复问询' },
+      { from:'检查', to:'医生', title:'报告节点同步', body:'异常优先提醒' },
+      { from:'医生', to:'随访', title:'处置建议交接', body:'进入复盘机制' }
+    ]
+  },
+  4,
+  8
+);
+assert.equal(healthcareHandoff.compositionPlan.composition, 'healthcare-handoff-stage-board');
+assert.equal(healthcareHandoff.compositionPlan.primaryZone, 'handoff-stage');
+assert.equal(healthcareHandoff.compositionPlan.secondaryZone, 'quality-summary-strip');
+assert.equal(healthcareHandoff.compositionPlan.proofZone, 'role-transfer-evidence');
+
+const peopleGrowthProof = normalizeSlide(
+  { industry:'people-culture-company', title:'公司介绍' },
+  {
+    type:'metric-comparison',
+    layoutVariant:'company-profile-proof',
+    title:'组织成长用项目经验、客户复购和人才培养共同证明',
+    metrics:[
+      { label:'核心项目', value:'42个', note:'覆盖制造、零售和政企场景' },
+      { label:'客户复购', value:'68%', note:'长期服务关系稳定' },
+      { label:'内部晋升', value:'31%', note:'导师和项目制培养' }
+    ]
+  },
+  5,
+  9
+);
+assert.equal(peopleGrowthProof.compositionPlan.composition, 'people-growth-evidence-board');
+assert.equal(peopleGrowthProof.compositionPlan.primaryZone, 'growth-evidence-rail');
+assert.equal(peopleGrowthProof.compositionPlan.secondaryZone, 'client-and-talent-columns');
+assert.equal(peopleGrowthProof.compositionPlan.proofZone, 'growth-summary-strip');
+
+const peopleGovernance = normalizeSlide(
+  { industry:'people-culture-company', title:'公司介绍' },
+  {
+    type:'risk-table',
+    layoutVariant:'governance-table-editorial',
+    title:'招聘沟通需要避免空泛口号和未经授权的人物素材',
+    rows:[
+      ['价值观口号空泛', '中', '每条价值观必须绑定行为证据'],
+      ['人物照片授权不清', '高', '外发前确认肖像与渠道授权']
+    ]
+  },
+  7,
+  9
+);
+assert.equal(peopleGovernance.compositionPlan.composition, 'people-governance-banner-board');
+assert.equal(peopleGovernance.compositionPlan.primaryZone, 'governance-banner');
+assert.equal(peopleGovernance.compositionPlan.secondaryZone, 'communication-governance-table');
+assert.equal(peopleGovernance.compositionPlan.proofZone, 'authorization-chip-strip');
+
 const rawWeak = {
   industry:'general-operations',
   slides:[

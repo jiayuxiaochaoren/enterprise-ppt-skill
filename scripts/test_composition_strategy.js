@@ -87,6 +87,22 @@ assert.equal(
   helpers.compositionNameFor({}, { themeIntent:'risk-warning' }, 'risk-table', 'manufacturing-action-loop'),
   'governance-loop-board'
 );
+assert.equal(
+  helpers.compositionNameFor({ industry:'finance-investment' }, {}, 'risk-table', 'guidance-and-risk-board'),
+  'finance-boundary-band-board'
+);
+assert.equal(
+  helpers.compositionNameFor({ industry:'healthcare-operations' }, {}, 'industry-chart', 'quality-handoff'),
+  'healthcare-handoff-stage-board'
+);
+assert.equal(
+  helpers.compositionNameFor({ industry:'people-culture-company' }, {}, 'metric-comparison', 'company-profile-proof'),
+  'people-growth-evidence-board'
+);
+assert.equal(
+  helpers.compositionNameFor({ industry:'people-culture-company' }, {}, 'risk-table', 'governance-table-editorial'),
+  'people-governance-banner-board'
+);
 
 assert.equal(helpers.rhythmRoleFor({}, { type:'closing' }, 4, 5), 'closer');
 assert.equal(helpers.rhythmRoleFor({}, { type:'architecture' }, 1, 5), 'system');

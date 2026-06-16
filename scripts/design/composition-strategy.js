@@ -87,6 +87,7 @@ function createCompositionStrategyHelpers(deps = {}) {
 
 	  function compositionNameFor(plan = {}, s = {}, type = s.type, variant = s.layoutVariant, signals = contentSignals(plan, s), themeIntent = '') {
 	    const intent = themeIntent || inferredThemeIntent(plan, s, signals);
+      const industry = String(plan.industry || '');
 	    if (type === 'cover') {
 	      const archetype = coverArchetype(plan, s);
 	      if (nativeIndustrialCover(plan, s)) return 'industrial-structure-stage';
@@ -119,8 +120,13 @@ function createCompositionStrategyHelpers(deps = {}) {
     if (type === 'finance-bridge') return 'return-bridge-board';
     if (type === 'portfolio-table') return 'portfolio-action-table';
     if (type === 'industry-chart' && variant === 'valuation-sensitivity') return 'scenario-sensitivity-board';
+    if (type === 'industry-chart' && variant === 'quality-handoff' && industry === 'healthcare-operations') return 'healthcare-handoff-stage-board';
+    if (type === 'risk-table' && variant === 'guidance-and-risk-board' && industry === 'finance-investment') return 'finance-boundary-band-board';
+    if (type === 'risk-table' && variant === 'governance-table-editorial' && industry === 'people-culture-company') return 'people-governance-banner-board';
+    if (type === 'risk-table' && variant === 'healthcare-quality-loop' && industry === 'healthcare-operations') return 'healthcare-quality-loop-stage';
 	    if (/risk-warning/i.test(intent)) return /action-loop/.test(String(variant || '')) ? 'governance-loop-board' : 'risk-control-board';
     if (/case-evidence/i.test(intent) && (signals.imageCount || type === 'case-gallery')) return signals.imageCount >= 3 ? 'triptych-evidence-gallery' : 'hero-image-with-evidence-strip';
+    if (type === 'metric-comparison' && variant === 'company-profile-proof' && industry === 'people-culture-company') return 'people-growth-evidence-board';
     if (/value-signal/i.test(intent) && ['metric-comparison', 'industry-chart', 'finance-bridge', 'value-tiles'].includes(type)) return 'metric-readout-board';
     if (/system-architecture/i.test(intent) && ['architecture', 'architecture-dark', 'strategy-map'].includes(type)) return 'system-map-with-proof-rail';
     if (/operating-path/i.test(intent) && ['timeline', 'timeline-dark'].includes(type)) return 'process-rail-with-control-points';
