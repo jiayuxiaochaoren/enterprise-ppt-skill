@@ -310,17 +310,17 @@ function hasRect(ops, expected) {
 }
 
 function assertManufacturingLineAgendaShell(ops) {
-  const rail = ops.find(op => op.name === 'addHairline'
+  const legacyRail = ops.find(op => op.name === 'addHairline'
     && Math.abs(op.args[1] - 1.94) < 0.001
     && Math.abs(op.args[2] - 3.42) < 0.001
     && Math.abs(op.args[3] - 9.453) < 0.001
     && op.args[4] === '334155');
-  assert(rail, 'expected manufacturing line rail');
+  assert.equal(legacyRail, undefined, 'manufacturing line path should not leave behind a legacy base rail');
 
   [
-    { x:0.86, y:4.08, w:2.16, h:1.02 },
-    { x:5.5865, y:4.08, w:2.16, h:1.02 },
-    { x:10.313, y:4.08, w:2.16, h:1.02 }
+    { x:0.72, y:4.02, w:2.24, h:1.18 },
+    { x:5.5465, y:4.02, w:2.24, h:1.18 },
+    { x:10.373, y:4.02, w:2.24, h:1.18 }
   ].forEach((rect, index) => {
     assert(hasRect(ops, rect), `expected manufacturing line card ${index + 1}`);
   });

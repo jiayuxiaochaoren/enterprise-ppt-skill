@@ -191,8 +191,8 @@ function createChannelEfficiencyMatrixDrawer(ctx = {}) {
     const rows = rankItemsForChannelMatrix(items, 7);
     const plot = { x:board.x+0.48, y:board.y+0.70, w:Math.min(3.26, board.w * 0.44), h:2.18 };
     const list = { x:plot.x+plot.w+0.54, y:plot.y+0.04, w:board.x+board.w-(plot.x+plot.w+0.68), h:2.34 };
-    const noteBand = { x:board.x+0.46, y:board.y+board.h-0.48, w:board.w-0.92, h:0.24 };
-    const xAxisLabelY = Math.min(noteBand.y - 0.14, plot.y + plot.h + 0.04);
+    const noteBand = { x:board.x+0.46, y:board.y+board.h-0.42, w:board.w-0.92, h:0.30 };
+    const xAxisLabelY = Math.min(noteBand.y - 0.18, plot.y + plot.h + 0.02);
     addLabel(slide, rankTitleForChannelMatrix(s, items), { x:board.x+0.30, y:board.y+0.30, w:1.70, h:0.10, fontSize:6.6, color:C.accent, charSpace:0 });
     addHairline(slide, plot.x, plot.y+plot.h, plot.w, C.line, 8, 0.46);
     slide.addShape('line', { x:plot.x, y:plot.y, w:0, h:plot.h, line:{color:C.line, transparency:10, width:0.46} });
@@ -231,7 +231,14 @@ function createChannelEfficiencyMatrixDrawer(ctx = {}) {
       align:'right'
     });
     addText(slide, s.note || '先看高效率触点，再看高投入触点的转化承接和复购贡献。', {
-      x:noteBand.x+0.16, y:noteBand.y+0.10, w:noteBand.w-0.32, h:0.11, fontSize:6.2, color:C.muted, fit:'shrink'
+      x:noteBand.x+0.18,
+      y:noteBand.y,
+      w:noteBand.w-0.36,
+      h:noteBand.h,
+      fontSize:6.2,
+      color:C.muted,
+      fit:'shrink',
+      valign:'mid'
     });
   }
 

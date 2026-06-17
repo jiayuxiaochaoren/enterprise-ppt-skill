@@ -90,7 +90,7 @@ assert.equal(
 assert.ok(
   manufacturing.shapes.some(shape => shape.type === 'rect'
     && shape.opts.x === 8.56
-    && shape.opts.y === 0.52
+    && shape.opts.y === 0.90
     && shape.opts.w === 3.92
     && shape.opts.h === 2.92),
   'industrial light texture should render a structural blueprint frame'

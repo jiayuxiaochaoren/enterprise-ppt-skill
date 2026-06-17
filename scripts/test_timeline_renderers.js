@@ -47,7 +47,7 @@ function createFakeCtx(ops) {
   };
 }
 
-function section() {
+function section(overrides = {}) {
   return {
     title: 'Operating Path',
     subtitle: 'Process board subtitle',
@@ -57,7 +57,8 @@ function section() {
       { title:'Run', body:'Execute the motion' },
       { title:'Review', body:'Fold learning back' }
     ],
-    note: 'Review cadence stays visible.'
+    note: 'Review cadence stays visible.',
+    ...overrides
   };
 }
 
@@ -213,6 +214,57 @@ function assertClosedLoopShell(ops) {
   });
 }
 
+function assertClosedLoopLongTitleReflow() {
+  const ops = [];
+  const renderers = createTimelineRenderers(createFakeCtx(ops));
+  const longSection = section({
+    title:'制造交付要把项目、安装、验收和维保放进同一闭环',
+    subtitle:'把需求、安装、验收和维保放进同一条经营路径，项目经验才能被持续复用。',
+    note:''
+  });
+
+  renderers.timelineClosedLoop(createSlide(ops), { industry:'manufacturing-operations' }, longSection, 6);
+
+  const board = ops.find(op => op.name === 'addRect'
+    && Math.abs(op.args[1] - 0.92) < 0.001
+    && Math.abs(op.args[3] - 10.84) < 0.001
+    && Math.abs(op.args[4] - (6.58 - op.args[2])) < 0.01);
+  assert(board, 'expected long-title closed-loop board shell');
+  assert(board.args[2] > 2.20, 'expected long-title closed-loop board to move below the header');
+
+  const subtitleOp = ops.find(op => op.name === 'addText' && op.args[1] === longSection.subtitle);
+  assert(subtitleOp, 'expected long-title closed-loop subtitle');
+  const subtitleOpts = subtitleOp.args[2] || {};
+  assert(
+    board.args[2] >= subtitleOpts.y + subtitleOpts.h + 0.20,
+    'closed-loop board should sit below the wrapped subtitle with a visible gap'
+  );
+
+  const topCard = ops.find(op => op.name === 'addRect'
+    && Math.abs(op.args[1] - 1.22) < 0.001
+    && Math.abs(op.args[3] - 2.46) < 0.001
+    && Math.abs(op.args[4] - 1.14) < 0.001);
+  assert(topCard, 'expected long-title closed-loop phase card');
+  assert(topCard.args[2] > 2.90, 'expected top closed-loop card to move down with the board');
+  const bottomCard = ops.find(op => op.name === 'addRect'
+    && Math.abs(op.args[1] - 8.46) < 0.001
+    && Math.abs(op.args[3] - 2.46) < 0.001
+    && Math.abs(op.args[4] - 1.14) < 0.001
+    && op.args[2] > 4.90);
+  assert(bottomCard, 'expected bottom closed-loop card to move lower instead of compressing the middle gap');
+  assert(
+    bottomCard.args[2] - (topCard.args[2] + topCard.args[4]) > 0.55,
+    'long-title closed-loop cards should keep a usable middle gap'
+  );
+  const returnLabel = ops.find(op => op.name === 'addText' && op.args[1] === '资料回流');
+  assert(returnLabel, 'expected manufacturing return-flow label');
+  const returnOpts = returnLabel.args[2] || {};
+  assert(
+    returnOpts.y > topCard.args[2] + topCard.args[4] + 0.08,
+    'return-flow label should sit below the upper card instead of colliding with its border'
+  );
+}
+
 function main() {
   const ops = [];
   const renderers = createTimelineRenderers(createFakeCtx(ops));
@@ -250,6 +302,7 @@ function main() {
       `closed-loop renderer should not leak English template label ${text}`
     );
   });
+  assertClosedLoopLongTitleReflow();
 
   console.log('timeline renderers ok');
 }

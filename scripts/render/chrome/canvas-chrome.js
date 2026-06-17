@@ -184,63 +184,64 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
   }
   function addIndustrialLightTexture(slide) {
     const glow = C.panelAlt || C.softBlue || 'EEF6FF';
-    h.addRect(slide, 8.56, 0.52, 3.92, 2.92, glow, C.accent, {
+    const yShift = 0.38;
+    h.addRect(slide, 8.56, 0.52 + yShift, 3.92, 2.92, glow, C.accent, {
       fill:{ color:glow, transparency:80 },
       line:{ color:C.accent, transparency:86, width:0.24 }
     });
-    h.addRect(slide, 9.10, 1.04, 2.86, 1.94, 'FFFFFF', C.cyan, {
+    h.addRect(slide, 9.10, 1.04 + yShift, 2.86, 1.94, 'FFFFFF', C.cyan, {
       fill:{ color:'FFFFFF', transparency:100 },
       line:{ color:C.cyan, transparency:88, width:0.20 }
     });
-    h.addRect(slide, 8.84, 1.08, 0.16, 2.04, C.secondary || C.warning || C.accent, C.secondary || C.warning || C.accent, {
+    h.addRect(slide, 8.84, 1.08 + yShift, 0.16, 2.04, C.secondary || C.warning || C.accent, C.secondary || C.warning || C.accent, {
       fill:{ color:C.secondary || C.warning || C.accent, transparency:82 },
       line:{ color:C.secondary || C.warning || C.accent, transparency:100 }
     });
-    h.addRect(slide, 8.96, 0.90, 0.82, 0.18, 'FFFFFF', C.line, {
+    h.addRect(slide, 8.96, 0.90 + yShift, 0.82, 0.18, 'FFFFFF', C.line, {
       fill:{ color:'FFFFFF', transparency:78 },
       line:{ color:C.line, transparency:88, width:0.16 }
     });
-    h.addRect(slide, 9.28, 1.34, 1.24, 0.44, 'FFFFFF', C.line, {
+    h.addRect(slide, 9.28, 1.34 + yShift, 1.24, 0.44, 'FFFFFF', C.line, {
       fill:{ color:'FFFFFF', transparency:74 },
       line:{ color:C.line, transparency:84, width:0.16 }
     });
-    h.addRect(slide, 9.46, 1.50, 0.72, 0.08, C.accent, C.accent, {
+    h.addRect(slide, 9.46, 1.50 + yShift, 0.72, 0.08, C.accent, C.accent, {
       fill:{ color:C.accent, transparency:82 },
       line:{ color:C.accent, transparency:100 }
     });
-    h.addRect(slide, 10.88, 1.06, 0.22, 1.92, C.cyan, C.cyan, {
+    h.addRect(slide, 10.88, 1.06 + yShift, 0.22, 1.92, C.cyan, C.cyan, {
       fill:{ color:C.cyan, transparency:90 },
       line:{ color:C.cyan, transparency:100 }
     });
-    h.addRect(slide, 10.42, 1.24, 1.12, 0.46, 'FFFFFF', C.line, {
+    h.addRect(slide, 10.42, 1.24 + yShift, 1.12, 0.46, 'FFFFFF', C.line, {
       fill:{ color:'FFFFFF', transparency:82 },
       line:{ color:C.line, transparency:86, width:0.16 }
     });
-    h.addRect(slide, 10.58, 1.42, 0.54, 0.08, C.secondary || C.warning || C.accent, C.secondary || C.warning || C.accent, {
+    h.addRect(slide, 10.58, 1.42 + yShift, 0.54, 0.08, C.secondary || C.warning || C.accent, C.secondary || C.warning || C.accent, {
       fill:{ color:C.secondary || C.warning || C.accent, transparency:82 },
       line:{ color:C.secondary || C.warning || C.accent, transparency:100 }
     });
-    h.addRect(slide, 9.26, 2.26, 2.18, 0.54, 'FFFFFF', C.line, {
+    h.addRect(slide, 9.26, 2.26 + yShift, 2.18, 0.54, 'FFFFFF', C.line, {
       fill:{ color:'FFFFFF', transparency:82 },
       line:{ color:C.line, transparency:84, width:0.16 }
     });
-    h.addRect(slide, 9.44, 2.42, 0.86, 0.08, C.accent, C.accent, {
+    h.addRect(slide, 9.44, 2.42 + yShift, 0.86, 0.08, C.accent, C.accent, {
       fill:{ color:C.accent, transparency:84 },
       line:{ color:C.accent, transparency:100 }
     });
-    h.addRect(slide, 10.52, 2.36, 0.52, 0.22, 'FFFFFF', C.secondary || C.warning || C.accent, {
+    h.addRect(slide, 10.52, 2.36 + yShift, 0.52, 0.22, 'FFFFFF', C.secondary || C.warning || C.accent, {
       fill:{ color:'FFFFFF', transparency:84 },
       line:{ color:C.secondary || C.warning || C.accent, transparency:88, width:0.16 }
     });
-    h.addRect(slide, 11.62, 1.12, 0.18, 1.48, C.accent, C.accent, {
+    h.addRect(slide, 11.62, 1.12 + yShift, 0.18, 1.48, C.accent, C.accent, {
       fill:{ color:C.accent, transparency:94 },
       line:{ color:C.accent, transparency:100 }
     });
-    h.addRect(slide, 10.74, 2.72, 1.02, 0.22, 'FFFFFF', C.line, {
+    h.addRect(slide, 10.74, 2.72 + yShift, 1.02, 0.22, 'FFFFFF', C.line, {
       fill:{ color:'FFFFFF', transparency:84 },
       line:{ color:C.line, transparency:82, width:0.18 }
     });
-    h.addRect(slide, 10.88, 2.82, 0.58, 0.08, C.accent, C.accent, {
+    h.addRect(slide, 10.88, 2.82 + yShift, 0.58, 0.08, C.accent, C.accent, {
       fill:{ color:C.accent, transparency:84 },
       line:{ color:C.accent, transparency:100 }
     });

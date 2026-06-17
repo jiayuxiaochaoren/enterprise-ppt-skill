@@ -73,6 +73,7 @@ function createFakeCtx(ops, specRef) {
       violet: '7C3AED',
       white: 'FFFFFF'
     }),
+    coverMetaText: plan => [plan.metaText, plan.organization, plan.audience, plan.date].filter(Boolean).join(' / '),
     copyFallback: (_plan, key, fallbackText) => fallbackText || fallback[key] || key,
     designForSlide: plan => ({
       wantsImage:Boolean(plan && plan.coverImagePath),
@@ -203,6 +204,24 @@ function assertLightEditorialShell(ops) {
   });
 }
 
+function assertLightEditorialNoMetaRule() {
+  const ops = [];
+  const specRef = { current:{ coverTone:'light', coverMotif:'editorial-rule' } };
+  const ctx = createFakeCtx(ops, specRef);
+  const renderers = createCoverRenderers(ctx);
+  renderers.coverDark(createSlide(ops), { title:'No Meta Cover' }, { title:'No Meta Cover', subtitle:'Insight' });
+  assert.equal(
+    hasRect(ops, { x:0.82, y:6.10, w:1.26, h:0.030 }),
+    false,
+    'light editorial cover should not render the lower accent rule when deck meta is empty'
+  );
+  assert.equal(
+    hasRect(ops, { x:2.24, y:6.10, w:0.42, h:0.030 }),
+    false,
+    'light editorial cover should not render the lower cyan accent when deck meta is empty'
+  );
+}
+
 function assertTextBox(ops, text, expected) {
   const op = ops.find(candidate => {
     if (candidate.name !== 'addText' || candidate.args[1] !== text) return false;
@@ -325,6 +344,7 @@ function main() {
   assertEnergyCoverShell(ops);
   assertSpecialtyLightCanvasShells(ops);
   assertLightEditorialShell(ops);
+  assertLightEditorialNoMetaRule();
   assertCoverFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 30, 'expected cover text output');
 

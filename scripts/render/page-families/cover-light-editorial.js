@@ -26,7 +26,10 @@ function createCoverLightEditorialRenderer(ctx = {}, deps = {}) {
     const panel = ctx.panelFill();
     const motif = ctx.presentationSpec().coverMotif || 'editorial-rule';
     const companyIntro = ctx.isCompanyIntroPlan(plan);
-    drawLightEditorialMotif(slide, motif, bg);
+    const coverMetaText = typeof ctx.coverMetaText === 'function' ? ctx.coverMetaText(plan) : '';
+    drawLightEditorialMotif(slide, motif, bg, {
+      showBottomRule:Boolean(String(coverMetaText || '').trim())
+    });
 
     const x0 = motif === 'ivory-editorial' ? 4.72 : 0.84;
     const metaColor = motif === 'ivory-editorial' ? C.muted : C.muted;

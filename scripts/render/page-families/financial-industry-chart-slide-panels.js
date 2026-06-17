@@ -26,12 +26,49 @@ function createFinancialIndustryChartSlidePanels(ctx = {}) {
 
   function drawProofObjectPanel(slide, s, side, variantLabel) {
     addRect(slide, side.x, side.y, side.w, side.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
-    addLabel(slide, '经营依据', { x:side.x+0.28, y:side.y+0.34, w:1.28, h:0.12, fontSize:6.8, color:C.accent, charSpace:0 });
-    addText(slide, visibleCoreTitle(s.coreTitle, variantLabel || '行业读数'), { x:side.x+0.28, y:side.y+0.84, w:1.78, h:0.36, fontSize:13.8, bold:true, color:C.white, fit:'shrink' });
-    addText(slide, s.coreBody || s.decision || s.claim || s.subtitle || '把关键经营指标放回判断场景。', { x:side.x+0.28, y:side.y+1.62, w:1.86, h:0.62, fontSize:8.5, color:'CBD5E1', fit:'shrink', breakLine:true });
-    addHairline(slide, side.x+0.28, side.y+2.62, 0.78, C.accent, 0, 0.55);
+    addLabel(slide, '经营依据', {
+      x:side.x+0.28,
+      y:side.y+0.34,
+      w:1.28,
+      h:0.12,
+      fontSize:6.8,
+      color:C.softBlue || C.captionOnImage || '93C5FD',
+      charSpace:0
+    });
+    addText(slide, visibleCoreTitle(s.coreTitle, variantLabel || '行业读数'), {
+      x:side.x+0.28,
+      y:side.y+0.86,
+      w:1.82,
+      h:0.40,
+      fontSize:13.8,
+      bold:true,
+      color:C.white,
+      fit:'shrink'
+    });
+    addText(slide, s.coreBody || s.decision || s.claim || s.subtitle || '把关键经营指标放回判断场景。', {
+      x:side.x+0.28,
+      y:side.y+1.74,
+      w:1.88,
+      h:0.68,
+      fontSize:8.5,
+      color:'D7E2EF',
+      fit:'shrink',
+      breakLine:true,
+      valign:'mid'
+    });
+    addHairline(slide, side.x+0.28, side.y+2.88, 0.82, C.softBlue || C.accent, 0, 0.55);
     if (s.note) {
-      addText(slide, s.note, { x:side.x+0.28, y:side.y+2.92, w:1.76, h:0.42, fontSize:8.8, color:'A8B3C3', fit:'shrink', breakLine:true });
+      addText(slide, s.note, {
+        x:side.x+0.28,
+        y:side.y+3.08,
+        w:1.80,
+        h:0.52,
+        fontSize:8.6,
+        color:C.captionOnImage || 'CBD5E1',
+        fit:'shrink',
+        breakLine:true,
+        valign:'mid'
+      });
     }
   }
 

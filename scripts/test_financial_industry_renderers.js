@@ -468,10 +468,10 @@ function main() {
   });
   assert(
     denseChannelOps.some(op => op.name === 'addRect'
-      && op.args[1] === 4.38
-      && op.args[2] === 5.58
-      && op.args[3] === 6.84
-      && op.args[4] === 0.24),
+      && Math.abs(op.args[1] - 4.38) < 0.001
+      && Math.abs(op.args[2] - 5.64) < 0.001
+      && Math.abs(op.args[3] - 6.84) < 0.001
+      && Math.abs(op.args[4] - 0.30) < 0.001),
     'dense coordinate board should use a dedicated note band instead of a stray bottom hairline'
   );
   const bubbleBoxes = denseBubbles.map(op => op.args[1] || {});

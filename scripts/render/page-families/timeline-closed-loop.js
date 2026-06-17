@@ -22,7 +22,8 @@ function createTimelineClosedLoop(ctx = {}, deps = {}) {
 
   return function timelineClosedLoop(slide, plan, s, idx) {
     const manufacturing = plan.industry === 'manufacturing-operations';
-    drawDarkPageHeader(slide, {
+    const hasExternalNote = Boolean(String(s.note || '').trim());
+    const header = drawDarkPageHeader(slide, {
       kicker:manufacturing ? '制造交付闭环' : '经营动作闭环',
       title:s.title || '流程闭环',
       titleW:manufacturing ? 5.66 : 6.2,
@@ -33,17 +34,40 @@ function createTimelineClosedLoop(ctx = {}, deps = {}) {
       idx
     });
     const phases = timelineClosedLoopPhases(s);
-    const board = { x:0.92, y:2.04, w:10.84, h:4.18 };
-    const pos = [
-      { x:1.22, y:2.74 }, { x:8.46, y:2.74 },
-      { x:8.46, y:4.78 }, { x:1.22, y:4.78 }
-    ];
+    const contentY = Math.max(2.04, Number(header && header.contentTop) || 2.04);
+    const boardBottom = manufacturing && !hasExternalNote ? 6.58 : 6.22;
+    const board = { x:0.92, y:contentY, w:10.84, h:Math.max(0.10, boardBottom - contentY) };
     const cardW = 2.46;
-    const cardH = 1.06;
+    const cardH = manufacturing && !hasExternalNote ? 1.14 : 1.06;
+    const topPad = manufacturing && !hasExternalNote ? 0.44 : 0.70;
+    const bottomPad = manufacturing && !hasExternalNote ? 0.34 : 0.38;
+    const topY = board.y + topPad;
+    const bottomY = board.y + board.h - cardH - bottomPad;
+    const middleGap = Math.max(0.18, bottomY - (topY + cardH));
+    const pos = [
+      { x:1.22, y:topY }, { x:8.46, y:topY },
+      { x:8.46, y:bottomY }, { x:1.22, y:bottomY }
+    ];
     drawTimelineClosedLoopBoard(slide, plan, s, board);
     drawTimelineClosedLoopPhaseCards(slide, phases, pos, { cardW, cardH });
-    addText(slide, manufacturing ? '资料回流' : '复盘回流', { x:1.18, y:4.06, w:0.74, h:0.10, fontSize:5.8, color:C.accent, fit:'shrink' });
-    if (s.note) addText(slide, s.note, { x:0.92, y:6.36, w:7.8, h:0.18, fontSize:9.0, color:C.darkMuted || '94A3B8', fit:'shrink' });
+    addText(slide, manufacturing ? '资料回流' : '复盘回流', {
+      x:1.18,
+      y:topY + cardH + Math.max(0.08, (middleGap - 0.10) / 2),
+      w:0.74,
+      h:0.10,
+      fontSize:5.8,
+      color:C.accent,
+      fit:'shrink'
+    });
+    if (hasExternalNote) addText(slide, s.note, {
+      x:0.92,
+      y:board.y + board.h + 0.14,
+      w:7.8,
+      h:0.18,
+      fontSize:9.0,
+      color:C.darkMuted || '94A3B8',
+      fit:'shrink'
+    });
     drawFooter(slide, plan, { color:'64748B' });
   };
 }

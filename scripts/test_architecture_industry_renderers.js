@@ -92,6 +92,73 @@ function assertServiceBlueprintShell(ops) {
   });
 }
 
+function assertManufacturingTopologyLongTitleReflow() {
+  const ops = [];
+  const renderers = createArchitectureIndustryRenderers(createFakeCtx(ops));
+  const section = {
+    title:'产品组合应由装配线、改造与维保共同托住利润质量并回收到交付证据链',
+    subtitle:'把产品对象、制造动作与交付资料放在同一结构里，避免空框和信息漂移。',
+    layers:[
+      { title:'设备与现场层', items:['柔性装配工作站','老产线改造包','MES基础版','机器人上下料单元'] },
+      { title:'制造交付动作', items:['需求确认','加工制造','控制联调','现场安装'] },
+      { title:'证据与交付资料', items:['图纸参数','设备铭牌','调试记录','项目验收','服务反馈'] }
+    ]
+  };
+
+  renderers.architectureManufacturingTopology(createSlide(ops), {}, section, 9);
+
+  const board = ops.find(op => op.name === 'addRect'
+    && Math.abs(op.args[1] - 3.82) < 0.001
+    && Math.abs(op.args[3] - 7.78) < 0.001);
+  assert(board, 'expected long-title manufacturing topology board');
+  const boardY = board.args[2];
+  const boardBottom = board.args[2] + board.args[4];
+  assert(boardY > 2.20, 'expected manufacturing topology board to move down for wrapped titles');
+
+  const bar = ops.find(op => op.name === 'addRect'
+    && Math.abs(op.args[1] - 4.18) < 0.001
+    && Math.abs(op.args[3] - 7.06) < 0.001
+    && op.args[4] >= 0.82
+    && op.args[4] <= 0.92);
+  assert(bar, 'expected manufacturing topology action bar');
+  const barOpts = { x:bar.args[1], y:bar.args[2], w:bar.args[3], h:bar.args[4] };
+
+  const actionLabel = ops.find(op => op.name === 'addLabel' && op.args[1] === '制造交付动作');
+  assert(actionLabel, 'expected manufacturing topology action label');
+  const actionLabelOpts = actionLabel.args[2] || {};
+  assert(
+    Math.abs((actionLabelOpts.y + actionLabelOpts.h / 2) - (barOpts.y + barOpts.h / 2)) < 0.06,
+    'manufacturing action label should be vertically centered in the bar'
+  );
+
+  const firstAction = ops.find(op => op.name === 'addText' && op.args[1] === '需求确认');
+  assert(firstAction, 'expected first manufacturing action item');
+  const firstActionOpts = firstAction.args[2] || {};
+  assert(
+    Math.abs((firstActionOpts.y + firstActionOpts.h / 2) - (barOpts.y + barOpts.h / 2)) < 0.08,
+    'manufacturing action items should stay vertically centered in the bar'
+  );
+
+  const dataLabel = ops.find(op => op.name === 'addLabel' && op.args[1] === '证据与交付资料');
+  assert(dataLabel, 'expected manufacturing topology data label');
+  const feedback = ops.find(op => op.name === 'addText' && op.args[1] === '服务反馈');
+  assert(feedback, 'expected manufacturing topology last data item');
+  const feedbackOpts = feedback.args[2] || {};
+  assert(dataLabel.args[2].y < feedbackOpts.y, 'data label should remain above the evidence rows');
+  assert(
+    feedbackOpts.y + feedbackOpts.h <= boardBottom - 0.02,
+    'evidence rows should remain inside the manufacturing topology board'
+  );
+
+  const lastDataNumber = ops.find(op => op.name === 'addNumber' && op.args[1] === '05' && (op.args[2] || {}).x >= board.args[1]);
+  assert(lastDataNumber, 'expected manufacturing topology final data number');
+  const lastDataNumberOpts = lastDataNumber.args[2] || {};
+  assert(
+    lastDataNumberOpts.y + lastDataNumberOpts.h <= boardBottom - 0.02,
+    'evidence numbering should remain inside the manufacturing topology board'
+  );
+}
+
 function main() {
   const ops = [];
   const renderers = createArchitectureIndustryRenderers(createFakeCtx(ops));
@@ -188,11 +255,12 @@ function main() {
 
   assertKicker(ops, 'SERVICE BLUEPRINT');
   assertKicker(ops, 'PLATFORM CAPABILITY MAP');
-  assertKicker(ops, 'LINE SYSTEM TOPOLOGY');
+  assertKicker(ops, '产线系统拓扑');
   assert(ops.some(op => op.name === 'addArrowLine'), 'expected manufacturing topology arrows');
   assert.equal(ops.filter(op => op.name === 'addShape' && op.args[0] === 'ellipse').length, 1, 'expected one SaaS capability center ring');
   assert.equal(ops.filter(op => op.name === 'addShape' && op.args[0] === 'line').length, 0, 'SaaS capability map should not draw imprecise diagonal connectors');
   assertServiceBlueprintShell(ops);
+  assertManufacturingTopologyLongTitleReflow();
   const stepNumber01 = ops.find(op => op.name === 'addNumber' && op.args[1] === '01' && (op.args[2] || {}).y > 3.40);
   const stepNumber02 = ops.find(op => op.name === 'addNumber' && op.args[1] === '02' && (op.args[2] || {}).y > 3.40);
   assert(stepNumber01 && stepNumber02, 'expected service blueprint step numbers');
