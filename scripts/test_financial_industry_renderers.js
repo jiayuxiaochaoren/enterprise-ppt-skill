@@ -268,8 +268,12 @@ function main() {
       'expected loss ranking operational board'
     );
     assert(
-      ops.some(op => op.name === 'addLabel' && op.args[1] === 'ROLE HANDOFFS'),
+      ops.some(op => op.name === 'addLabel' && op.args[1] === '交接节点'),
       'expected quality handoff operational board'
+    );
+    assert(
+      ops.some(op => op.name === 'addText' && op.args[1] === '质量交接链路'),
+      'expected healthcare-specific handoff chain title'
     );
     assert(
       ops.some(op => op.name === 'addText' && op.args[1] === 'Grid Control'),
@@ -312,7 +316,7 @@ function main() {
       5,
       'expected operating basis label on standard industry chart slides only'
     );
-    ['月度趋势', '目标桥', '渠道效率', '停机损失排序', '质量交接', '调度地图'].forEach(text => {
+    ['月度趋势', '目标桥', '渠道效率', '停机损失排序', '质量交接链路', '调度地图'].forEach(text => {
       assert(
         ops.some(op => op.name === 'addText' && op.args[1] === text),
         `expected industry chart side title ${text}`
@@ -436,6 +440,12 @@ function main() {
       denseChannelOps.some(op => op.name === 'addText' && op.args[1] === '投入'),
     'dense coordinate board should use compact Chinese axes'
   );
+  const denseInvestAxis = denseChannelOps.find(op => op.name === 'addText' && op.args[1] === '投入');
+  assert(
+    denseInvestAxis &&
+      (denseInvestAxis.args[2] || {}).y < 5.10,
+    'dense coordinate board should keep the x-axis label inside the chart board instead of dropping too low'
+  );
   assert(
     denseChannelOps.some(op => op.name === 'addText' && op.args[1] === '01') &&
       denseChannelOps.some(op => op.name === 'addText' && op.args[1] === '大众点评'),
@@ -456,6 +466,14 @@ function main() {
       `dense coordinate board should keep a readable list row for ${label}`
     );
   });
+  assert(
+    denseChannelOps.some(op => op.name === 'addRect'
+      && op.args[1] === 4.38
+      && op.args[2] === 5.58
+      && op.args[3] === 6.84
+      && op.args[4] === 0.24),
+    'dense coordinate board should use a dedicated note band instead of a stray bottom hairline'
+  );
   const bubbleBoxes = denseBubbles.map(op => op.args[1] || {});
   const bubbleXs = bubbleBoxes.map(box => box.x + box.w / 2);
   const bubbleYs = bubbleBoxes.map(box => box.y + box.h / 2);

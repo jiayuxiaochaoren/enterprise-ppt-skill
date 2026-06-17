@@ -72,9 +72,14 @@ function createAdoptionOrPatientFunnelBoard(ctx = {}) {
       const prev = i > 0 ? values[i - 1] : 0;
       const current = values[i] || 0;
       const rate = i > 0 ? formatRate(current, prev) : '';
+      const tint = [C.accent, C.cyan, C.violet, C.tertiary || C.success || '20B77A', C.warning || 'D59A2F'][i % accents.length];
       addRect(slide, x, cardY, cardW, cardH, C.panelAlt || 'F8FAFC', accent, {
-        fill:{ color:C.panelAlt || 'F8FAFC', transparency:i === 0 ? 0 : 5 },
-        line:{ color:accent, transparency:i === 0 ? 16 : 38, width:0.38 }
+        fill:{ color:tint, transparency:i === 0 ? 90 : 93 },
+        line:{ color:accent, transparency:i === 0 ? 12 : 30, width:0.40 }
+      });
+      addRect(slide, x, cardY, cardW, 0.05, accent, accent, {
+        fill:{ color:accent, transparency:0 },
+        line:{ color:accent, transparency:100 }
       });
       addLabel(slide, String(i+1).padStart(2,'0'), {
         x:x+0.16, y:cardY+0.14, w:0.32, h:0.10,
@@ -110,8 +115,15 @@ function createAdoptionOrPatientFunnelBoard(ctx = {}) {
     });
     const railY = board.y + board.h - 0.96;
     addRect(slide, board.x+0.44, railY, board.w-0.88, 0.54, C.panelAlt || 'F8FAFC', C.line, {
-      fill:{ color:C.panelAlt || 'F8FAFC', transparency:2 },
-      line:{ color:C.line, transparency:54, width:0.28 }
+      fill:{ color:C.panelAlt || 'F8FAFC', transparency:0 },
+      line:{ color:C.line, transparency:42, width:0.28 }
+    });
+    items.slice(1).forEach((_, i) => {
+      const tickX = board.x + 0.70 + i * ((board.w - 1.44) / Math.max(1, items.length - 1));
+      addRect(slide, tickX, railY + 0.35, 0.10, 0.03, accents[Math.min(i, accents.length - 1)], accents[Math.min(i, accents.length - 1)], {
+        fill:{ color:accents[Math.min(i, accents.length - 1)], transparency:8 },
+        line:{ color:accents[Math.min(i, accents.length - 1)], transparency:100 }
+      });
     });
     const rateText = items.slice(1).map((it, i) => {
       const rate = formatRate(values[i + 1], values[i]);

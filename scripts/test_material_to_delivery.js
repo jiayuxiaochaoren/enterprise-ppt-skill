@@ -97,6 +97,63 @@ assert.ok(fs.existsSync(path.join(draftDir, 'asset-decision-gate.md')));
 assert.ok(report.nextActions.some(item => /Auto-draft/.test(item)));
 assert.ok(report.nextActions.some(item => /asset-decision-gate\.json/.test(item)));
 
+const autoBridgeAsset = path.join(OUT, 'auto-bridge-generated.png');
+fs.writeFileSync(autoBridgeAsset, Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+  'base64'
+));
+const autoBridgeScript = path.join(OUT, 'mock-imagegen-bridge.js');
+fs.writeFileSync(autoBridgeScript, [
+  "const fs = require('fs');",
+  "const path = require('path');",
+  "const promptsPath = process.argv[2] || process.env.CODEX_ASSET_PROMPTS;",
+  "const assetMapPath = process.argv[3] || process.env.CODEX_ASSET_MAP;",
+  "const assetPath = process.argv[4];",
+  "const prompts = JSON.parse(fs.readFileSync(promptsPath, 'utf8'));",
+  "const mapping = {};",
+  "(prompts.prompts || []).forEach(prompt => {",
+  "  mapping[String(prompt.slide)] = {",
+  "    path: assetPath,",
+  "    type: 'generated-image',",
+  "    generated: true,",
+  "    allowAspectMismatch: true,",
+  "    role: prompt.role,",
+  "    source: 'mock delivery imagegen bridge'",
+  "  };",
+  "});",
+  "fs.mkdirSync(path.dirname(assetMapPath), { recursive: true });",
+  "fs.writeFileSync(assetMapPath, JSON.stringify(mapping, null, 2));"
+].join('\n'), 'utf8');
+
+const draftAutoBridgeDir = path.join(OUT, 'draft-auto-bridge');
+const draftAutoBridge = cp.spawnSync(process.execPath, [
+  'scripts/material_to_delivery.js',
+  brief,
+  '--out-dir',
+  draftAutoBridgeDir,
+  '--auto-draft',
+  '--quality-mode',
+  'draft',
+  '--skip-preview',
+  '--allow-generated-assets',
+  '--imagegen-command',
+  `${process.execPath} ${autoBridgeScript} {prompts} {assetMap} ${autoBridgeAsset}`
+], {
+  cwd: ROOT,
+  encoding: 'utf8',
+  timeout: 180000
+});
+assert.equal(draftAutoBridge.status, 0, draftAutoBridge.stderr || draftAutoBridge.stdout);
+const draftAutoBridgeResult = JSON.parse(draftAutoBridge.stdout);
+assert.equal(draftAutoBridgeResult.status, 'complete');
+const draftAutoBridgeReport = JSON.parse(fs.readFileSync(path.join(draftAutoBridgeDir, 'delivery-report.json'), 'utf8'));
+assert.equal(draftAutoBridgeReport.status, 'complete');
+assert.ok(draftAutoBridgeReport.outputs.assetResolution, 'delivery pipeline should persist the asset resolution report when imagegen bridge is used');
+const draftAutoBridgeResolution = JSON.parse(fs.readFileSync(path.join(draftAutoBridgeDir, 'visual-asset-resolution.json'), 'utf8'));
+assert.equal(draftAutoBridgeResolution.status, 'ready');
+assert.ok(draftAutoBridgeResolution.outputs.assetMap, 'imagegen bridge should emit an asset map in delivery flow');
+assert.ok(draftAutoBridgeResolution.outputs.assetGatePostBind, 'delivery flow should record the post-bind asset gate');
+
 const modelResultsDir = path.join(OUT, 'model-results');
 const draftExtraction = JSON.parse(fs.readFileSync(path.join(draftDir, 'model-orchestration', 'material-extraction.draft.json'), 'utf8'));
 const modelResultsPath = path.join(OUT, 'model-results.json');

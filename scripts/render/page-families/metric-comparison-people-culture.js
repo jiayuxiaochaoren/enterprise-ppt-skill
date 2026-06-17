@@ -16,6 +16,14 @@ function createPeopleCultureGrowthBoard(ctx = {}) {
     drawLightPageHeader
   } = createPageFamilyPrimitives(ctx);
 
+  function peopleSummary(logic = {}) {
+    return [
+      ['项目现场', logic.currentState || '团队在多行业项目中沉淀方法。'],
+      ['续约原因', logic.cause || '项目复盘、导师机制和平台工具共同支撑成长。'],
+      ['成长表达', logic.action || '把候选人培养路径写进岗位沟通。']
+    ];
+  }
+
   return function peopleCultureGrowthBoard(slide, plan, s, idx) {
     const claim = s.claim || s.subtitle || '公司介绍页要把文化落到业务事实、客户关系和人才成长上。';
     drawLightPageHeader(slide, {
@@ -57,32 +65,36 @@ function createPeopleCultureGrowthBoard(ctx = {}) {
       fill:{ color:C.accent, transparency:0 },
       line:{ color:C.accent, transparency:100 }
     });
-    addLabel(slide, project.label || '核心项目', {
+    addLabel(slide, '代表项目现场', {
       x:rail.x+0.28, y:rail.y+0.26, w:1.28, h:0.10,
       fontSize:5.8, color:C.accent, charSpace:0
     });
+    addText(slide, project.label || '核心项目', {
+      x:rail.x+0.28, y:rail.y+0.50, w:1.42, h:0.20,
+      fontSize:12.2, bold:true, color:C.text, fit:'shrink'
+    });
     addText(slide, String(project.value || '—'), {
-      x:rail.x+0.28, y:rail.y+0.70, w:1.52, h:0.48,
-      fontSize:26, bold:true, color:C.accent, fit:'shrink'
+      x:rail.x+0.28, y:rail.y+0.84, w:1.52, h:0.42,
+      fontSize:24, bold:true, color:C.accent, fit:'shrink'
     });
     addText(slide, project.note || '围绕制造、零售和政企项目沉淀工作方法。', {
-      x:rail.x+0.28, y:rail.y+1.42, w:2.18, h:0.42,
+      x:rail.x+0.28, y:rail.y+1.38, w:2.18, h:0.42,
       fontSize:8.0, color:C.body, fit:'shrink', breakLine:true
     });
     addText(slide, logic.currentState || '团队在多行业项目中持续沉淀可复用经验。', {
-      x:rail.x+0.28, y:rail.y+2.08, w:2.36, h:0.30,
+      x:rail.x+0.28, y:rail.y+2.06, w:2.36, h:0.30,
       fontSize:7.2, color:C.muted, fit:'shrink', breakLine:true
     });
 
     const columns = [
       {
-        title:'客户关系',
+        title:'客户续约',
         metric:repurchase,
         color:C.cyan,
         x:4.02
       },
       {
-        title:'人才培养',
+        title:'成长路径',
         metric:promotion,
         color:C.violet,
         x:7.32
@@ -119,11 +131,7 @@ function createPeopleCultureGrowthBoard(ctx = {}) {
       });
     });
 
-    const summary = [
-      ['项目沉淀', logic.currentState || '团队在多行业项目中沉淀方法。'],
-      ['成长原因', logic.cause || '项目复盘、导师机制和平台工具共同支撑成长。'],
-      ['候选人沟通', logic.action || '把成长路径和项目现场写进岗位沟通。']
-    ];
+    const summary = peopleSummary(logic);
     summary.forEach((item, i) => {
       const x = board.x + 0.22 + i * 3.72;
       const color = i === 0 ? C.accent : (i === 1 ? C.cyan : C.violet);

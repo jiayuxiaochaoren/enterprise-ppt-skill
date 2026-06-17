@@ -90,13 +90,13 @@ function assetRoleNeedsImage(role = '') {
   return true;
 }
 
-function hasBoundAsset(slide = {}, plan = {}, role = '') {
+function hasBoundAsset(slide = {}, plan = {}, role = '', opts = {}) {
   const direct = (slide.visual && slide.visual.image) || slide.image || '';
   const gallery = [
     ...(Array.isArray(slide.images) ? slide.images : []),
     ...((slide.visual && Array.isArray(slide.visual.images)) ? slide.visual.images : [])
   ];
-  const media = mediaForRole(plan, slide, role);
+  const media = mediaForRole(plan, slide, role, opts);
   return [direct, media, ...gallery].some(ref => {
     const resolved = resolveAssetPath(ref);
     return resolved && fs.existsSync(resolved);
@@ -179,6 +179,47 @@ function questionFor(plan = {}, slide = {}, idx = 0) {
   };
 }
 
+function optionalManufacturingCoverQuestion(rawPlan = {}, normalizedPlan = {}, normalizedSlide = {}, idx = 0) {
+  if (String(normalizedPlan.industry || '') !== 'manufacturing-operations') return null;
+  if (String(normalizedSlide.type || '').toLowerCase() !== 'cover') return null;
+  const expression = (normalizedSlide.compositionPlan && normalizedSlide.compositionPlan.industryExpression) || {};
+  const coverArchetype = String(
+    normalizedSlide.coverArchetype ||
+    normalizedSlide.cover_archetype ||
+    rawPlan.coverArchetype ||
+    rawPlan.cover_archetype ||
+    expression.coverArchetype ||
+    ''
+  ).trim().toLowerCase();
+  if (coverArchetype !== 'native-industrial-structure-cover') return null;
+  if (String(normalizedSlide.coverStyle || rawPlan.coverStyle || '').trim()) return null;
+  if (hasBoundAsset(normalizedSlide, normalizedPlan, 'cover', { includeDefault:false })) return null;
+  const generation = normalizedSlide.assetGeneration || {};
+  const decisionState = assetDecisionForGeneration(generation);
+  if (!(generation.structureOnly === true || decisionState.structureOnly === true)) return null;
+
+  const upgradedRawPlan = Object.assign({}, rawPlan, {
+    slides: (rawPlan.slides || []).map((slide, slideIndex) => (
+      slideIndex === idx
+        ? Object.assign({}, slide, {
+            coverStyle: 'industrial-command-cover',
+            coverStyleSource: 'asset-decision-gate'
+          })
+        : Object.assign({}, slide)
+    ))
+  });
+  const upgradedPlan = normalizeDeckPlan(upgradedRawPlan);
+  const upgradedSlide = upgradedPlan.slides[idx] || normalizedSlide;
+  const question = questionFor(upgradedPlan, upgradedSlide, idx);
+  return Object.assign({}, question, {
+    priority: 'recommended',
+    optionalUpgrade: true,
+    upgradeCoverStyle: 'industrial-command-cover',
+    preserveStructureOnSkip: true,
+    reason: '当前是 formal-safe 原生制造业封面；如需更强视觉表达，请确认是否升级为图像化封面。'
+  });
+}
+
 function buildGate(planPath, answersPath = '', opts = {}) {
   const rawPlan = readJson(planPath);
   const normalized = normalizeDeckPlan(rawPlan);
@@ -195,9 +236,19 @@ function buildGate(planPath, answersPath = '', opts = {}) {
     const generationStructureOnly = decisionState.status === 'structure-only' || (generation.status === 'none' &&
       generation.mustBind !== true &&
       ['abstract', 'none', 'structure', 'diagram'].includes(generationResolvedRole));
+    const requiresExplicitBinding = decisionState.needsUserDecision ||
+      generation.mustBind === true ||
+      ['required', 'blocked', 'factual-required', 'decision-required'].includes(String(generation.status || '').toLowerCase());
     const needsImage = decisionState.needsUserDecision ||
       (!generation.assetDecisionState && !generationStructureOnly && (wantsImage || assetRoleNeedsImage(refRole)));
-    if (needsImage && !hasBoundAsset(normalizedSlide, normalized, role)) {
+    const coverUpgradeQuestion = optionalManufacturingCoverQuestion(rawPlan, normalized, normalizedSlide, i);
+    if (coverUpgradeQuestion) {
+      questions.push(coverUpgradeQuestion);
+      return Object.assign({}, slide);
+    }
+    if (needsImage && !hasBoundAsset(normalizedSlide, normalized, role, {
+      includeDefault: requiresExplicitBinding ? false : true
+    })) {
       questions.push(questionFor(normalized, normalizedSlide, i));
     }
     return Object.assign({}, slide);
@@ -220,6 +271,17 @@ function buildGate(planPath, answersPath = '', opts = {}) {
           reason: `action ${answer.action} is not allowed for this asset decision`
         }));
         return;
+      }
+      if (q.optionalUpgrade && q.upgradeCoverStyle) {
+        if (answer.action === 'skip_image') {
+          if (slide.coverStyleSource === 'asset-decision-gate') {
+            delete slide.coverStyle;
+            delete slide.coverStyleSource;
+          }
+        } else {
+          slide.coverStyle = q.upgradeCoverStyle;
+          slide.coverStyleSource = 'asset-decision-gate';
+        }
       }
       if (answer.action === 'provide_assets') {
         const bindSpec = bindingSpecForAnswer(q, answer);

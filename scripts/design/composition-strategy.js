@@ -231,6 +231,11 @@ function createCompositionStrategyHelpers(deps = {}) {
   function imageTreatmentFor(plan = {}, s = {}, design = slideDesign(plan, s), signals = contentSignals(plan, s)) {
     if (!signals.imageCount && !(design && design.wantsImage)) return 'none';
     const role = normalizeAssetRole((s.visual && s.visual.role) || (design && design.imageRole) || 'evidence');
+    if (s.type === 'cover' && role === 'background') {
+      return slideWantsImage(plan, s, 'cover')
+        ? 'inspectable-showcase-frame'
+        : 'graded-atmosphere';
+    }
     if (s.type === 'closing' && /premium-closing-anchor/i.test(String(s.layoutVariant || s.closingVariant || ''))) {
       return role === 'background' ? 'media-showcase-frame' : 'inspectable-showcase-frame';
     }

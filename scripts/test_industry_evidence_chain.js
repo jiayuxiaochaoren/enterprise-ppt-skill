@@ -495,7 +495,7 @@ const peopleClosingAnchor = normalizeSlide(
   5,
   5
 );
-assert.equal(peopleClosingAnchor.componentPlan.industryEvidenceChain.stageId, 'organization-growth-evidence');
+assert.equal(peopleClosingAnchor.componentPlan.industryEvidenceChain.stageId, 'neutral-general');
 assert.equal(peopleClosingAnchor.componentPlan.componentIds.includes('decision-panel'), true);
 assert.equal(peopleClosingAnchor.componentPlan.componentIds.includes('kpi-strip'), false);
 
@@ -760,6 +760,28 @@ const consumerVisualGap = auditIndustryEvidenceChain(consumerMissingVisualStage)
 assert.ok(consumerVisualGap, 'consumer/retail chain should flag missing visual claim stage');
 assert.equal(consumerVisualGap.recommendation.suggestedPage, '产品/品牌/视觉证据页');
 assert.ok(consumerVisualGap.recommendation.requiredFields.some(field => /editorialProof/.test(field)));
+
+const manufacturingChannelEconomics = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  title:'制造业渠道效率证据',
+  slides:[
+    { type:'report-board', proofObject:'report-board', title:'经营底座' },
+    { type:'timeline', layoutVariant:'closed-loop', proofObject:'maintenance-loop', title:'制造交付闭环', phases:[{ title:'需求确认' }, { title:'制造交付' }, { title:'现场验收' }] },
+    {
+      type:'industry-chart',
+      layoutVariant:'channel-efficiency-matrix',
+      proofObject:'channel-efficiency-matrix',
+      title:'渠道预算按效率分层',
+      channelEfficiency:[{ label:'系统集成商·西南', x:85, y:8.7, value:'8.7x', body:'扩张；成交 79 单' }],
+      businessLogic:{ currentState:'高回收样本集中。', impact:'平均加码会稀释高回收样本。' }
+    }
+  ]
+});
+assert.equal(
+  manufacturingChannelEconomics.slides[2].componentPlan.industryEvidenceChain.stageId,
+  'channel-economics-evidence',
+  'manufacturing channel efficiency pages should not fall back to neutral/general'
+);
 
 const consumer = normalizeDeckPlan(fixture.samples[1].plan);
 const requiredAnyAlternativeMeta = renderMetaFor(consumer);

@@ -1,8 +1,8 @@
 const {
-  createRiskResponsibilityLoopRenderer
-} = require('./risk-board-responsibility-loop');
+  createRiskActionLoopRenderer
+} = require('./risk-board-action-loop');
 
-function createRiskBoardResponsibilityLayoutRenderers(ctx = {}, helpers = {}) {
+function createRiskBoardActionLayoutRenderers(ctx = {}, helpers = {}) {
   const C = ctx.colors();
   const {
     addHairline,
@@ -16,7 +16,7 @@ function createRiskBoardResponsibilityLayoutRenderers(ctx = {}, helpers = {}) {
     drawRiskBoardFooter,
     drawRiskLightHeader
   } = helpers;
-  const riskResponsibilityLoop = createRiskResponsibilityLoopRenderer(ctx, {
+  const riskActionLoop = createRiskActionLoopRenderer(ctx, {
     drawRiskBoardFooter,
     drawRiskLightHeader
   });
@@ -66,10 +66,10 @@ function createRiskBoardResponsibilityLayoutRenderers(ctx = {}, helpers = {}) {
 
   return {
     riskControlStack,
-    riskResponsibilityLoop
+    riskActionLoop
   };
 }
 
 module.exports = {
-  createRiskBoardResponsibilityLayoutRenderers
+  createRiskBoardActionLayoutRenderers
 };

@@ -70,7 +70,7 @@ function inferCoverStyleId(plan = {}, s = {}) {
   ].filter(Boolean).join(' '));
 
   if (coverArchetype === 'native-industrial-structure-cover') {
-    return /rebuild|reconstruct|manual|swiss|重构|手册|产线/.test(text)
+    return /rebuild|reconstruct|manual|swiss|重构|手册/.test(text)
       ? 'industrial-swiss-line'
       : DEFAULT_COVER_STYLE_ID;
   }
@@ -86,7 +86,7 @@ function inferCoverStyleId(plan = {}, s = {}) {
   const technicalPlatformContext = /architecture|capability|system architecture|reference architecture|topology|api|sdk|saas|ai platform|data platform|infra|infrastructure|workflow engine|架构|能力图|系统架构|拓扑|接口|中台|数据平台|技术平台|服务蓝图/.test(text);
   const manufacturingContext = /manufactur|factory|industrial|operation|production|oee|产线|制造|工厂|工业|运营|工程/.test(text);
   if (manufacturingContext) {
-    return /rebuild|reconstruct|manual|swiss|重构|手册|产线/.test(text)
+    return /rebuild|reconstruct|manual|swiss|重构|手册/.test(text)
       ? 'industrial-swiss-line'
       : DEFAULT_COVER_STYLE_ID;
   }

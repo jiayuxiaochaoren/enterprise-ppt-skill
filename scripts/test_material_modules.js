@@ -41,6 +41,7 @@ const {
   proofObjectForClaim,
   sourceTraceForClaim
 } = require('./material/source-trace');
+const { buildDraftExtraction } = require('./material/draft-extraction');
 const { detectStructuredTables } = require('./material/tables');
 const {
   normalizeOcrResults,
@@ -69,6 +70,142 @@ assert.equal(fileKind('brief.md'), 'text');
 assert.equal(fileKind('deck.pptx'), 'office');
 assert.ok(splitChunks('第一段\n\n第二段', 20).length >= 1);
 assert.ok(detectIndustry('新能源 光伏 储能').length >= 1);
+assert.equal(
+  detectIndustry('所属行业 智能制造与工业设备 主营业务 自动化产线 视觉检测设备 工业软件与维保服务')[0].industry,
+  'manufacturing-operations'
+);
+
+const draftExtraction = buildDraftExtraction({
+  sources: [{
+    id:'src-001',
+    kind:'text',
+    name:'00_企业基础信息.csv',
+    text:[
+      '公司/品牌代号,锐工智造',
+      '所属行业,智能制造与工业设备',
+      '主营业务,自动化产线、视觉检测设备、工业软件与维保服务'
+    ].join('\n'),
+    candidateFacts:[
+      '公司/品牌代号,锐工智造',
+      '所属行业,智能制造与工业设备',
+      '主营业务,自动化产线、视觉检测设备、工业软件与维保服务'
+    ]
+  }],
+  textSummary:{
+    industryCandidates:[{ industry:'industrial-energy', score:4 }],
+    candidateFacts:[
+      '公司/品牌代号,锐工智造',
+      '所属行业,智能制造与工业设备',
+      '主营业务,自动化产线、视觉检测设备、工业软件与维保服务'
+    ]
+  }
+});
+assert.equal(draftExtraction.document.title, '锐工智造');
+assert.equal(draftExtraction.document.organization, '锐工智造');
+assert.equal(draftExtraction.document.industry, 'manufacturing-operations');
+
+const tableDrivenDraft = buildDraftExtraction({
+  sources: [
+    {
+      id:'src-001',
+      kind:'text',
+      name:'00_企业基础信息.csv',
+      text:[
+        '公司/品牌代号,锐工智造',
+        '员工规模,512',
+        '年度交付项目,142',
+        '2025年模拟营收规模,3.43亿元级',
+        '核心增长目标,2026年营收同比增长24%'
+      ].join('\n'),
+      candidateFacts:[
+        '公司/品牌代号,锐工智造',
+        '员工规模,512',
+        '年度交付项目,142'
+      ],
+      tables:[{
+        headers:['字段', '值'],
+        rows:[['公司/品牌代号', '锐工智造']]
+      }]
+    },
+    {
+      id:'src-002',
+      kind:'text',
+      name:'01_产品服务明细.csv',
+      tables:[{
+        headers:['SKU/项目编号', '产品/服务名称', '一级分类', '估算毛利率', '2025销售额'],
+        rows:[
+          ['07-001', '柔性装配工作站', '自动化装配线', '38.2%', '5424.2'],
+          ['07-002', '老产线改造包', '产线改造', '39.1%', '1975.1'],
+          ['07-003', '年度维保服务', '维保服务', '44.5%', '908.3']
+        ]
+      }]
+    },
+    {
+      id:'src-003',
+      kind:'text',
+      name:'02_月度经营数据_2025-2026.csv',
+      tables:[{
+        headers:['月份', '营收(万元)', '订单数/服务单数'],
+        rows:[
+          ['2025-01', '1200', '60'],
+          ['2025-02', '980', '55'],
+          ['2025-03', '1380', '68']
+        ]
+      }]
+    },
+    {
+      id:'src-004',
+      kind:'text',
+      name:'03_渠道区域数据.csv',
+      tables:[{
+        headers:['渠道/业务线', '区域', '投入费用(万元)', '成交/有效订单', 'ROI/ROAS', '渠道状态'],
+        rows:[
+          ['系统集成商', '西南', '85.04', '79', '8.70', '扩张'],
+          ['直销大客户', '华东', '233.3', '4', '8.66', '优化中'],
+          ['产业园渠道', '华东', '142.1', '48', '8.36', '稳定']
+        ]
+      }]
+    },
+    {
+      id:'src-005',
+      kind:'text',
+      name:'04_消费者客户调研样本.csv',
+      tables:[{
+        headers:['客群标签', '核心顾虑'],
+        rows:[
+          ['半导体设备厂', '项目交付周期长'],
+          ['汽车零部件厂', '回款节点复杂'],
+          ['3C电子工厂', '售后响应要求高'],
+          ['新能源电池厂', '项目交付周期长']
+        ]
+      }]
+    },
+    {
+      id:'src-006',
+      kind:'text',
+      name:'05_营销活动投放数据.csv',
+      tables:[{
+        headers:['费用(万元)', '曝光/触达人次', '点击/到店/咨询', '线索数', '成交订单/签约数', '活动贡献营收(万元)'],
+        rows:[
+          ['64.02', '30194', '757', '68', '27', '402.07'],
+          ['163.79', '18007', '678', '65', '15', '543.12']
+        ]
+      }]
+    }
+  ],
+  textSummary:{
+    industryCandidates:[{ industry:'manufacturing-operations', score:8 }],
+    candidateFacts:[
+      '公司/品牌代号,锐工智造',
+      '主营业务,自动化产线、视觉检测设备、工业软件与维保服务'
+    ]
+  }
+});
+assert.ok(tableDrivenDraft.claim_spine.some(claim => claim.proof_object === 'production-topology'));
+assert.ok(tableDrivenDraft.claim_spine.some(claim => claim.proof_object === 'monthly-pulse-trend'));
+assert.ok(tableDrivenDraft.claim_spine.some(claim => claim.proof_object === 'channel-efficiency-matrix'));
+assert.ok(tableDrivenDraft.claim_spine.some(claim => claim.proof_object === 'issue-frequency-ranking'));
+assert.ok(tableDrivenDraft.claim_spine.some(claim => claim.proof_object === 'adoption-funnel'));
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ppt-material-modules-'));
 const image = path.join(dir, 'scan.png');

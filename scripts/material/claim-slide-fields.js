@@ -91,6 +91,42 @@ function dataComponentForClaim(claim = {}) {
 
 function agendaTitleForClaim(claim = {}) {
   if (claim.agenda_title || claim.short_title) return claim.agenda_title || claim.short_title;
+  const displayCopy = displayCopyFromClaim(claim);
+  const normalizedProof = normalizeProofObject(
+    claim.proof_object || claim.proofObject || claim.layoutVariant || claim.variant,
+    {
+      text: [
+        claim.claim,
+        claim.title,
+        claim.support,
+        claim.summary,
+        claim.note
+      ].filter(Boolean).join(' '),
+      proofIntent: claim.proof_intent || claim.proofIntent,
+      displayCopy,
+      slide: claim
+    }
+  );
+  const proofAgendaTitle = {
+    'metric-board': '经营底座',
+    'report-board': '经营底座',
+    'production-topology': '产品谱系',
+    'monthly-pulse-trend': '月度趋势',
+    'manufacturing-action-loop': '交付闭环',
+    'maintenance-loop': '交付闭环',
+    'channel-efficiency-matrix': '渠道效率',
+    'issue-frequency-ranking': '客户顾虑',
+    'review-sentiment-ranking': '反馈主题',
+    'loss-pareto': '损失排序'
+  }[normalizedProof];
+  if (proofAgendaTitle) return proofAgendaTitle;
+  const shortVisibleTitle = String(
+    displayCopy.core_title ||
+    displayCopy.coreTitle ||
+    displayCopy.kicker ||
+    ''
+  ).trim();
+  if (shortVisibleTitle && shortVisibleTitle.length <= 12) return shortVisibleTitle;
   const text = String(claim.claim || claim.title || '');
   const zh = /[\u3400-\u9fff]/.test(text);
   const pairs = [

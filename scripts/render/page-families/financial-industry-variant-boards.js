@@ -14,13 +14,13 @@ function createFinancialIndustryVariantBoardRenderer(ctx = {}) {
   } = createFinancialIndustryGenericBoards(ctx);
   const {
     renderDispatchMapBoard,
-    renderDowntimeParetoBoard,
+    renderRankingBoard,
     renderQualityHandoffBoard
   } = createFinancialIndustryOperationalBoards(ctx);
 
   return function renderFinancialIndustryVariantBoard(slide, s, variant, board) {
     if (['loss-pareto', 'issue-frequency-ranking', 'review-sentiment-ranking'].includes(variant)) {
-      return renderDowntimeParetoBoard(slide, s, board);
+      return renderRankingBoard(slide, s, board);
     }
     if (variant === 'valuation-sensitivity') {
       renderValuationSensitivityBoard(slide, s, board);

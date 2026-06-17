@@ -35,6 +35,14 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     const coverDesign = ctx.designForSlide(plan, s, 'cover');
     const coverTone = ctx.presentationSpec().coverTone || 'dark';
     const hasCoverImage = coverDesign.imagePath && fileExists(coverDesign.imagePath);
+    const explicitCoverImage = typeof ctx.mediaForRole === 'function'
+      ? ctx.mediaForRole(plan, s, 'cover', { includeDefault:false })
+      : '';
+    const generation = s.assetGeneration || {};
+    const structureOnlyNativeIndustrialCover = plan.industry === 'manufacturing-operations' &&
+      !explicitCoverImage &&
+      !coverDesign.coverStyle &&
+      (generation.structureOnly === true || (generation.assetDecisionState && generation.assetDecisionState.structureOnly === true));
     if (coverStyleRenderer && coverStyleRenderer(slide, plan, s, industry, title)) return;
     if (plan.industry === 'healthcare-operations' && coverVariant !== 'culture-cover-with-soft-geometry') {
       return clinicalQualityCover(slide, plan, s, 1);
@@ -52,7 +60,9 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
     if (plan.industry !== 'energy-utility' && coverDesign.imageRole !== 'background' && coverShowcase(slide, plan, s, industry, title)) {
       return;
     }
-    const genericPhotoCover = plan.industry !== 'energy-utility' && ctx.addVisualPhotoBackdrop(slide, plan, s, 'cover', { transparency:70 });
+    const genericPhotoCover = plan.industry !== 'energy-utility' &&
+      !structureOnlyNativeIndustrialCover &&
+      ctx.addVisualPhotoBackdrop(slide, plan, s, 'cover', { transparency:70 });
     if (!genericPhotoCover) {
       coverFieldRendererFor(industry)(slide, plan);
     } else {

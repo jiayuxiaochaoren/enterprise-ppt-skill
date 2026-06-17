@@ -257,6 +257,18 @@ assert.equal(manufacturingCoverFallback.slides[0].coverStyle || '', '', 'manufac
 assert.equal(manufacturingCoverFallback.slides[0].assetGeneration.mustBind, false, 'manufacturing native cover fallback must not require a bound generated asset');
 assert.equal(Boolean(manufacturingCoverFallback.slides[0].generatedAssetPrompt), false, 'manufacturing native cover fallback should clear generated prompts');
 
+const manufacturingImageCover = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  coverStyle:'industrial-command-cover',
+  slides:[
+    { type:'cover', title:'制造经营复盘', subtitle:'产线交付与渠道效率的增长路径' }
+  ]
+});
+assert.equal(manufacturingImageCover.slides[0].coverStyle, 'industrial-command-cover');
+assert.equal(manufacturingImageCover.slides[0].assetGeneration.status, 'required');
+assert.equal(manufacturingImageCover.slides[0].assetGeneration.mustBind, true);
+assert.ok(Boolean(manufacturingImageCover.slides[0].generatedAssetPrompt), 'explicit manufacturing image cover should keep a generated prompt instead of falling back to native structure');
+
 const unsafeGeneratedEvidence = normalizeDeckPlan({
   industry:'manufacturing-operations',
   slides:[

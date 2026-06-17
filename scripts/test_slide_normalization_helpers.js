@@ -227,6 +227,34 @@ assert.equal(resolvedSkipAssetDecision.assetGeneration.status, 'none');
 assert.equal(resolvedSkipAssetDecision.assetGeneration.decisionSource, 'asset-decision-gate/v1');
 assert.equal(resolvedSkipAssetDecision.generatedAssetPrompt, undefined);
 
+const explicitManufacturingCoverStyle = helpers.normalizeSlide({}, {
+  forceType:'cover',
+  type:'cover',
+  title:'制造经营复盘',
+  subtitle:'产线交付与渠道效率的增长路径',
+  coverStyle:'industrial-command-cover',
+  coverStyleSource:'slide',
+  compositionPlan:{ version:'composition-plan/v1', themeIntent:'stale-cover', staleMarker:true },
+  assetGeneration:{
+    decisionSource:'asset-decision-gate/v1',
+    status:'required',
+    role:'showcase',
+    resolvedRole:'showcase',
+    mustBind:true,
+    reason:'user chose automatic synthetic asset generation'
+  },
+  generatedAssetPrompt:'SMART MANUFACTURING HERO'
+}, 0, 1);
+assert.equal(explicitManufacturingCoverStyle.coverStyle, 'industrial-command-cover');
+assert.equal(explicitManufacturingCoverStyle.coverStyleSource, 'slide');
+assert.equal(explicitManufacturingCoverStyle.previousCompositionPlan.staleMarker, true);
+assert.equal(explicitManufacturingCoverStyle.assetGeneration.status, 'required');
+assert.equal(explicitManufacturingCoverStyle.generatedAssetPrompt, 'SMART MANUFACTURING HERO');
+assert.ok(
+  explicitManufacturingCoverStyle.routeSanitization.removed.every(item => item.field !== 'coverStyle'),
+  'authoritative coverStyle should survive composition recompute'
+);
+
 const metric = helpers.normalizeSlide({}, {
   forceType:'metric-comparison',
   title:'指标页',

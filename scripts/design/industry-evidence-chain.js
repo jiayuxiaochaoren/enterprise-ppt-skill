@@ -156,7 +156,10 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
   if (['toc', 'toc-clean', 'chapter-divider'].includes(type)) {
     return neutralEvidenceChain(`${type} slide is owned by the native navigation renderer`);
   }
-  if (['cover', 'cover-dark', 'closing'].includes(type) && (!explicitProofRoute || slide.proofObjectInferred)) {
+  if (['closing', 'closing-dark'].includes(type)) {
+    return neutralEvidenceChain(`${type} slide is owned by the native closing renderer`);
+  }
+  if (['cover', 'cover-dark'].includes(type) && (!explicitProofRoute || slide.proofObjectInferred)) {
     return neutralEvidenceChain(`${type} slide has no explicit proof route; skipped industry evidence-chain inference`);
   }
   const layoutVariant = normalizeKey(slide.layoutVariant || slide.layout_variant || slide.variant);

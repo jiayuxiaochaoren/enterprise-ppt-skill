@@ -38,6 +38,7 @@ function createAssetGenerationHelpers({
     return String(
       s.coverArchetype ||
       s.cover_archetype ||
+      (s.compositionPlan && s.compositionPlan.industryExpression && s.compositionPlan.industryExpression.coverArchetype) ||
       plan.coverArchetype ||
       plan.cover_archetype ||
       ''
@@ -199,6 +200,8 @@ function createAssetGenerationHelpers({
       !slideHasImages &&
       !hasBoundAsset &&
       !requested &&
+      !coverStyleRequestsAsset &&
+      !coverStyleNeedsAsset &&
       !imageLedSlideRequest;
     const syntheticOnly = /synthetic|abstract|generic|placeholder|mood|atmospheric|concept|mock/i.test(String(recipe && recipe.generatedAsset || '')) ||
       ['background', 'showcase', 'gallery', 'abstract'].includes(role) ||

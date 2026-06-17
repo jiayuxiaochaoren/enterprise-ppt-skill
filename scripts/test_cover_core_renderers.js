@@ -328,6 +328,26 @@ function main() {
   assertCoverFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 30, 'expected cover text output');
 
+  const nativeManufacturingOps = [];
+  const nativeManufacturingSpec = { current:{ coverTone:'dark', coverMotif:'factory-id-plate' } };
+  const nativeManufacturingCtx = createFakeCtx(nativeManufacturingOps, nativeManufacturingSpec);
+  const nativeManufacturingRenderers = createCoverCoreRenderers(nativeManufacturingCtx);
+  renderWith({
+    title:'制造经营复盘',
+    industry:'manufacturing-operations'
+  }, {
+    title:'制造经营复盘',
+    assetGeneration:{
+      structureOnly:true,
+      assetDecisionState:{ structureOnly:true }
+    }
+  }, nativeManufacturingSpec, nativeManufacturingRenderers, nativeManufacturingOps);
+  assert.equal(
+    nativeManufacturingOps.some(op => op.name === 'addVisualPhotoBackdrop'),
+    false,
+    'native industrial structure cover should not silently pull default photo backdrops when the route is structure-only'
+  );
+
   const styleOps = [];
   const styleSpecRef = { current:{ coverTone:'light' } };
   const styleCtx = createFakeCtx(styleOps, styleSpecRef);

@@ -142,6 +142,33 @@ function chargingServiceArtDirection(industry = '', extraction = {}, doc = {}) {
   }, art);
 }
 
+function uniqueAgendaClaims(claims = [], limit = 5) {
+  const seen = new Set();
+  const out = [];
+  claims.forEach(claim => {
+    if (out.length >= limit) return;
+    const title = String(agendaTitleForClaim(claim) || '').trim();
+    if (!title) return;
+    const key = title.replace(/\s+/g, '').toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(claim);
+  });
+  return out;
+}
+
+function chapterClaimText(claims = [], zhDeck = true) {
+  const uniqueClaims = uniqueAgendaClaims(claims, 5);
+  const titles = uniqueClaims.map(claim => agendaTitleForClaim(claim)).filter(Boolean);
+  if (!titles.length) {
+    return zhDeck
+      ? '本报告先梳理有来源支撑的判断，再收束到决策路径。'
+      : 'This report follows source-backed claims before closing on the decision path.';
+  }
+  if (zhDeck) return `本报告围绕${titles.join('、')}展开经营判断。`;
+  return `This report follows ${titles.join(', ')} as the business storyline.`;
+}
+
 function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
   const errors = validateExtraction(extraction);
   if (errors.length) usageError(`invalid material extraction:\n- ${errors.join('\n- ')}`);
@@ -215,20 +242,19 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
     };
     slides.push(profileSlide);
   } else {
+    const chapterClaims = uniqueAgendaClaims(bodyClaims, 5);
     slides.push({
       type: 'chapter-divider',
-      title: '汇报路径',
+      title: industry === 'manufacturing-operations'
+        ? (zhDeck ? '经营判断路径' : 'Decision Path')
+        : (zhDeck ? '汇报路径' : 'Report Path'),
       industryEvidenceChainMode: 'native-only',
-      claim: bodyClaims.length
-        ? (zhDeck
-            ? `本报告沿着${bodyClaims.slice(0, 4).map(c => agendaTitleForClaim(c)).join('、')}展开证据路径。`
-            : `This report follows ${bodyClaims.slice(0, 4).map(c => agendaTitleForClaim(c)).join(', ')} as the evidence path.`)
-        : (zhDeck ? '本报告先梳理有来源支撑的判断，再收束到决策路径。' : 'This report follows source-backed claims before closing on the decision path.'),
+      claim: chapterClaimText(bodyClaims, zhDeck),
       chapter: '01',
       label: industry === 'manufacturing-operations' ? (zhDeck ? '能力证据路径' : 'CAPABILITY EVIDENCE PATH') : undefined,
       bottomLabel: industry === 'manufacturing-operations' ? (zhDeck ? '证据路径' : 'EVIDENCE PATH') : undefined,
       subtitle: undefined,
-      items: bodyClaims.slice(0, 5).map(c => ({ title: agendaTitleForClaim(c), body: c.support || c.proof_object || '' }))
+      items: chapterClaims.map(c => ({ title: agendaTitleForClaim(c), body: c.support || c.proof_object || '' }))
     });
   }
   const bodySlides = presentationClaims
@@ -248,8 +274,25 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
   const decisionSourceTrace = decision ? sourceTraceForClaim(decision, extraction, bundle) : undefined;
   slides.push({
     type: 'closing',
-    title: companyIntro ? '谢谢观看' : (decision ? decision.claim : '下一步行动'),
-    subtitle: companyIntro ? (doc.organization || displayTitle) : (decision ? decision.support || '' : doc.decision_goal || '确认范围、事实口径和评审节奏。'),
+    title: companyIntro
+      ? '谢谢观看'
+      : (decision
+          ? (
+              (decision.display_copy && decision.display_copy.title) ||
+              (decision.displayCopy && decision.displayCopy.title) ||
+              decision.claim
+            )
+          : '下一步行动'),
+    subtitle: companyIntro
+      ? (doc.organization || displayTitle)
+      : (decision
+          ? (
+              (decision.display_copy && decision.display_copy.subtitle) ||
+              (decision.displayCopy && decision.displayCopy.subtitle) ||
+              decision.support ||
+              ''
+            )
+          : doc.decision_goal || '确认范围、事实口径和评审节奏。'),
     proofObject: companyIntro ? undefined : (decision ? (decision.proof_object || decision.proofObject || 'premium-closing-anchor') : 'premium-closing-anchor'),
     proof: companyIntro || !decision ? undefined : proofObjectForClaim(decision, extraction, bundle, { sourceTrace: decisionSourceTrace }),
     closingVariant: companyIntro ? 'company-thanks' : undefined,

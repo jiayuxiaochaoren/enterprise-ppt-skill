@@ -16,7 +16,7 @@ function createRiskBoardGovernanceIntro(ctx = {}) {
     addLabel(slide, isPeopleCulture ? '招聘治理' : '治理重点', {
       x:intro.x+0.28, y:intro.y+0.34, w:1.24, h:0.10, fontSize:5.8, color:C.accent, charSpace:0
     });
-    addText(slide, s.coreTitle || (isPeopleCulture ? '表达与授权' : '责任可追踪'), {
+    addText(slide, s.coreTitle || (isPeopleCulture ? '招聘表达与授权' : '责任可追踪'), {
       x:intro.x+0.28, y:intro.y+0.84, w:1.42, h:0.22, fontSize:13.4, bold:true, color:C.white, fit:'shrink'
     });
     addText(slide, s.coreBody || s.note || (isPeopleCulture

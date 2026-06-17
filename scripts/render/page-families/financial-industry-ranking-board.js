@@ -2,7 +2,7 @@ const {
   firstChartItems
 } = require('./financial-chart-utils');
 
-function createDowntimeParetoBoardRenderer(ctx = {}) {
+function createIndustryRankingBoardRenderer(ctx = {}) {
   const C = ctx.colors();
   const {
     addLabel,
@@ -11,7 +11,7 @@ function createDowntimeParetoBoardRenderer(ctx = {}) {
     itemTitle
   } = ctx;
 
-  function renderDowntimeParetoBoard(slide, s, board) {
+  function renderRankingBoard(slide, s, board) {
     const semanticText = [
       s.proofObjectNormalized,
       s.proofObject,
@@ -57,10 +57,10 @@ function createDowntimeParetoBoardRenderer(ctx = {}) {
   }
 
   return {
-    renderDowntimeParetoBoard
+    renderRankingBoard
   };
 }
 
 module.exports = {
-  createDowntimeParetoBoardRenderer
+  createIndustryRankingBoardRenderer
 };

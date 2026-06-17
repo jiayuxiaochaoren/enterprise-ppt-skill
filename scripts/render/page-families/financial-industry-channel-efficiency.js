@@ -189,14 +189,15 @@ function createChannelEfficiencyMatrixDrawer(ctx = {}) {
 
   function drawDenseCoordinateBoard(slide, board, items, s = {}) {
     const rows = rankItemsForChannelMatrix(items, 7);
-    const plot = { x:board.x+0.46, y:board.y+0.78, w:Math.min(3.42, board.w * 0.48), h:2.48 };
-    const list = { x:plot.x+plot.w+0.48, y:plot.y-0.02, w:board.x+board.w-(plot.x+plot.w+0.82), h:2.64 };
+    const plot = { x:board.x+0.48, y:board.y+0.70, w:Math.min(3.26, board.w * 0.44), h:2.18 };
+    const list = { x:plot.x+plot.w+0.54, y:plot.y+0.04, w:board.x+board.w-(plot.x+plot.w+0.68), h:2.34 };
+    const noteBand = { x:board.x+0.46, y:board.y+board.h-0.48, w:board.w-0.92, h:0.24 };
+    const xAxisLabelY = Math.min(noteBand.y - 0.14, plot.y + plot.h + 0.04);
     addLabel(slide, rankTitleForChannelMatrix(s, items), { x:board.x+0.30, y:board.y+0.30, w:1.70, h:0.10, fontSize:6.6, color:C.accent, charSpace:0 });
     addHairline(slide, plot.x, plot.y+plot.h, plot.w, C.line, 8, 0.46);
     slide.addShape('line', { x:plot.x, y:plot.y, w:0, h:plot.h, line:{color:C.line, transparency:10, width:0.46} });
     slide.addShape('line', { x:plot.x + plot.w * 0.50, y:plot.y, w:0, h:plot.h, line:{color:C.line, transparency:62, width:0.24} });
-    addText(slide, '效率', { x:plot.x-0.02, y:plot.y-0.26, w:0.46, h:0.11, fontSize:6.4, bold:true, color:C.muted, fit:'shrink' });
-    addText(slide, '投入', { x:plot.x+plot.w-0.40, y:plot.y+plot.h+0.14, w:0.40, h:0.11, fontSize:6.4, bold:true, color:C.muted, fit:'shrink', align:'right' });
+    addText(slide, '效率', { x:plot.x-0.02, y:plot.y-0.20, w:0.46, h:0.11, fontSize:6.4, bold:true, color:C.muted, fit:'shrink' });
     const bubbles = packDenseBubbles(
       computeChannelMatrixBubbles(normalizeDenseChannelItems(items.slice(0, 7)), plot, [C.accent, C.cyan, C.violet, C.risk, '94A3B8', C.muted, C.accent]),
       plot
@@ -205,19 +206,32 @@ function createChannelEfficiencyMatrixDrawer(ctx = {}) {
       slide.addShape('ellipse', { x:p.x-p.r, y:p.y-p.r, w:p.r*2, h:p.r*2, fill:{color:p.color, transparency:10}, line:{color:p.color, transparency:100} });
       addText(slide, String(p.i+1).padStart(2, '0'), { x:p.x-p.r, y:p.y-0.05, w:p.r*2, h:0.10, fontSize:4.8, bold:true, color:C.onAccent || C.white, align:'center', fit:'shrink', allowTiny:true });
     });
-    addHairline(slide, list.x, list.y-0.08, Math.max(0.6, list.w), C.line, 18, 0.34);
-    const rowStep = Math.min(0.40, Math.max(0.34, list.h / Math.max(1, rows.length)));
+    const rowStep = Math.min(0.42, Math.max(0.36, list.h / Math.max(1, rows.length)));
     rows.forEach((item, i) => {
       const y = list.y + i * rowStep;
       const color = [C.accent, C.cyan, C.violet, C.risk, C.muted][i] || C.accent;
-      addText(slide, String(i+1).padStart(2, '0'), { x:list.x, y:y+0.02, w:0.30, h:0.10, fontSize:5.6, bold:true, color, fit:'shrink' });
-      addText(slide, item.label, { x:list.x+0.40, y:y, w:Math.max(1.0, list.w-1.34), h:0.12, fontSize:6.4, bold:true, color:C.text, fit:'shrink' });
-      addText(slide, item.value, { x:list.x+list.w-0.76, y:y, w:0.74, h:0.12, fontSize:5.9, bold:true, color, align:'right', fit:'shrink' });
-      if (item.body) addText(slide, item.body, { x:list.x+0.40, y:y+0.17, w:Math.max(1.0, list.w-0.48), h:0.09, fontSize:5.2, color:C.body, fit:'shrink' });
+      addText(slide, String(i+1).padStart(2, '0'), { x:list.x, y:y+0.03, w:0.30, h:0.10, fontSize:5.6, bold:true, color, fit:'shrink' });
+      addText(slide, item.label, { x:list.x+0.40, y:y-0.01, w:Math.max(0.96, list.w-1.30), h:0.12, fontSize:6.2, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, item.value, { x:list.x+list.w-0.78, y:y, w:0.76, h:0.14, fontSize:5.8, bold:true, color, align:'right', fit:'shrink' });
+      if (item.body) addText(slide, item.body, { x:list.x+0.40, y:y+0.22, w:Math.max(0.96, list.w-0.48), h:0.10, fontSize:4.95, color:C.body, fit:'shrink', breakLine:true });
     });
-    addHairline(slide, plot.x, board.y + board.h - 0.44, board.w-0.92, C.line, 16, 0.34);
+    addRect(slide, noteBand.x, noteBand.y, noteBand.w, noteBand.h, C.panelAlt || 'F1F5F9', C.line, {
+      fill:{ color:C.panelAlt || 'F1F5F9', transparency:6 },
+      line:{ color:C.line, transparency:74, width:0.22 }
+    });
+    addText(slide, '投入', {
+      x:plot.x+plot.w-0.42,
+      y:xAxisLabelY,
+      w:0.42,
+      h:0.10,
+      fontSize:6.3,
+      bold:true,
+      color:C.muted,
+      fit:'shrink',
+      align:'right'
+    });
     addText(slide, s.note || '先看高效率触点，再看高投入触点的转化承接和复购贡献。', {
-      x:plot.x, y:board.y + board.h - 0.28, w:board.w-1.06, h:0.11, fontSize:6.3, color:C.muted, fit:'shrink'
+      x:noteBand.x+0.16, y:noteBand.y+0.10, w:noteBand.w-0.32, h:0.11, fontSize:6.2, color:C.muted, fit:'shrink'
     });
   }
 

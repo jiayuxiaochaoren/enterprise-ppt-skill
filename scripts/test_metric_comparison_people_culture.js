@@ -82,7 +82,7 @@ assert.ok(ops.some(op => op.name === 'addLabel' && op.args[1] === '团队成长�
 assert.ok(ops.some(op => op.name === 'addText' && op.args[1] === '42个'));
 assert.ok(ops.some(op => op.name === 'addText' && op.args[1] === '68%'));
 assert.ok(ops.some(op => op.name === 'addText' && op.args[1] === '31%'));
-['核心项目', '客户关系', '人才培养', '项目沉淀', '成长原因', '候选人沟通'].forEach(text => {
+['代表项目现场', '核心项目', '客户续约', '成长路径', '项目现场', '续约原因', '成长表达'].forEach(text => {
   assert.ok(ops.some(op => op.args.includes(text)), `expected people-culture proof copy ${text}`);
 });
 ['PRIMARY KPI', 'SUPPORT 01', 'SUPPORT 02'].forEach(text => {

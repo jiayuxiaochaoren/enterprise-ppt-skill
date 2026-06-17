@@ -2,20 +2,20 @@ const {
   createDispatchMapBoardRenderer
 } = require('./financial-industry-dispatch-map-board');
 const {
-  createDowntimeParetoBoardRenderer
-} = require('./financial-industry-downtime-pareto-board');
+  createIndustryRankingBoardRenderer
+} = require('./financial-industry-ranking-board');
 const {
   createQualityHandoffBoardRenderer
 } = require('./financial-industry-quality-handoff-board');
 
 function createFinancialIndustryOperationalBoards(ctx = {}) {
   const { renderDispatchMapBoard } = createDispatchMapBoardRenderer(ctx);
-  const { renderDowntimeParetoBoard } = createDowntimeParetoBoardRenderer(ctx);
+  const { renderRankingBoard } = createIndustryRankingBoardRenderer(ctx);
   const { renderQualityHandoffBoard } = createQualityHandoffBoardRenderer(ctx);
 
   return {
     renderDispatchMapBoard,
-    renderDowntimeParetoBoard,
+    renderRankingBoard,
     renderQualityHandoffBoard
   };
 }

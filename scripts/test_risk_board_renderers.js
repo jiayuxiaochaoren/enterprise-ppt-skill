@@ -202,7 +202,7 @@ function main() {
     'riskAdaptive',
     'riskControlStack',
     'riskMatrixSlide',
-    'riskResponsibilityLoop',
+    'riskActionLoop',
     'riskTable'
   ];
   names.forEach(name => {
@@ -212,7 +212,7 @@ function main() {
 
   direct.riskMatrixSlide(slide, { industry:'manufacturing-operations' }, riskSection(), 1);
   direct.riskControlStack(slide, {}, riskSection(), 2);
-  direct.riskResponsibilityLoop(slide, {}, riskSection(), 3);
+  direct.riskActionLoop(slide, {}, riskSection(), 3);
   direct.guidanceAndRiskBoard(slide, {}, riskSection(), 4);
   direct.materialityMatrixBoard(slide, {}, riskSection(), 5);
   direct.governanceTableEditorial(slide, {}, riskSection(), 6);

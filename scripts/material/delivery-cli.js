@@ -34,6 +34,7 @@ function parseArgs(argv) {
     else if (arg === '--summary-md') opts.summaryMd = argv[++i];
     else if (arg === '--allow-generated-assets') opts.allowGeneratedAssets = true;
     else if (arg === '--imagegen-capability' || arg === '--imagegen') opts.imagegenCapability = argv[++i];
+    else if (arg === '--imagegen-command') opts.imagegenCommand = argv[++i];
     else if (arg === '--auto-draft') opts.autoDraft = true;
     else if (arg === '--skip-preview') opts.skipPreview = true;
     else if (arg === '--preview-optional') opts.previewOptional = true;
@@ -58,6 +59,7 @@ function usage() {
     '  --quality-mode MODE       draft | formal | delivery. Default: draft.',
     '  --allow-generated-assets  User-approved: resolve missing visuals through imagegen prompts before rendering.',
     '  --imagegen-capability MODE available | unavailable. Defaults to available when --allow-generated-assets is set.',
+    '  --imagegen-command CMD      Optional shell command bridge for synthetic asset generation; may use {prompts} {assetMap} {assetsDir} {outDir} {plan}.',
     '  --asset-map FILE           Bind generated/provided image assets before rendering.',
     '  --skip-preview            Do not request Keynote preview export during validation.',
     '',

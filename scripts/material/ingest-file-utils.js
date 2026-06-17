@@ -3,7 +3,8 @@ const path = require('path');
 
 const {
   INDUSTRY_PACK_LIBRARY,
-  imageQualityProfile
+  imageQualityProfile,
+  visualIndustryId
 } = require('../design-system');
 const {
   INDUSTRY_HINTS,
@@ -85,8 +86,22 @@ function detectIndustry(text = '') {
     const lower = String(text || '').toLowerCase();
     const hits = words.filter(w => lower.includes(String(w).toLowerCase()));
     return { industry, score: hits.length, hits };
-  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
-  return scores;
+  }).filter(x => x.score > 0);
+  const merged = new Map();
+  scores.forEach(item => {
+    const canonicalIndustry = visualIndustryId(item.industry) || item.industry;
+    const existing = merged.get(canonicalIndustry) || {
+      industry: canonicalIndustry,
+      score: 0,
+      hits: [],
+      rawIndustries: []
+    };
+    existing.score += Number(item.score || 0);
+    existing.hits = compactUnique([...(existing.hits || []), ...(item.hits || [])]);
+    existing.rawIndustries = compactUnique([...(existing.rawIndustries || []), item.industry]);
+    merged.set(canonicalIndustry, existing);
+  });
+  return Array.from(merged.values()).sort((a, b) => b.score - a.score);
 }
 
 module.exports = {

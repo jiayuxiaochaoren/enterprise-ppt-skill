@@ -378,7 +378,10 @@ function consumeComponentPlan(slide, plan, s, idx) {
   const plannedChartSpec = !nativeVariantSuppressesChartMeta(s) && slideHasChartSpecIntent(s)
     ? (s.chartSpec || routeChartSpec(plan, s, { index:idx, total:(plan.slides || []).length }) || null)
     : null;
-  const slideDesignMeta = DESIGN && typeof DESIGN.slideDesign === 'function' ? DESIGN.slideDesign(s) : {};
+  const slideRoleMeta = typeof slideRole === 'function' ? slideRole(s) : undefined;
+  const slideDesignMeta = DESIGN && typeof DESIGN.slideDesign === 'function'
+    ? DESIGN.slideDesign(s, slideRoleMeta)
+    : {};
   const coverStylePreset = slideDesignMeta.coverStylePreset || null;
   RENDER_META.slides.push({
     slide: idx,

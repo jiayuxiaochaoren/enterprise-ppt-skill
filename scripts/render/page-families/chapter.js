@@ -33,7 +33,7 @@ function createChapterRenderers(ctx = {}) {
     const text = [s.type, s.title, s.label, s.navigationLabel, s.industryEvidenceChainMode, s.industry_evidence_chain_mode]
       .filter(Boolean)
       .join(' ');
-    return /toc|目录|汇报路径|阅读路径|导览|native-only/i.test(text);
+    return /toc|目录|汇报路径|经营判断路径|阅读路径|导览|native-only/i.test(text);
   }
 
   function chapterHeroMarker(s = {}, idx) {

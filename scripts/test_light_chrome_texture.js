@@ -95,6 +95,13 @@ assert.ok(
     && shape.opts.h === 2.92),
   'industrial light texture should render a structural blueprint frame'
 );
+assert.equal(
+  manufacturing.shapes.filter(shape => shape.type === 'rect'
+    && shape.opts.h <= 0.03
+    && shape.opts.w >= 1.0).length,
+  0,
+  'industrial light texture should avoid long guide-line rectangles that read as crosshair rules'
+);
 
 const generic = buildFixture(
   { industry:'general-operations' },

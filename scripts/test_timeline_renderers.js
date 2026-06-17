@@ -125,7 +125,7 @@ function assertDarkTimelinePageNumber(ops, value) {
 
 function assertDarkTimelineHeaders(ops) {
   assertHeaderText(ops, 'Operating Path', {
-    x:0.82, y:1.06, w:6.2, h:0.38, fontSize:24, bold:true, color:'FFFFFF', fit:'shrink'
+    x:0.82, y:1.06, w:6.2, h:0.40, fontSize:24, bold:true, color:'FFFFFF', fit:'shrink'
   });
   assertHeaderText(ops, 'Process board subtitle', {
     x:0.84, y:1.54, w:5.9, h:0.20, fontSize:10.4, color:'94A3B8', fit:'shrink'
@@ -179,9 +179,9 @@ function assertClosedLoopShell(ops) {
   });
 
   [
-    ['ACTION · DATA · REVIEW', { x:1.22, y:2.32, w:2.92, h:0.10, fontSize:5.8, color:'64748B', charSpace:0.75 }],
-    ['DATA BACK TO ACTION', { x:5.48, y:4.295, w:1.72, h:0.09, fontSize:5.2, color:'64748B', align:'center', charSpace:0.62 }],
-    ['SEQUENCE 01 → 02 → 03 → 04 → 01', { x:8.78, y:2.32, w:2.68, h:0.10, fontSize:5.3, color:'94A3B8', align:'right', charSpace:0.50 }]
+    ['动作 · 数据 · 复盘', { x:1.22, y:2.32, w:3.10, h:0.10, fontSize:5.8, color:'64748B', charSpace:0 }],
+    ['复盘回到下一轮动作', { x:5.28, y:4.295, w:2.12, h:0.09, fontSize:5.2, color:'64748B', align:'center', charSpace:0 }],
+    ['动作顺序 01 → 02 → 03 → 04 → 01', { x:8.40, y:2.32, w:3.06, h:0.10, fontSize:5.3, color:'94A3B8', align:'right', charSpace:0 }]
   ].forEach(([label, expected]) => {
     const op = ops.find(candidate => {
       if (candidate.name !== 'addLabel' || candidate.args[1] !== label) return false;
@@ -228,7 +228,7 @@ function main() {
   renderers.timelineProcessBoard(createSlide(ops), {}, section(), 3);
   renderers.timelineDark(createSlide(ops), {}, section(), 4);
 
-  assertKicker(ops, 'OPERATING LOOP');
+  assertKicker(ops, '经营动作闭环');
   assertKicker(ops, 'OPERATING FLYWHEEL');
   assertKicker(ops, 'PROCESS BOARD');
   assertKicker(ops, 'PATHWAY');
@@ -243,6 +243,13 @@ function main() {
     4,
     'expected one primitive footer per timeline renderer'
   );
+  ['ACTION · DATA · REVIEW', 'DATA BACK TO ACTION', 'SEQUENCE 01 → 02 → 03 → 04 → 01'].forEach(text => {
+    assert.equal(
+      ops.some(op => op.args.includes(text)),
+      false,
+      `closed-loop renderer should not leak English template label ${text}`
+    );
+  });
 
   console.log('timeline renderers ok');
 }

@@ -25,7 +25,21 @@ function createClosingManufacturingRolloutRenderer(ctx = {}, helpers = {}) {
   } = createRightSideCardRenderer(ctx);
 
   return function closingManufacturingPilotRollout(slide, plan, s, idx) {
-    drawClosingHeader(slide, plan, s, idx, { kicker:'经营动作闭环', titleW:6.90, titleSize:29.0, subtitleY:2.06, subtitleW:6.40 });
+    drawClosingHeader(slide, plan, s, idx, {
+      kicker:'经营动作闭环',
+      titleW:6.78,
+      titleY:1.02,
+      titleH:0.96,
+      titleSize:25.8,
+      titleMaxLines:3,
+      longTitleOffsetY:0.02,
+      subtitleY:2.30,
+      subtitleW:6.16,
+      subtitleH:0.28,
+      subtitleSize:10.2,
+      titleSubtitleGap:0.20,
+      headerContentGap:0.34
+    });
 
     const core = drawRightSideCard(slide, { x:8.42, y:1.34, w:2.98, h:4.86 }, {
       fill:C.ink,

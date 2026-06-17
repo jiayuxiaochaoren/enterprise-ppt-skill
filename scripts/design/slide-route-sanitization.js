@@ -32,6 +32,10 @@ function createRouteSanitizationHelpers(deps = {}) {
     const normalizedType = typePick.type || '';
     const valueKind = value => value && typeof value === 'object' ? (Array.isArray(value) ? 'array' : 'object') : typeof value;
     const previousRefFor = field => `previous${field.charAt(0).toUpperCase()}${field.slice(1)}`;
+    const authoritativeCoverStyleSource = source => (
+      ['slide', 'plan', 'art-direction', 'asset-decision-gate', 'asset-decision-gate/v1']
+        .includes(String(source || '').trim().toLowerCase())
+    );
     const isCurrentAssetDecision = generation => {
       if (!generation || typeof generation !== 'object') return false;
       const source = String(generation.decisionSource || generation.decision_source || '').trim();
@@ -128,7 +132,11 @@ function createRouteSanitizationHelpers(deps = {}) {
       delete routedInput.compositionPlan;
       delete routedInput.composition_plan;
     }
-    if ((previousCompositionPlan || previousAssetGeneration) && routedInput.coverStyle) {
+    const coverStyleSource = routedInput.coverStyleSource || routedInput.cover_style_source || '';
+    const explicitVisualCoverStyle = routedInput.visual && (routedInput.visual.coverStyle || routedInput.visual.cover_style);
+    const preserveExplicitCoverStyle = Boolean(explicitVisualCoverStyle) ||
+      authoritativeCoverStyleSource(coverStyleSource);
+    if ((previousCompositionPlan || previousAssetGeneration) && routedInput.coverStyle && !preserveExplicitCoverStyle) {
       routedInput.previousCoverStyle = routedInput.previousCoverStyle || routedInput.coverStyle;
       recordRemoval(
         'coverStyle',

@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 const assert = require('assert/strict');
+const cp = require('child_process');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const {
   coverStyleForPlan,
   generatedAssetPrompt,
@@ -7,6 +11,8 @@ const {
   selectPaletteName,
   slideDesign
 } = require('./design-system');
+
+const ROOT = path.resolve(__dirname, '..');
 
 assert.equal(
   coverStyleForPlan({ coverStyle:'eastern-void-object' }, { type:'cover' }),
@@ -108,6 +114,19 @@ const normalizedAuto = normalizeDeckPlan({
 assert.equal(normalizedAuto.slides[0].coverStyleSource, 'auto');
 assert.equal(slideDesign(normalizedAuto, normalizedAuto.slides[0], 'cover').coverStyleSource, 'auto');
 
+const manufacturingImageCover = normalizeDeckPlan({
+  title: '智能制造经营复盘',
+  industry: 'manufacturing-operations',
+  coverStyle: 'industrial-command-cover',
+  slides: [
+    { type:'cover', title:'智能制造经营复盘', subtitle:'产线、交付与渠道效率的年度判断' }
+  ]
+}).slides[0];
+assert.equal(manufacturingImageCover.coverStyle, 'industrial-command-cover');
+assert.equal(manufacturingImageCover.assetGeneration.status, 'required');
+assert.equal(manufacturingImageCover.assetGeneration.mustBind, true);
+assert.match(manufacturingImageCover.generatedAssetPrompt, /smart manufacturing hero scene|robotic cell/i);
+
 const factual = normalizeDeckPlan({
   title: '客户现场价值证据',
   coverStyle: 'documentary-evidence-wall',
@@ -130,5 +149,31 @@ const editorialPrompt = generatedAssetPrompt(
   { type:'cover', title:'季度经营复盘' }
 );
 assert.match(editorialPrompt, /avoid wireframe dividers|centered horizontal rules/i);
+
+const renderMetaDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ppt-cover-style-contract-'));
+const renderMetaPlanPath = path.join(renderMetaDir, 'plan.json');
+const renderMetaPptxPath = path.join(renderMetaDir, 'deck.pptx');
+fs.writeFileSync(renderMetaPlanPath, JSON.stringify({
+  title: '智能制造经营复盘',
+  industry: 'manufacturing-operations',
+  slides: [{
+    type: 'cover',
+    title: '智能制造经营复盘',
+    subtitle: '产线、交付与渠道效率的年度判断',
+    coverStyle: 'industrial-command-cover',
+    coverStyleSource: 'slide',
+    visual: {
+      role: 'background',
+      image: path.join(ROOT, 'assets', 'media', 'manufacturing-modern-line.jpg')
+    }
+  }]
+}, null, 2));
+cp.execFileSync(process.execPath, ['scripts/generate_pptx.js', renderMetaPlanPath, renderMetaPptxPath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const renderMeta = JSON.parse(fs.readFileSync(`${renderMetaPptxPath}.render-meta.json`, 'utf8'));
+assert.equal(renderMeta.slides[0].coverStyle.id, 'industrial-command-cover');
+assert.equal(renderMeta.slides[0].coverStyle.source, 'slide');
 
 console.log('cover style contract ok');

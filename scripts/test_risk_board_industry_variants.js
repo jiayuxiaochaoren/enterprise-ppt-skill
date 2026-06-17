@@ -93,10 +93,56 @@ renderers.governanceTableEditorial(
   6
 );
 
-['预算边界', '风险事项', '触发阈值', '管理动作', '表达与授权', '招聘治理', '校准节奏', '沟通动作', '授权', '口径', '联系人', '下一步'].forEach(text => {
+renderers.materialityMatrixBoard(
+  createSlide(ops),
+  { industry:'government-public-sector' },
+  {
+    layoutVariant:'materiality-matrix-board',
+    title:'园区治理议题需要同时评估政策影响和经营影响',
+    rows:[
+      ['重点产业招商', '高', '进入年度一号工程'],
+      ['企业服务满意度', '中', '纳入季度走访复盘'],
+      ['空间资源利用率', '中', '按楼宇和片区更新台账'],
+      ['安全与合规保障', '高', '建立红线预警和整改闭环']
+    ]
+  },
+  8
+);
+
+renderers.guidanceAndRiskBoard(
+  createSlide(ops),
+  { industry:'lifestyle-food-tourism-fashion' },
+  {
+    title:'体验增长不能牺牲安全、商户质量和品牌调性',
+    rows:[
+      ['高峰客流拥堵', '高', '活动前确认动线和应急预案'],
+      ['商户服务不稳定', '中', '建立服务评分和退出机制'],
+      ['内容调性失焦', '中', '统一视觉和传播主题']
+    ]
+  },
+  9
+);
+
+renderers.materialityMatrixBoard(
+  createSlide(ops),
+  { industry:'general-operations' },
+  {
+    layoutVariant:'materiality-matrix-board',
+    title:'经营议题需要同时判断相关方关注和经营影响',
+    rows:[
+      ['数据安全与隐私', '高', '纳入季度经营推进表'],
+      ['供应链韧性', '中', '建立季度风险复盘'],
+      ['员工发展', '中', '绑定人才梯队指标'],
+      ['包装减量', '低', '进入年度改善项目']
+    ]
+  },
+  10
+);
+
+['预算边界', '现金边界', '毛利边界', '边界事项', '监测信号', '管理动作', '招聘表达与授权', '招聘治理', '校准节点', '招聘动作', '授权', '口径', '联系人', '下一步', '园区治理矩阵', '年度推进区', '政策影响', '经营影响', '治理读数', '场景风险与动作', '场景边界', '场景风险', '触发点', '现场动作', '高峰超阈值即限流', '经营议题矩阵', '优先推进区', '议题读数', '推进动作：纳入季度经营推进表'].forEach(text => {
   assert.ok(ops.some(op => op.args.includes(text)), `expected industry-specific risk copy ${text}`);
 });
-['治理重点', '责任可追踪', '责任 · 节奏 · 记录 · 决策'].forEach(text => {
+['风险事项', '触发阈值', '校准节奏', '沟通动作', '治理重点', '责任可追踪', '责任 · 节奏 · 记录 · 决策', 'TOPIC READOUT', 'MATERIALITY MATRIX', 'GUIDANCE ASSUMPTIONS', 'RISK', 'TRIGGER', 'OWNER / ACTION'].forEach(text => {
   assert.ok(!ops.some(op => op.args.includes(text)), `people-culture risk board should not reuse generic governance copy ${text}`);
 });
 assert.ok(!ops.some(op => op.name === 'addHairline'

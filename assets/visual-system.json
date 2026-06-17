@@ -52,6 +52,21 @@
       "assetPromptIntent": "photorealistic robotic production line or precision manufacturing scene, right-side equipment protagonist, pale steel editorial field, no readable text, no logos, no watermark",
       "contentPageTokens": { "surfaceFill": "F4F6F4", "panelFill": "FFFFFB", "text": "12212B", "body": "465866", "muted": "697987", "line": "D8E2E8", "accent": "005288", "secondary": "E36C14" }
     },
+    "industrial-command-cover": {
+      "paletteName": "factory-steel-amber",
+      "coverTone": "dark",
+      "coverMotif": "factory-command-stage",
+      "rendererFlavor": "image-led-left-copy",
+      "imageRole": "background",
+      "titleBreak": "none",
+      "backgroundPolicy": "dark-industrial-hero",
+      "contentDensity": "medium",
+      "imageTreatment": "graded-atmosphere",
+      "chartPalette": ["005288", "E36C14", "3D7B71"],
+      "assetPolicy": "real-or-generated",
+      "assetPromptIntent": "photorealistic smart manufacturing hero scene with robotic cell, precision fixtures, steel surfaces and subtle amber status lights, strong right-side spatial depth, calm left text-safe zone, no readable text, no logos, no watermark, avoid centered horizontal rules, crosshair guide lines, floating dashboard bars, or split-screen masks",
+      "contentPageTokens": { "surfaceFill": "F4F6F4", "panelFill": "FFFFFB", "text": "12212B", "body": "465866", "muted": "697987", "line": "D8E2E8", "accent": "005288", "secondary": "E36C14" }
+    },
     "tactical-telemetry-risk": {
       "paletteName": "signal-charcoal",
       "coverTone": "dark",

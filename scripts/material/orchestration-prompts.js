@@ -220,9 +220,10 @@ function orchestrationOverview(outDir) {
     `node scripts/resolve_visual_assets.js ${path.join(root, 'deck-plan.json')} --out-dir ${root}`,
     '```',
     '',
-    'If the bridge returns `needs_image_generation`, bind saved image outputs before rendering:',
+    'If the bridge returns `needs_image_generation`, either bind saved image outputs before rendering, or provide an imagegen bridge command so generation and binding can continue automatically:',
     '',
     '```bash',
+    `node scripts/resolve_visual_assets.js ${path.join(root, 'deck-plan.json')} --out-dir ${root} --imagegen-capability available --missing-asset-action auto_generate --imagegen-command "node <bridge-script> {prompts} {assetMap} {assetsDir}" --out-plan ${path.join(root, 'deck-plan.assets-bound.json')}`,
     `node scripts/resolve_visual_assets.js ${path.join(root, 'deck-plan.json')} --out-dir ${root} --imagegen-capability available --missing-asset-action auto_generate --asset-map <asset-mapping.json> --out-plan ${path.join(root, 'deck-plan.assets-bound.json')}`,
     '```'
   ].join('\n');

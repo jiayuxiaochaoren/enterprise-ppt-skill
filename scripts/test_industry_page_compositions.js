@@ -110,7 +110,7 @@ function main() {
     assert(financeBoard, 'finance guidance should use a full-width action table');
     assert(financeBoard.args[2] > financeBand.args[2], 'finance risk table should sit below the top boundary band');
     assert(!hasRect(ops, { x:0.92, y:2.04, w:2.82, h:4.00 }), 'finance guidance should not fall back to the legacy left sidebar');
-    ['预算边界', '边界 01', '边界 02', '边界 03', '风险事项', '触发阈值', '管理动作'].forEach(text => {
+    ['预算边界', '现金边界', '毛利边界', '边界事项', '监测信号', '管理动作'].forEach(text => {
       assert(ops.some(op => op.args.includes(text)), `expected finance guidance text ${text}`);
     });
   }
@@ -134,7 +134,7 @@ function main() {
     assert(peopleTable, 'people governance should use a full-width table stage');
     assert(peopleTable.args[2] > peopleBanner.args[2], 'people governance table should sit below the governance banner');
     assert(!findRectByFrame(ops, { x:0.92, w:2.36, h:3.86 }), 'people governance should not fall back to the legacy editorial sidebar');
-    ['招聘治理', '表达与授权', '授权', '口径', '联系人', '下一步', '校准节奏', '沟通动作'].forEach(text => {
+    ['招聘治理', '招聘表达与授权', '授权', '口径', '联系人', '下一步', '校准节点', '招聘动作'].forEach(text => {
       assert(ops.some(op => op.args.includes(text)), `expected people governance text ${text}`);
     });
   }
@@ -163,7 +163,7 @@ function main() {
     assert(findRectByFrame(ops, { x:0.92, w:10.84, h:3.58 }), 'healthcare handoff should use a full-width stage board');
     assert(!findRectByFrame(ops, { x:0.92, w:2.62, h:4.34 }), 'healthcare handoff should not render the legacy proof sidebar');
     assert.strictEqual(ops.filter(op => op.name === 'addArrowLine' && (op.args[6] || {}).width === 0.34).length, 2, 'healthcare handoff should keep three handoff connectors');
-    ['ROLE HANDOFFS', '质量交接', '现状', '动作', '衡量'].forEach(text => {
+    ['交接节点', '质量交接链路', '交接断点', '留痕动作', '追踪指标', '交接对象'].forEach(text => {
       assert(ops.some(op => op.args.includes(text)), `expected healthcare handoff text ${text}`);
     });
   }

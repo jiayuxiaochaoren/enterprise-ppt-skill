@@ -16,18 +16,20 @@ function createGovernanceTableEditorialRenderer(ctx = {}, helpers = {}) {
   const { drawGovernanceActionTable } = createRiskBoardGovernanceTableGrid(ctx);
 
   return function governanceTableEditorial(slide, plan, s, idx) {
+    const isPeopleCulture = plan && plan.industry === 'people-culture-company';
     const header = drawRiskLightHeader(slide, s, idx, {
-      kicker:'GOVERNANCE TABLE EDITORIAL',
+      kicker:isPeopleCulture ? '招聘治理机制' : 'GOVERNANCE TABLE EDITORIAL',
       fallbackTitle:'治理机制表',
       titleW:6.1,
       titleSize:23.5,
-      subtitle:s.claim || s.subtitle || '治理页把责任、节奏、证据和决策放到同一行。',
+      subtitle:s.claim || s.subtitle || (isPeopleCulture
+        ? '招聘治理页要把外发口径、授权检查和联系人动作放在同一张表里。'
+        : '治理页把责任、节奏、证据和决策放到同一行。'),
       subtitleW:7.0,
       chrome:true
     });
     const contentY = Math.max(2.06, Number(header && header.contentTop) || 2.06);
     const rows = (s.rows || []).slice(0, 4);
-    const isPeopleCulture = plan && plan.industry === 'people-culture-company';
     if (isPeopleCulture) {
       const tableRows = rows.slice(0, 3);
       const overflow = rows.slice(3, 4)[0];
@@ -40,7 +42,7 @@ function createGovernanceTableEditorialRenderer(ctx = {}, helpers = {}) {
         x:1.18, y:contentY+0.22, w:1.08, h:0.10,
         fontSize:5.8, color:C.accent, charSpace:0
       });
-      addText(slide, s.coreTitle || '表达与授权', {
+      addText(slide, s.coreTitle || '招聘表达与授权', {
         x:1.18, y:contentY+0.50, w:2.08, h:0.20,
         fontSize:13.6, bold:true, color:C.white, fit:'shrink'
       });
@@ -66,8 +68,8 @@ function createGovernanceTableEditorialRenderer(ctx = {}, helpers = {}) {
       const table = { x:0.92, y:contentY + 1.48, w:10.64, h:2.38 };
       drawGovernanceActionTable(slide, plan, tableRows, table);
       const note = overflowRisk
-        ? `${s.note || '治理表格不是风险清单，而是招聘沟通的管理机制。'} 补充治理 ${overflowRisk}。`
-        : (s.note || '治理表格不是风险清单，而是招聘沟通的管理机制。');
+        ? `${s.note || '这不是风险清单，而是招聘物料外发前的校准机制。'} 另含第 4 项：${overflowRisk}。`
+        : (s.note || '这不是风险清单，而是招聘物料外发前的校准机制。');
       addText(slide, note, { x:0.94, y:6.42, w:8.8, h:0.13, fontSize:8.8, color:C.muted, fit:'shrink' });
       drawRiskBoardFooter(slide, plan);
       return;

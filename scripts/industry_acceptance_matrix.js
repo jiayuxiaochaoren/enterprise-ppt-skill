@@ -167,7 +167,7 @@ const additionalBriefs = [
         },
         {
           type: 'risk-table',
-          layoutVariant: 'permission-governance',
+          layoutVariant: 'saas-governance-loop',
           title: '企业客户采购前必须看清权限、审计和数据边界',
           rows: [
             ['权限边界不清', '高', 'SSO、角色和数据范围同步定义'],
@@ -305,7 +305,7 @@ const additionalBriefs = [
         },
         {
           type: 'risk-table',
-          layoutVariant: 'responsibility-loop',
+          layoutVariant: 'healthcare-quality-loop',
           title: '责任闭环先明确隐私、时限和复盘责任',
           rows: [
             ['患者隐私暴露', '高', '病例和图片先脱敏再外发'],

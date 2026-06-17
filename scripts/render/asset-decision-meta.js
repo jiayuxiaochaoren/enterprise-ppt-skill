@@ -14,6 +14,34 @@ function criticalRole(role = '') {
   return /evidence|proof|product|site|screenshot|certificate|showcase|gallery/i.test(String(role || ''));
 }
 
+function structureOnlyCriticalSkipAllowed(input = {}) {
+  const {
+    action = '',
+    generation = {},
+    slide = {},
+    originalRole = '',
+    resolvedRole = ''
+  } = input;
+  if (action !== 'skip_image') return false;
+  if (!criticalRole(originalRole || resolvedRole)) return false;
+  const structureOnly = generation.structureOnly === true ||
+    generation.mode === 'structure-only' ||
+    /structure-only|native structure|skip|结构/i.test(String(generation.reason || ''));
+  if (!structureOnly) return false;
+  if (String(slide.type || '').toLowerCase() !== 'cover') return false;
+  const composition = String(slide.compositionPlan && slide.compositionPlan.composition || '').toLowerCase();
+  const coverStyle = String(slide.coverStyle || slide.cover_style || '').toLowerCase();
+  const coverArchetype = String(
+    slide.coverArchetype ||
+    slide.cover_archetype ||
+    (slide.compositionPlan && slide.compositionPlan.industryExpression && slide.compositionPlan.industryExpression.coverArchetype) ||
+    ''
+  ).toLowerCase();
+  return coverArchetype === 'native-industrial-structure-cover' ||
+    composition === 'industrial-structure-stage' ||
+    /industrial-command-cover/.test(coverStyle);
+}
+
 function actionForAssetDecision(input = {}) {
   const { generation = {}, refs = [], status = '', mode = '', slide = {} } = input;
   const explicit = generation.action || generation.decision || generation.assetDecisionAction || generation.asset_decision_action || '';
@@ -28,11 +56,21 @@ function actionForAssetDecision(input = {}) {
 }
 
 function riskLevelForAssetDecision(input = {}) {
-  const { action = '', generation = {}, role = '', status = '', refs = [] } = input;
+  const {
+    action = '',
+    generation = {},
+    role = '',
+    status = '',
+    refs = [],
+    slide = {},
+    originalRole = '',
+    resolvedRole = ''
+  } = input;
   const explicit = generation.riskLevel || generation.risk_level || generation.risk || '';
   if (explicit) return String(explicit);
   if (generation.staleForRoute || generation.previousDecisionStale) return 'high';
   if (status === 'blocked') return 'high';
+  if (structureOnlyCriticalSkipAllowed({ action, generation, slide, originalRole, resolvedRole })) return 'low';
   if (action === 'skip_image' && criticalRole(role)) return 'high';
   if ((status === 'required' || generation.mustBind) && !refs.length) return 'medium';
   if (generation.syntheticOnly) return criticalRole(role) ? 'medium' : 'low';
@@ -72,7 +110,23 @@ function enrichAssetDecision(input = {}) {
     (slide.previousVisualRole || '') ||
     role;
   const resolvedRole = generation.resolvedRole || generation.resolved_role || role;
-  const riskLevel = riskLevelForAssetDecision({ action, generation, role: resolvedRole, status, refs });
+  const safeStructureOnlySkip = structureOnlyCriticalSkipAllowed({
+    action,
+    generation,
+    slide,
+    originalRole,
+    resolvedRole
+  });
+  const riskLevel = riskLevelForAssetDecision({
+    action,
+    generation,
+    role: resolvedRole,
+    status,
+    refs,
+    slide,
+    originalRole,
+    resolvedRole
+  });
   return {
     action,
     originalRole: originalRole || '',
@@ -81,8 +135,11 @@ function enrichAssetDecision(input = {}) {
     source: generation.source || generation.decisionSource || generation.decision_source || trace.assetDecisionSource || 'renderer-inferred',
     provenanceClass,
     proofEligibilitySummary: proofEligibility,
-    skippedCriticalVisual: action === 'skip_image' && criticalRole(originalRole || resolvedRole),
-    reviewRequired: riskLevel === 'high' || (criticalRole(originalRole || resolvedRole) && ['synthetic-only', 'unknown'].includes(proofEligibility))
+    skippedCriticalVisual: action === 'skip_image' && criticalRole(originalRole || resolvedRole) && !safeStructureOnlySkip,
+    reviewRequired: !safeStructureOnlySkip && (
+      riskLevel === 'high' ||
+      (criticalRole(originalRole || resolvedRole) && ['synthetic-only', 'unknown'].includes(proofEligibility))
+    )
   };
 }
 
@@ -91,5 +148,6 @@ module.exports = {
   criticalRole,
   enrichAssetDecision,
   provenanceSummary,
-  riskLevelForAssetDecision
+  riskLevelForAssetDecision,
+  structureOnlyCriticalSkipAllowed
 };

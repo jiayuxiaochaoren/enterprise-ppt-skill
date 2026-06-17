@@ -5,7 +5,7 @@ const {
   riskResponsibilityItems
 } = require('./risk-board-responsibility-data');
 
-function industryResponsibilityCopy(plan = {}) {
+function industryActionLoopCopy(plan = {}) {
   const industry = String(plan.industry || '');
   const variant = String(plan.variant || plan.proofObject || '').toLowerCase();
   if (variant === 'manufacturing-action-loop' || industry === 'manufacturing-operations') {
@@ -80,7 +80,7 @@ function industryResponsibilityCopy(plan = {}) {
   };
 }
 
-function createRiskResponsibilityLoopRenderer(ctx = {}, helpers = {}) {
+function createRiskActionLoopRenderer(ctx = {}, helpers = {}) {
   const C = ctx.colors();
   const {
     addHairline,
@@ -94,8 +94,8 @@ function createRiskResponsibilityLoopRenderer(ctx = {}, helpers = {}) {
   } = helpers;
   const drawRiskResponsibilityBoard = createRiskResponsibilityBoardRenderer(ctx, C);
 
-  return function riskResponsibilityLoop(slide, plan, s, idx) {
-    const copy = industryResponsibilityCopy({
+  return function riskActionLoop(slide, plan, s, idx) {
+    const copy = industryActionLoopCopy({
       industry: plan.industry,
       variant: s.layoutVariant || s.variant || s.proofObject || s.proofObjectNormalized
     });
@@ -139,5 +139,5 @@ function createRiskResponsibilityLoopRenderer(ctx = {}, helpers = {}) {
 }
 
 module.exports = {
-  createRiskResponsibilityLoopRenderer
+  createRiskActionLoopRenderer
 };

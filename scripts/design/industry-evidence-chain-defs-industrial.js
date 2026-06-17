@@ -180,6 +180,54 @@ module.exports = {
           "gallery",
           "quality"
         ]
+      },
+      {
+        "id": "channel-economics-evidence",
+        "position": 3,
+        "label": "渠道/预算效率证据",
+        "components": [
+          "matrix-chart",
+          "kpi-strip",
+          "chart-commentary-panel"
+        ],
+        "coveragePolicy": {
+          "requiredAll": [
+            "matrix-chart"
+          ],
+          "optional": [
+            "kpi-strip",
+            "chart-commentary-panel"
+          ],
+          "minHits": 1
+        },
+        "proofObjects": [
+          "channel-efficiency-matrix",
+          "quarterly-results-summary"
+        ],
+        "routes": [
+          "industry-chart:channel-efficiency-matrix",
+          "metric-comparison:quarterly-results-summary",
+          "industry-chart"
+        ],
+        "fields": [
+          "channelEfficiency",
+          "mediaEfficiency",
+          "scatter",
+          "matrix",
+          "chartSpec",
+          "businessLogic"
+        ],
+        "keywords": [
+          "渠道",
+          "预算",
+          "投入",
+          "回收",
+          "分层",
+          "roi",
+          "roas",
+          "efficiency",
+          "channel"
+        ]
       }
     ]
   }

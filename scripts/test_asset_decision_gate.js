@@ -111,6 +111,13 @@ const commerceCoverPlanPath = path.join(OUT, 'commerce-cover-plan.json');
 const commerceCoverGatePath = path.join(OUT, 'commerce-cover-gate.json');
 const factualCoverPlanPath = path.join(OUT, 'factual-cover-plan.json');
 const factualCoverGatePath = path.join(OUT, 'factual-cover-gate.json');
+const manufacturingImageCoverPlanPath = path.join(OUT, 'manufacturing-image-cover-plan.json');
+const manufacturingImageCoverGatePath = path.join(OUT, 'manufacturing-image-cover-gate.json');
+const manufacturingNativeCoverPlanPath = path.join(OUT, 'manufacturing-native-cover-plan.json');
+const manufacturingNativeCoverGatePath = path.join(OUT, 'manufacturing-native-cover-gate.json');
+const manufacturingNativeCoverAnswersPath = path.join(OUT, 'manufacturing-native-cover-answers.json');
+const manufacturingNativeCoverResolvedGatePath = path.join(OUT, 'manufacturing-native-cover-resolved.json');
+const manufacturingNativeCoverResolvedPlanPath = path.join(OUT, 'manufacturing-native-cover.resolved.json');
 const promptPlanPath = path.join(OUT, 'prompt-plan.json');
 const promptOutPath = path.join(OUT, 'asset-prompts.json');
 const splitPromptPlanPath = path.join(OUT, 'split-prompt-plan.json');
@@ -147,6 +154,7 @@ const galleryBindOutPath = path.join(OUT, 'gallery-bind-plan.bound.json');
 const bridgeUnavailableDir = path.join(OUT, 'bridge-unavailable');
 const bridgeSkipDir = path.join(OUT, 'bridge-skip');
 const bridgeAvailableDir = path.join(OUT, 'bridge-available');
+const bridgeAutoBridgeDir = path.join(OUT, 'bridge-auto-bridge');
 const bridgeBlockedDir = path.join(OUT, 'bridge-blocked');
 
 fs.writeFileSync(planPath, JSON.stringify({
@@ -257,6 +265,58 @@ assert.equal(bridgePrompts.promptCount, bridgeAvailableReport.promptCount);
 assert.ok(bridgePrompts.prompts.every(p => p.target && p.target.version === 'asset-target-contract/v1'));
 assert.ok(bridgePrompts.prompts.every(p => p.targetAspectRatio), 'prompt planner should expose target aspect ratios');
 assert.equal(bridgePrompts.prompts.some(p => p.promptAspectConflict), false, 'planned prompts should not contain target aspect conflicts');
+
+const bridgeMockAsset = path.join(OUT, 'bridge-auto-generated.png');
+fs.writeFileSync(bridgeMockAsset, Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+  'base64'
+));
+const bridgeMockScript = path.join(OUT, 'mock-imagegen-bridge.js');
+fs.writeFileSync(bridgeMockScript, [
+  "const fs = require('fs');",
+  "const path = require('path');",
+  "const promptsPath = process.argv[2] || process.env.CODEX_ASSET_PROMPTS;",
+  "const assetMapPath = process.argv[3] || process.env.CODEX_ASSET_MAP;",
+  "const assetPath = process.argv[4];",
+  "const prompts = JSON.parse(fs.readFileSync(promptsPath, 'utf8'));",
+  "const mapping = {};",
+  "(prompts.prompts || []).forEach(prompt => {",
+  "  mapping[String(prompt.slide)] = {",
+  "    path: assetPath,",
+  "    type: 'generated-image',",
+  "    generated: true,",
+  "    allowAspectMismatch: true,",
+  "    role: prompt.role,",
+  "    source: 'mock imagegen bridge'",
+  "  };",
+  "});",
+  "fs.mkdirSync(path.dirname(assetMapPath), { recursive: true });",
+  "fs.writeFileSync(assetMapPath, JSON.stringify(mapping, null, 2));"
+].join('\n'));
+const bridgeAuto = JSON.parse(cp.execFileSync(process.execPath, [
+  'scripts/resolve_visual_assets.js',
+  planPath,
+  '--out-dir',
+  bridgeAutoBridgeDir,
+  '--imagegen-capability',
+  'available',
+  '--missing-asset-action',
+  'auto_generate',
+  '--imagegen-command',
+  `${process.execPath} ${bridgeMockScript} {prompts} {assetMap} ${bridgeMockAsset}`
+], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}));
+assert.equal(bridgeAuto.status, 'ready');
+const bridgeAutoReport = JSON.parse(fs.readFileSync(path.join(bridgeAutoBridgeDir, 'visual-asset-resolution.json'), 'utf8'));
+assert.equal(bridgeAutoReport.status, 'ready');
+assert.ok(bridgeAutoReport.outputs.assetMap, 'imagegen bridge should materialize an asset map');
+assert.ok(bridgeAutoReport.outputs.assetGatePostBind, 'post-bind gate should be recorded after automatic generation');
+const bridgeAutoPlan = JSON.parse(fs.readFileSync(path.join(ROOT, bridgeAutoReport.outputs.deckPlan), 'utf8'));
+assert.equal(bridgeAutoPlan.slides[0].assetGeneration.decisionSource, 'asset-binder/v1');
+assert.equal(bridgeAutoPlan.slides[0].assetGeneration.status, 'bound');
+assert.ok(Boolean((bridgeAutoPlan.slides[0].visual || {}).image), 'automatic generation bridge should bind the synthetic image onto the slide');
 
 fs.writeFileSync(answersPath, JSON.stringify({
   decisions: {
@@ -428,6 +488,77 @@ assert.equal(factualCoverGate.status, 'needs_user_input');
 assert.equal(factualCoverGate.questions.length, 1);
 assert.equal(factualCoverGate.questions[0].blocked, true, 'explicit factual cover visual should stay blocked');
 assert.equal(factualCoverGate.questions[0].allowedActions.includes('auto_generate'), false);
+
+fs.writeFileSync(manufacturingImageCoverPlanPath, JSON.stringify({
+  industry: 'manufacturing-operations',
+  title: '智能制造经营复盘',
+  coverStyle: 'industrial-command-cover',
+  slides: [{
+    type: 'cover',
+    title: '智能制造经营复盘',
+    subtitle: '产线、交付与渠道效率的年度判断'
+  }]
+}, null, 2));
+cp.execFileSync('node', ['scripts/deck_asset_decision_gate.js', manufacturingImageCoverPlanPath, '--out', manufacturingImageCoverGatePath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const manufacturingImageCoverGate = JSON.parse(fs.readFileSync(manufacturingImageCoverGatePath, 'utf8'));
+assert.equal(
+  manufacturingImageCoverGate.status,
+  'needs_user_input',
+  'explicit manufacturing image cover should still ask for an asset decision even when default industry media exists'
+);
+assert.equal(manufacturingImageCoverGate.questions.length, 1);
+assert.equal(manufacturingImageCoverGate.questions[0].allowedActions.includes('auto_generate'), true);
+assert.equal(manufacturingImageCoverGate.questions[0].blocked, false);
+assert.match(manufacturingImageCoverGate.questions[0].generatedAssetPrompt, /smart manufacturing hero scene|robotic cell/i);
+
+fs.writeFileSync(manufacturingNativeCoverPlanPath, JSON.stringify({
+  industry: 'manufacturing-operations',
+  title: '智能制造经营复盘',
+  slides: [{
+    type: 'cover',
+    title: '智能制造经营复盘',
+    subtitle: '产线、交付与渠道效率的年度判断'
+  }]
+}, null, 2));
+cp.execFileSync('node', ['scripts/deck_asset_decision_gate.js', manufacturingNativeCoverPlanPath, '--out', manufacturingNativeCoverGatePath], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const manufacturingNativeCoverGate = JSON.parse(fs.readFileSync(manufacturingNativeCoverGatePath, 'utf8'));
+assert.equal(
+  manufacturingNativeCoverGate.status,
+  'needs_user_input',
+  'native manufacturing cover should still ask whether to stay formal-safe or upgrade to a stronger image-led cover'
+);
+assert.equal(manufacturingNativeCoverGate.questions.length, 1);
+assert.equal(manufacturingNativeCoverGate.questions[0].optionalUpgrade, true);
+assert.equal(manufacturingNativeCoverGate.questions[0].upgradeCoverStyle, 'industrial-command-cover');
+assert.equal(manufacturingNativeCoverGate.questions[0].allowedActions.includes('auto_generate'), true);
+assert.match(manufacturingNativeCoverGate.questions[0].reason, /formal-safe 原生制造业封面/);
+
+fs.writeFileSync(manufacturingNativeCoverAnswersPath, JSON.stringify({
+  decisions: {
+    '1': { action: 'auto_generate' }
+  }
+}, null, 2));
+cp.execFileSync('node', [
+  'scripts/deck_asset_decision_gate.js',
+  manufacturingNativeCoverPlanPath,
+  '--answers', manufacturingNativeCoverAnswersPath,
+  '--out', manufacturingNativeCoverResolvedGatePath,
+  '--out-plan', manufacturingNativeCoverResolvedPlanPath
+], {
+  cwd: ROOT,
+  stdio: 'pipe'
+});
+const manufacturingNativeCoverResolved = JSON.parse(fs.readFileSync(manufacturingNativeCoverResolvedPlanPath, 'utf8'));
+assert.equal(manufacturingNativeCoverResolved.slides[0].coverStyle, 'industrial-command-cover');
+assert.equal(manufacturingNativeCoverResolved.slides[0].coverStyleSource, 'asset-decision-gate');
+assert.equal(manufacturingNativeCoverResolved.slides[0].assetGeneration.status, 'required');
+assert.match(manufacturingNativeCoverResolved.slides[0].generatedAssetPrompt, /smart manufacturing hero scene|robotic cell/i);
 
 fs.writeFileSync(promptPlanPath, JSON.stringify({
   industry: 'beauty-consumer',
