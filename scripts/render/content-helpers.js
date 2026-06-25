@@ -49,6 +49,20 @@ function stripEllipsisText(text = '') {
     .trim();
 }
 
+function clampWithoutEllipsis(text = '', maxChars = 0) {
+  const value = stripEllipsisText(text);
+  const limit = Number(maxChars || 0);
+  if (!limit || value.length <= limit) return value;
+  const hard = value.slice(0, limit).trim();
+  const minUseful = Math.max(4, Math.floor(limit * 0.33));
+  const breaks = ['。', '；', ';', '，', ',', '、', ' ']
+    .map(ch => hard.lastIndexOf(ch))
+    .filter(index => index >= minUseful);
+  const boundary = breaks.length ? Math.max(...breaks) : -1;
+  if (boundary >= minUseful) return hard.slice(0, boundary).trim();
+  return hard;
+}
+
 function itemBodyNoEllipsis(v, fallback = '') {
   const raw = itemBody(v, '');
   if (!raw || hasEllipsisText(raw)) return fallback;
@@ -56,7 +70,7 @@ function itemBodyNoEllipsis(v, fallback = '') {
 }
 
 function compactEvidenceCaption(text = '', maxChars = 30) {
-  return stripEllipsisText(text);
+  return clampWithoutEllipsis(text, maxChars);
 }
 
 function variantOf(s, fallback = '') {
@@ -75,6 +89,7 @@ function formatMetricDelta(raw) {
 module.exports = {
   compactEvidenceCaption,
   formatMetricDelta,
+  clampWithoutEllipsis,
   hasEllipsisText,
   itemBody,
   itemBodyNoEllipsis,

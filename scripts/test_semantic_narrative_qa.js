@@ -25,6 +25,19 @@ assert.equal(routed.type, 'industry-chart');
 assert.equal(routed.layoutVariant, 'valuation-sensitivity');
 assert.equal(routed.layoutRationale, 'industry proof object: valuation-sensitivity');
 
+const restaurantPlan = { industry:'lifestyle-food-tourism-fashion', title:'餐饮连锁经营复盘' };
+const restaurantLoop = semanticFrame(restaurantPlan, {
+  title:'顾客旅程把触达、下单、履约和复购串成回路',
+  phases:[
+    { title:'触达', body:'外卖平台、堂食、小程序和社区活动带来高频入口。' },
+    { title:'下单', body:'午餐、夜宵、亲子套餐和团餐分别承接不同场景。' },
+    { title:'履约', body:'出餐排队、包装漏汤和配送稳定性影响体验。' },
+    { title:'复购', body:'会员权益、套餐规则和小程序自提决定复购沉淀。' }
+  ]
+});
+assert.equal(restaurantLoop.proofObject, 'restaurant-operating-loop');
+assert.equal(restaurantLoop.semanticMeaning.bestProofRoute, 'timeline:closed-loop');
+
 const sequenced = normalizeDeckPlan({
   industry:'saas-technology',
   autoSequence:true,

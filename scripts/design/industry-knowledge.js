@@ -65,8 +65,8 @@ const INDUSTRY_EXPRESSION_RULES = {
     proofObjects: ['policy-context-board', 'resource-map', 'governance-operating-model', 'risk-and-assurance-board']
   },
   'lifestyle-food-tourism-fashion': {
-    requiredRoutes: ['case-gallery:product-or-place-gallery', 'timeline:customer-journey-map', 'metric-comparison:conversion-scorecard'],
-    proofObjects: ['lifestyle-editorial-cover', 'product-or-place-gallery', 'customer-journey-map', 'scene-conversion-board']
+    requiredRoutes: ['case-gallery:product-or-place-gallery', 'timeline:customer-journey-map', 'metric-comparison:conversion-scorecard', 'timeline:closed-loop', 'industry-chart:channel-efficiency-matrix', 'metric-comparison:quarterly-results-summary'],
+    proofObjects: ['lifestyle-editorial-cover', 'product-or-place-gallery', 'customer-journey-map', 'scene-conversion-board', 'restaurant-operating-loop', 'restaurant-channel-efficiency', 'restaurant-quarterly-results']
   }
 };
 
@@ -163,6 +163,25 @@ const INDUSTRY_KNOWLEDGE_BASE = {
       { id: 'closed-loop', route: 'timeline:closed-loop', fields: ['phases', 'actions', 'loopItems', 'timeline'], keywords: ['行动闭环', '复盘', '下一步', '运营闭环', '闭环'], depth: 'growth-loop' }
     ],
     depthGates: { minProofObjects: 4, requiredDomains: ['editorial-proof', 'channel-efficiency', 'cohort-system', 'business-metric', 'growth-loop'] }
+  },
+  'lifestyle-food-tourism-fashion': {
+    label: '餐饮/生活方式经营',
+    narrativeArchetype: '入口触达 -> 场景下单 -> 出餐履约 -> 会员复购 -> 毛利复盘',
+    entities: {
+      asset: ['门店', '堂食', '外卖平台', '小程序', '菜单', '套餐', '菜品', '包材', '会员', '客群', '峰谷时段'],
+      actor: ['店长', '区域运营', '后厨', '前厅', '外卖运营', '会员运营', '渠道负责人', '供应链'],
+      risk: ['出餐慢', '排队', '漏汤', '差评', '折扣侵蚀', '平台佣金', '损耗', '复购不足'],
+      metric: ['收入', '毛利率', '客单价', '复购率', 'NPS', '出餐时长', '翻台率', '平台佣金', '现金回款']
+    },
+    proofObjects: [
+      { id: 'restaurant-operating-loop', route: 'timeline:closed-loop', fields: ['phases', 'actions', 'loopItems', 'journeyMap'], keywords: ['触达', '下单', '履约', '复购', '堂食', '外卖', '小程序', '夜宵', '午餐', '团餐', '会员', '闭环', '复盘'], depth: 'restaurant-operating-loop' },
+      { id: 'restaurant-channel-efficiency', route: 'industry-chart:channel-efficiency-matrix', fields: ['channelEfficiency', 'channels', 'mediaEfficiency', 'metrics'], keywords: ['外卖平台', '堂食', '小程序', '渠道', '投放', '佣金', 'ROI', 'ROAS', '获客', '复购'], depth: 'channel-efficiency' },
+      { id: 'restaurant-quarterly-results', route: 'metric-comparison:quarterly-results-summary', fields: ['metrics', 'businessLogic', 'waterfallBridge'], keywords: ['收入', '毛利', '毛利率', '费用', '大促', '回款', '利润', '现金', '季度'], depth: 'business-metric' },
+      { id: 'customer-journey-map', route: 'timeline:customer-journey-map', fields: ['journeyMap', 'route', 'touchpoints', 'phases'], keywords: ['顾客旅程', '触点', '场景', '体验', '满意度', 'NPS'], depth: 'journey-system' },
+      { id: 'scene-conversion-board', route: 'metric-comparison:conversion-scorecard', fields: ['metrics', 'conversion', 'retention', 'repeatVisit'], keywords: ['转化', '复访', '复购', '客单', '满意度', '预算'], depth: 'conversion-retention' },
+      { id: 'product-or-place-gallery', route: 'case-gallery:product-or-place-gallery', fields: ['visual', 'image', 'images', 'place', 'product'], keywords: ['门店', '餐品', '场景', '实拍', '柜台', '后厨'], depth: 'site-proof' }
+    ],
+    depthGates: { minProofObjects: 3, requiredDomains: ['restaurant-operating-loop', 'channel-efficiency', 'business-metric'] }
   },
   'energy-utility': {
     label: '能源/站点运营',

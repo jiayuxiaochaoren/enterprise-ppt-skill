@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 const ASSET_BINDER_DECISION_SOURCE = 'asset-binder/v1';
-const { imageDimensions } = require('../design-system');
+const {
+  imageDimensions,
+  rankImageAssetCandidates
+} = require('../design-system');
 const {
   assetTargetContract
 } = require('../design/asset-generation');
@@ -245,7 +248,8 @@ function boundAssetGenerationFields(assets = []) {
     aspectMismatch: worst && worst.aspectMismatch,
     worstAspectMismatch: worst && worst.aspectMismatch,
     aspectMismatchAllowed: assets.some(item => item.aspectMismatchAllowed === true) || undefined,
-    boundAssets
+    boundAssets,
+    assetCandidateRanking: primary.assetCandidateRanking || undefined
   };
 }
 
@@ -291,6 +295,32 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
         return validated ? applyAssetTargetValidation(plan, slides[idx], spec, validated, errors, Number(slideNo), `images[${i}]`) : null;
       }).filter(Boolean);
       return { slideNo: Number(slideNo), idx, spec, assets };
+    }
+    if (Array.isArray(spec.candidates) && spec.candidates.length) {
+      const candidateErrors = [];
+      const candidates = spec.candidates.map((item, i) => {
+        const candidateSpec = Object.assign({}, spec, item || {});
+        delete candidateSpec.candidates;
+        const validated = validateAssetSpec(candidateSpec, Number(slideNo), `candidates[${i}]`, candidateErrors, cwd);
+        return validated ? applyAssetTargetValidation(plan, slides[idx], spec, validated, candidateErrors, Number(slideNo), `candidates[${i}]`) : null;
+      }).filter(Boolean);
+      if (!candidates.length) {
+        errors.push(...candidateErrors);
+        if (!candidateErrors.length) errors.push({ slide: Number(slideNo), type:'assetCandidateMissing', message:'asset candidates did not include a usable image' });
+        return null;
+      }
+      const ranked = rankImageAssetCandidates(candidates, { role: spec.role || (slides[idx].visual && slides[idx].visual.role) || 'evidence' });
+      const selected = Object.assign({}, ranked[0].candidate, {
+        assetCandidateRanking: ranked.map(row => ({
+          path: row.candidate && row.candidate.assetPath,
+          score: row.score,
+          qualityScore: row.quality && row.quality.score,
+          realismScore: row.realism && row.realism.score,
+          realismVerdict: row.realism && row.realism.verdict,
+          realismRisks: row.realism && row.realism.risks
+        }))
+      });
+      return { slideNo: Number(slideNo), idx, spec, assets: [selected] };
     }
     const single = validateAssetSpec(spec, Number(slideNo), 'single', errors, cwd);
     return single ? { slideNo: Number(slideNo), idx, spec, assets: [applyAssetTargetValidation(plan, slides[idx], spec, single, errors, Number(slideNo), 'single')] } : null;

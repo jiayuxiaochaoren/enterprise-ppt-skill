@@ -2,7 +2,13 @@ const assert = require('assert/strict');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { chooseEvidenceImageLayout, chooseFourImageLayout, imageQualityProfile } = require('./design-system');
+const {
+  assetRealismProfile,
+  chooseEvidenceImageLayout,
+  chooseFourImageLayout,
+  imageQualityProfile,
+  rankImageAssetCandidates
+} = require('./design-system');
 
 const media = name => path.resolve(__dirname, '..', 'assets', 'media', name);
 
@@ -88,5 +94,28 @@ assert.equal(
   'screenshot-board',
   'screenshot-like evidence should use screenshot board rhythm'
 );
+
+const realRestaurant = path.join(dir, 'restaurant-real-photo.png');
+const generatedIllustration = path.join(dir, 'restaurant-generated-illustration.png');
+fakePng(realRestaurant, 1800, 1200);
+fakePng(generatedIllustration, 1800, 1200);
+const ranked = rankImageAssetCandidates([
+  {
+    path: generatedIllustration,
+    type: 'generated-image',
+    source: 'model generated abstract restaurant illustration',
+    generated: true,
+    role: 'cover'
+  },
+  {
+    path: realRestaurant,
+    type: 'user-owned',
+    source: 'user provided real restaurant counter photo',
+    proofEligibility: 'factual-proof',
+    role: 'cover'
+  }
+], { role:'cover' });
+assert.equal(ranked[0].candidate.path, realRestaurant, 'real industry photo should outrank generated illustration for cover slots');
+assert.equal(assetRealismProfile(ranked[0].candidate, { role:'cover' }).verdict, 'strong');
 
 console.log('image layout strategy ok');

@@ -212,6 +212,7 @@ const QUALITY_SEVERITY_MATRIX = {
   chartNotRendered: entry('renderer_layout_bug', FAIL_ALL, 'planned chart components must render'),
   equalLengthFunnel: entry('renderer_layout_bug', FORMAL_FAIL, 'equal funnel bars need review as possible fake data'),
   arrowCoveredByRectangle: entry('renderer_layout_bug', FAIL_ALL, 'arrow connectors cannot be covered by later shapes'),
+  redundantSequenceLabel: entry('renderer_layout_bug', FORMAL_FAIL, 'closed-loop arrows should carry sequence without redundant sequence labels'),
   bottomFlowFooterCollision: entry('renderer_layout_bug', FAIL_ALL, 'bottom flow rules cannot collide with footer or caption text'),
   placeholderText: entry('renderer_layout_bug', FAIL_ALL, 'visible placeholder text cannot ship'),
   textCoveredByShape: entry('renderer_layout_bug', FAIL_ALL, 'visible text cannot be covered by later filled shapes'),

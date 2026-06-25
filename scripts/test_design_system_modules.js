@@ -821,6 +821,42 @@ const assetBinderOutDir = path.join(__dirname, '..', 'outputs', 'test-asset-bind
 fs.mkdirSync(assetBinderOutDir, { recursive:true });
 const assetBinderPng = path.join(assetBinderOutDir, 'tiny.png');
 fs.writeFileSync(assetBinderPng, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=', 'base64'));
+function writeBinderPng(file, w, h) {
+  const b = Buffer.alloc(33);
+  b[0] = 0x89;
+  b.write('PNG', 1, 'ascii');
+  b[4] = 0x0d;
+  b[5] = 0x0a;
+  b[6] = 0x1a;
+  b[7] = 0x0a;
+  b.writeUInt32BE(13, 8);
+  b.write('IHDR', 12, 'ascii');
+  b.writeUInt32BE(w, 16);
+  b.writeUInt32BE(h, 20);
+  fs.writeFileSync(file, b);
+}
+const generatedIllustrationCandidate = path.join(assetBinderOutDir, 'restaurant-generated-illustration.png');
+const realRestaurantCandidate = path.join(assetBinderOutDir, 'restaurant-real-counter-photo.png');
+writeBinderPng(generatedIllustrationCandidate, 1600, 1200);
+writeBinderPng(realRestaurantCandidate, 1600, 1200);
+const candidateBinderResult = bindGeneratedAssets({
+  slides:[{
+    type:'cover',
+    title:'禾巷小馆经营复盘',
+    visual:{ role:'cover' }
+  }]
+}, {
+  1:{
+    role:'cover',
+    candidates:[
+      { path:generatedIllustrationCandidate, type:'generated-image', generated:true, source:'model generated abstract illustration' },
+      { path:realRestaurantCandidate, type:'user-owned', source:'user provided real restaurant counter photo', proofEligibility:'factual-proof' }
+    ]
+  }
+});
+assert.deepEqual(candidateBinderResult.errors, []);
+assert.equal(candidateBinderResult.plan.slides[0].visual.image, realRestaurantCandidate);
+assert.equal(candidateBinderResult.plan.slides[0].assetGeneration.assetCandidateRanking[0].path, realRestaurantCandidate);
 const blockedBinderPlan = {
   outputIntent:'formal',
   slides:[{

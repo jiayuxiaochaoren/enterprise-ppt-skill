@@ -1,6 +1,7 @@
 const assert = require('assert/strict');
 const {
   compactEvidenceCaption,
+  clampWithoutEllipsis,
   formatMetricDelta,
   hasEllipsisText,
   itemBody,
@@ -25,6 +26,9 @@ assert.equal(stripEllipsisText('  多余   空格... '), '多余 空格');
 assert.equal(itemBodyNoEllipsis({ body: '内容...' }, 'fallback'), 'fallback');
 assert.equal(itemBodyNoEllipsis({ body: '完整内容' }, 'fallback'), '完整内容');
 assert.equal(compactEvidenceCaption('证据说明…', 4), '证据说明');
+assert.equal(compactEvidenceCaption('费用投放增加，大促影响毛利和项目收入确认节奏共同影响利润。', 18), '费用投放增加');
+assert.equal(hasEllipsisText(compactEvidenceCaption('这个长句需要被压进小卡片但不能再生成省略号', 14)), false);
+assert.equal(clampWithoutEllipsis('午餐、夜宵、团餐分别承接不同场景', 10), '午餐、夜宵');
 
 assert.equal(variantOf({ layoutVariant: 'readout', variant: 'other' }, 'fallback'), 'readout');
 assert.equal(variantOf({ variant: 'other' }, 'fallback'), 'other');
