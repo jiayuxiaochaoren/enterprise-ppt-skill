@@ -24,7 +24,14 @@ const HIGH_VALUE_PAGE_FAMILIES = new Set([
   'airy-concept-opening',
   'single-object-concept-map',
   'executive-proof-board',
-  'premium-closing-anchor'
+  'premium-closing-anchor',
+  'loss-pareto',
+  'issue-frequency-ranking',
+  'review-sentiment-ranking',
+  'manufacturing-action-loop',
+  'healthcare-quality-loop',
+  'saas-governance-loop',
+  'generic-action-loop'
 ]);
 
 const PRIORITY_PAGE_FAMILY_SPECS = [
@@ -36,7 +43,7 @@ const PRIORITY_PAGE_FAMILY_SPECS = [
   ['materiality-matrix-board', 'risk-table', ['general-operations', 'government-public-sector'], 'risk-warning', ['risk-matrix', 'control-tag']],
   ['sustainability-proof-spread', 'case-gallery', ['beauty-consumer', 'general-operations'], 'case-evidence', ['caption-bar', 'proof-gallery-grid']],
   ['governance-table-editorial', 'risk-table', ['finance-investment', 'government-public-sector', 'general-operations'], 'risk-warning', ['governance-table', 'control-tag']],
-  ['culture-cover-with-soft-geometry', 'manifesto', ['people-culture', 'people-culture-company'], 'industry-opening', ['statement-stage', 'value-principle-cards', 'caption-bar']],
+  ['culture-cover-with-soft-geometry', 'cover', ['people-culture', 'people-culture-company'], 'industry-opening', ['hero-image', 'commentary-panel', 'caption-bar']],
   ['mission-statement-stage', 'manifesto', ['people-culture', 'people-culture-company'], 'executive-narrative', ['statement-stage']],
   ['people-proof-mosaic', 'case-gallery', ['people-culture', 'people-culture-company'], 'case-evidence', ['people-proof-mosaic', 'caption-bar', 'proof-gallery-grid']],
   ['value-principle-cards', 'manifesto', ['people-culture', 'people-culture-company'], 'executive-narrative', ['statement-stage', 'value-principle-cards']],
@@ -46,10 +53,10 @@ const PRIORITY_PAGE_FAMILY_SPECS = [
   ['brand-world-and-business-proof', 'strategy-map', ['beauty-consumer', 'brand-retail'], 'system-architecture', ['brand-world-hero', 'value-chain-connector', 'brand-proof-caption']],
   ['consumer-proof-photo-grid', 'case-gallery', ['beauty-consumer', 'brand-retail'], 'case-evidence', ['caption-bar', 'proof-gallery-grid', 'brand-proof-caption']],
   ['product-evidence-story', 'case-gallery', ['beauty-consumer', 'brand-retail'], 'case-evidence', ['caption-bar', 'product-story-caption', 'proof-gallery-grid']],
-  ['airy-concept-opening', 'cover', ['general-operations', 'finance-investment', 'manufacturing-operations', 'industrial-energy', 'saas-technology', 'saas-ai-technology', 'healthcare-operations', 'healthcare-wellness', 'government-public-sector', 'lifestyle-food-tourism-fashion', 'people-culture', 'people-culture-company', 'beauty-consumer'], 'industry-opening', ['brand-world-hero', 'meta-folio']],
+  ['airy-concept-opening', 'cover', ['general-operations', 'finance-investment', 'industrial-energy', 'saas-technology', 'saas-ai-technology', 'healthcare-operations', 'healthcare-wellness', 'government-public-sector', 'lifestyle-food-tourism-fashion', 'people-culture', 'people-culture-company', 'beauty-consumer'], 'industry-opening', ['brand-world-hero', 'meta-folio']],
   ['single-object-concept-map', 'strategy-map', ['general-operations', 'saas-technology', 'people-culture'], 'system-architecture', ['system-rail', 'value-chain-connector']],
   ['executive-proof-board', 'case-gallery', ['general-operations', 'finance-investment', 'government-public-sector'], 'case-evidence', ['proof-gallery-grid', 'caption-bar']],
-  ['premium-closing-anchor', 'closing', ['general-operations', 'finance-investment', 'manufacturing-operations', 'industrial-energy', 'saas-technology', 'saas-ai-technology', 'healthcare-operations', 'healthcare-wellness', 'government-public-sector', 'lifestyle-food-tourism-fashion', 'brand-retail', 'beauty-consumer', 'people-culture', 'people-culture-company'], 'closing-anchor', ['editorial-end-card', 'contact-block']]
+  ['premium-closing-anchor', 'closing', ['general-operations', 'finance-investment', 'industrial-energy', 'saas-technology', 'saas-ai-technology', 'healthcare-operations', 'healthcare-wellness', 'government-public-sector', 'lifestyle-food-tourism-fashion', 'brand-retail', 'beauty-consumer', 'people-culture', 'people-culture-company'], 'closing-anchor', ['editorial-end-card', 'contact-block']]
 ];
 
 const PRIORITY_PAGE_FAMILY_RECIPES = PRIORITY_PAGE_FAMILY_SPECS.map(([variant, renderType, industryFit, themeIntent, componentHints]) => ({
@@ -119,6 +126,8 @@ function registerLayoutVariantTypes(variant = '', types = []) {
 }
 PRIORITY_PAGE_FAMILY_SPECS.forEach(([variant, renderType]) => registerLayoutVariantTypes(variant, [renderType]));
 [
+  ['culture-cover-with-soft-geometry', ['cover', 'cover-dark', 'manifesto']],
+  ['editorial-cover', ['cover', 'cover-dark']],
   ['editorial-agenda', ['toc', 'toc-clean', 'chapter-divider']],
   ['agenda-board', ['toc', 'toc-clean', 'chapter-divider']],
   ['pathway-map', ['toc', 'toc-clean', 'chapter-divider']],
@@ -130,7 +139,9 @@ PRIORITY_PAGE_FAMILY_SPECS.forEach(([variant, renderType]) => registerLayoutVari
   ['channel-efficiency-matrix', ['industry-chart']],
   ['monthly-pulse-trend', ['industry-chart']],
   ['waterfall-bridge', ['industry-chart']],
-  ['downtime-pareto', ['industry-chart']],
+  ['loss-pareto', ['industry-chart']],
+  ['issue-frequency-ranking', ['industry-chart']],
+  ['review-sentiment-ranking', ['industry-chart']],
   ['valuation-sensitivity', ['industry-chart']],
   ['quality-handoff', ['industry-chart', 'closing']],
   ['patient-bottleneck', ['industry-chart']],
@@ -166,7 +177,10 @@ PRIORITY_PAGE_FAMILY_SPECS.forEach(([variant, renderType]) => registerLayoutVari
   ['service-blueprint', ['architecture', 'architecture-dark']],
   ['platform-capability-map', ['architecture', 'architecture-dark']],
   ['hub-spoke', ['architecture', 'architecture-dark']],
-  ['responsibility-loop', ['risk-table', 'table']],
+  ['manufacturing-action-loop', ['risk-table', 'table']],
+  ['healthcare-quality-loop', ['risk-table', 'table']],
+  ['saas-governance-loop', ['risk-table', 'table']],
+  ['generic-action-loop', ['risk-table', 'table']],
   ['risk-matrix', ['risk-table', 'table']],
   ['control-stack', ['risk-table', 'table']],
   ['governance-board', ['risk-table', 'table']],

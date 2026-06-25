@@ -8,7 +8,9 @@ const IMAGE_EVIDENCE_TYPES = new Set(['case-gallery', 'gallery', 'portfolio', 'p
 const NATIVE_INDUSTRY_VARIANT_CHART_OWNERS = new Set([
   'adoption-funnel',
   'dispatch-map',
-  'downtime-pareto',
+  'loss-pareto',
+  'issue-frequency-ranking',
+  'review-sentiment-ranking',
   'fact-metrics',
   'member-cohort-ladder',
   'patient-bottleneck',
@@ -141,7 +143,10 @@ function routeComponentCapability(componentId = '', options = {}) {
     };
   }
   if (id === 'caption-bar') {
-    const allowed = brandWorldStrategy || imageRoute || hasStructuredProofGalleryEvidence(slide);
+    const allowed = brandWorldStrategy ||
+      imageRoute ||
+      hasStructuredProofGalleryEvidence(slide) ||
+      ((type === 'cover' || type === 'cover-dark') && /culture-cover-with-soft-geometry/.test(`${slide.layoutVariant || ''} ${slide.variant || ''} ${slide.proofObject || slide.proof_object || ''}`));
     return { allowed, reason: allowed ? 'visual proof, brand-world bridge, or structured caption evidence' : 'caption-bar requires proof, image, or brand-world strategy context' };
   }
   if (id === 'proof-gallery' || id === 'proof-gallery-grid') {

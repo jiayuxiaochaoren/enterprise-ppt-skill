@@ -651,7 +651,7 @@ function energyServiceReportRendererNameFor(plan = {}, s = {}) {
   if (type === 'industry-chart' && /monthly-pulse-trend/.test(`${variant} ${proof}`)) return 'energyServiceReportTrend';
   if (type === 'industry-chart' && /waterfall-bridge/.test(`${variant} ${proof}`)) return 'energyServiceReportBusinessMix';
   if (type === 'industry-chart' && /channel-efficiency-matrix/.test(`${variant} ${proof}`)) return 'energyServiceReportChannel';
-  if (type === 'industry-chart' && /downtime-pareto/.test(`${variant} ${proof}`)) return 'energyServiceReportCustomer';
+  if (type === 'industry-chart' && /(loss-pareto|issue-frequency-ranking|review-sentiment-ranking)/.test(`${variant} ${proof}`)) return 'energyServiceReportCustomer';
   if (type === 'report-board' && /产品|套餐|复购/.test(title)) return 'energyServiceReportProduct';
   if (type === 'report-board') return 'energyServiceReportManagement';
   if (type === 'closing' || type === 'closing-dark') return 'energyServiceReportClosing';

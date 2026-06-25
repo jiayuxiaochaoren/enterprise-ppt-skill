@@ -9,6 +9,7 @@ function createMetricComparisonRenderer(ctx = {}, renderers = {}) {
     financialKpiSnapshot,
     healthcareServiceScorecard,
     manufacturingOeeBoard,
+    peopleCultureGrowthBoard,
     quarterlyResultsSummary,
     retailMemberGrowthBoard,
     saasAdoptionRevenueBoard,
@@ -42,7 +43,13 @@ function createMetricComparisonRenderer(ctx = {}, renderers = {}) {
   return function metricComparison(slide, plan, s, idx) {
     const variant = ctx.variantOf(s, '');
     const industryChartVariant = industryChartVariantFor(s);
-    if (industryChartSlide && industryChartVariant && (plan.industry === 'beauty-consumer' || isVisualIndustry(plan, 'brand-retail'))) {
+    const shouldUseIndustryChart = industryChartSlide && industryChartVariant && (
+      plan.industry === 'beauty-consumer' ||
+      plan.industry === 'manufacturing-operations' ||
+      isVisualIndustry(plan, 'brand-retail') ||
+      isVisualIndustry(plan, 'manufacturing-operations')
+    );
+    if (shouldUseIndustryChart) {
       return industryChartSlide(slide, plan, Object.assign({}, s, {
         layoutVariant: industryChartVariant,
         variant: industryChartVariant
@@ -55,6 +62,7 @@ function createMetricComparisonRenderer(ctx = {}, renderers = {}) {
     if (variant === 'financial-kpi-snapshot') return financialKpiSnapshot(slide, plan, s, idx);
     if (variant === 'chart-grid-with-commentary') return chartGridWithCommentary(slide, plan, s, idx);
     if (variant === 'quarterly-results-summary') return quarterlyResultsSummary(slide, plan, s, idx);
+    if (variant === 'company-profile-proof' && peopleCultureGrowthBoard) return peopleCultureGrowthBoard(slide, plan, s, idx);
     if (variant === 'oee-board' || s.oee || s.oeeComponents) return manufacturingOeeBoard(slide, plan, s, idx);
     if (variant === 'patient-service-scorecard' || plan.industry === 'healthcare-operations') return healthcareServiceScorecard(slide, plan, s, idx);
     if (variant === 'member-growth-board' || isVisualIndustry(plan, 'brand-retail')) return retailMemberGrowthBoard(slide, plan, s, idx);

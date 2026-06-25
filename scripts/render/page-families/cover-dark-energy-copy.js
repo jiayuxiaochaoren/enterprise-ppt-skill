@@ -32,11 +32,6 @@ function createCoverDarkEnergyCopy(ctx = {}, deps = {}) {
       x:0.88, y:3.48, w:5.85, h:0.22,
       fontSize:11.2, color:'CBD5E1', fit:'shrink'
     });
-    ctx.addRect(slide, 0.88, 3.92, 0.82, 0.035, C.accent, C.accent);
-    ctx.addRect(slide, 1.82, 3.92, 0.34, 0.035, C.cyan, C.cyan, {
-      fill:{color:C.cyan, transparency:40},
-      line:{color:C.cyan, transparency:100}
-    });
     ctx.addDeckMeta(slide, plan, {
       x:0.88, y:6.24, w:7.3, h:0.16,
       fontSize:7.8, color:'CBD5E1', fit:'shrink'

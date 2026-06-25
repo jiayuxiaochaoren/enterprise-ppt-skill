@@ -43,8 +43,8 @@ const profile = {
   },
   proofObjects: [
     {
-      id: 'downtime-pareto',
-      route: 'industry-chart:downtime-pareto',
+      id: 'loss-pareto',
+      route: 'industry-chart:loss-pareto',
       fields: ['downtimePareto'],
       keywords: ['停机', 'OEE', '帕累托'],
       depth: 'metric-analysis'
@@ -96,7 +96,7 @@ const slide = {
 const signals = content.contentSignals({ industry:'manufacturing-operations' }, slide);
 
 const candidates = semantic.industryProofCandidates({ industry:'manufacturing-operations' }, slide, signals);
-assert.equal(candidates[0].id, 'downtime-pareto');
+assert.equal(candidates[0].id, 'loss-pareto');
 assert.ok(candidates[0].score >= 4);
 assert.ok(candidates[0].keywordHits.includes('停机'));
 
@@ -111,8 +111,8 @@ assert.equal(relations.ownership, true);
 assert.deepEqual(proofHelpers.semanticRelationProfile(flattenText(slide)), relations);
 
 const meaning = semantic.semanticMeaning({ industry:'manufacturing-operations' }, slide, signals);
-assert.equal(meaning.bestProofObject, 'downtime-pareto');
-assert.equal(meaning.bestProofRoute, 'industry-chart:downtime-pareto');
+assert.equal(meaning.bestProofObject, 'loss-pareto');
+assert.equal(meaning.bestProofRoute, 'industry-chart:loss-pareto');
 assert.equal(meaning.materialPurpose, 'industry-proof');
 assert.ok(meaning.scores.claimStrength > 0.5);
 assert.ok(meaning.entities.metric.includes('OEE'));
@@ -142,8 +142,8 @@ assert.equal(chartVariantHelpers.industryChartVariant({ industry:'energy-utility
 
 const frame = semantic.semanticFrame({ industry:'manufacturing-operations' }, slide, signals);
 assert.equal(frame.primaryIntent, 'industryChart');
-assert.equal(frame.proofObject, 'downtime-pareto');
-assert.equal(frame.industryChartVariant, 'downtime-pareto');
+assert.equal(frame.proofObject, 'loss-pareto');
+assert.equal(frame.industryChartVariant, 'loss-pareto');
 assert.ok(frame.confidence > 0.7);
 
 console.log('semantic model ok');

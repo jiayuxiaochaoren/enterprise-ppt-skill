@@ -13,19 +13,21 @@ module.exports = {
     ],
     "stages": [
       {
-        "id": "mission-culture-claim",
+        "id": "culture-opening-claim",
         "position": 1,
-        "label": "使命/文化主张",
+        "label": "文化开场与使命主张",
         "components": [
-          "content-card-grid",
+          "hero-image",
           "commentary-panel",
-          "value-chain",
-          "caption-bar"
+          "caption-bar",
+          "content-card-grid",
+          "value-chain"
         ],
         "coveragePolicy": {
           "requiredAny": [
-            "content-card-grid",
+            "hero-image",
             "commentary-panel",
+            "content-card-grid",
             "value-chain"
           ],
           "optional": [
@@ -38,21 +40,48 @@ module.exports = {
           "mission-statement-stage",
           "value-principle-cards"
         ],
+        "variantsByProofObject": {
+          "mission-statement-stage": {
+            "id": "mission-culture-claim",
+            "label": "使命/文化主张",
+            "components": [
+              "content-card-grid",
+              "commentary-panel",
+              "caption-bar"
+            ],
+            "coveragePolicy": {
+              "requiredAny": [
+                "content-card-grid",
+                "commentary-panel"
+              ],
+              "optional": [
+                "caption-bar"
+              ],
+              "minHits": 2
+            }
+          }
+        },
         "routes": [
+          "cover:culture-cover-with-soft-geometry",
           "manifesto:mission",
           "manifesto:value"
         ],
         "fields": [
+          "media.cover",
+          "visual.image",
+          "image",
           "mission",
           "values",
           "culture",
           "items"
         ],
         "keywords": [
+          "开场",
           "使命",
           "文化",
           "价值观",
           "团队主张",
+          "cover",
           "mission",
           "values",
           "culture"

@@ -203,8 +203,8 @@ assert.equal(plan.industry, 'manufacturing-operations');
 assert.equal(plan.materialIntelligence.missingInfo.length, 2);
 assert.equal(plan.materialIntelligence.clarifications.length, 1);
 assert.ok(plan.commercialReview.openRisks.length >= 1);
-assert.ok(plan.slides.some(s => s.type === 'industry-chart' && s.layoutVariant === 'downtime-pareto'));
-const downtimeSlide = plan.slides.find(s => s.layoutVariant === 'downtime-pareto');
+assert.ok(plan.slides.some(s => s.type === 'industry-chart' && s.layoutVariant === 'loss-pareto'));
+const downtimeSlide = plan.slides.find(s => s.layoutVariant === 'loss-pareto');
 assert.equal(downtimeSlide.dataComponent, 'root-cause-matrix');
 assert.equal(downtimeSlide.businessLogic.metric, 'OEE、MTTR、重复故障占比');
 assert.ok(plan.slides.some(s => s.layoutVariant === 'production-topology'));
@@ -228,6 +228,36 @@ assert.equal(
   false
 );
 assert.equal(plan.slides.some(s => /用户材料自动整理|该页用于|模型抽取/.test(JSON.stringify(s))), false);
+const closing = plan.slides[plan.slides.length - 1];
+assert.equal(closing.type, 'closing');
+assert.equal(closing.title, '下一步确认试点设备和数据接口');
+assert.equal(closing.subtitle, '需要确认 PLC、传感器和备件台账的数据接口。');
+assert.equal(
+  closing.componentPlan && closing.componentPlan.industryEvidenceChain && closing.componentPlan.industryEvidenceChain.stageId,
+  'neutral-general',
+  'closing slides should stay out of industry evidence-chain scoring even when they contain actions or delivery wording'
+);
+assert.equal(
+  (closing.componentPlan && closing.componentPlan.componentIds || []).includes('inspection-matrix'),
+  false,
+  'closing slides should not inherit manufacturing inspection components from weak delivery signals'
+);
+
+const displayCopyClosingExtraction = JSON.parse(JSON.stringify(extraction));
+displayCopyClosingExtraction.claim_spine = displayCopyClosingExtraction.claim_spine.map(claim => (
+  claim.id === 'claim-004'
+    ? Object.assign({}, claim, {
+        display_copy: {
+          title: '先确认试点范围，再进入产线落地',
+          subtitle: '把设备清单、数据接口和试点验收口径放进同一轮决策。'
+        }
+      })
+    : claim
+));
+const displayCopyClosingPlan = compileDeckPlan(displayCopyClosingExtraction, bundle);
+const displayCopyClosing = displayCopyClosingPlan.slides[displayCopyClosingPlan.slides.length - 1];
+assert.equal(displayCopyClosing.title, '先确认试点范围，再进入产线落地');
+assert.equal(displayCopyClosing.subtitle, '把设备清单、数据接口和试点验收口径放进同一轮决策。');
 
 const gate = buildClarificationGate(
   bundle,

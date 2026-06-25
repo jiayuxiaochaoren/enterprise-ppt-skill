@@ -22,6 +22,8 @@ assert.equal(closingRendererKey({}, { closingVariant:'investment-decision' }, { 
 assert.equal(closingRendererKey({}, { closingVariant:'quality-handoff' }, { variant:'quality-handoff' }), 'closingHealthcareQualityHandoff');
 assert.equal(closingRendererKey({}, { closingVariant:'adoption-close' }, { variant:'adoption-close' }), 'closingSaasAdoptionClose');
 assert.equal(closingRendererKey({}, { closingVariant:'decision-summary' }, { variant:'decision-summary' }), 'closingDecisionSummary');
+assert.equal(closingRendererKey({}, { closingVariant:'governance-next-step' }, { variant:'governance-next-step' }), 'closingDecisionBoard');
+assert.equal(closingRendererKey({}, { closingVariant:'contact-closing' }, { variant:'contact-closing' }), 'premiumClosingAnchor');
 assert.equal(closingRendererKey({}, { closingVariant:'image' }, { variant:'image' }), 'closingImageStatement');
 assert.equal(closingRendererKey({}, {}, { variant:'', hasImageStatement:true, coverTone:'light' }), 'closingImageStatement');
 assert.equal(closingRendererKey({}, { closingVariant:'editorial-light' }, { variant:'editorial-light' }), 'closingEditorialLight');
@@ -30,6 +32,10 @@ assert.equal(closingRendererKey({}, {}, {}), 'closingDecisionBoard');
 
 assert.equal(closingRendererKey({}, { closingVariant:'pilot-rollout', title:'谢谢观看' }, {
   variant:'pilot-rollout',
+  isCompanyIntro:true
+}), 'closingCompanyThanks');
+assert.equal(closingRendererKey({}, { closingVariant:'contact-closing', title:'联系方式' }, {
+  variant:'contact-closing',
   isCompanyIntro:true
 }), 'closingCompanyThanks');
 assert.equal(closingRendererKey({}, { closingVariant:'decision-summary', title:'谢谢观看' }, {

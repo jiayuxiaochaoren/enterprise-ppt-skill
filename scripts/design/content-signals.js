@@ -163,6 +163,7 @@ function createContentSignalHelpers(deps = {}) {
         'pareto',
         'lossPareto',
         'oeeLosses',
+        'reviewSentiment',
         'valuationSensitivity',
         'sensitivity',
         'exitScenarios',

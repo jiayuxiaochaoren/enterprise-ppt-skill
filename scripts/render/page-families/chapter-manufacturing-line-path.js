@@ -26,11 +26,10 @@ function createChapterManufacturingLinePath(ctx = {}) {
 
   function drawManufacturingLinePath(slide, s) {
     const list = manufacturingLineItems(s);
-    const cardW = 2.16;
-    const cardMargin = 0.86;
-    const cardY = 4.08;
+    const cardW = 2.24;
+    const cardMargin = 0.72;
+    const cardY = 4.02;
     const rail = { x:cardMargin + cardW/2, y:3.42, w:W - (cardMargin + cardW/2) * 2 };
-    addHairline(slide, rail.x, rail.y, rail.w, '334155', 12, 0.92);
     list.forEach((it, i) => {
       const step = list.length > 1 ? rail.w / (list.length - 1) : 0;
       const x = rail.x + i * step;

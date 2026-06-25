@@ -136,7 +136,7 @@ function assertGovernanceTableEditorialShell(ops) {
   assert(hasRect(ops, { x:3.54, y:2.06, w:8.00, h:3.86 }), 'expected governance action table panel');
   assert(hasRect(ops, { x:3.72, y:2.70, w:7.64, h:0.56 }), 'expected first governance row shell');
   assert(hasRect(ops, { x:3.72, y:3.44, w:7.64, h:0.56 }), 'expected second governance row shell');
-  ['EDITORIAL CORE', 'OWNER · CADENCE · EVIDENCE · DECISION'].forEach(label => {
+  ['治理重点', '责任 · 节奏 · 记录 · 决策'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected governance editorial label ${label}`
@@ -189,6 +189,26 @@ function assertGuidanceAndRiskBoardShell(ops) {
   });
 }
 
+function assertRiskActionLoopSafeLayout() {
+  const ops = [];
+  const renderers = createRiskBoardRenderers(createFakeCtx(ops));
+  renderers.riskActionLoop(createSlide(ops), { industry:'manufacturing-operations' }, riskSection({
+    title:'制造交付要把项目、安装、验收和维保放进同一闭环',
+    claim:'把需求、安装、验收和维保放进同一条经营路径，项目经验才能被持续复用。',
+    layoutVariant:'manufacturing-action-loop'
+  }), 6);
+  const core = ops.find(op => op.name === 'addRect'
+    && Math.abs(op.args[1] - 0.92) < 0.001
+    && Math.abs(op.args[3] - 2.86) < 0.001);
+  assert(core, 'expected action-loop core card');
+  assert(core.args[2] > 2.20, 'long-title action-loop core should move below the wrapped header');
+  assert(core.args[4] >= 3.80, 'long-title action-loop core should keep enough height instead of compressing content');
+  assert(
+    !ops.some(op => op.name === 'addText' && String(op.args[1] || '').includes('每项经营动作都需要')),
+    'action-loop should not render default note copy when no explicit note is provided'
+  );
+}
+
 function main() {
   const ops = [];
   const ctx = createFakeCtx(ops);
@@ -202,7 +222,7 @@ function main() {
     'riskAdaptive',
     'riskControlStack',
     'riskMatrixSlide',
-    'riskResponsibilityLoop',
+    'riskActionLoop',
     'riskTable'
   ];
   names.forEach(name => {
@@ -212,7 +232,7 @@ function main() {
 
   direct.riskMatrixSlide(slide, { industry:'manufacturing-operations' }, riskSection(), 1);
   direct.riskControlStack(slide, {}, riskSection(), 2);
-  direct.riskResponsibilityLoop(slide, {}, riskSection(), 3);
+  direct.riskActionLoop(slide, {}, riskSection(), 3);
   direct.guidanceAndRiskBoard(slide, {}, riskSection(), 4);
   direct.materialityMatrixBoard(slide, {}, riskSection(), 5);
   direct.governanceTableEditorial(slide, {}, riskSection(), 6);
@@ -221,7 +241,7 @@ function main() {
 
   assertKicker(ops, '风险矩阵');
   assertKicker(ops, 'CONTROL SYSTEM');
-  assertKicker(ops, 'RESPONSIBILITY LOOP');
+  assertKicker(ops, '治理动作');
   assertKicker(ops, 'GUIDANCE AND RISK BOARD');
   assertKicker(ops, 'MATERIALITY MATRIX');
   assertKicker(ops, 'GOVERNANCE TABLE EDITORIAL');
@@ -230,7 +250,27 @@ function main() {
   assertGuidanceAndRiskBoardShell(ops);
   assertMaterialityMatrixBoardShell(ops);
   assertGovernanceTableEditorialShell(ops);
+  assertRiskActionLoopSafeLayout();
   assert(ops.some(op => op.name === 'addClockwiseLoopConnectors'), 'expected responsibility loop connectors');
+  const loopConnectors = ops.find(op => op.name === 'addClockwiseLoopConnectors');
+  const loopSlots = (loopConnectors && loopConnectors.args[1]) || [];
+  const loopOptions = (loopConnectors && loopConnectors.args[3]) || {};
+  assert(loopSlots.length === 4, 'expected four responsibility loop card slots');
+  assert(
+    loopSlots[2].y - (loopSlots[1].y + loopSlots[1].h) > 0.62,
+    'responsibility loop should leave enough vertical span for balanced right-side arrows'
+  );
+  assert(loopOptions.gap <= 0.12, 'responsibility loop connectors should not be shortened by a large gap');
+  const processEvidence = ops.find(op => op.name === 'addText' && op.args[1] === '过程留痕');
+  assert(processEvidence, 'expected readable process-evidence label in responsibility core panel');
+  assert.strictEqual((processEvidence.args[2] || {}).color, 'E2E8F0', 'process evidence text should not use low-contrast gray');
+  ['RESPONSIBILITY LOOP', 'RISK · OWNER · ACTION', 'NO ORPHAN RISK', 'EDITORIAL CORE', 'OWNER · CADENCE · EVIDENCE · DECISION'].forEach(label => {
+    assert(
+      !ops.some(op => op.name === 'sectionKicker' && op.args[1] === label) &&
+        !ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `risk renderers should not emit English template label ${label}`
+    );
+  });
   assert(ops.some(op => op.name === 'addShape'), 'expected matrix native shapes');
   assert(ops.filter(op => op.name === 'addText').length >= 80, 'expected risk board text output');
   assert.strictEqual(

@@ -261,6 +261,8 @@ function main() {
 
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'REPORT BOARD'), 'expected report board branch');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === '经营底座'), 'expected localized report board branch');
+  assert(ops.some(op => op.name === 'addLabel' && op.args[1] === '关键依据'), 'expected public report-board evidence label');
+  assert(!ops.some(op => op.name === 'addLabel' && op.args[1] === '证据栈'), 'report-board should not emit developer evidence-stack copy');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'COMPARISON'), 'expected comparison branch');
   assert(ops.some(op => op.name === 'sectionKicker' && op.args[1] === 'VALUE SIGNAL'), 'expected value tiles branch');
   assertReportBoardHeader(ops);
@@ -271,6 +273,86 @@ function main() {
   assert(ops.filter(op => op.name === 'PageNumber').length >= 2, 'expected page number helper paths');
   assertBusinessFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 45, 'expected business text output');
+
+  const denseOps = [];
+  createBusinessRenderers(createFakeCtx(denseOps)).reportBoard(createSlide(denseOps), {}, businessSection({
+    sections:[
+      { title:'体质辨识服务', body:'收入贡献高，适合承接会员转化和复诊计划。' },
+      { title:'企业员工健康日', body:'客单稳定，适合联动企业团购和体检后调理。' },
+      { title:'火龙灸温养套餐', body:'新品爬坡快，需要提升复购承接和排班稳定性。' },
+      { title:'女性宫寒调理', body:'复购表现好，适合做季节化服务包。' },
+      { title:'正骨评估与治疗', body:'毛利率高，但交付排期需要更稳定。' },
+      { title:'穴位埋线管理', body:'会员转化好，需要强化疗程跟进。' }
+    ]
+  }), 9);
+  assert(
+    denseOps.some(op => op.name === 'addText' && op.args[1] === '体质辨识服务') &&
+      denseOps.some(op => op.name === 'addNumber' && op.args[1] === '06'),
+    'dense report-board should render a readable indexed list for six evidence items'
+  );
+
+  const publicOps = [];
+  createBusinessRenderers(createFakeCtx(publicOps)).reportBoard(createSlide(publicOps), { industry:'government-public-sector' }, businessSection({
+    layoutVariant:'policy-context-board',
+    label:'POLICY CONTEXT',
+    title:'政策任务需要被翻译成园区可执行的三类动作',
+    coreTitle:'任务、资源和项目必须对齐',
+    coreBody:'政策页要有来源、日期和任务边界，不能只写口号。',
+    sections:[
+      { title:'产业导向', body:'围绕先进制造、数字服务和绿色能源招商。' },
+      { title:'空间承载', body:'梳理标准厂房、研发空间和配套服务。' },
+      { title:'服务机制', body:'建立项目准入、落地和跟踪复盘。' },
+      { title:'考核口径', body:'统一签约、开工、投产和税收指标。' }
+    ],
+    sourceNote:'政策口径：2026 年园区招商工作会材料'
+  }), 7);
+  assert(publicOps.some(op => op.name === 'sectionKicker' && op.args[1] === '政策任务拆解'), 'government policy context should localize the header kicker');
+  ['政策判断', '政策来源', '执行抓手', '政策口径：2026 年园区招商工作会材料'].forEach(text => {
+    assert(publicOps.some(op => op.args.includes(text)), `expected government report-board copy ${text}`);
+  });
+  ['POLICY CONTEXT', 'REPORT BOARD', '关键依据'].forEach(text => {
+    assert(!publicOps.some(op => op.args.includes(text)), `government policy context should not reuse generic report copy ${text}`);
+  });
+
+  const lifestyleOps = [];
+  createBusinessRenderers(createFakeCtx(lifestyleOps)).reportBoard(createSlide(lifestyleOps), { industry:'lifestyle-food-tourism-fashion' }, businessSection({
+    title:'运营保障围绕商户、活动和客流安全展开',
+    label:'OPERATING MODEL',
+    coreTitle:'体验产品要能稳定交付',
+    coreBody:'活动排期、商户协同和现场安全共同决定体验口碑。',
+    sections:[
+      { title:'商户协同', body:'统一营业节奏和联名套餐。' },
+      { title:'活动排期', body:'按周末、节假日和夜间场景设计主题。' },
+      { title:'安全动线', body:'高峰客流和应急通道提前演练。' },
+      { title:'内容复盘', body:'追踪传播素材和到访转化。' }
+    ]
+  }), 8);
+  ['运营保障面', '现场判断', '保障动作'].forEach(text => {
+    assert(lifestyleOps.some(op => op.args.includes(text)), `expected lifestyle report-board copy ${text}`);
+  });
+  ['OPERATING MODEL', 'REPORT BOARD', '管理判断', '关键依据'].forEach(text => {
+    assert(!lifestyleOps.some(op => op.args.includes(text)), `lifestyle report-board should not reuse generic report copy ${text}`);
+  });
+
+  const generalOps = [];
+  createBusinessRenderers(createFakeCtx(generalOps)).reportBoard(createSlide(generalOps), { industry:'general-operations' }, businessSection({
+    title:'经营复盘需要把判断、证据和后续动作放在同一页',
+    label:'REPORT BOARD',
+    coreTitle:'关键经营判断必须可被回看',
+    coreBody:'指标、案例和后续动作必须说明为什么做这个决策。',
+    sections:[
+      { title:'指标信号', body:'营收、毛利和现金共同决定节奏。' },
+      { title:'过程证据', body:'项目推进和客户反馈共同验证结论。' },
+      { title:'风险提醒', body:'把关键波动保留在管理视野中。' },
+      { title:'下一步动作', body:'明确责任人、时间点和复盘口径。' }
+    ]
+  }), 9);
+  ['经营复盘面', '经营判断', '经营证据'].forEach(text => {
+    assert(generalOps.some(op => op.args.includes(text)), `expected general-operations report-board copy ${text}`);
+  });
+  ['REPORT BOARD', '管理判断', '关键依据'].forEach(text => {
+    assert(!generalOps.some(op => op.args.includes(text)), `general-operations report-board should not reuse generic report copy ${text}`);
+  });
 
   console.log('business renderers ok');
 }

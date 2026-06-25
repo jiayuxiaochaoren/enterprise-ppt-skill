@@ -4,6 +4,10 @@ const {
 const {
   createSemanticProofCandidateHelpers
 } = require('./semantic-proof-candidates');
+const {
+  normalizeActionLoopProof,
+  normalizeProofObject
+} = require('./proof-taxonomy');
 
 function createSemanticModelHelpers(deps = {}) {
   const {
@@ -128,6 +132,7 @@ function createSemanticModelHelpers(deps = {}) {
       'pareto',
       'lossPareto',
       'oeeLosses',
+      'reviewSentiment',
       'valuationSensitivity',
       'sensitivity',
       'exitScenarios',
@@ -156,7 +161,7 @@ function createSemanticModelHelpers(deps = {}) {
       'activationFunnel',
       'cohortFunnel'
     ])) scores.industryChart += 8;
-    if (/pareto|帕累托|敏感性|交接|瓶颈|调度|漏斗|cohort|funnel|dispatch|sensitivity|handoff|roas|roi|投放|渠道|月度|低谷|趋势|目标桥|目标差额|waterfall|bridge/i.test(lower)) scores.industryChart += 3;
+    if (/pareto|帕累托|敏感性|交接|瓶颈|调度|漏斗|评论|评价|反馈主题|cohort|funnel|dispatch|sensitivity|handoff|roas|roi|投放|渠道|月度|低谷|趋势|目标桥|目标差额|waterfall|bridge/i.test(lower)) scores.industryChart += 3;
     if (dataGrammarVariant(plan, s, signals)) scores.industryChart += 4;
     if (meaning.relations.evidence) scores.caseEvidence += 1.5;
     if (meaning.relations.cause || meaning.relations.dependency) scores.logicChain += 1.5;
@@ -177,7 +182,14 @@ function createSemanticModelHelpers(deps = {}) {
     const [primaryIntent, topScore] = ranked[0] || ['unknown', 0];
     const variant = industryChartVariant(plan, s, signals);
     const proofObject = (() => {
-      if (primaryIntent === 'industryChart') return variant;
+      if (primaryIntent === 'industryChart') return normalizeProofObject(variant, {
+        industry: plan.industry || '',
+        text,
+        proofIntent: s.proofIntent || s.proof_intent,
+        displayCopy: s.displayCopy || s.display_copy,
+        slide: s,
+        signals
+      });
       if (meaning.bestProofObject && ((meaning.proofCandidates[0] || {}).score >= 3)) return meaning.bestProofObject;
       if (signals.hasOeeBoard) return 'OEE';
       if (signals.hasServiceBlueprint) return 'service-blueprint';
@@ -186,7 +198,14 @@ function createSemanticModelHelpers(deps = {}) {
       if (signals.hasCaseComparison) return 'before-after-evidence';
       if (signals.hasGallery) return 'evidence-gallery';
       if (signals.hasMetrics) return 'metric-board';
-      if (signals.hasResponsibilityLoop) return 'responsibility-loop';
+      if (signals.hasResponsibilityLoop) return normalizeActionLoopProof('', {
+        industry: plan.industry || '',
+        text,
+        proofIntent: s.proofIntent || s.proof_intent,
+        displayCopy: s.displayCopy || s.display_copy,
+        slide: s,
+        signals
+      });
       if (signals.hasLogicChain) return 'logic-chain';
       return primaryIntent === 'unknown' ? 'narrative-block' : primaryIntent;
     })();

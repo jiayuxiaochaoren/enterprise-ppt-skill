@@ -133,7 +133,7 @@ module.exports = {
           "dispatch-map",
           "monthly-pulse-trend",
           "waterfall-bridge",
-          "downtime-pareto",
+          "loss-pareto",
           "channel-efficiency-matrix",
           "quarterly-results-summary"
         ],
@@ -142,7 +142,7 @@ module.exports = {
           "industry-chart:dispatch",
           "industry-chart:monthly-pulse-trend",
           "industry-chart:waterfall-bridge",
-          "industry-chart:downtime-pareto",
+          "industry-chart:loss-pareto",
           "industry-chart:channel-efficiency-matrix"
         ],
         "fields": [

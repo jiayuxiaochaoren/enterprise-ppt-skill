@@ -4,6 +4,7 @@ const NATIVE_VARIANT_COMPONENTS = {
   'brand-world-and-business-proof': ['value-chain', 'system-rail', 'commentary-panel', 'hero-image', 'caption-bar', 'kpi-strip'],
   'chart-grid-with-commentary': ['kpi-strip', 'metric-strip', 'chart-commentary-panel', 'scorecard'],
   'consumer-proof-photo-grid': ['proof-gallery', 'proof-gallery-grid', 'caption-bar', 'hero-image'],
+  'culture-cover-with-soft-geometry': ['hero-image', 'commentary-panel', 'caption-bar'],
   'control-stack': ['risk-register', 'governance-table', 'process-rail'],
   'executive-proof-board': ['proof-gallery', 'proof-gallery-grid', 'caption-bar'],
   'financial-kpi-snapshot': ['kpi-strip', 'metric-strip', 'kpi-primary-metric', 'chart-commentary-panel'],

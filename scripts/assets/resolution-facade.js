@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const cp = require('child_process');
 const {
   buildGate,
   readJson,
@@ -91,7 +92,94 @@ function defaultPaths(opts = {}) {
     resolvedPlan: path.resolve(opts.outPlan || path.join(outDir, 'deck-plan.assets-resolved.json')),
     prompts: path.resolve(opts.promptsOut || path.join(outDir, 'asset-prompts.json')),
     report: path.resolve(opts.report || path.join(outDir, 'visual-asset-resolution.json')),
-    boundPlan: path.resolve(opts.outPlan || path.join(outDir, 'deck-plan.assets-bound.json'))
+    boundPlan: path.resolve(opts.outPlan || path.join(outDir, 'deck-plan.assets-bound.json')),
+    generatedMap: path.resolve(opts.generatedMap || opts.assetMap || path.join(outDir, 'asset-map.generated.json')),
+    generatedAssetsDir: path.resolve(opts.generatedAssetsDir || path.join(outDir, 'generated-assets'))
+  };
+}
+
+function shellQuote(value = '') {
+  return `'${String(value || '').replace(/'/g, `'\\''`)}'`;
+}
+
+function compileCommandTemplate(template = '', placeholders = {}) {
+  let command = String(template || '').trim();
+  Object.entries(placeholders || {}).forEach(([key, value]) => {
+    command = command.replace(new RegExp(`\\{${key}\\}`, 'g'), shellQuote(value));
+  });
+  return command;
+}
+
+function numericMappingShape(value = null) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const keys = Object.keys(value);
+  return keys.length > 0 && keys.every(key => /^\d+$/.test(String(key)));
+}
+
+function materializeAssetMapFromBridge(stdout = '', fallbackPath = '') {
+  const parsed = parseJson(stdout);
+  if (!parsed) return '';
+  if (parsed.assetMap || parsed.asset_map || parsed.mappingPath || parsed.mapping_path) {
+    return path.resolve(String(parsed.assetMap || parsed.asset_map || parsed.mappingPath || parsed.mapping_path));
+  }
+  if (parsed.mapping && typeof parsed.mapping === 'object') {
+    writeJson(fallbackPath, parsed.mapping);
+    return fallbackPath;
+  }
+  if (numericMappingShape(parsed)) {
+    writeJson(fallbackPath, parsed);
+    return fallbackPath;
+  }
+  return '';
+}
+
+function runImagegenBridge({
+  commandTemplate = '',
+  promptsPath = '',
+  assetMapPath = '',
+  assetsDir = '',
+  outDir = '',
+  planPath = '',
+  root = ROOT,
+  timeoutMs = 240000
+} = {}) {
+  const placeholders = {
+    prompts: promptsPath,
+    assetMap: assetMapPath,
+    assetsDir,
+    outDir,
+    plan: planPath
+  };
+  const command = compileCommandTemplate(commandTemplate, placeholders);
+  const env = Object.assign({}, process.env, {
+    CODEX_ASSET_PROMPTS: promptsPath,
+    CODEX_ASSET_MAP: assetMapPath,
+    CODEX_ASSET_DIR: assetsDir,
+    CODEX_ASSET_OUT_DIR: outDir,
+    CODEX_DECK_PLAN: planPath
+  });
+  fs.mkdirSync(path.dirname(assetMapPath), { recursive: true });
+  fs.mkdirSync(assetsDir, { recursive: true });
+  const result = cp.spawnSync(command, {
+    cwd: root,
+    env,
+    encoding: 'utf8',
+    shell: true,
+    timeout: timeoutMs,
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+  const stdout = String(result.stdout || '').trim();
+  const stderr = String(result.stderr || '').trim();
+  const resolvedAssetMap = materializeAssetMapFromBridge(stdout, assetMapPath) ||
+    (fs.existsSync(assetMapPath) ? assetMapPath : '');
+  return {
+    command,
+    status: result.status === 0 ? 'pass' : 'fail',
+    exitCode: typeof result.status === 'number' ? result.status : null,
+    signal: result.signal || '',
+    stdout,
+    stderr,
+    assetMapPath: resolvedAssetMap
   };
 }
 
@@ -110,8 +198,10 @@ function summaryForReport(report, paths, root = ROOT) {
 function resolveVisualAssetsFromFiles(opts = {}) {
   const normalizedOpts = Object.assign({
     imagegenCapability: 'unavailable',
+    imagegenCommand: process.env.CODEX_IMAGEGEN_COMMAND || '',
     missingAssetAction: 'require_user_input',
     blockedAction: 'require_user_input',
+    imagegenTimeoutMs: Number(process.env.CODEX_IMAGEGEN_TIMEOUT_MS || 240000),
     root: ROOT
   }, opts);
   normalizedOpts.imagegenCapability = String(normalizedOpts.imagegenCapability || 'unavailable').toLowerCase();
@@ -265,6 +355,69 @@ function resolveVisualAssetsFromFiles(opts = {}) {
     }
     report.promptCount = promptPayload.promptCount || 0;
     if (report.promptCount > 0) {
+      if (normalizedOpts.imagegenCommand) {
+        const bridgeRun = runImagegenBridge({
+          commandTemplate: normalizedOpts.imagegenCommand,
+          promptsPath: paths.prompts,
+          assetMapPath: paths.generatedMap,
+          assetsDir: paths.generatedAssetsDir,
+          outDir: paths.outDir,
+          planPath: paths.resolvedPlan,
+          root,
+          timeoutMs: Number(normalizedOpts.imagegenTimeoutMs || 240000)
+        });
+        report.steps.push({
+          label: 'imagegen bridge',
+          command: bridgeRun.command,
+          status: bridgeRun.status,
+          stdout: bridgeRun.stdout,
+          stderr: bridgeRun.stderr
+        });
+        if (bridgeRun.status !== 'pass') {
+          return finish('error', r => {
+            r.nextActions.push('Synthetic asset bridge command failed; inspect visual-asset-resolution.json and bridge stderr.');
+          });
+        }
+        if (!bridgeRun.assetMapPath || !fs.existsSync(bridgeRun.assetMapPath)) {
+          return finish('error', r => {
+            r.nextActions.push('Synthetic asset bridge did not produce an asset mapping JSON.');
+          });
+        }
+        const bindResult = bindGeneratedAssetsFromFiles({
+          planPath: paths.resolvedPlan,
+          mapPath: bridgeRun.assetMapPath,
+          outPath: paths.boundPlan,
+          cwd: process.cwd()
+        });
+        report.steps.push({
+          label: 'asset binding',
+          command: `bindGeneratedAssetsFromFiles(${rel(paths.resolvedPlan, root)}, ${rel(bridgeRun.assetMapPath, root)})`,
+          status: bindResult.errors.length ? 'fail' : 'pass',
+          stdout: JSON.stringify({ boundSlides: bindResult.boundSlides || 0, errors: bindResult.errors || [] }),
+          stderr: ''
+        });
+        report.outputs.assetMap = rel(bridgeRun.assetMapPath, root);
+        if (bindResult.errors.length) {
+          return finish('error', r => {
+            r.errors = bindResult.errors;
+            r.nextActions.push('Synthetic asset mapping was generated, but binding failed; inspect the asset map and bound paths.');
+          });
+        }
+        report.outputs.deckPlan = rel(paths.boundPlan, root);
+        report.boundSlides = bindResult.boundSlides || 0;
+        const postBindGate = buildGate(paths.boundPlan);
+        writeJson(paths.postBindGate, postBindGate);
+        report.outputs.assetGatePostBind = rel(paths.postBindGate, root);
+        if (postBindGate.status !== 'ready') {
+          return finish('needs_image_generation', r => {
+            r.unresolved = postBindGate.questions || [];
+            r.nextActions.push('Synthetic asset bridge completed, but some slides still need bound assets or user choices.');
+          });
+        }
+        return finish('ready', r => {
+          r.nextActions.push('Synthetic assets were generated and bound automatically; render with the bound deck plan.');
+        });
+      }
       return finish('needs_image_generation', r => {
         r.nextActions.push('Generate the listed bitmap assets with an imagegen-capable agent, save them locally, then rerun with --asset-map.');
       });

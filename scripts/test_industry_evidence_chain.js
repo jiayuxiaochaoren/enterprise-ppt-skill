@@ -170,7 +170,7 @@ const saasPermissionGovernance = normalizeSlide({ industry:'saas-technology' }, 
   title:'企业客户采购前必须看清权限、审计和数据边界',
   rows:[['权限边界不清', '高', 'SSO、角色和数据范围同步定义']]
 }, 7, 9);
-assert.equal(saasPermissionGovernance.proofObject, 'permission-governance');
+assert.equal(saasPermissionGovernance.proofObject, 'saas-governance-loop');
 assert.equal(saasPermissionGovernance.componentPlan.componentIds.includes('governance-table'), true);
 assert.equal(saasPermissionGovernance.componentPlan.industryEvidenceChain.coveragePolicy.requiredAny.includes('governance-table'), true);
 
@@ -441,17 +441,49 @@ const peopleMissionStatement = normalizeSlide(
     layoutVariant:'mission-statement-stage',
     proofObject:'mission-statement-stage',
     title:'使命和文化主张需要被具体行为承接',
-    values:[
-      { title:'客户现场', body:'团队把真实场景带回产品决策。' },
-      { title:'共同复盘', body:'跨职能把交付问题转成机制。' }
-    ]
-  },
+	    values:[
+	      { title:'客户现场', body:'团队把真实场景带回产品决策。' },
+	      { title:'共同复盘', body:'跨职能把交付问题转成机制。' }
+	    ],
+	    valueChain:[{ title:'使命' }, { title:'行为' }, { title:'成长' }]
+	  },
   2,
   5
 );
 assert.equal(peopleMissionStatement.componentPlan.industryEvidenceChain.stageId, 'mission-culture-claim');
 assert.equal(peopleMissionStatement.componentPlan.componentIds.includes('content-card-grid'), true);
 assert.equal(peopleMissionStatement.componentPlan.componentIds.includes('value-chain'), false);
+
+const peopleCultureCover = normalizeSlide(
+  { industry:'people-culture-company', title:'文化证据', media:{ cover:'acceptance://people-culture-company/cover.png' } },
+  {
+    type:'cover',
+    layoutVariant:'airy-concept-opening',
+    title:'星火数科文化与组织介绍',
+    subtitle:'用使命、团队证据和价值观行为说明公司为什么值得加入'
+  },
+  0,
+  5
+);
+assert.equal(peopleCultureCover.layoutVariant, 'culture-cover-with-soft-geometry');
+assert.equal(peopleCultureCover.proofObject, 'culture-cover-with-soft-geometry');
+assert.equal(peopleCultureCover.componentPlan.industryEvidenceChain.stageId, 'culture-opening-claim');
+assert.equal(peopleCultureCover.componentPlan.componentIds.includes('hero-image'), true);
+assert.equal(peopleCultureCover.componentPlan.componentIds.includes('commentary-panel'), true);
+
+const peopleGrowthTimeline = normalizeSlide(
+  { industry:'people-culture-company', title:'成长机制' },
+  {
+    type:'timeline',
+    layoutVariant:'closed-loop',
+    title:'新人从入职、跟项目到独立负责有清晰成长路径',
+    phases:[{ title:'入职' }, { title:'跟项目' }, { title:'独立负责' }]
+  },
+  3,
+  5
+);
+assert.equal(peopleGrowthTimeline.componentPlan.industryEvidenceChain.stageId, 'neutral-general');
+assert.equal(peopleGrowthTimeline.componentPlan.componentIds.includes('process-rail'), true);
 
 const peopleClosingAnchor = normalizeSlide(
   { industry:'people-culture-company', title:'组织收口' },
@@ -464,7 +496,7 @@ const peopleClosingAnchor = normalizeSlide(
   5,
   5
 );
-assert.equal(peopleClosingAnchor.componentPlan.industryEvidenceChain.stageId, 'organization-growth-evidence');
+assert.equal(peopleClosingAnchor.componentPlan.industryEvidenceChain.stageId, 'neutral-general');
 assert.equal(peopleClosingAnchor.componentPlan.componentIds.includes('decision-panel'), true);
 assert.equal(peopleClosingAnchor.componentPlan.componentIds.includes('kpi-strip'), false);
 
@@ -729,6 +761,28 @@ const consumerVisualGap = auditIndustryEvidenceChain(consumerMissingVisualStage)
 assert.ok(consumerVisualGap, 'consumer/retail chain should flag missing visual claim stage');
 assert.equal(consumerVisualGap.recommendation.suggestedPage, '产品/品牌/视觉证据页');
 assert.ok(consumerVisualGap.recommendation.requiredFields.some(field => /editorialProof/.test(field)));
+
+const manufacturingChannelEconomics = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  title:'制造业渠道效率证据',
+  slides:[
+    { type:'report-board', proofObject:'report-board', title:'经营底座' },
+    { type:'timeline', layoutVariant:'closed-loop', proofObject:'maintenance-loop', title:'制造交付闭环', phases:[{ title:'需求确认' }, { title:'制造交付' }, { title:'现场验收' }] },
+    {
+      type:'industry-chart',
+      layoutVariant:'channel-efficiency-matrix',
+      proofObject:'channel-efficiency-matrix',
+      title:'渠道预算按效率分层',
+      channelEfficiency:[{ label:'系统集成商·西南', x:85, y:8.7, value:'8.7x', body:'扩张；成交 79 单' }],
+      businessLogic:{ currentState:'高回收样本集中。', impact:'平均加码会稀释高回收样本。' }
+    }
+  ]
+});
+assert.equal(
+  manufacturingChannelEconomics.slides[2].componentPlan.industryEvidenceChain.stageId,
+  'channel-economics-evidence',
+  'manufacturing channel efficiency pages should not fall back to neutral/general'
+);
 
 const consumer = normalizeDeckPlan(fixture.samples[1].plan);
 const requiredAnyAlternativeMeta = renderMetaFor(consumer);

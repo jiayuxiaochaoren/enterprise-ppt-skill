@@ -25,12 +25,12 @@ function createClosingSaasAdoptionCloseRenderer(ctx = {}, helpers = {}) {
   } = createRightSideCardRenderer(ctx);
 
   return function closingSaasAdoptionClose(slide, plan, s, idx) {
-    drawClosingHeader(slide, plan, s, idx, { kicker:'ADOPTION TO REVENUE', titleW:6.90, titleSize:28.5, subtitleY:2.04, subtitleW:6.60 });
+    drawClosingHeader(slide, plan, s, idx, { kicker:'采用到收入', titleW:6.90, titleSize:28.5, subtitleY:2.04, subtitleW:6.60 });
 
     const actions = closingActions(s);
     const board = { x:0.92, y:3.04, w:7.02, h:2.34 };
     addRect(slide, board.x, board.y, board.w, board.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.46} });
-    addLabel(slide, 'CUSTOMER HEALTH PATH', { x:board.x+0.28, y:board.y+0.28, w:1.64, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addLabel(slide, '客户健康路径', { x:board.x+0.28, y:board.y+0.28, w:1.64, h:0.10, fontSize:5.8, color:C.accent, charSpace:0 });
     actions.forEach((a,i)=>{
       const x = board.x + 0.42 + i*2.08;
       const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
@@ -47,9 +47,9 @@ function createClosingSaasAdoptionCloseRenderer(ctx = {}, helpers = {}) {
       railColor:C.accent,
       railTransparency:18
     });
-    addLabel(slide, 'REVENUE SIGNAL', { x:metric.x+0.30, y:metric.y+0.36, w:1.22, h:0.09, fontSize:5.4, color:C.accent, charSpace:0.7 });
-    addText(slide, 'NRR', { x:metric.x+0.30, y:metric.y+0.82, w:1.20, h:0.36, fontFace:profileFont('latin'), fontSize:24.0, bold:true, color:C.accent, fit:'shrink' });
-    addText(slide, 'ADOPTION DEPTH', { x:metric.x+0.32, y:metric.y+1.38, w:1.32, h:0.09, fontSize:5.2, color:'64748B', charSpace:0.65 });
+    addLabel(slide, '收入信号', { x:metric.x+0.30, y:metric.y+0.36, w:1.22, h:0.09, fontSize:5.4, color:C.accent, charSpace:0 });
+    addText(slide, '留存', { x:metric.x+0.30, y:metric.y+0.82, w:1.20, h:0.36, fontFace:profileFont('latin'), fontSize:24.0, bold:true, color:C.accent, fit:'shrink' });
+    addText(slide, '采用深度', { x:metric.x+0.32, y:metric.y+1.38, w:1.32, h:0.09, fontSize:5.2, color:'64748B', charSpace:0 });
     addHairline(slide, metric.x+0.32, metric.y+1.86, 1.10, C.accent, 0, 0.56);
     addText(slide, s.decision || s.note || copyFallback(plan, 'closingNote'), { x:metric.x+0.32, y:metric.y+2.18, w:1.82, h:0.42, fontSize:8.0, bold:true, color:C.captionOnImage, fit:'shrink', breakLine:true });
     actions.slice(0, 3).forEach((a, i) => {

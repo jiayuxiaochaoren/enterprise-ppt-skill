@@ -9,6 +9,17 @@ const {
   createTextReadabilityPolicy
 } = require('./text-readability-policy');
 
+const PUBLIC_COPY_REPLACEMENTS = [
+  [/证据栈/g, '关键依据'],
+  [/证据对象/g, '经营依据'],
+  [/月度脉冲/g, '月度趋势']
+];
+
+function normalizePublicSlideCopy(text) {
+  if (typeof text !== 'string') return text;
+  return PUBLIC_COPY_REPLACEMENTS.reduce((out, [pattern, replacement]) => out.replace(pattern, replacement), text);
+}
+
 function createTextRenderHelpers(deps = {}) {
   const {
     activePlan,
@@ -61,9 +72,10 @@ function createTextRenderHelpers(deps = {}) {
       Number(opts.charSpace || 0) >= 0.55 ||
       /^[A-Z0-9\s./:%+&·→-]+$/.test(rawText.trim())
     );
-    const displayText = microcopyLike && typeof localizeMicrocopy === 'function'
+    const localizedText = microcopyLike && typeof localizeMicrocopy === 'function'
       ? localizeMicrocopy(currentPlan(), rawText, opts)
       : t;
+    const displayText = normalizePublicSlideCopy(String(localizedText == null ? '' : localizedText));
     const PROFILE = currentProfile();
     const C = currentColors();
     let textOpts = Object.assign(
@@ -116,5 +128,6 @@ function createTextRenderHelpers(deps = {}) {
 
 module.exports = {
   containsCjk,
-  createTextRenderHelpers
+  createTextRenderHelpers,
+  normalizePublicSlideCopy
 };

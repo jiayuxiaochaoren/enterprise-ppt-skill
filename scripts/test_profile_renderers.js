@@ -223,6 +223,13 @@ function assertQuoteStageShell(ops) {
     return opts.x === 0.86 && opts.y === 0.94 && opts.w === 1.92 && opts.h === 0.14;
   });
   assert(label, 'expected quote proof kicker to keep original geometry');
+  assert(
+    !ops.some(op => op.name === 'addHairline'
+      && op.args[1] === 0.88
+      && op.args[2] === 3.54
+      && op.args[3] === 0.86),
+    'quote proof should not render a decorative accent hairline under the attribution'
+  );
 }
 
 function assertProfileProofShell(ops) {

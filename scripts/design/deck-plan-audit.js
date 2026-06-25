@@ -1,3 +1,8 @@
+const {
+  isActionLoopProof,
+  normalizeProofObject
+} = require('./proof-taxonomy');
+
 function createDeckPlanAuditHelpers({
   compositionAudit = () => [],
   contentOverlapAudit = () => [],
@@ -49,7 +54,7 @@ function createDeckPlanAuditHelpers({
     if (slides.length >= 6 && genericDefaults.length >= 2) {
       findings.push({ level: 'review', type: 'genericRoute', message: `${genericDefaults.length} slides fell back to the default commercial split` });
     }
-    slides.forEach((slide, i) => {
+	    slides.forEach((slide, i) => {
       const visibleText = flattenText(slide);
       const copyIssues = visibleProductionCopyIssues(visibleText);
       if (copyIssues.length) {
@@ -109,17 +114,69 @@ function createDeckPlanAuditHelpers({
           });
         }
       }
-      const loopText = [slide.title, slide.centerTitle, slide.loopTitle].filter(Boolean).join(' ');
-      const closedLoopOk = slide.type === 'timeline' || slide.layoutVariant === 'responsibility-loop' || slide.layoutVariant === 'flywheel' || slide.layoutVariant === 'closed-loop';
-      const energyLoopOk = plan.industry === 'energy-utility' && ['module-matrix', 'metric-comparison'].includes(slide.type);
-      const loopMetricOnly = /闭环率|闭环指标|闭环数/.test(loopText) && ['metric-comparison', 'industry-chart'].includes(slide.type);
-      if (/闭环|循环|能力环|loop|cycle/i.test(loopText) && !loopMetricOnly && !closedLoopOk && !energyLoopOk && !slide.centerTitle && !['cover', 'closing', 'chapter-divider', 'toc', 'toc-clean'].includes(slide.type)) {
-        findings.push({ slide: i + 1, level: 'review', type: 'loopSemantics', message: 'loop language is present but the slide is not routed to a loop or responsibility grammar' });
+	      const loopText = [slide.title, slide.centerTitle, slide.loopTitle].filter(Boolean).join(' ');
+	      const normalizedProof = normalizeProofObject(
+	        slide.proofObjectNormalized ||
+	        slide.proof_object_normalized ||
+	        slide.proofObject ||
+	        slide.proof_object ||
+	        slide.layoutVariant ||
+	        slide.variant ||
+	        '',
+	        { industry }
+	      );
+	      const closedLoopOk = slide.type === 'timeline' ||
+	        /flywheel|closed-loop/.test(String(slide.layoutVariant || '')) ||
+	        (['risk-table', 'table'].includes(slide.type) && isActionLoopProof(normalizedProof)) ||
+	        /^risk-table:(manufacturing-action-loop|healthcare-quality-loop|saas-governance-loop|generic-action-loop)$/.test(String(slide.renderFamilySelected || slide.render_family_selected || ''));
+	      const energyLoopOk = plan.industry === 'energy-utility' && ['module-matrix', 'metric-comparison'].includes(slide.type);
+	      const loopMetricOnly = /闭环率|闭环指标|闭环数/.test(loopText) && ['metric-comparison', 'industry-chart'].includes(slide.type);
+	      if (/闭环|循环|能力环|loop|cycle/i.test(loopText) && !loopMetricOnly && !closedLoopOk && !energyLoopOk && !slide.centerTitle && !['cover', 'closing', 'chapter-divider', 'toc', 'toc-clean'].includes(slide.type)) {
+	        findings.push({ slide: i + 1, level: 'review', type: 'loopSemantics', message: 'loop language is present but the slide is not routed to a loop or responsibility grammar' });
+	      }
+      if (
+        ['manufacturing-operations', 'healthcare-operations', 'saas-technology'].includes(industry) &&
+        slide.type === 'risk-table' &&
+        (slide.layoutVariant === 'generic-action-loop' || slide.variant === 'generic-action-loop')
+      ) {
+        findings.push({
+          slide: i + 1,
+          level: 'review',
+          type: 'genericActionLoopFallback',
+          message: `${industry} deck should avoid generic-action-loop when industry-specific governance grammar is available`
+        });
       }
-      if (slide.layoutVariant === 'risk-matrix' && !slide.matrix && (!Array.isArray(slide.rows) || slide.rows.length < 3)) {
-        findings.push({ slide: i + 1, level: 'review', type: 'matrixCoordinates', message: 'risk matrix route needs matrix data or at least three positioned risks' });
+	      if (
+	        ['downtime-pareto', 'responsibility-loop', 'permission-governance'].includes(String(slide.layoutVariant || slide.variant || slide.proofObject || '').toLowerCase())
+	      ) {
+        findings.push({
+          slide: i + 1,
+          level: 'review',
+          type: 'legacyProofTaxonomy',
+          message: 'slide still uses a legacy proof/layout id; normalize to the new taxonomy before final delivery'
+        });
       }
-    });
+	      if (slide.layoutVariant === 'risk-matrix' && !slide.matrix && (!Array.isArray(slide.rows) || slide.rows.length < 3)) {
+	        findings.push({ slide: i + 1, level: 'review', type: 'matrixCoordinates', message: 'risk matrix route needs matrix data or at least three positioned risks' });
+	      }
+	      if (
+	        generation.mustBind === true &&
+	        generation.status === 'required' &&
+	        !(
+	          slide.image ||
+	          (slide.visual && slide.visual.image) ||
+	          (Array.isArray(slide.images) && slide.images.length) ||
+	          (Array.isArray(slide.visual && slide.visual.images) && slide.visual.images.length)
+	        )
+	      ) {
+	        findings.push({
+	          slide: i + 1,
+	          level: 'fail',
+	          type: 'unboundGeneratedAsset',
+	          message: 'render-meta still requires a bound generated asset, but no asset is bound for this slide'
+	        });
+	      }
+	    });
     const last = slides[slides.length - 1] || {};
     const allVisibleText = flattenText({ title: plan.title, organization: plan.organization, contacts: plan.contacts, slides });
     const isCompanyIntro = /company-intro|公司介绍|能力介绍|企业介绍/i.test(String((plan.materialIntelligence && plan.materialIntelligence.pptType) || plan.ppt_type || plan.title || ''));

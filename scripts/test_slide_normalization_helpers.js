@@ -32,10 +32,19 @@ const helpers = createSlideNormalizationHelpers({
     : JSON.stringify(value),
   generatedAssetPolicy: (plan, slide) => ({ status:slide.assetStatus || 'none' }),
   generatedAssetPrompt: () => 'GENERATED PROMPT',
-  highValuePageFamilies: new Set(['bad-proof']),
+  highValuePageFamilies: new Set(['bad-proof', 'culture-cover-with-soft-geometry']),
+  industryPackFor: plan => ({
+    'people-culture-company': { coverArchetype:'culture-soft-cover', dividerArchetype:'culture-sequence-divider' },
+    'government-public-sector': { coverArchetype:'civic-executive-cover', dividerArchetype:'governance-briefing-divider' },
+    'manufacturing-operations': { coverArchetype:'native-industrial-structure-cover', dividerArchetype:'industrial-structure-divider' }
+  }[plan.industry] || null),
   layoutVariantCompatibleWithType: (type, variant) => !['bad-variant', 'bad-proof'].includes(variant),
   palettes: { dark:{ presentation:{ coverTone:'dark' } } },
-  pickLayoutVariant: (plan, slide) => slide.pickedVariant,
+  pickLayoutVariant: (plan, slide, type) => {
+    if (slide.pickedVariant !== undefined) return slide.pickedVariant;
+    if ((type === 'cover' || slide.forceType === 'cover') && plan.industry === 'manufacturing-operations') return '';
+    return undefined;
+  },
   recipeCompatibleWithSlideType: () => true,
   recommendSlideType: (plan, slide) => ({ type:slide.forceType || slide.type || 'executive-blocks', reason:'fixture route' }),
   routeChartSpec: () => ({ version:'chartSpec/v1', kind:'bar' }),
@@ -96,6 +105,38 @@ assert.deepEqual(
 assert.ok(sanitizedRouteInput.routeSanitization.staleForRoute.some(item => item.field === 'componentPlan' && item.resolution === 'recomputed'));
 assert.equal(sanitizedRouteInput.routedInput.previousChartSpec.kind, 'bar');
 assert.equal(sanitizedRouteInput.routedInput.componentPlan, undefined);
+
+const sanitizedManufacturingCover = routeSanitizationHelpers.sanitizeRouteInput({
+  finalized:true,
+  industry:'manufacturing-operations',
+  coverArchetype:'native-industrial-structure-cover'
+}, {
+  type:'cover',
+  layoutVariant:'airy-concept-opening',
+  variant:'airy-concept-opening'
+}, { type:'cover' });
+assert.deepEqual(
+  sanitizedManufacturingCover.routeSanitization.removed.map(item => item.field),
+  ['layoutVariant', 'variant']
+);
+assert.ok(
+  sanitizedManufacturingCover.routeSanitization.removed.every(item => /industry-specific structural archetype/.test(item.reason)),
+  'manufacturing cover should strip stale generic opening variants before recompute'
+);
+
+const sanitizedManufacturingClosing = routeSanitizationHelpers.sanitizeRouteInput({
+  finalized:true,
+  industry:'manufacturing-operations',
+  closingArchetype:'decision-rollout-close'
+}, {
+  type:'closing',
+  layoutVariant:'premium-closing-anchor',
+  variant:'premium-closing-anchor'
+}, { type:'closing' });
+assert.deepEqual(
+  sanitizedManufacturingClosing.routeSanitization.removed.map(item => item.field),
+  ['layoutVariant', 'variant']
+);
 
 const sanitized = helpers.normalizeSlide({ finalized:true }, {
   forceType:'report-board',
@@ -222,6 +263,34 @@ assert.equal(resolvedSkipAssetDecision.assetGeneration.status, 'none');
 assert.equal(resolvedSkipAssetDecision.assetGeneration.decisionSource, 'asset-decision-gate/v1');
 assert.equal(resolvedSkipAssetDecision.generatedAssetPrompt, undefined);
 
+const explicitManufacturingCoverStyle = helpers.normalizeSlide({}, {
+  forceType:'cover',
+  type:'cover',
+  title:'制造经营复盘',
+  subtitle:'产线交付与渠道效率的增长路径',
+  coverStyle:'industrial-command-cover',
+  coverStyleSource:'slide',
+  compositionPlan:{ version:'composition-plan/v1', themeIntent:'stale-cover', staleMarker:true },
+  assetGeneration:{
+    decisionSource:'asset-decision-gate/v1',
+    status:'required',
+    role:'showcase',
+    resolvedRole:'showcase',
+    mustBind:true,
+    reason:'user chose automatic synthetic asset generation'
+  },
+  generatedAssetPrompt:'SMART MANUFACTURING HERO'
+}, 0, 1);
+assert.equal(explicitManufacturingCoverStyle.coverStyle, 'industrial-command-cover');
+assert.equal(explicitManufacturingCoverStyle.coverStyleSource, 'slide');
+assert.equal(explicitManufacturingCoverStyle.previousCompositionPlan.staleMarker, true);
+assert.equal(explicitManufacturingCoverStyle.assetGeneration.status, 'required');
+assert.equal(explicitManufacturingCoverStyle.generatedAssetPrompt, 'SMART MANUFACTURING HERO');
+assert.ok(
+  explicitManufacturingCoverStyle.routeSanitization.removed.every(item => item.field !== 'coverStyle'),
+  'authoritative coverStyle should survive composition recompute'
+);
+
 const metric = helpers.normalizeSlide({}, {
   forceType:'metric-comparison',
   title:'指标页',
@@ -235,5 +304,38 @@ assert.equal(metric.chartSpec.version, 'chartSpec/v1');
 assert.equal(metric.chartSpecInferred, true);
 assert.equal(metric.themeIntent, 'value-signal');
 assert.equal(metric.accentRole, 'data');
+
+const normalizedGovernmentDivider = helpers.normalizeSlide({ industry:'government-public-sector' }, {
+  forceType:'toc-clean',
+  type:'toc-clean',
+  layoutVariant:'chapter-hero',
+  title:'阅读路径',
+  items:['政策来源', '资源地图', '推进机制']
+}, 1, 3);
+assert.equal(normalizedGovernmentDivider.layoutVariant, 'board-briefing');
+assert.equal(normalizedGovernmentDivider.previousLayoutVariant, 'chapter-hero');
+
+const normalizedManufacturingCover = helpers.normalizeSlide({ industry:'manufacturing-operations' }, {
+  forceType:'cover',
+  type:'cover',
+  layoutVariant:'airy-concept-opening',
+  title:'恒越精工能力介绍'
+}, 0, 1);
+assert.equal(normalizedManufacturingCover.layoutVariant, '');
+assert.equal(normalizedManufacturingCover.variant, '');
+assert.equal(normalizedManufacturingCover.previousLayoutVariant, 'airy-concept-opening');
+
+const normalizedPeopleCultureCover = helpers.normalizeSlide({ industry:'people-culture-company' }, {
+  forceType:'cover',
+  type:'cover',
+  layoutVariant:'airy-concept-opening',
+  title:'星火数科文化与组织介绍',
+  subtitle:'用使命、团队证据和价值观行为说明公司为什么值得加入'
+}, 0, 1);
+assert.equal(normalizedPeopleCultureCover.layoutVariant, 'culture-cover-with-soft-geometry');
+assert.equal(normalizedPeopleCultureCover.variant, 'culture-cover-with-soft-geometry');
+assert.equal(normalizedPeopleCultureCover.previousLayoutVariant, 'airy-concept-opening');
+assert.equal(normalizedPeopleCultureCover.proofObject, 'culture-cover-with-soft-geometry');
+assert.equal(normalizedPeopleCultureCover.renderFamilySelected, 'cover:culture-cover-with-soft-geometry');
 
 console.log('slide normalization helpers ok');

@@ -356,6 +356,50 @@ function main() {
   assertStrategyFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 45, 'expected strategy text output');
 
+  const publicOps = [];
+  createStrategyRenderers(createFakeCtx(publicOps)).strategyMap(createSlide(publicOps), { industry:'government-public-sector' }, strategySection({
+    layoutVariant:'governance-operating-model',
+    title:'治理模型明确管委会、平台公司和服务专班的责任',
+    claim:'治理模型明确管委会、平台公司和服务专班的责任',
+    drivers:['招商线索', '项目准入', '企业服务'],
+    actions:['联席评审', '专班推进', '月度复盘'],
+    outcomes:['责任清晰', '项目可追踪', '风险可预警']
+  }), 6);
+  ['治理模型', '治理输入', '治理线索', '治理动作', '推进动作', '推进结果', '治理结果', '把输入转成可审议、可推进、可月度复盘的治理动作。'].forEach(text => {
+    assert(publicOps.some(op => op.args.includes(text)), `expected government strategy copy ${text}`);
+  });
+  ['GOVERNANCE MODEL', 'OPERATING MODEL', '关键输入', '结果信号', '运营动作'].forEach(text => {
+    assert(!publicOps.some(op => op.args.includes(text)), `government governance model should not leak English label ${text}`);
+  });
+
+  const lifestyleOps = [];
+  createStrategyRenderers(createFakeCtx(lifestyleOps)).strategyMap(createSlide(lifestyleOps), { industry:'lifestyle-food-tourism-fashion' }, strategySection({
+    layoutVariant:'scene-conversion-board',
+    title:'场景经营看板把空间、活动、内容和供应链连起来',
+    drivers:['空间场景', '主题活动', '社交内容'],
+    actions:['路线设计', '商户联动', '会员权益'],
+    outcomes:['停留变长', '连带提升', '复游改善']
+  }), 7);
+  ['场景转化链路', '场景输入', '体验场景', '体验编排', '经营结果', '复游信号', '场景供给、体验编排与复游结果要沿同一条经营链路复盘。'].forEach(text => {
+    assert(lifestyleOps.some(op => op.args.includes(text)), `expected lifestyle strategy copy ${text}`);
+  });
+  ['INPUT', 'OPERATING MODEL', 'OUTCOME'].forEach(text => {
+    assert(!lifestyleOps.some(op => op.args.includes(text)), `lifestyle scene conversion should not leak generic label ${text}`);
+  });
+
+  const generalOps = [];
+  createStrategyRenderers(createFakeCtx(generalOps)).strategyMap(createSlide(generalOps), { industry:'general-operations' }, strategySection({
+    variant:'value-creation-process-map',
+    title:'价值创造链路从资源投入延伸到可验证经营结果',
+    claim:'综合报告页要把投入、活动、产出和结果放在一条可读流向上。'
+  }), 8);
+  ['经营价值流程', '资源输入', '协同动作', '阶段产出', '结果回报', '经营说明'].forEach(text => {
+    assert(generalOps.some(op => op.args.includes(text)), `expected general-operations strategy copy ${text}`);
+  });
+  ['VALUE CREATION PROCESS', 'INPUT', 'ACTIVITY', 'OUTPUT', 'OUTCOME', 'PROOF NOTE'].forEach(text => {
+    assert(!generalOps.some(op => op.args.includes(text)), `general-operations value process should not leak generic label ${text}`);
+  });
+
   console.log('strategy renderers ok');
 }
 

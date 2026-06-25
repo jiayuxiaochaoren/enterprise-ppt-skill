@@ -5,7 +5,8 @@ const {
 function createCoverLightEditorialProofPanel(ctx = {}, deps = {}) {
   const {
     colors,
-    fileExists
+    fileExists,
+    shouldUseCoverImage
   } = deps;
   const {
     drawRightSideCard
@@ -14,7 +15,9 @@ function createCoverLightEditorialProofPanel(ctx = {}, deps = {}) {
   function drawLightEditorialProofPanel(slide, plan, s, insight, panel, companyIntro) {
     const C = colors();
     const design = ctx.designForSlide(plan, s, 'cover');
-    const hasPanelImage = design.imagePath && fileExists(design.imagePath);
+    const hasPanelImage = design.imagePath &&
+      fileExists(design.imagePath) &&
+      (!shouldUseCoverImage || shouldUseCoverImage(s, design, { requireTrustedEvidence:true }));
     if (hasPanelImage) {
       const card = drawRightSideCard(slide, {}, {
         fill:panel,

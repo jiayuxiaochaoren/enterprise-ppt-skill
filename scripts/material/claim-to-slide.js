@@ -2,6 +2,14 @@ const {
   cleanPublicNote
 } = require('./common');
 const {
+  chartCoreTitleForProof,
+  displayCopyFromClaim,
+  isActionLoopProof,
+  normalizeProofObject,
+  normalizeVisibleCopyText,
+  renderFamilyForProof
+} = require('../design/proof-taxonomy');
+const {
   attachMetricSourceTrace,
   businessLogicFromClaim,
   chartFieldForProof,
@@ -17,6 +25,24 @@ const {
   proofObjectForClaim,
   sourceTraceForClaim
 } = require('./source-trace');
+
+function normalizeParetoVisibleCopy(text = '', proof = '') {
+  return normalizeVisibleCopyText(text, { proof });
+}
+
+function compactChartCoreTitle(title = '', proof = '') {
+  const raw = normalizeParetoVisibleCopy(title, proof);
+  const fallback = chartCoreTitleForProof(proof);
+  if (!raw) return fallback;
+  if (raw.length <= 18) return raw;
+  const clauses = raw
+    .replace(/[：:]/g, '：')
+    .split(/[：，。,；;|｜]/)
+    .map(part => String(part || '').trim())
+    .filter(Boolean);
+  const compact = clauses.find(part => part.length >= 4 && part.length <= 12);
+  return compact || fallback;
+}
 
 function manufacturingServiceScopeSlideFromClaim(claim = {}) {
   const bullets = textItems(claim.bullets, ['非标输送设备', '涂装设备', '控制系统', '现场安装调试']).map(item => item.title).filter(Boolean);
@@ -216,9 +242,16 @@ function slideFromCompanyIntroClaim(claim = {}, extraction = {}, bundle = {}, in
 }
 
 function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
-  const proof = String(claim.proof_object || '').toLowerCase();
-  const title = claim.claim || claim.title || '核心判断';
-  const subtitle = claim.support || claim.summary || '';
+  const displayCopy = displayCopyFromClaim(claim);
+  const rawProof = claim.proof_object || claim.proofObject || claim.layoutVariant || claim.variant || '';
+  const proof = normalizeProofObject(rawProof, {
+    text: claimVisibleText(claim),
+    proofIntent: claim.proof_intent || claim.proofIntent,
+    displayCopy,
+    slide: claim
+  });
+  const title = normalizeVisibleCopyText(displayCopy.title || claim.claim || claim.title || '核心判断', { proof });
+  const subtitle = normalizeVisibleCopyText(displayCopy.subtitle || claim.support || claim.summary || '', { proof });
   const images = imagesForClaim(claim, extraction, bundle);
   const metrics = metricsFromClaim(claim);
   const sourceTrace = sourceTraceForClaim(claim, extraction, bundle);
@@ -227,9 +260,15 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
     title,
     subtitle,
     claim: subtitle,
-    proofObject: claim.proof_object || claim.proofObject || '',
+    proofObject: proof || rawProof || '',
+    proofObjectNormalized: proof || '',
+    proof_object_normalized: proof || '',
+    originalProofObject: proof && rawProof && proof !== String(rawProof).toLowerCase() ? rawProof : undefined,
+    renderFamilySelected: renderFamilyForProof(proof),
+    render_family_selected: renderFamilyForProof(proof),
+    displayCopy,
     proof: proofObjectForClaim(claim, extraction, bundle, { sourceTrace }),
-    note: cleanPublicNote(claim.note || ''),
+    note: cleanPublicNote(normalizeVisibleCopyText(displayCopy.note || claim.note || '', { proof })),
     sourceTrace
   };
   if (metrics.length) slide.metrics = metrics.map(metric => attachMetricSourceTrace(metric, sourceTrace));
@@ -303,9 +342,14 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
 
   const chartField = chartFieldForProof(proof);
   if (chartField) {
+    const visibleTitle = normalizeParetoVisibleCopy(title, proof);
     slide[chartField] = claim.data && Object.keys(claim.data).length ? claim.data : metrics.map(m => ({ title: m.label, value: parseFloat(String(m.value).replace(/[^\d.-]/g, '')) || 0, body: m.note || '', unit: /%|％/.test(String(m.value)) ? '%' : '' }));
-    slide.coreTitle = title.length > 18 ? String(proof).replace(/-/g, ' ').toUpperCase() : title;
-    slide.coreBody = subtitle || '把关键行业指标转化为可核验的判断依据。';
+    slide.title = visibleTitle;
+    slide.coreTitle = normalizeParetoVisibleCopy(
+      displayCopy.core_title || claim.coreTitle || claim.core_title || compactChartCoreTitle(visibleTitle, proof),
+      proof
+    );
+    slide.coreBody = normalizeVisibleCopyText(displayCopy.core_body || claim.coreBody || claim.core_body || subtitle || '把关键行业指标转化为可核验的判断依据。', { proof });
     return slide;
   }
   if (proof.includes('finance-bridge') || proof.includes('return-bridge')) {
@@ -317,12 +361,12 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
   }
   if (proof === 'report-board' || proof.includes('report-board')) {
     slide.type = 'report-board';
-    slide.label = claim.label || '证据看板';
-    slide.coreTitle = claim.coreTitle || claim.core_title || '材料证据';
-    slide.coreBody = claim.coreBody || claim.core_body || subtitle;
+    slide.label = normalizeVisibleCopyText(displayCopy.kicker || claim.label || '证据看板', { proof });
+    slide.coreTitle = normalizeVisibleCopyText(displayCopy.core_title || claim.coreTitle || claim.core_title || '材料证据', { proof });
+    slide.coreBody = normalizeVisibleCopyText(displayCopy.core_body || claim.coreBody || claim.core_body || subtitle, { proof });
     slide.summary = claim.summary || subtitle;
     slide.decision = claim.decision || '';
-    slide.note = cleanPublicNote(claim.note || '');
+    slide.note = cleanPublicNote(normalizeVisibleCopyText(displayCopy.note || claim.note || '', { proof }));
     slide.sections = Array.isArray(claim.sections) && claim.sections.length
       ? claim.sections
       : textItems(claim.cards || claim.bullets, [subtitle || title]).map((it, i) => Object.assign({}, it, {
@@ -359,12 +403,14 @@ function slideFromClaim(claim = {}, extraction = {}, bundle = {}) {
     }
     return slide;
   }
-  if (proof.includes('risk') || proof.includes('governance') || proof.includes('responsibility') || claim.narrative_role === 'governance') {
+  if (proof.includes('risk') || proof.includes('governance') || isActionLoopProof(proof) || claim.narrative_role === 'governance') {
     slide.headers = ['风险/责任项', '等级/角色', '应对动作'];
     slide.rows = tableRowsFromClaim(claim);
     if (proof.includes('matrix')) slide.matrix = claim.matrix || { x: '影响程度', y: '发生可能性' };
-    if (proof.includes('responsibility')) {
-      slide.variant = 'responsibility-loop';
+    if (isActionLoopProof(proof)) {
+      slide.variant = proof;
+      slide.layoutVariant = proof;
+      slide.renderFamilySelected = renderFamilyForProof(proof);
       slide.responsibilities = Array.isArray(claim.responsibilities) && claim.responsibilities.length
         ? claim.responsibilities
         : textItems(claim.bullets).map((it, i) => ({ title: it.title, owner: ['业务', '技术', '管理层'][i] || '负责人', body: it.body }));

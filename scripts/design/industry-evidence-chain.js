@@ -105,6 +105,20 @@ function scoreStage(stage = {}, slide = {}) {
   };
 }
 
+function stageVariantForMatch(stage = {}, best = {}, slide = {}) {
+  const variants = stage.variantsByProofObject || stage.variants_by_proof_object || {};
+  if (!variants || typeof variants !== 'object' || Array.isArray(variants)) return stage;
+  const proofObject = normalizeKey(proofObjectIdForSlide(slide));
+  const keys = compactUnique([proofObject, ...(best.matchedProofObjects || [])].map(normalizeKey).filter(Boolean));
+  const variant = keys.map(key => variants[key]).find(value => value && typeof value === 'object' && !Array.isArray(value));
+  if (!variant) return stage;
+  return Object.assign({}, stage, variant, {
+    position: variant.position || stage.position,
+    variantsByProofObject: stage.variantsByProofObject,
+    variants_by_proof_object: stage.variants_by_proof_object
+  });
+}
+
 function confidenceForScore(score = 0) {
   if (score >= 7) return 'high';
   if (score >= 4) return 'medium';
@@ -156,7 +170,10 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
   if (['toc', 'toc-clean', 'chapter-divider'].includes(type)) {
     return neutralEvidenceChain(`${type} slide is owned by the native navigation renderer`);
   }
-  if (['cover', 'cover-dark', 'closing'].includes(type) && (!explicitProofRoute || slide.proofObjectInferred)) {
+  if (['closing', 'closing-dark'].includes(type)) {
+    return neutralEvidenceChain(`${type} slide is owned by the native closing renderer`);
+  }
+  if (['cover', 'cover-dark'].includes(type) && (!explicitProofRoute || slide.proofObjectInferred)) {
     return neutralEvidenceChain(`${type} slide has no explicit proof route; skipped industry evidence-chain inference`);
   }
   const layoutVariant = normalizeKey(slide.layoutVariant || slide.layout_variant || slide.variant);
@@ -188,7 +205,7 @@ function inferIndustryEvidenceChain(plan = {}, slide = {}, opts = {}) {
     }
     return neutralEvidenceChain(`${chain.label} chain has insufficient route/proof/field evidence`);
   }
-  const stage = best.stage;
+  const stage = stageVariantForMatch(best.stage, best, slide);
   const rawCoveragePolicy = normalizeStageCoveragePolicy(stage);
   const visibleSources = visibleSourceNotesEnabled(plan, opts);
   const activeCoveragePolicy = activateCoveragePolicyConditions(rawCoveragePolicy, { visibleSources });

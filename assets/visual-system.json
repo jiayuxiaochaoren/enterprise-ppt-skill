@@ -34,7 +34,7 @@
       "imageTreatment": "inspectable-showcase-frame",
       "chartPalette": ["2F6FDB", "1B9AAA", "E6A23C"],
       "assetPolicy": "real-or-generated",
-      "assetPromptIntent": "premium report stack, board review documents, data evidence pages, editorial still life, clean left-side text-safe zone, no readable text, no logos, no watermark",
+      "assetPromptIntent": "premium report stack, board review documents, data evidence pages, editorial still life, clean left-side text-safe zone, no readable text, no logos, no watermark, avoid wireframe dividers, placeholder dashboard bars, centered horizontal rules, timeline connectors, chart axes, and faux document header lines",
       "contentPageTokens": { "surfaceFill": "F8F9FB", "panelFill": "FFFFFF", "text": "172033", "body": "4B5563", "muted": "7A8699", "line": "DEE5EF", "accent": "2F6FDB", "secondary": "1B9AAA" }
     },
     "industrial-swiss-line": {
@@ -52,6 +52,21 @@
       "assetPromptIntent": "photorealistic robotic production line or precision manufacturing scene, right-side equipment protagonist, pale steel editorial field, no readable text, no logos, no watermark",
       "contentPageTokens": { "surfaceFill": "F4F6F4", "panelFill": "FFFFFB", "text": "12212B", "body": "465866", "muted": "697987", "line": "D8E2E8", "accent": "005288", "secondary": "E36C14" }
     },
+    "industrial-command-cover": {
+      "paletteName": "factory-steel-amber",
+      "coverTone": "dark",
+      "coverMotif": "factory-command-stage",
+      "rendererFlavor": "image-led-left-copy",
+      "imageRole": "background",
+      "titleBreak": "none",
+      "backgroundPolicy": "dark-industrial-hero",
+      "contentDensity": "medium",
+      "imageTreatment": "graded-atmosphere",
+      "chartPalette": ["005288", "E36C14", "3D7B71"],
+      "assetPolicy": "real-or-generated",
+      "assetPromptIntent": "photorealistic smart manufacturing hero scene with robotic cell, precision fixtures, steel surfaces and subtle amber status lights, strong right-side spatial depth, calm left text-safe zone, no readable text, no logos, no watermark, avoid centered horizontal rules, crosshair guide lines, floating dashboard bars, or split-screen masks",
+      "contentPageTokens": { "surfaceFill": "F4F6F4", "panelFill": "FFFFFB", "text": "12212B", "body": "465866", "muted": "697987", "line": "D8E2E8", "accent": "005288", "secondary": "E36C14" }
+    },
     "tactical-telemetry-risk": {
       "paletteName": "signal-charcoal",
       "coverTone": "dark",
@@ -64,7 +79,7 @@
       "imageTreatment": "graded-atmosphere",
       "chartPalette": ["FF473D", "2DD4BF", "00A3FF"],
       "assetPolicy": "real-or-generated",
-      "assetPromptIntent": "dark risk command center with telemetry screens and red/green signals, credible enterprise operations room, clean left text-safe zone, no readable text, no logos, no watermark",
+      "assetPromptIntent": "dark risk command center with telemetry screens and red/green signals, credible enterprise operations room, clean left text-safe zone, no readable text, no logos, no watermark, avoid long centered guide lines, placeholder UI stripes, underlines, and synthetic dashboard bars floating across the frame",
       "contentPageTokens": { "surfaceFill": "F5F7FA", "panelFill": "FFFFFF", "text": "111827", "body": "4B5563", "muted": "6B7280", "line": "D8DEE8", "accent": "DC2626", "secondary": "0F766E" }
     },
     "brand-system-board": {
@@ -154,7 +169,7 @@
       "imageTreatment": "graded-atmosphere",
       "chartPalette": ["66D7FF", "F59E0B", "8B5CF6"],
       "assetPolicy": "real-or-generated",
-      "assetPromptIntent": "dark enterprise architecture blueprint studio with glass table, luminous platform diagrams and server-room depth, clean left text-safe zone, no readable text, no logos, no watermark",
+      "assetPromptIntent": "dark enterprise architecture blueprint studio with glass table, luminous platform diagrams and server-room depth, clean left text-safe zone, no readable text, no logos, no watermark, avoid wireframe placeholder bars, centered divider rules, long horizontal guide lines, and repeated UI stripe rows",
       "contentPageTokens": { "surfaceFill": "F7FAFD", "panelFill": "FFFFFF", "text": "111827", "body": "475569", "muted": "64748B", "line": "E2E8F0", "accent": "3B82F6", "secondary": "22D3EE" }
     }
   },
@@ -1137,7 +1152,7 @@
         "architecture": ["patient-journey-band", "service-blueprint-lane", "frontstage-backstage-tag"],
         "timeline": ["patient-journey-band", "handoff-checkpoint"],
         "value": ["quality-scorecard", "sla-chip"],
-        "risk": ["responsibility-loop", "quality-risk-tag"],
+        "risk": ["healthcare-quality-loop", "quality-risk-tag"],
         "closing": ["care-loop-anchor", "contact-block"]
       },
       "colorCarriers": {
@@ -1145,7 +1160,7 @@
         "architecture": ["service-lane-fill"],
         "timeline": ["handoff-checkpoint"],
         "value": ["quality-scorecard"],
-        "risk": ["responsibility-loop"]
+        "risk": ["healthcare-quality-loop"]
       },
       "avoidComponents": ["equipment-nameplate", "technical-ruler", "lookbook-frame"]
     },

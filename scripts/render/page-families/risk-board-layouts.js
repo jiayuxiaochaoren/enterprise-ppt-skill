@@ -11,8 +11,8 @@ const {
   createRiskBoardMatrixRenderer
 } = require('./risk-board-matrix-layout');
 const {
-  createRiskBoardResponsibilityLayoutRenderers
-} = require('./risk-board-responsibility-layouts');
+  createRiskBoardActionLayoutRenderers
+} = require('./risk-board-action-layouts');
 const {
   createRiskBoardTableRenderer
 } = require('./risk-board-table-layout');
@@ -43,8 +43,8 @@ const riskMatrixSlide = createRiskBoardMatrixRenderer(ctx, {
 });
 const {
   riskControlStack,
-  riskResponsibilityLoop
-} = createRiskBoardResponsibilityLayoutRenderers(ctx, {
+  riskActionLoop
+} = createRiskBoardActionLayoutRenderers(ctx, {
   drawRiskBoardFooter,
   drawRiskLightHeader
 });
@@ -60,7 +60,9 @@ function riskAdaptive(slide, plan, s, idx) {
   if (variant === 'governance-table-editorial') return governanceRenderers.governanceTableEditorial(slide, plan, s, idx);
   if (variant === 'risk-matrix') return riskMatrixSlide(slide, plan, s, idx);
   if (variant === 'control-stack') return riskControlStack(slide, plan, s, idx);
-  if (variant === 'responsibility-loop') return riskResponsibilityLoop(slide, plan, s, idx);
+  if (['manufacturing-action-loop', 'healthcare-quality-loop', 'saas-governance-loop', 'generic-action-loop'].includes(variant)) {
+    return riskActionLoop(slide, plan, s, idx);
+  }
   return riskTable(slide, plan, s, idx);
 }
 
@@ -68,7 +70,7 @@ function riskAdaptive(slide, plan, s, idx) {
     riskAdaptive,
     riskControlStack,
     riskMatrixSlide,
-    riskResponsibilityLoop,
+    riskActionLoop,
     riskTable
   }, governanceRenderers);
 }

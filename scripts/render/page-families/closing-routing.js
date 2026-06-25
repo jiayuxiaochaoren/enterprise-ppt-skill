@@ -1,5 +1,5 @@
 const THANK_YOU_RE = /谢谢|感谢|联系|交流|观看|答疑|Q&A|thank|thanks/i;
-const COMPANY_THANKS_VARIANTS = new Set(['company-thanks', 'thank-you', 'thanks', 'simple-end', 'end']);
+const COMPANY_THANKS_VARIANTS = new Set(['company-thanks', 'contact-closing', 'thank-you', 'thanks', 'simple-end', 'end']);
 const SIMPLE_END_VARIANTS = new Set(['simple-end', 'end']);
 const THANK_YOU_VARIANTS = new Set(['thank-you', 'thanks']);
 
@@ -9,7 +9,10 @@ const CLOSING_VARIANT_RENDERER_KEYS = {
   'investment-decision': 'closingFinanceInvestmentDecision',
   'quality-handoff': 'closingHealthcareQualityHandoff',
   'adoption-close': 'closingSaasAdoptionClose',
-  'decision-summary': 'closingDecisionSummary'
+  'decision-summary': 'closingDecisionSummary',
+  'experience-rollout': 'closingEditorialLight',
+  'governance-next-step': 'closingDecisionBoard',
+  'contact-closing': 'premiumClosingAnchor'
 };
 
 function closingTextForSlide(slide = {}) {

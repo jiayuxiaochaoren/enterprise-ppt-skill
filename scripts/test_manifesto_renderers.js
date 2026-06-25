@@ -157,6 +157,30 @@ function assertDarkManifestoStageShells(ops) {
     });
     assert.strictEqual(opts.color, '0891B2', `${label} color should be preserved`);
   });
+
+  assert(
+    !ops.some(op => op.name === 'addHairline'
+      && op.args[1] === 0.88
+      && op.args[2] === 3.54
+      && op.args[3] === 0.86),
+    'manifesto pages should not render a decorative mid-page accent hairline'
+  );
+  assert(
+    !ops.some(op => op.name === 'addRect'
+      && op.args[1] === 0.88
+      && op.args[2] === 3.30
+      && op.args[3] === 0.94
+      && op.args[4] === 0.05),
+    'mission stage should not render a decorative accent bar below the subtitle'
+  );
+  assert(
+    !ops.some(op => op.name === 'addRect'
+      && op.args[1] === 1.96
+      && op.args[2] === 3.30
+      && op.args[3] === 0.34
+      && op.args[4] === 0.05),
+    'mission stage should not render a decorative cyan bar below the subtitle'
+  );
 }
 
 function assertManifestoFooters(ops) {

@@ -50,6 +50,7 @@ function createCorePlanningAssembly(deps = {}) {
     contentSignals,
     flattenText,
     industryDesignDialect,
+    industryPackFor,
     industryVisualPolicy,
     slideRole,
     visualSystem
@@ -72,6 +73,7 @@ function createCorePlanningAssembly(deps = {}) {
     explicitArtValue,
     flattenText,
     industryDesignDialect,
+    industryPackFor,
     normalizeAssetRole,
     palettes,
     selectPaletteName,

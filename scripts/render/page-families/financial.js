@@ -14,6 +14,9 @@ const {
 const {
   createMetricComparisonRenderer
 } = require('./financial-metric-comparison');
+const {
+  createPeopleCultureGrowthBoard
+} = require('./metric-comparison-people-culture');
 
 const types = [
   'metric-comparison',
@@ -42,6 +45,7 @@ function createFinancialRenderers(ctx = {}) {
   const {
     industryChartSlide
   } = createFinancialIndustryRenderers(ctx, { retailMemberGrowthBoard });
+  const peopleCultureGrowthBoard = createPeopleCultureGrowthBoard(ctx);
   const metricComparison = createMetricComparisonRenderer(ctx, {
     chartGridWithCommentary,
     financeMetricDashboard,
@@ -49,6 +53,7 @@ function createFinancialRenderers(ctx = {}) {
     industryChartSlide,
     healthcareServiceScorecard,
     manufacturingOeeBoard,
+    peopleCultureGrowthBoard,
     quarterlyResultsSummary,
     retailMemberGrowthBoard,
     saasAdoptionRevenueBoard

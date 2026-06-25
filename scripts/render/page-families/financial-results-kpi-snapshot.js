@@ -19,6 +19,13 @@ function createFinancialKpiSnapshot(ctx = {}, deps = {}) {
     drawResultsHeader
   } = deps;
 
+  function splitPrimaryMetricValue(value) {
+    const text = String(value == null ? '-' : value).trim();
+    const match = text.match(/^([+-]?\d+(?:\.\d+)?)([\u4e00-\u9fa5A-Za-z%％/]+)$/);
+    if (!match) return { value:text, unit:'' };
+    return { value:match[1], unit:match[2] };
+  }
+
   return function financialKpiSnapshot(slide, plan, s, idx) {
     const header = drawResultsHeader(slide, s, idx, {
       kicker:'FINANCIAL KPI SNAPSHOT',
@@ -44,13 +51,46 @@ function createFinancialKpiSnapshot(ctx = {}, deps = {}) {
     const hero = { x:0.92, y:contentY, w:4.18, h:Math.max(3.76, 4.16 - yDelta) };
     addRect(slide, hero.x, hero.y, hero.w, hero.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
     addLabel(slide, 'PRIMARY KPI', { x:hero.x+0.34, y:hero.y+0.38, w:1.16, h:0.10, fontSize:6.4, color:C.accent, charSpace:0.8 });
-    addText(slide, primary.label || '核心指标', { x:hero.x+0.34, y:hero.y+0.86, w:1.64, h:0.16, fontSize:10.0, bold:true, color:'CBD5E1', fit:'shrink' });
-    addNumber(slide, primary.value || '-', { x:hero.x+0.30, y:hero.y+1.28, w:2.80, h:0.80, fontSize:48, color:C.white, fit:'shrink' });
-    addText(slide, primary.note || '主指标必须直接服务董事会的第一判断。', { x:hero.x+0.36, y:hero.y+2.42, w:2.74, h:0.46, fontSize:8.4, color:C.captionOnImage, breakLine:true, fit:'shrink' });
-    addHairline(slide, hero.x+0.36, hero.y+3.28, 0.88, C.accent, 0, 0.66);
+    addText(slide, primary.label || '核心指标', {
+      x:hero.x+0.42,
+      y:hero.y+0.86,
+      w:hero.w-0.84,
+      h:0.16,
+      fontSize:8.8,
+      bold:true,
+      color:'CBD5E1',
+      align:'center',
+      fit:'shrink'
+    });
+    const primaryValue = splitPrimaryMetricValue(primary.value || '-');
+    const valueText = primaryValue.unit ? `${primaryValue.value}${primaryValue.unit}` : primaryValue.value;
+    const valueFontSize = valueText.length >= 7 ? 29 : (valueText.length >= 5 ? 31.5 : 36);
+    addText(slide, valueText, {
+      x:hero.x+0.42,
+      y:hero.y+1.34,
+      w:hero.w-0.84,
+      h:0.46,
+      fontSize:valueFontSize,
+      bold:true,
+      color:C.white,
+      align:'center',
+      fit:'shrink'
+    });
+    addHairline(slide, hero.x+0.56, hero.y+2.74, hero.w-1.12, C.accent, 0, 0.58);
+    addText(slide, primary.note || '主指标必须直接服务董事会的第一判断。', {
+      x:hero.x+0.42,
+      y:hero.y+3.02,
+      w:hero.w-0.84,
+      h:0.18,
+      fontSize:7.4,
+      color:C.captionOnImage,
+      align:'center',
+      breakLine:true,
+      fit:'shrink'
+    });
     if (period) {
-      addLabel(slide, 'PERIOD', { x:hero.x+0.36, y:hero.y+3.58, w:0.64, h:0.09, fontSize:5.8, color:'64748B', charSpace:0.7 });
-      addText(slide, period, { x:hero.x+1.14, y:hero.y+3.55, w:1.62, h:0.12, fontSize:8.0, color:'CBD5E1', fit:'shrink' });
+      addLabel(slide, 'PERIOD', { x:hero.x+0.56, y:hero.y+3.42, w:0.64, h:0.09, fontSize:5.8, color:'64748B', charSpace:0.7 });
+      addText(slide, period, { x:hero.x+1.34, y:hero.y+3.39, w:1.62, h:0.12, fontSize:8.0, color:'CBD5E1', fit:'shrink' });
     }
 
     const strip = { x:5.62, y:contentY, w:6.08, h:2.04 };

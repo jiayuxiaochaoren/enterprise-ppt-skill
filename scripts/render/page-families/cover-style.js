@@ -2,20 +2,14 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
   const {
     addCoverKicker,
     colors,
-    drawFooter
+    drawFooter,
+    shouldUseCoverImage
   } = deps;
   const W = () => (typeof ctx.canvasWidth === 'function' ? ctx.canvasWidth() : 13.333);
   const H = () => (typeof ctx.canvasHeight === 'function' ? ctx.canvasHeight() : 7.5);
 
   function insightFor(plan = {}, s = {}, industry = {}) {
     return s.coverInsight || plan.coverInsight || industry.insight || s.subtitle || plan.subtitle || ctx.copyFallback(plan, 'industryInsight');
-  }
-
-  function drawRule(slide, x, y, C, accent) {
-    ctx.addRect(slide, x, y, 0.86, 0.045, accent || C.accent, accent || C.accent, {
-      fill:{ color:accent || C.accent, transparency:0 },
-      line:{ color:accent || C.accent, transparency:100 }
-    });
   }
 
   function drawFooterMeta(slide, plan, C, opts = {}) {
@@ -51,6 +45,12 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
   }
 
   function drawImageLedLeftCopy(slide, plan, s, industry, title, design, preset) {
+    if (shouldUseCoverImage &&
+      !shouldUseCoverImage(s, design, {
+        requireTrustedEvidence:/blueprint|command|risk/i.test(String((preset && preset.backgroundPolicy) || ''))
+      })) {
+      return false;
+    }
     const C = colors();
     const imagePath = design.imagePath || '';
     ctx.addPhotoPanel(slide, imagePath, 0, 0, W(), H(), {
@@ -75,7 +75,6 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
       x:0.90, y:3.02, w:4.98, h:0.24,
       fontSize:11.2, bold:true, color:C.captionOnImage || C.darkText || 'CBD5E1', fit:'shrink'
     });
-    drawRule(slide, 0.90, 3.58, C, C.accent);
     drawMetrics(slide, s, C, { fill:C.ink2 || C.darkPanel || '111827', line:C.darkLine || C.line, textColor:C.white || 'FFFFFF', muted:C.darkMuted || C.muted, transparency:18, lineTransparency:46 });
     drawFooterMeta(slide, plan, C, { color:C.darkMuted || C.muted });
     return true;
@@ -84,11 +83,15 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
   function drawLightEditorialProof(slide, plan, s, industry, title, design) {
     const C = colors();
     const surface = ctx.surfaceFill();
+    const imageAvailable = Boolean(design.imagePath);
+    const useTrustedImage = design.imagePath &&
+      (!shouldUseCoverImage || shouldUseCoverImage(s, design, { requireTrustedEvidence:true }));
+    if (imageAvailable && !useTrustedImage && shouldUseCoverImage) return false;
     ctx.addRect(slide, 0, 0, W(), H(), surface, surface, {
       fill:{ color:surface, transparency:0 },
       line:{ color:surface, transparency:100 }
     });
-    if (design.imagePath) {
+    if (useTrustedImage) {
       ctx.addPhotoPanel(slide, design.imagePath, 5.82, 0, W() - 5.82, H(), {
         tone:'light',
         transparency:34,
@@ -116,7 +119,6 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
       x:0.88, y:3.02, w:5.30, h:0.22,
       fontSize:11.0, bold:true, color:C.body, fit:'shrink'
     });
-    drawRule(slide, 0.88, 3.56, C, C.accent);
     drawMetrics(slide, s, C, { y:5.72, fill:ctx.panelFill(), line:C.line, textColor:C.text, muted:C.muted, transparency:0, lineTransparency:18 });
     drawFooterMeta(slide, plan, C);
     return true;
@@ -198,7 +200,6 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
       x:0.86, y:3.06, w:4.80, h:0.28,
       fontSize:11.1, bold:true, color:C.body, fit:'shrink'
     });
-    drawRule(slide, 0.86, 3.62, C, C.accent);
     drawMetrics(slide, s, C, { y:5.78, fill:ctx.panelFill(), line:C.line, textColor:C.text, muted:C.muted, transparency:10, lineTransparency:18 });
     drawFooterMeta(slide, plan, C);
     return true;
@@ -222,10 +223,6 @@ function createCoverStyleRenderer(ctx = {}, deps = {}) {
     ctx.addRect(slide, 0, 0, 6.15, H(), surface, surface, {
       fill:{ color:surface, transparency:2 },
       line:{ color:surface, transparency:100 }
-    });
-    ctx.addRect(slide, 1.16, 3.46, 10.98, 0.01, C.line, C.line, {
-      fill:{ color:C.line, transparency:15 },
-      line:{ color:C.line, transparency:100 }
     });
     addCoverKicker(slide, plan, industry, { x:1.16, y:4.18, w:3.6, h:0.14, fontSize:7.0, color:C.accent, charSpace:0.8 });
     ctx.addText(slide, title, {

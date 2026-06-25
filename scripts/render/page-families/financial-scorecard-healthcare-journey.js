@@ -9,7 +9,7 @@ function createHealthcareJourneyRenderer(ctx = {}) {
   function drawHealthcareJourneyReadout(slide, wait, satisfaction, closure, origin) {
     const flowX = origin.x;
     const flowY = origin.y;
-    addLabel(slide, 'JOURNEY READOUT', { x:flowX, y:flowY-0.02, w:1.22, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addLabel(slide, '患者旅程', { x:flowX, y:flowY-0.02, w:1.22, h:0.10, fontSize:5.8, color:C.accent, charSpace:0 });
     const journey = [
       { title:'预约', metric:wait, color:C.accent },
       { title:'到院', metric:satisfaction, color:C.cyan },

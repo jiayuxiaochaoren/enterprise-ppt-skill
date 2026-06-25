@@ -31,8 +31,24 @@ function knownStyleOrEmpty(id = '', presets = {}) {
   return key && presets[key] ? key : '';
 }
 
+function coverArchetypeFor(plan = {}, s = {}) {
+  const genericIndustry = new Set(['brand-retail', 'general-operations']);
+  const pack = typeof plan.__industryPackFor === 'function' && !genericIndustry.has(String(plan.industry || '').trim())
+    ? (plan.__industryPackFor(plan) || {})
+    : {};
+  return String(
+    s.coverArchetype ||
+    s.cover_archetype ||
+    plan.coverArchetype ||
+    plan.cover_archetype ||
+    pack.coverArchetype ||
+    ''
+  ).trim().toLowerCase();
+}
+
 function inferCoverStyleId(plan = {}, s = {}) {
   if (String(plan.industry || '') === 'energy-utility') return DEFAULT_COVER_STYLE_ID;
+  const coverArchetype = coverArchetypeFor(plan, s);
   const text = normalizeText([
     plan.industry,
     plan.visualIntent,
@@ -53,8 +69,27 @@ function inferCoverStyleId(plan = {}, s = {}) {
     s.proof_object
   ].filter(Boolean).join(' '));
 
+  if (coverArchetype === 'native-industrial-structure-cover') {
+    return /rebuild|reconstruct|manual|swiss|重构|手册/.test(text)
+      ? 'industrial-swiss-line'
+      : DEFAULT_COVER_STYLE_ID;
+  }
+  if (coverArchetype === 'boardroom-proof-cover') return 'editorial-proof-report';
+  if (coverArchetype === 'platform-system-cover') return 'architecture-blueprint-studio';
+  if (coverArchetype === 'editorial-brand-cover') return 'cold-luxury-product';
+  if (coverArchetype === 'clinical-quality-cover') return 'editorial-proof-report';
+  if (coverArchetype === 'lifestyle-editorial-cover') return 'documentary-evidence-wall';
+  if (coverArchetype === 'civic-executive-cover') return 'signal-atlas-command';
+  if (coverArchetype === 'culture-soft-cover') return 'eastern-void-object';
+
   const commerceContext = /cross[-\s]?border|e-?commerce|shopify|amazon|tiktok shop|walmart|marketplace|gmv|acos|roas|sku|跨境|电商|独立站|亚马逊|平台营收|渠道|店铺|商品|单品|复购|会员|零售|消费|品牌|产品/.test(text);
   const technicalPlatformContext = /architecture|capability|system architecture|reference architecture|topology|api|sdk|saas|ai platform|data platform|infra|infrastructure|workflow engine|架构|能力图|系统架构|拓扑|接口|中台|数据平台|技术平台|服务蓝图/.test(text);
+  const manufacturingContext = /manufactur|factory|industrial|operation|production|oee|产线|制造|工厂|工业|运营|工程/.test(text);
+  if (manufacturingContext) {
+    return /rebuild|reconstruct|manual|swiss|重构|手册/.test(text)
+      ? 'industrial-swiss-line'
+      : DEFAULT_COVER_STYLE_ID;
+  }
 
   if (/risk|security|cyber|governance|compliance|风控|风险|安全|治理|合规|投后/.test(text)) {
     return 'tactical-telemetry-risk';
@@ -84,21 +119,19 @@ function inferCoverStyleId(plan = {}, s = {}) {
   if (/annual|board|review|investor|finance|report|复盘|年报|董事会|投资人|财务|报告/.test(text)) {
     return 'editorial-proof-report';
   }
-  if (/manufactur|factory|industrial|operation|production|oee|产线|制造|工厂|工业|运营|工程/.test(text)) {
-    return /rebuild|reconstruct|manual|swiss|重构|手册|产线/.test(text)
-      ? 'industrial-swiss-line'
-      : 'signal-atlas-command';
-  }
   return DEFAULT_COVER_STYLE_ID;
 }
 
 function coverStyleDecision(plan = {}, s = {}, opts = {}) {
   const presets = coverStylePresets(opts.visualSystem || {});
+  const planWithPack = Object.assign({}, plan, {
+    __industryPackFor: typeof opts.industryPackFor === 'function' ? opts.industryPackFor : null
+  });
   const explicit = explicitCoverStyle(plan, s);
   const explicitNormalized = normalizeText(explicit);
   const requestedAuto = explicit && AUTO_COVER_STYLE_VALUES.has(explicitNormalized);
   const explicitKnown = !requestedAuto ? knownStyleOrEmpty(explicit, presets) : '';
-  const inferred = explicitKnown ? explicitKnown : knownStyleOrEmpty(inferCoverStyleId(plan, s), presets);
+  const inferred = explicitKnown ? explicitKnown : knownStyleOrEmpty(inferCoverStyleId(planWithPack, s), presets);
   const id = explicitKnown || (requestedAuto || !explicit ? inferred : '');
   const preset = id ? presets[id] : null;
   return {

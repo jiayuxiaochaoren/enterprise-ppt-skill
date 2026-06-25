@@ -28,13 +28,20 @@ function createDefaultStrategyValueMapRenderer(ctx = {}, deps = {}) {
   function drawDefaultStrategyValueMap(slide, plan, s, idx) {
     const variant = String(s.layoutVariant || s.variant || s.proofObject || s.proof_object || '');
     const governanceModel = /governance-operating-model|operating-model|治理模型/i.test(variant);
+    const governmentGovernanceModel = governanceModel && plan.industry === 'government-public-sector';
+    const lifestyleSceneConversion = plan.industry === 'lifestyle-food-tourism-fashion'
+      && /scene-conversion-board/i.test(variant);
     const header = drawLightPageHeader(slide, {
-      kicker:governanceModel ? 'GOVERNANCE MODEL' : 'VALUE CREATION MAP',
+      kicker:governmentGovernanceModel
+        ? '治理模型'
+        : (lifestyleSceneConversion ? '场景转化链路' : (governanceModel ? 'GOVERNANCE MODEL' : 'VALUE CREATION MAP')),
       title:s.title || '价值创造路径',
       titleW:5.7,
       titleH:0.36,
       titleSize:24,
-      subtitle:s.claim || s.subtitle,
+      subtitle:s.claim || s.subtitle || (lifestyleSceneConversion
+        ? '把空间场景、活动编排、会员权益和复游结果放进同一条体验经营链路。'
+        : undefined),
       subtitleW:6.6,
       subtitleSize:10.0,
       idx
@@ -57,9 +64,9 @@ function createDefaultStrategyValueMapRenderer(ctx = {}, deps = {}) {
     addRect(slide, left.x, left.y, left.w, left.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.52} });
     addRect(slide, center.x, center.y, center.w, center.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
     addRect(slide, right.x, right.y, right.w, right.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.52} });
-    drawStrategyValueInputPanel(slide, s, drivers, left);
-    drawStrategyValueOperatingPanel(slide, s, actions, center);
-    drawStrategyValueOutcomePanel(slide, s, outcomes, right);
+    drawStrategyValueInputPanel(slide, plan, s, drivers, left);
+    drawStrategyValueOperatingPanel(slide, plan, s, actions, center);
+    drawStrategyValueOutcomePanel(slide, plan, s, outcomes, right);
     addArrowLine(slide, left.x+left.w+0.24, (governanceModel ? 3.84 : 4.02) + dy, center.x-left.x-left.w-0.42, 0, C.accent, { transparency:14, width:0.72 });
     addArrowLine(slide, center.x+center.w+0.20, (governanceModel ? 3.84 : 4.02) + dy, right.x-center.x-center.w-0.28, 0, C.accent, { transparency:14, width:0.72 });
     if (governanceModel) {
@@ -67,7 +74,11 @@ function createDefaultStrategyValueMapRenderer(ctx = {}, deps = {}) {
       addRect(slide, 7.20, 2.00 + dy, 0.03, Math.max(3.34, 3.78 - dy), C.accent, C.accent, { fill:{color:C.accent, transparency:18}, line:{color:C.accent, transparency:100} });
     }
     addHairline(slide, 0.92, 6.34, 10.64, C.line, 14, 0.55);
-    addText(slide, s.note || '价值流动、投入动作与经营结果保持在同一套链路中。', { x:0.96, y:6.54, w:8.90, h:0.13, fontSize:8.0, color:C.muted, fit:'shrink' });
+    addText(slide, s.note || (governmentGovernanceModel
+      ? '招商线索、项目准入与结果跟踪保持在同一条治理链中。'
+      : (lifestyleSceneConversion
+        ? '场景供给、体验编排与复游结果要沿同一条经营链路复盘。'
+        : '价值流动、投入动作与经营结果保持在同一套链路中。')), { x:0.96, y:6.54, w:8.90, h:0.13, fontSize:8.0, color:C.muted, fit:'shrink' });
     drawFooter(slide, plan);
   }
 

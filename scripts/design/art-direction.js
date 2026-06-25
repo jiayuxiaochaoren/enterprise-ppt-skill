@@ -7,6 +7,7 @@ function createArtDirectionHelpers({
   contentSignals,
   flattenText,
   industryDesignDialect,
+  industryPackFor,
   industryVisualPolicy,
   slideRole,
   visualSystem = {}
@@ -41,7 +42,7 @@ function createArtDirectionHelpers({
         knownPalette(policy.defaultPalette) ||
         'boardroom-ink';
     }
-    const coverStyle = coverStyleDecision(plan, {}, { visualSystem });
+    const coverStyle = coverStyleDecision(plan, {}, { visualSystem, industryPackFor });
     const explicitCoverStyle = plan.coverStyle || plan.cover_style || art.coverStyle || art.cover_style;
     if (explicitCoverStyle && String(explicitCoverStyle).toLowerCase() !== 'auto' && coverStyle.preset && coverStyle.preset.paletteName) {
       return coverStyle.preset.paletteName;

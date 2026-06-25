@@ -7,9 +7,23 @@ function createStrategyValueOutcomePanel(ctx = {}) {
     panelFill
   } = ctx;
 
-  function drawStrategyValueOutcomePanel(slide, s, outcomes = [], right) {
-    addLabel(slide, 'OUTCOME', { x:right.x+0.28, y:right.y+0.34, w:0.88, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
-    addText(slide, s.rightTitle || '结果信号', { x:right.x+0.28, y:right.y+0.70, w:1.64, h:0.18, fontSize:12.6, bold:true, color:C.text, fit:'shrink' });
+  function drawStrategyValueOutcomePanel(slide, plan, s, outcomes = [], right) {
+    const variant = String(s.layoutVariant || s.variant || s.proofObject || s.proof_object || '');
+    const governmentGovernanceModel = plan && plan.industry === 'government-public-sector'
+      && /governance-operating-model|operating-model|治理模型/i.test(variant);
+    const lifestyleSceneConversion = plan && plan.industry === 'lifestyle-food-tourism-fashion'
+      && /scene-conversion-board/i.test(variant);
+    const label = governmentGovernanceModel
+      ? '推进结果'
+      : (lifestyleSceneConversion ? '经营结果' : 'OUTCOME');
+    const title = s.rightTitle || (governmentGovernanceModel
+      ? '治理结果'
+      : (lifestyleSceneConversion ? '复游信号' : '结果信号'));
+    addLabel(slide, label, {
+      x:right.x+0.28, y:right.y+0.34, w:0.92, h:0.10,
+      fontSize:5.8, color:C.accent, charSpace:label === 'OUTCOME' ? 0.8 : 0
+    });
+    addText(slide, title, { x:right.x+0.28, y:right.y+0.70, w:1.64, h:0.18, fontSize:12.6, bold:true, color:C.text, fit:'shrink' });
     (outcomes || []).slice(0,3).forEach((it,i)=>{
       const y = right.y + 1.22 + i*0.74;
       const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.muted);

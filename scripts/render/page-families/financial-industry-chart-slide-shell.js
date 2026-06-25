@@ -68,17 +68,20 @@ function createFinancialIndustryChartSlideShell(ctx = {}, deps = {}) {
     return new Set([
       'adoption-funnel',
       'member-cohort-ladder',
+      'quality-handoff',
       'patient-bottleneck'
     ]).has(String(variant || ''));
   }
 
   function nativeVariantOwnsBoard(variant = '') {
-    return new Set([
-      'adoption-funnel',
-      'dispatch-map',
-      'downtime-pareto',
-      'fact-metrics',
-      'member-cohort-ladder',
+	    return new Set([
+	      'adoption-funnel',
+	      'dispatch-map',
+	      'loss-pareto',
+	      'issue-frequency-ranking',
+	      'review-sentiment-ranking',
+	      'fact-metrics',
+	      'member-cohort-ladder',
       'patient-bottleneck',
       'quality-handoff',
       'valuation-sensitivity'

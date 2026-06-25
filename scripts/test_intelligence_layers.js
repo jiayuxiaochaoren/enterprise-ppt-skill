@@ -42,11 +42,11 @@ const meaning = semanticMeaning(manufacturingPlan, rootCauseSlide);
 assert.equal(meaning.relations.cause, true, 'semantic meaning should detect cause/root-cause language');
 assert.ok((meaning.entities.asset || []).includes('备件'), 'semantic meaning should extract industry entities');
 assert.ok(
-  industryProofCandidates(manufacturingPlan, rootCauseSlide).some(p => p.id === 'downtime-pareto'),
-  'industry proof candidates should infer manufacturing downtime Pareto from real wording'
+  industryProofCandidates(manufacturingPlan, rootCauseSlide).some(p => p.id === 'loss-pareto'),
+  'industry proof candidates should infer manufacturing loss ranking from real wording'
 );
 assert.equal(semanticFrame(manufacturingPlan, rootCauseSlide).primaryIntent, 'industryChart');
-assert.equal(normalizeSlide(manufacturingPlan, rootCauseSlide, 2, 9).layoutVariant, 'downtime-pareto');
+assert.equal(normalizeSlide(manufacturingPlan, rootCauseSlide, 2, 9).layoutVariant, 'loss-pareto');
 const metadataDeck = normalizeDeckPlan({
   industry:'manufacturing-operations',
   slides:[
@@ -57,7 +57,7 @@ const metadataDeck = normalizeDeckPlan({
 });
 assert.ok(
   metadataDeck.slides[1].semanticRelations.includes('cause') &&
-    metadataDeck.slides[1].candidateProofObjects.some(p => p.id === 'downtime-pareto'),
+    metadataDeck.slides[1].candidateProofObjects.some(p => p.id === 'loss-pareto'),
   'normalized slides should expose semantic relations and candidate proof objects'
 );
 
@@ -244,6 +244,30 @@ assert.equal(
   'none',
   'industry default media should not make structure-only pages look asset-bound'
 );
+
+const manufacturingCoverFallback = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  slides:[
+    { type:'cover', title:'制造经营复盘', subtitle:'从项目交付、渠道效率到复购续费的增长路径' },
+    { type:'closing', title:'下一步', actions:[{ title:'确认范围' }] }
+  ]
+});
+assert.equal(manufacturingCoverFallback.slides[0].layoutVariant || '', '', 'manufacturing cover should fall back to native cover skeleton when no asset is bound');
+assert.equal(manufacturingCoverFallback.slides[0].coverStyle || '', '', 'manufacturing cover should not preserve an image-led cover style without a bound asset');
+assert.equal(manufacturingCoverFallback.slides[0].assetGeneration.mustBind, false, 'manufacturing native cover fallback must not require a bound generated asset');
+assert.equal(Boolean(manufacturingCoverFallback.slides[0].generatedAssetPrompt), false, 'manufacturing native cover fallback should clear generated prompts');
+
+const manufacturingImageCover = normalizeDeckPlan({
+  industry:'manufacturing-operations',
+  coverStyle:'industrial-command-cover',
+  slides:[
+    { type:'cover', title:'制造经营复盘', subtitle:'产线交付与渠道效率的增长路径' }
+  ]
+});
+assert.equal(manufacturingImageCover.slides[0].coverStyle, 'industrial-command-cover');
+assert.equal(manufacturingImageCover.slides[0].assetGeneration.status, 'required');
+assert.equal(manufacturingImageCover.slides[0].assetGeneration.mustBind, true);
+assert.ok(Boolean(manufacturingImageCover.slides[0].generatedAssetPrompt), 'explicit manufacturing image cover should keep a generated prompt instead of falling back to native structure');
 
 const unsafeGeneratedEvidence = normalizeDeckPlan({
   industry:'manufacturing-operations',

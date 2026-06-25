@@ -35,7 +35,6 @@ function createChapterPathwayMap(ctx = {}, deps = {}) {
     const startX = 1.42;
     const y = 3.72;
     const step = list.length > 1 ? 9.10 / (list.length - 1) : 0;
-    addHairline(slide, startX, y, Math.max(0.1, step*(list.length-1)), C.line, 8, 0.70);
     list.forEach((it,i)=>{
       const x = startX + i*step;
       const accent = i===0 ? C.accent : (i===1 ? C.cyan : (i===2 ? C.violet : C.muted));
@@ -43,7 +42,21 @@ function createChapterPathwayMap(ctx = {}, deps = {}) {
       addNumber(slide, String(i+1).padStart(2,'0'), { x:x-0.24, y:y-0.58, w:0.48, h:0.12, fontSize:7.0, color:accent, align:'center' });
       addText(slide, itemTitle(it, `阶段 ${i+1}`), { x:x-0.66, y:y+0.42, w:1.32, h:0.16, fontSize:10.2, bold:true, color:C.text, fit:'shrink', align:'center' });
       if (itemBody(it)) addText(slide, itemBody(it), { x:x-0.80, y:y+0.78, w:1.60, h:0.20, fontSize:7.6, color:C.body, fit:'shrink', align:'center' });
-      if (i < list.length - 1) slide.addShape('line', { x:x+0.34, y, w:step-0.68, h:0, line:{color:accent, transparency:34, width:0.36, endArrowType:'triangle'} });
+      if (i < list.length - 1) {
+        const markerSize = 0.10;
+        const endX = x + step - 0.34;
+        const lineEndX = Math.max(x + 0.42, endX - markerSize * 0.50);
+        addHairline(slide, x+0.34, y, lineEndX - (x+0.34), accent, 34, 0.36);
+        slide.addShape('triangle', {
+          x:endX - markerSize * 0.50,
+          y:y - markerSize * 0.50,
+          w:markerSize,
+          h:markerSize,
+          rotate:90,
+          fill:{color:accent, transparency:18},
+          line:{color:accent, transparency:100}
+        });
+      }
     });
     const note = publicSlideNote(s.note);
     if (note) addText(slide, note, { x:0.94, y:6.38, w:8.80, h:0.13, fontSize:7.8, color:C.muted, fit:'shrink' });

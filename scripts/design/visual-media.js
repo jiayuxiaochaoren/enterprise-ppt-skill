@@ -8,6 +8,7 @@ const {
 function createVisualMediaHelpers({
   assetDir,
   assetRoleNeedsImage,
+  industryPackFor,
   industryVisualPolicy,
   mediaAssets = {},
   normalizeAssetRole,
@@ -175,7 +176,7 @@ function createVisualMediaHelpers({
   function slideDesign(plan = {}, s = {}, roleOverride) {
     const role = roleOverride || slideRole(s);
     const mode = resolveVisualMode(plan, s, role);
-    const style = coverStyleDecision(plan, s, { visualSystem });
+    const style = coverStyleDecision(plan, s, { visualSystem, industryPackFor });
     const preset = style.preset || null;
     const explicitVisualRole = Boolean(s.visual && s.visual.role);
     const imageRole = role === 'cover' && preset && preset.imageRole && !explicitVisualRole
@@ -191,16 +192,16 @@ function createVisualMediaHelpers({
       wantsImage,
       imagePath,
       mediaKey: mediaKeyForRole(role),
-      coverStyle: style.id,
-      coverStyleSource: style.source,
-      coverStylePreset: preset,
-      contentTheme: contentThemeForCoverStyle(preset),
+      coverStyle: role === 'closing' ? '' : style.id,
+      coverStyleSource: role === 'closing' ? '' : style.source,
+      coverStylePreset: role === 'closing' ? null : preset,
+      contentTheme: role === 'closing' ? null : contentThemeForCoverStyle(preset),
       pageFamily: pageFamily(plan, s, role)
     };
   }
 
   return {
-    coverStyleForPlan: (plan = {}, s = {}) => coverStyleDecision(plan, s, { visualSystem }).id,
+    coverStyleForPlan: (plan = {}, s = {}) => coverStyleDecision(plan, s, { visualSystem, industryPackFor }).id,
     defaultIndustryMedia,
     galleryImages,
     mediaForRole,

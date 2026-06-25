@@ -1,6 +1,7 @@
 const {
   assetAuthorizationGate,
   inferDeckLanguage,
+  industryPackFor,
   languagePolicyFor,
   normalizeDeckPlan
 } = require('../design-system');
@@ -48,6 +49,18 @@ function validateExtraction(extraction = {}) {
       claim.support,
       claim.summary,
       claim.note,
+      claim.display_copy && claim.display_copy.title,
+      claim.display_copy && claim.display_copy.subtitle,
+      claim.display_copy && claim.display_copy.core_title,
+      claim.display_copy && claim.display_copy.core_body,
+      claim.display_copy && claim.display_copy.kicker,
+      claim.display_copy && claim.display_copy.note,
+      claim.displayCopy && claim.displayCopy.title,
+      claim.displayCopy && claim.displayCopy.subtitle,
+      claim.displayCopy && claim.displayCopy.coreTitle,
+      claim.displayCopy && claim.displayCopy.coreBody,
+      claim.displayCopy && claim.displayCopy.kicker,
+      claim.displayCopy && claim.displayCopy.note,
       ...(Array.isArray(claim.bullets) ? claim.bullets : [])
     ].filter(Boolean).join(' ');
     if (hasBadVisibleCopy(visibleCopy)) errors.push(`claim_spine[${i}] contains production-note wording that would leak into visible slides`);
@@ -129,6 +142,33 @@ function chargingServiceArtDirection(industry = '', extraction = {}, doc = {}) {
   }, art);
 }
 
+function uniqueAgendaClaims(claims = [], limit = 5) {
+  const seen = new Set();
+  const out = [];
+  claims.forEach(claim => {
+    if (out.length >= limit) return;
+    const title = String(agendaTitleForClaim(claim) || '').trim();
+    if (!title) return;
+    const key = title.replace(/\s+/g, '').toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(claim);
+  });
+  return out;
+}
+
+function chapterClaimText(claims = [], zhDeck = true) {
+  const uniqueClaims = uniqueAgendaClaims(claims, 5);
+  const titles = uniqueClaims.map(claim => agendaTitleForClaim(claim)).filter(Boolean);
+  if (!titles.length) {
+    return zhDeck
+      ? '本报告先梳理有来源支撑的判断，再收束到决策路径。'
+      : 'This report follows source-backed claims before closing on the decision path.';
+  }
+  if (zhDeck) return `本报告围绕${titles.join('、')}展开经营判断。`;
+  return `This report follows ${titles.join(', ')} as the business storyline.`;
+}
+
 function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
   const errors = validateExtraction(extraction);
   if (errors.length) usageError(`invalid material extraction:\n- ${errors.join('\n- ')}`);
@@ -140,6 +180,7 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
   const title = doc.title || options.title || '材料整理汇报';
   const subtitle = doc.subtitle || doc.decision_goal || '围绕事实、证据与下一步行动形成清晰汇报';
   const companyIntro = doc.ppt_type === 'company-intro';
+  const industryPack = industryPackFor(industry) || {};
   const language = doc.language || doc.target_language || doc.output_language || extraction.language || inferDeckLanguage({
     title,
     subtitle,
@@ -201,20 +242,19 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
     };
     slides.push(profileSlide);
   } else {
+    const chapterClaims = uniqueAgendaClaims(bodyClaims, 5);
     slides.push({
       type: 'chapter-divider',
-      title: '汇报路径',
+      title: industry === 'manufacturing-operations'
+        ? (zhDeck ? '经营判断路径' : 'Decision Path')
+        : (zhDeck ? '汇报路径' : 'Report Path'),
       industryEvidenceChainMode: 'native-only',
-      claim: bodyClaims.length
-        ? (zhDeck
-            ? `本报告沿着${bodyClaims.slice(0, 4).map(c => agendaTitleForClaim(c)).join('、')}展开证据路径。`
-            : `This report follows ${bodyClaims.slice(0, 4).map(c => agendaTitleForClaim(c)).join(', ')} as the evidence path.`)
-        : (zhDeck ? '本报告先梳理有来源支撑的判断，再收束到决策路径。' : 'This report follows source-backed claims before closing on the decision path.'),
+      claim: chapterClaimText(bodyClaims, zhDeck),
       chapter: '01',
       label: industry === 'manufacturing-operations' ? (zhDeck ? '能力证据路径' : 'CAPABILITY EVIDENCE PATH') : undefined,
       bottomLabel: industry === 'manufacturing-operations' ? (zhDeck ? '证据路径' : 'EVIDENCE PATH') : undefined,
       subtitle: undefined,
-      items: bodyClaims.slice(0, 5).map(c => ({ title: agendaTitleForClaim(c), body: c.support || c.proof_object || '' }))
+      items: chapterClaims.map(c => ({ title: agendaTitleForClaim(c), body: c.support || c.proof_object || '' }))
     });
   }
   const bodySlides = presentationClaims
@@ -234,14 +274,33 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
   const decisionSourceTrace = decision ? sourceTraceForClaim(decision, extraction, bundle) : undefined;
   slides.push({
     type: 'closing',
-    title: companyIntro ? '谢谢观看' : (decision ? decision.claim : '下一步行动'),
-    subtitle: companyIntro ? (doc.organization || displayTitle) : (decision ? decision.support || '' : doc.decision_goal || '确认范围、事实口径和评审节奏。'),
+    title: companyIntro
+      ? '谢谢观看'
+      : (decision
+          ? (
+              (decision.display_copy && decision.display_copy.title) ||
+              (decision.displayCopy && decision.displayCopy.title) ||
+              decision.claim
+            )
+          : '下一步行动'),
+    subtitle: companyIntro
+      ? (doc.organization || displayTitle)
+      : (decision
+          ? (
+              (decision.display_copy && decision.display_copy.subtitle) ||
+              (decision.displayCopy && decision.displayCopy.subtitle) ||
+              decision.support ||
+              ''
+            )
+          : doc.decision_goal || '确认范围、事实口径和评审节奏。'),
     proofObject: companyIntro ? undefined : (decision ? (decision.proof_object || decision.proofObject || 'premium-closing-anchor') : 'premium-closing-anchor'),
     proof: companyIntro || !decision ? undefined : proofObjectForClaim(decision, extraction, bundle, { sourceTrace: decisionSourceTrace }),
     closingVariant: companyIntro ? 'company-thanks' : undefined,
     label: companyIntro ? '致谢' : undefined,
     showMeta: companyIntro ? false : undefined,
     contacts: companyIntro ? contacts : (contacts.length ? contacts : undefined),
+    rows: companyIntro || !decision ? undefined : (decision.rows || decision.controls || decision.phases || decision.steps || undefined),
+    inspectionMatrix: companyIntro || !decision ? undefined : (decision.rows || decision.controls || decision.phases || decision.steps || undefined),
     actions: companyIntro
       ? (contacts.length ? undefined : [
           { title: '目标场景确认', body: '对齐行业、工艺段和产线边界。' },
@@ -261,6 +320,12 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
     claimSpine: claimSpineContract(claims, extraction, bundle),
     deckArtDirection,
     palette: paletteForIndustry(industry, extraction),
+    coverArchetype: industryPack.coverArchetype,
+    dividerArchetype: industryPack.dividerArchetype,
+    bodyLayoutPool: industryPack.bodyLayoutPool,
+    closingArchetype: industryPack.closingArchetype,
+    paletteTokenSet: industryPack.paletteTokenSet,
+    textureBackgroundPolicy: industryPack.textureBackgroundPolicy,
     visualMode: 'auto',
     visualIntent: (bundle.images || []).length >= 3 ? 'case-led' : 'strategy',
     title: displayTitle,
@@ -289,7 +354,7 @@ function compileDeckPlan(extraction = {}, bundle = {}, options = {}) {
       claimSpine: claimSpineContract(claims, extraction, bundle),
       targetSlides: Object.assign({}, targetContract, { actual: slides.length }),
       deckArtDirection,
-      referenceContext: referenceContextForPrompt(bundle, { industry }),
+	      referenceContext: referenceContextForPrompt(bundle, { industry }),
       materialHygiene: materialHygieneSummary(bundle),
       dedupedSlides: dedupeReport,
       facts: extraction.facts || [],

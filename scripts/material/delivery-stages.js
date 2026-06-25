@@ -118,6 +118,7 @@ function resolveAssetStage({
     report: resolutionPath,
     outPlan: resolvedPlanPath,
     imagegenCapability,
+    imagegenCommand: opts.imagegenCommand || '',
     missingAssetAction: (opts.allowGeneratedAssets || opts.assetMap) ? 'auto_generate' : 'require_user_input',
     blockedAction: 'require_user_input',
     assetMap: opts.assetMap ? path.resolve(opts.assetMap) : '',

@@ -89,7 +89,7 @@ const expectedComponentsBySample = {
   'saas-platform-workflow-adoption-evidence-chain': ['workflow-rail', 'caption-bar', 'adoption-funnel', 'kpi-strip'],
   'lifestyle-experience-journey-retention-evidence-chain': ['hero-image', 'value-chain', 'kpi-strip'],
   'public-governance-resource-risk-evidence-chain': ['commentary-panel', 'value-chain', 'governance-table', 'kpi-strip', 'risk-register'],
-  'people-culture-behavior-growth-evidence-chain': ['value-chain', 'caption-bar', 'proof-gallery', 'kpi-strip']
+  'people-culture-behavior-growth-evidence-chain': ['content-card-grid', 'commentary-panel', 'caption-bar', 'proof-gallery', 'kpi-strip', 'scorecard']
 };
 
 assert.equal(fixture.version, 'industry-evidence-chain-fixtures/v1');
@@ -99,15 +99,18 @@ fixture.samples.forEach(sample => {
   const normalized = normalizeDeckPlan(sample.plan);
   const stages = normalized.slides.map(slide => slide.componentPlan.industryEvidenceChain.stageId);
   assert.deepEqual(stages, expectedStagesBySample[sample.id], `${sample.id} chain stages`);
-  if (sample.id === 'lifestyle-experience-journey-retention-evidence-chain') {
+	  if (sample.id === 'lifestyle-experience-journey-retention-evidence-chain') {
     const chainComponents = normalized.slides.flatMap(slide => slide.componentPlan.industryEvidenceChain.components || []);
     const chainProofObjects = normalized.slides.flatMap(slide => slide.componentPlan.industryEvidenceChain.proofObjects || []);
     assert.equal(chainComponents.includes('caption-bar'), false, `${sample.id} should not default to caption-bar proof strip`);
     assert.equal(chainComponents.includes('proof-gallery'), false, `${sample.id} should not default to proof-gallery cards`);
     assert.equal(chainProofObjects.some(id => /experience-proof/i.test(id)), false, `${sample.id} should not use experience-proof proof objects`);
-  }
-  const planned = new Set(normalized.slides.flatMap(slide => slide.componentPlan.componentIds));
-  expectedComponentsBySample[sample.id].forEach(id => {
+	  }
+	  const planned = new Set(normalized.slides.flatMap(slide => slide.componentPlan.componentIds));
+	  if (sample.id === 'people-culture-behavior-growth-evidence-chain') {
+	    assert.equal(planned.has('value-chain'), false, `${sample.id} should not use the generic value-chain overlay`);
+	  }
+	  expectedComponentsBySample[sample.id].forEach(id => {
     assert.equal(planned.has(id), true, `${sample.id} should plan ${id}`);
   });
   assert.equal(

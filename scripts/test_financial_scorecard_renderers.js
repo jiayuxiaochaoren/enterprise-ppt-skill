@@ -94,7 +94,7 @@ function assertHeaderText(ops, text, expected) {
 function assertScorecardHeaders(ops) {
   [
     ['Manufacturing Scorecard', '把稼动、节拍、良率、停机和维修动作放到同一张产线复盘页。', { titleW:5.9, subtitleW:7.0, subtitleSize:10.2 }],
-    ['Healthcare Scorecard', 'Healthcare scorecard subtitle', { titleW:5.9, subtitleW:7.0, subtitleSize:10.0 }],
+    ['Healthcare Scorecard', 'Healthcare scorecard subtitle', { titleW:7.2, subtitleW:7.6, subtitleSize:10.0 }],
     ['Retail Scorecard', 'Retail scorecard subtitle', { titleW:5.8, subtitleW:6.8, subtitleSize:10.0 }],
     ['SaaS Scorecard', 'SaaS scorecard subtitle', { titleW:5.9, subtitleW:7.0, subtitleSize:10.0 }]
   ].forEach(([title, subtitle, expected]) => {
@@ -181,26 +181,51 @@ function assertRetailScorecardShell(ops) {
 function assertHealthcareScorecardShell(ops) {
   const stage = ops.find(op => op.name === 'addRect'
     && op.args[1] === 0.92
-    && op.args[2] === 2.10
+    && op.args[2] === 2.30
     && op.args[3] === 10.90
-    && op.args[4] === 3.92);
+    && op.args[4] === 3.80);
   assert(stage, 'expected healthcare service stage panel');
   const hero = ops.find(op => op.name === 'addRect'
-    && op.args[1] === 1.22
-    && op.args[2] === 2.44
-    && op.args[3] === 2.28
-    && op.args[4] === 2.98);
+    && Math.abs(op.args[1] - 1.22) < 0.001
+    && Math.abs(op.args[2] - 2.64) < 0.001
+    && Math.abs(op.args[3] - 2.28) < 0.001
+    && Math.abs(op.args[4] - 2.88) < 0.001);
   assert(hero, 'expected healthcare primary experience hero panel');
+  const accentStrip = ops.find(op => op.name === 'addRect'
+    && op.args[1] === 1.22
+    && Math.abs(op.args[2] - 2.64) < 0.001
+    && op.args[3] === 0.06
+    && op.args[4] === 2.88);
+  assert(accentStrip, 'expected healthcare hero accent strip');
   const queue = ops.find(op => op.name === 'addRect'
     && op.args[1] === 4.02
-    && op.args[2] === 4.64
+    && op.args[2] === 4.72
     && op.args[3] === 6.70
-    && op.args[4] === 0.62);
+    && op.args[4] === 0.94);
   assert(queue, 'expected healthcare service queue panel');
-  ['PRIMARY EXPERIENCE', 'JOURNEY READOUT', 'WAIT', 'SATISFACTION', 'CLOSURE'].forEach(label => {
+  [
+    [4.22, 4.84, 1.86, 0.70],
+    [6.32, 4.84, 1.86, 0.70],
+    [8.42, 4.84, 1.86, 0.70]
+  ].forEach(([x, y, w, h]) => {
+    const queueCard = ops.find(op => op.name === 'addRect'
+      && op.args[1] === x
+      && op.args[2] === y
+      && op.args[3] === w
+      && op.args[4] === h);
+    assert(queueCard, `expected healthcare queue card ${x}/${y}`);
+  });
+  ['核心体验', '患者旅程', '等待响应', '满意度', '反馈处理'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected healthcare scorecard label ${label}`
+    );
+  });
+  ['PATIENT SERVICE SCORECARD', 'PRIMARY EXPERIENCE', 'JOURNEY READOUT', 'WAIT', 'SATISFACTION', 'CLOSURE'].forEach(label => {
+    assert(
+      !ops.some(op => op.name === 'sectionKicker' && op.args[1] === label) &&
+        !ops.some(op => op.name === 'addLabel' && op.args[1] === label),
+      `healthcare scorecard should not emit English template label ${label}`
     );
   });
   ['预约', '到院', '反馈', '满意度', '响应效率', '93%', '18min'].forEach(text => {
@@ -209,6 +234,15 @@ function assertHealthcareScorecardShell(ops) {
       `expected healthcare scorecard content ${text}`
     );
   });
+  const primaryValue = ops.find(op => op.name === 'addText' && op.args[1] === '93%');
+  assert(primaryValue, 'healthcare primary experience value should render as focused hero text');
+  const valueBox = primaryValue.args[2] || {};
+  assertNear(valueBox.x, 1.48, 'healthcare primary value x');
+  assertNear(valueBox.y, 3.90, 'healthcare primary value y');
+  assertNear(valueBox.w, 1.76, 'healthcare primary value width');
+  assert.strictEqual(valueBox.bold, true, 'healthcare primary value should stay bold');
+  assert.strictEqual(valueBox.color, 'FFFFFF', 'healthcare primary value should use white text');
+  assert(valueBox.fontSize >= 30, 'healthcare primary value should use prominent numeric scale');
 }
 
 function main() {
@@ -241,7 +275,7 @@ function main() {
   }), 4);
 
   assertKicker(ops, 'OEE / LINE READOUT');
-  assertKicker(ops, 'PATIENT SERVICE SCORECARD');
+  assertKicker(ops, '服务质量看板');
   assertKicker(ops, '会员增长看板');
   assertKicker(ops, 'ADOPTION / REVENUE BOARD');
   assert(ops.some(op => op.name === 'addArrowLine'), 'expected flow arrows');
@@ -260,6 +294,23 @@ function main() {
     assert.strictEqual(op.args[2].h, 0.16);
     assert.strictEqual(op.args[2].fontSize, 7.8);
   });
+
+  const revenueHeroOps = [];
+  const revenueRenderers = createFinancialScorecardRenderers(createFakeCtx(revenueHeroOps));
+  revenueRenderers.healthcareServiceScorecard(createSlide(revenueHeroOps), { industry:'healthcare-operations' }, section({
+    metrics:[
+      { label:'2026 YTD 营收', value:'4830万元', note:'同比 2025 同期 +21.7%' },
+      { label:'年度目标', value:'+24%', note:'增长目标' },
+      { label:'毛利率', value:'57.57%', note:'利润承压' }
+    ]
+  }), 1);
+  const compactRevenue = revenueHeroOps.find(op => op.name === 'addText' && op.args[1] === '4830万');
+  assert(compactRevenue, 'healthcare scorecard hero should compact 万元 values to a single-line readout');
+  assert((compactRevenue.args[2] || {}).fontSize <= 24, 'healthcare scorecard long-unit hero value should reduce numeric scale');
+  assert(
+    !revenueHeroOps.some(op => op.name === 'addText' && op.args[1] === '元'),
+    'healthcare scorecard hero should not leave an orphan 元 line'
+  );
 
   console.log('financial scorecard renderers ok');
 }

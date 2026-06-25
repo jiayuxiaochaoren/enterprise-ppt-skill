@@ -218,17 +218,74 @@ function assertQuarterlyResultsShell(ops) {
     assert(op, `expected quarterly results panel ${x}/${y}`);
   });
 
-  ['REPORTING PERIOD', 'SOURCE', 'REPORTED METRICS', 'VARIANCE / ACTION'].forEach(label => {
+  ['报告周期', '董事会口径', 'REPORTED METRICS', 'VARIANCE / ACTION', '结果', '原因', '边界'].forEach(label => {
     assert(
       ops.some(op => op.name === 'addLabel' && op.args[1] === label),
       `expected quarterly results label ${label}`
     );
   });
 
-  ['Q1', 'Ahead of plan', 'Management reporting', 'Revenue', '128m', 'growth quality', 'Better mix', 'Hold spend discipline'].forEach(text => {
+  ['差异解释', '管理动作', '指引边界'].forEach(text => {
+    assert(
+      ops.some(op => op.name === 'addText' && op.args[1] === text),
+      `expected quarterly results action heading ${text}`
+    );
+  });
+
+  [
+    'Q1',
+    'Ahead of plan',
+    'Better mix',
+    'Revenue',
+    '128m',
+    'growth quality',
+    'Hold spend discipline'
+  ].forEach(text => {
     assert(
       ops.some(op => op.args.includes(text)),
       `expected quarterly results content ${text}`
+    );
+  });
+
+  [
+    [8.66, 2.82, 2.56, 0.78],
+    [8.66, 3.74, 2.56, 0.78],
+    [8.66, 4.66, 2.56, 0.78]
+  ].forEach(([x, y, w, h]) => {
+    const actionCard = ops.find(candidate => candidate.name === 'addRect'
+      && Math.abs(candidate.args[1] - x) < 0.001
+      && Math.abs(candidate.args[2] - y) < 0.001
+      && Math.abs(candidate.args[3] - w) < 0.001
+      && Math.abs(candidate.args[4] - h) < 0.001);
+    assert(actionCard, `expected quarterly action card ${x}/${y}`);
+  });
+
+  [
+    [1.16, 3.41, 1.98, 0.50],
+    [1.16, 4.13, 1.98, 0.50],
+    [1.16, 4.85, 1.98, 0.50]
+  ].forEach(([x, y, w, h]) => {
+    const periodCard = ops.find(candidate => candidate.name === 'addRect'
+      && Math.abs(candidate.args[1] - x) < 0.001
+      && Math.abs(candidate.args[2] - y) < 0.001
+      && Math.abs(candidate.args[3] - w) < 0.001
+      && Math.abs(candidate.args[4] - h) < 0.001);
+    assert(periodCard, `expected quarterly period card with enough body space ${x}/${y}`);
+  });
+
+  assert(
+    !ops.some(candidate => candidate.name === 'addRect'
+      && candidate.args[1] > 9.6
+      && candidate.args[3] <= 0.36
+      && candidate.args[4] <= 0.04),
+    'quarterly action cards should not emit decorative micro-lines that look like broken borders'
+  );
+
+  ['REPORTING PERIOD', 'SOURCE', 'Management reporting'].forEach(label => {
+    assert(
+      !ops.some(op => op.name === 'addLabel' && op.args[1] === label) &&
+        !ops.some(op => op.args.includes(label)),
+      `quarterly results should not emit stale template copy ${label}`
     );
   });
 }
@@ -300,6 +357,26 @@ function main() {
     visibleTraceSourceOps.some(op => op.name === 'addText' && op.args[1] === 'Visible Trace Source A'),
     'financial KPI snapshot should use sourceTrace note as an opt-in fallback'
   );
+
+  const unitKpiOps = [];
+  createFinancialResultsRenderers(createFakeCtx(unitKpiOps)).financialKpiSnapshot({}, {}, section({
+    metrics:[
+      { label:'2026 YTD 营收', value:'4830万元', note:'同比 2025 同期 +21.7%' },
+      { label:'Cash', value:'42m', note:'collection' },
+      { label:'Risk', value:'Low', note:'exposure' },
+      { label:'Margin', value:'36%', note:'discipline' }
+    ]
+  }), 1);
+  assert(
+    !unitKpiOps.some(op => op.name === 'addNumber' && op.args[1] === '4830万元'),
+    'financial KPI hero should not render a long value+unit through the oversized number primitive'
+  );
+  const kpiValue = unitKpiOps.find(op => op.name === 'addText' && op.args[1] === '4830万元');
+  assert(kpiValue, 'financial KPI hero should render value and CJK unit as one controlled line');
+  assert((kpiValue.args[2] || {}).fontSize <= 32, 'financial KPI hero value should use a controlled scale for long CJK units');
+  assert.strictEqual((kpiValue.args[2] || {}).align, 'center', 'financial KPI hero value should stay centered');
+  const kpiNote = unitKpiOps.find(op => op.name === 'addText' && op.args[1] === '同比 2025 同期 +21.7%');
+  assert(kpiNote && (kpiNote.args[2] || {}).y < 5.60, 'financial KPI hero bottom note should sit above the panel edge');
 
   console.log('financial results renderers ok');
 }

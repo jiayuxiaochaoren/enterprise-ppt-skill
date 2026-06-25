@@ -3,7 +3,8 @@ function createAiryConceptOpening(ctx = {}, deps = {}) {
     colors,
     drawFooter,
     drawLightCanvasShell,
-    fileExists
+    fileExists,
+    shouldUseCoverImage
   } = deps;
 
   return function airyConceptOpening(slide, plan, s) {
@@ -21,11 +22,11 @@ function createAiryConceptOpening(ctx = {}, deps = {}) {
     ctx.addText(slide, s.subtitle || s.coverInsight || plan.subtitle || ctx.copyFallback(plan, 'industryInsight'), {
       x:0.90, y:2.86, w:4.88, h:0.22, fontSize:11.0, color:C.body, fit:'shrink'
     });
-    ctx.addRect(slide, 0.92, 3.44, 0.92, 0.04, C.accent, C.accent);
-    ctx.addRect(slide, 2.00, 3.44, 0.32, 0.04, C.cyan, C.cyan, { fill:{color:C.cyan, transparency:36}, line:{color:C.cyan, transparency:100} });
 
     const object = { x:7.70, y:1.28, w:2.78, h:2.78 };
-    const hasImage = imagePath && fileExists(imagePath);
+    const hasImage = shouldUseCoverImage
+      ? shouldUseCoverImage(s, { imagePath }, { requireTrustedEvidence:true }) && fileExists(imagePath)
+      : imagePath && fileExists(imagePath);
     slide.addShape('ellipse', { x:object.x-0.54, y:object.y-0.54, w:object.w+1.08, h:object.h+1.08, fill:{color:C.softBlue || 'EFF6FF', transparency:34}, line:{color:C.softBlue || 'EFF6FF', transparency:100} });
     if (hasImage) {
       ctx.addRect(slide, object.x, object.y, object.w, object.h, ctx.panelFill(), C.line, { fill:{color:ctx.panelFill(), transparency:0}, line:{color:C.line, transparency:18, width:0.44} });

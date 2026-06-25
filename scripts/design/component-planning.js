@@ -198,13 +198,12 @@ function createComponentPlanHelpers(deps = {}) {
       addRule('proof-gallery', 'captioned visual evidence set', 'gallery-signal');
       addRule('caption-bar', 'state what each image proves', 'gallery-signal');
     }
-    if (brandWorldStrategySignal) {
-      addRule('caption-bar', 'connect brand-world claim to evidence boundary', 'brand-world-proof-link');
-    }
+    if (brandWorldStrategySignal) addRule('caption-bar', 'connect brand-world claim to evidence boundary', 'brand-world-proof-link');
     if (productProofSignal && hasStructuredProductEvidence(s) && !['cover', 'closing', 'chapter-divider', 'toc', 'toc-clean'].includes(type)) {
       addRule('product-matrix', 'SKU, texture, efficacy, price, or pack proof', 'product-signal');
     }
-    const systemValueEligible = !['cover', 'cover-dark', 'closing', 'closing-dark', 'toc', 'toc-clean', 'chapter-divider'].includes(type);
+    const manifestoOwnsValueStructure = type === 'manifesto' && /mission-statement-stage|value-principle-cards/.test(variant);
+    const systemValueEligible = !manifestoOwnsValueStructure && !['cover', 'cover-dark', 'closing', 'closing-dark', 'toc', 'toc-clean', 'chapter-divider'].includes(type);
     const hasExplicitSystemValueStructure = ['strategy-map', 'architecture', 'architecture-dark'].includes(type) ||
       Boolean(s.valueChain || s.capitals || s.drivers || s.outcomes || s.inputs || s.outputs || s.layers || s.architecture || s.systemMap || s.topology || s.capabilityMap || s.platformCapabilities) ||
       /value-creation|value-chain|brand-world-and-business/i.test(proofObject);

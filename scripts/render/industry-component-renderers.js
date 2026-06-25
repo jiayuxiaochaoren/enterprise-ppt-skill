@@ -163,7 +163,7 @@ function createIndustryComponentRenderer(deps = {}) {
     const z = slot || null;
     if (componentId === 'equipment-nameplate') {
       const equipment = s.equipment || s.productionLine || {};
-      return drawPanel(slide, componentId, z, 'EQUIPMENT', [
+      return drawPanel(slide, componentId, z, '设备对象', [
         equipment.name || equipment.title || equipment.line || equipment.code,
         equipment.code || equipment.owner || equipment.capacity,
         ...arr(s.layers).map(layer => rowText(layer))
@@ -171,9 +171,9 @@ function createIndustryComponentRenderer(deps = {}) {
     }
     if (componentId === 'inspection-matrix') {
       const rows = [...arr(s.inspectionMatrix), ...arr(s.inspectionRecords), ...arr(s.controls), ...arr(s.rows), ...arr(s.phases), ...arr(s.steps)];
-      return drawPanel(slide, componentId, z, 'INSPECTION', rows.map(row => rowText(row)), { dark, max:4 });
+      return drawPanel(slide, componentId, z, '交付检查', rows.map(row => rowText(row)), { dark, max:4 });
     }
-    if (componentId === 'quality-scorecard') return drawPanel(slide, componentId, z, 'QUALITY SCORE', metricLinesFrom(s), { dark, max:4 });
+    if (componentId === 'quality-scorecard') return drawPanel(slide, componentId, z, '质量读数', metricLinesFrom(s), { dark, max:4 });
     if (componentId === 'patient-journey-band') {
       const blueprint = s.serviceBlueprint || {};
       const journey = s.journeyMap || {};
@@ -185,7 +185,7 @@ function createIndustryComponentRenderer(deps = {}) {
       return drawPanel(slide, componentId, z, 'BLUEPRINT LANE', items.map(item => rowText(item)), { dark, max:4 });
     }
     if (componentId === 'workflow-rail') {
-      return drawRail(slide, componentId, z, 'WORKFLOW', [...arr(s.workflow), ...arr(s.workflows), ...arr(s.automationWorkflow), ...arr(s.steps), ...arr(s.phases), ...arr(s.platformCapabilities)], { dark, max:4 });
+      return drawRail(slide, componentId, z, '流程轨道', [...arr(s.workflow), ...arr(s.workflows), ...arr(s.automationWorkflow), ...arr(s.steps), ...arr(s.phases), ...arr(s.platformCapabilities)], { dark, max:4 });
     }
     if (componentId === 'prototype-frame') {
       const images = overlayImagesForSlide(plan, s);
@@ -202,9 +202,9 @@ function createIndustryComponentRenderer(deps = {}) {
     }
     if (componentId === 'governance-table' || componentId === 'risk-register') {
       const rows = [...arr(s.rows), ...arr(s.risks), ...arr(s.controls), ...arr(s.responsibilities), ...arr(s.portfolio)];
-      return drawPanel(slide, componentId, z, componentId === 'governance-table' ? 'GOVERNANCE' : 'RISK REGISTER', rows.map(row => rowText(row)), { dark, max:4 });
+      return drawPanel(slide, componentId, z, componentId === 'governance-table' ? '治理责任' : '风险台账', rows.map(row => rowText(row)), { dark, max:4 });
     }
-    if (componentId === 'disclosure-footnote') return drawPanel(slide, componentId, z, 'DISCLOSURE', sourceLinesFrom(plan, s), { dark, max:2, maxChars:68 });
+    if (componentId === 'disclosure-footnote') return drawPanel(slide, componentId, z, '披露边界', sourceLinesFrom(plan, s), { dark, max:2, maxChars:68 });
     return null;
   }
 

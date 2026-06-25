@@ -12,6 +12,9 @@ const {
 const {
   createCoverCopyHelpers
 } = require('./render/page-families/cover-copy');
+const {
+  shouldUseCoverImage
+} = require('./render/page-families/cover-image-policy');
 
 function createSlide(ops) {
   return {
@@ -70,6 +73,7 @@ function createFakeCtx(ops, specRef) {
       violet: '7C3AED',
       white: 'FFFFFF'
     }),
+    coverMetaText: plan => [plan.metaText, plan.organization, plan.audience, plan.date].filter(Boolean).join(' / '),
     copyFallback: (_plan, key, fallbackText) => fallbackText || fallback[key] || key,
     designForSlide: plan => ({
       wantsImage:Boolean(plan && plan.coverImagePath),
@@ -165,12 +169,22 @@ function hasRect(ops, expected) {
     && Math.abs(op.args[4] - expected.h) < 0.001);
 }
 
+function hasHairline(ops, expected) {
+  return ops.some(op => op.name === 'addHairline'
+    && Math.abs(op.args[1] - expected.x) < 0.001
+    && Math.abs(op.args[2] - expected.y) < 0.001
+    && Math.abs(op.args[3] - expected.w) < 0.001
+    && op.args[4] === expected.color);
+}
+
 function assertLightEditorialShell(ops) {
   assert(hasRect(ops, { x:0, y:0, w:13.333, h:7.5 }), 'expected light editorial full background');
   assert(hasRect(ops, { x:8.50, y:1.34, w:2.90, h:4.86 }), 'expected light editorial proof panel');
   assert(hasRect(ops, { x:8.335, y:1.34, w:0.035, h:4.86 }), 'expected light editorial proof rail aligned with panel');
   const oldDetachedRail = hasRect(ops, { x:8.54, y:0.92, w:0.024, h:4.90 });
   assert(!oldDetachedRail, 'old detached editorial proof rail should not render');
+  assert(!hasRect(ops, { x:0.86, y:3.82, w:0.88, h:0.045 }), 'light editorial cover should not render a middle accent rule');
+  assert(!hasRect(ops, { x:1.86, y:3.82, w:0.34, h:0.045 }), 'light editorial cover should not render a middle cyan rule');
   assert(!ops.some(op => op.name === 'addLightBreathingCircle'), 'light editorial proof panel should not add a right-side circle motif');
   [
     ['01', { x:8.92, y:1.76, w:0.44, h:0.18, fontSize:10.2, color:'2563EB' }],
@@ -190,6 +204,42 @@ function assertLightEditorialShell(ops) {
   });
 }
 
+function assertLightEditorialNoMetaRule() {
+  const ops = [];
+  const specRef = { current:{ coverTone:'light', coverMotif:'editorial-rule' } };
+  const ctx = createFakeCtx(ops, specRef);
+  const renderers = createCoverRenderers(ctx);
+  renderers.coverDark(createSlide(ops), { title:'No Meta Cover' }, { title:'No Meta Cover', subtitle:'Insight' });
+  assert.equal(
+    hasRect(ops, { x:0.82, y:6.10, w:1.26, h:0.030 }),
+    false,
+    'light editorial cover should not render the lower accent rule when deck meta is empty'
+  );
+  assert.equal(
+    hasRect(ops, { x:2.24, y:6.10, w:0.42, h:0.030 }),
+    false,
+    'light editorial cover should not render the lower cyan accent when deck meta is empty'
+  );
+}
+
+function assertLightEditorialDuplicateFooterRule() {
+  const ops = [];
+  const specRef = { current:{ coverTone:'light', coverMotif:'editorial-rule' } };
+  const ctx = createFakeCtx(ops, specRef);
+  const renderers = createCoverRenderers(ctx);
+  renderers.coverDark(createSlide(ops), { title:'Duplicate Meta Cover', metaText:'Footer' }, { title:'Duplicate Meta Cover', subtitle:'Insight' });
+  assert.equal(
+    hasRect(ops, { x:0.82, y:6.10, w:1.26, h:0.030 }),
+    false,
+    'light editorial cover should not render a lower rule when meta only duplicates the footer'
+  );
+  assert.equal(
+    ops.some(op => op.name === 'addDeckMeta'),
+    false,
+    'light editorial cover should not render duplicate meta text beside the footer'
+  );
+}
+
 function assertTextBox(ops, text, expected) {
   const op = ops.find(candidate => {
     if (candidate.name !== 'addText' || candidate.args[1] !== text) return false;
@@ -206,12 +256,14 @@ function assertDarkStandardCoverShell(ops) {
   assertTextBox(ops, 'Industry insight', {
     x:0.92, y:3.36, w:5.7, h:0.20, fontSize:11.5, color:'CBD5E1', fit:'shrink'
   });
-  const accentRule = ops.find(op => op.name === 'addHairline'
-    && op.args[1] === 0.92
-    && op.args[2] === 3.78
-    && op.args[3] === 0.82
-    && op.args[4] === '2563EB');
-  assert(accentRule, 'expected standard dark cover accent rule');
+  assert(
+    !hasHairline(ops, { x:0.92, y:3.78, w:0.82, color:'2563EB' }),
+    'standard dark cover should not render a middle accent rule'
+  );
+  assert(
+    !hasHairline(ops, { x:1.86, y:3.78, w:0.34, color:'0891B2' }),
+    'standard dark cover should not render a middle cyan rule'
+  );
   const meta = ops.find(op => op.name === 'addDeckMeta'
     && (op.args[2] || {}).x === 0.92
     && (op.args[2] || {}).y === 6.30
@@ -226,8 +278,8 @@ function assertEnergyCoverShell(ops) {
   assertTextBox(ops, 'Industry insight', {
     x:0.88, y:3.48, w:5.85, h:0.22, fontSize:11.2, color:'CBD5E1', fit:'shrink'
   });
-  assert(hasRect(ops, { x:0.88, y:3.92, w:0.82, h:0.035 }), 'expected energy cover accent rule');
-  assert(hasRect(ops, { x:1.82, y:3.92, w:0.34, h:0.035 }), 'expected energy cover cyan rule');
+  assert(!hasRect(ops, { x:0.88, y:3.92, w:0.82, h:0.035 }), 'energy cover should not render a middle accent rule');
+  assert(!hasRect(ops, { x:1.82, y:3.92, w:0.34, h:0.035 }), 'energy cover should not render a middle cyan rule');
   const meta = ops.find(op => op.name === 'addDeckMeta'
     && (op.args[2] || {}).x === 0.88
     && (op.args[2] || {}).y === 6.24
@@ -301,13 +353,39 @@ function main() {
   });
   assert(hasOp(ops, 'addLabel', 'CONCEPT OPENING'), 'expected airy cover branch');
   assert(hasOp(ops, 'addLabel', 'MANUFACTURING PROOF'), 'expected manufacturing cover branch');
+  assert(!hasRect(ops, { x:0.86, y:3.78, w:0.82, h:0.045 }), 'showcase cover should not render a middle accent rule');
+  assert(!hasRect(ops, { x:1.82, y:3.78, w:0.34, h:0.045 }), 'showcase cover should not render a middle cyan rule');
+  assert(!hasRect(ops, { x:0.92, y:3.44, w:0.92, h:0.04 }), 'airy cover should not render a middle accent rule');
+  assert(!hasRect(ops, { x:2.00, y:3.44, w:0.32, h:0.04 }), 'airy cover should not render a middle cyan rule');
   assertShowcaseStageShell(ops);
   assertDarkStandardCoverShell(ops);
   assertEnergyCoverShell(ops);
   assertSpecialtyLightCanvasShells(ops);
   assertLightEditorialShell(ops);
+  assertLightEditorialNoMetaRule();
+  assertLightEditorialDuplicateFooterRule();
   assertCoverFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 30, 'expected cover text output');
+
+  const nativeManufacturingOps = [];
+  const nativeManufacturingSpec = { current:{ coverTone:'dark', coverMotif:'factory-id-plate' } };
+  const nativeManufacturingCtx = createFakeCtx(nativeManufacturingOps, nativeManufacturingSpec);
+  const nativeManufacturingRenderers = createCoverCoreRenderers(nativeManufacturingCtx);
+  renderWith({
+    title:'制造经营复盘',
+    industry:'manufacturing-operations'
+  }, {
+    title:'制造经营复盘',
+    assetGeneration:{
+      structureOnly:true,
+      assetDecisionState:{ structureOnly:true }
+    }
+  }, nativeManufacturingSpec, nativeManufacturingRenderers, nativeManufacturingOps);
+  assert.equal(
+    nativeManufacturingOps.some(op => op.name === 'addVisualPhotoBackdrop'),
+    false,
+    'native industrial structure cover should not silently pull default photo backdrops when the route is structure-only'
+  );
 
   const styleOps = [];
   const styleSpecRef = { current:{ coverTone:'light' } };
@@ -315,7 +393,8 @@ function main() {
   const styleCopy = createCoverCopyHelpers(styleCtx);
   const styleRenderer = createCoverStyleRenderer(styleCtx, {
     addCoverKicker: styleCopy.addCoverKicker,
-    colors: () => styleCtx.colors()
+    colors: () => styleCtx.colors(),
+    shouldUseCoverImage
   });
   assert.equal(styleRenderer(
     createSlide(styleOps),
@@ -334,6 +413,10 @@ function main() {
     (brandPhoto.args[6] || {}).transparency >= 80,
     'brand product showcase should not wash out cover imagery with an opaque white overlay'
   );
+  assert(
+    !hasRect(styleOps, { x:0.86, y:3.62, w:0.86, h:0.045 }),
+    'cover style showcase should not render a middle accent rule'
+  );
   const leftSurface = styleOps.find(op => op.name === 'addRect'
     && op.args[1] === 0
     && op.args[2] === 0
@@ -350,7 +433,8 @@ function main() {
   const noImageCopy = createCoverCopyHelpers(noImageCtx);
   const noImageRenderer = createCoverStyleRenderer(noImageCtx, {
     addCoverKicker: noImageCopy.addCoverKicker,
-    colors: () => noImageCtx.colors()
+    colors: () => noImageCtx.colors(),
+    shouldUseCoverImage
   });
   assert.equal(noImageRenderer(
     createSlide(noImageOps),
@@ -366,12 +450,113 @@ function main() {
     noImageOps.some(op => op.name === 'addLabel' && op.args[1] === '经营信号板'),
     'brand product showcase skip-image branch should render a native signal board'
   );
+  assert(
+    !hasRect(noImageOps, { x:0.86, y:3.62, w:0.86, h:0.045 }),
+    'native showcase fallback should not render a middle accent rule'
+  );
   ['渠道效率', 'SKU 组合', '复购质量'].forEach(text => {
     assert(
       noImageOps.some(op => op.name === 'addText' && op.args[1] === text),
       `expected native cover signal ${text}`
     );
   });
+
+  const syntheticProofOps = [];
+  const syntheticProofCtx = createFakeCtx(syntheticProofOps, styleSpecRef);
+  const syntheticProofRenderers = createCoverCoreRenderers(syntheticProofCtx);
+  syntheticProofRenderers.coverDark(createSlide(syntheticProofOps), {
+    title:'Board Proof Cover',
+    coverTone:'light',
+    coverImagePath:'/exists/proof-cover.png',
+    coverStylePreset:{ rendererFlavor:'light-editorial-proof' }
+  }, {
+    type:'cover',
+    title:'Board Proof Cover',
+    assetGeneration:{ syntheticOnly:true }
+  });
+  assert(
+    !syntheticProofOps.some(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/proof-cover.png'),
+    'synthetic editorial proof covers should fall back to native proof-card rendering'
+  );
+  assert(
+    syntheticProofOps.some(op => op.name === 'addText' && op.args[1] === 'Proof title'),
+    'synthetic editorial proof covers should still render native proof title copy'
+  );
+
+  const airyFallbackOps = [];
+  const airyFallbackSpecRef = { current:{ coverTone:'dark', coverMotif:'editorial-rule' } };
+  const airyFallbackCtx = createFakeCtx(airyFallbackOps, airyFallbackSpecRef);
+  const airyFallbackRenderers = createCoverCoreRenderers(airyFallbackCtx);
+  airyFallbackRenderers.coverDark(createSlide(airyFallbackOps), {
+    title:'Architecture Cover',
+    industry:'saas-technology',
+    coverImagePath:'/exists/blueprint-cover.png',
+    coverStylePreset:{
+      rendererFlavor:'image-led-left-copy',
+      backgroundPolicy:'blueprint-studio'
+    }
+  }, {
+    type:'cover',
+    layoutVariant:'airy-concept-opening',
+    title:'Architecture Cover',
+    assetGeneration:{ syntheticOnly:true }
+  });
+  assert(
+    !airyFallbackOps.some(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/blueprint-cover.png'),
+    'synthetic blueprint covers should not force a generated background image into airy concept openings'
+  );
+  assert(
+    airyFallbackOps.some(op => op.name === 'addLabel' && op.args[1] === 'CONCEPT OPENING'),
+    'synthetic blueprint covers should fall back to the native airy concept cover'
+  );
+
+  const healthcareFallbackOps = [];
+  const healthcareFallbackCtx = createFakeCtx(healthcareFallbackOps, styleSpecRef);
+  const healthcareFallbackRenderers = createCoverCoreRenderers(healthcareFallbackCtx);
+  healthcareFallbackRenderers.coverDark(createSlide(healthcareFallbackOps), {
+    title:'门诊服务质量改善方案',
+    industry:'healthcare-operations',
+    coverImagePath:'/exists/clinical-proof.png',
+    coverStylePreset:{ rendererFlavor:'light-editorial-proof' }
+  }, {
+    type:'cover',
+    title:'门诊服务质量改善方案',
+    assetGeneration:{ syntheticOnly:true }
+  });
+  assert(
+    healthcareFallbackOps.some(op => op.name === 'addLabel' && op.args[1] === '服务质量路径'),
+    'synthetic healthcare editorial covers should fall back to the clinical stage cover'
+  );
+  assert(
+    !healthcareFallbackOps.some(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/clinical-proof.png'),
+    'clinical stage cover should suppress synthetic proof-card imagery'
+  );
+
+  const financeFallbackOps = [];
+  const financeFallbackCtx = createFakeCtx(financeFallbackOps, styleSpecRef);
+  const financeFallbackRenderers = createCoverCoreRenderers(financeFallbackCtx);
+  financeFallbackRenderers.coverDark(createSlide(financeFallbackOps), {
+    title:'2026 Q1 经营结果与资本配置复盘',
+    industry:'finance-investment',
+    coverImagePath:'/exists/finance-proof.png',
+    coverStylePreset:{ rendererFlavor:'light-editorial-proof' }
+  }, {
+    type:'cover',
+    title:'2026 Q1 经营结果与资本配置复盘',
+    assetGeneration:{ syntheticOnly:true }
+  });
+  assert(
+    financeFallbackOps.some(op => op.name === 'addLabel' && op.args[1] === '审议带'),
+    'synthetic finance editorial covers should fall back to the boardroom decision cover'
+  );
+  assert(
+    !financeFallbackOps.some(op => op.name === 'addText' && op.args[1] === 'Proof title'),
+    'boardroom fallback should not reuse the generic editorial proof card copy'
+  );
+  assert(
+    !financeFallbackOps.some(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/finance-proof.png'),
+    'boardroom fallback should suppress synthetic proof-card imagery'
+  );
 
   console.log('cover core renderers ok');
 }

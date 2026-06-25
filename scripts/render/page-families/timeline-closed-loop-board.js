@@ -8,16 +8,19 @@ function createTimelineClosedLoopBoardRenderer(ctx = {}) {
   const { centeredStackY } = require('../layout/card-layout');
 
   function drawTimelineClosedLoopBoard(slide, plan, s, board) {
+    const manufacturing = plan.industry === 'manufacturing-operations';
     addRect(slide, board.x, board.y, board.w, board.h, C.ink2, '334155', {
       fill:{color:C.ink2, transparency:58},
       line:{color:'334155', transparency:74, width:0.36}
     });
-    addLabel(slide, plan.industry === 'manufacturing-operations' ? 'FAULT · WORKORDER · SPARE PART · OEE' : 'ACTION · DATA · REVIEW', {
-      x:board.x+0.30, y:board.y+0.28, w:2.92, h:0.10, fontSize:5.8, color:'64748B', charSpace:0.75
+    addLabel(slide, manufacturing ? '对象 · 交付 · 验收 · 维保' : '动作 · 数据 · 复盘', {
+      x:board.x+0.30, y:board.y+0.26, w:3.10, h:0.10, fontSize:5.8, color:'64748B', charSpace:0
     });
-    addLabel(slide, 'SEQUENCE 01 → 02 → 03 → 04 → 01', {
-      x:board.x+board.w-2.98, y:board.y+0.28, w:2.68, h:0.10, fontSize:5.3, color:C.darkMuted || '64748B', align:'right', charSpace:0.50
-    });
+    if (s.showSequenceLabel === true) {
+      addLabel(slide, manufacturing ? '闭环顺序 01 → 02 → 03 → 04 → 01' : '动作顺序 01 → 02 → 03 → 04 → 01', {
+        x:board.x+board.w-3.36, y:board.y+0.26, w:3.06, h:0.10, fontSize:5.3, color:C.darkMuted || '64748B', align:'right', charSpace:0
+      });
+    }
 
     const cx = board.x + board.w / 2;
     const cy = board.y + board.h / 2 + 0.06;
@@ -26,8 +29,8 @@ function createTimelineClosedLoopBoardRenderer(ctx = {}) {
     const titleH = 0.18;
     const labelH = 0.09;
     const [titleY, labelY] = centeredStackY(cy - 0.42, 0.84, [titleH, labelH], 0.12);
-    addText(slide, s.centerTitle || (plan.industry === 'manufacturing-operations' ? 'OEE复盘' : '闭环复盘'), { x:cx-0.74, y:titleY, w:1.48, h:titleH, fontSize:12.8, bold:true, color:C.white, align:'center', fit:'shrink', valign:'mid' });
-    addLabel(slide, 'DATA BACK TO ACTION', { x:cx-0.86, y:labelY, w:1.72, h:labelH, fontSize:5.2, color:'64748B', align:'center', charSpace:0.62 });
+    addText(slide, s.centerTitle || (manufacturing ? '交付复盘' : '闭环复盘'), { x:cx-0.78, y:titleY, w:1.56, h:titleH, fontSize:12.4, bold:true, color:C.white, align:'center', fit:'shrink', valign:'mid' });
+    addLabel(slide, s.centerLabel || (manufacturing ? '资料回到下一轮动作' : '复盘回到下一轮动作'), { x:cx-1.06, y:labelY, w:2.12, h:labelH, fontSize:5.2, color:'64748B', align:'center', charSpace:0 });
   }
 
   return {

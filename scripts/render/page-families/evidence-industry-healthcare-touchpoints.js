@@ -26,7 +26,7 @@ function createHealthcareTouchpointEvidenceGalleryRenderer(ctx = {}, deps = {}) 
     drawEvidenceHeader(slide, s, idx, {
       kicker:'SERVICE TOUCHPOINTS',
       title:'服务触点证据图册',
-      subtitle:'把患者旅程、前台动作、后台资源和质量证据放到同一条服务链。',
+      subtitle:'把患者旅程、前台动作、后台资源和质量记录放到同一条服务链。',
       subtitleW:6.8
     });
 
@@ -34,7 +34,7 @@ function createHealthcareTouchpointEvidenceGalleryRenderer(ctx = {}, deps = {}) 
     const items = (s.items || s.cards || []).map(v => typeof v === 'string' ? { title:v } : v);
     const band = { x:0.92, y:2.04, w:10.72, h:3.96 };
     addRect(slide, band.x, band.y, band.w, band.h, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.44} });
-    addLabel(slide, 'PATIENT JOURNEY READOUT', { x:band.x+0.30, y:band.y+0.28, w:1.74, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addLabel(slide, '患者旅程', { x:band.x+0.30, y:band.y+0.28, w:1.74, h:0.10, fontSize:5.8, color:C.accent, charSpace:0 });
 
     const slots = [
       { x:1.22, title:'预约导诊', fallback:'入口体验', color:C.accent },
@@ -56,8 +56,8 @@ function createHealthcareTouchpointEvidenceGalleryRenderer(ctx = {}, deps = {}) 
     const serviceLine = { x:1.22, y:5.58, w:9.32, h:0.26 };
     addRect(slide, serviceLine.x, serviceLine.y, serviceLine.w, serviceLine.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
     addText(slide, '预约 · 到院 · 检查 · 随访 · 反馈', { x:serviceLine.x+0.28, y:serviceLine.y+0.07, w:3.40, h:0.09, fontSize:8.8, color:C.white, fit:'shrink' });
-    addText(slide, '前台体验、后台排程和质量证据需要同屏复盘。', { x:serviceLine.x+5.16, y:serviceLine.y+0.07, w:3.38, h:0.09, fontSize:8.8, color:'CBD5E1', fit:'shrink', align:'right' });
-    addText(slide, s.note || '图片承载服务情境，蓝图语言解释责任、触点和证据链。', { x:0.94, y:6.38, w:8.9, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
+    addText(slide, '前台体验、后台排程和质量记录需要同屏复盘。', { x:serviceLine.x+5.16, y:serviceLine.y+0.07, w:3.38, h:0.09, fontSize:8.8, color:'CBD5E1', fit:'shrink', align:'right' });
+    addText(slide, s.note || '图片承载服务情境，蓝图语言解释责任、触点和服务改进。', { x:0.94, y:6.38, w:8.9, h:0.14, fontSize:8.0, color:C.muted, fit:'shrink' });
     drawFooter(slide, plan, { color:'738297' });
   };
 }

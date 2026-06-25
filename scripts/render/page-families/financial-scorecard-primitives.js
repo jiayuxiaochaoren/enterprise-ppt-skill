@@ -19,7 +19,7 @@ function createFinancialScorecardPrimitives(ctx = {}) {
     const subtitle = opts.useProvidedSubtitle
       ? opts.subtitle
       : (s.claim || s.subtitle || opts.subtitle);
-    drawLightPageHeader(slide, {
+    return drawLightPageHeader(slide, {
       kicker:opts.kicker,
       title:s.title || opts.title,
       titleY:1.06,

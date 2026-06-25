@@ -126,31 +126,80 @@ module.exports = {
           "quality-scorecard",
           "kpi-strip",
           "proof-gallery",
-          "caption-bar"
+          "caption-bar",
+          "matrix-chart",
+          "chart-commentary-panel"
         ],
         "coveragePolicy": {
           "requiredAny": [
             "quality-scorecard",
-            "proof-gallery"
+            "proof-gallery",
+            "matrix-chart"
           ],
           "optional": [
             "kpi-strip",
-            "caption-bar"
+            "caption-bar",
+            "chart-commentary-panel"
           ],
           "minHits": 2
         },
         "proofObjects": [
           "oee-board",
-          "downtime-pareto",
+          "loss-pareto",
           "site-evidence",
-          "asset-readout"
+          "asset-readout",
+          "channel-efficiency-matrix",
+          "quarterly-results-summary"
         ],
+        "variantsByProofObject": {
+          "channel-efficiency-matrix": {
+            "id": "channel-economics-evidence",
+            "label": "渠道/预算效率证据",
+            "components": [
+              "matrix-chart",
+              "kpi-strip",
+              "chart-commentary-panel"
+            ],
+            "coveragePolicy": {
+              "requiredAll": [
+                "matrix-chart"
+              ],
+              "optional": [
+                "kpi-strip",
+                "chart-commentary-panel"
+              ],
+              "minHits": 1
+            }
+          },
+          "quarterly-results-summary": {
+            "id": "channel-economics-evidence",
+            "label": "渠道/预算效率证据",
+            "components": [
+              "matrix-chart",
+              "kpi-strip",
+              "chart-commentary-panel"
+            ],
+            "coveragePolicy": {
+              "requiredAll": [
+                "matrix-chart"
+              ],
+              "optional": [
+                "kpi-strip",
+                "chart-commentary-panel"
+              ],
+              "minHits": 1
+            }
+          }
+        },
         "routes": [
           "metric-comparison:oee",
-          "industry-chart:downtime",
+          "industry-chart:loss-pareto",
           "case-gallery:site-evidence",
           "case-gallery:evidence-board",
-          "case-gallery"
+          "case-gallery",
+          "industry-chart:channel-efficiency-matrix",
+          "metric-comparison:quarterly-results-summary",
+          "industry-chart"
         ],
         "fields": [
           "metrics",
@@ -161,6 +210,12 @@ module.exports = {
           "qualityScorecard",
           "inspectionRecords",
           "quality",
+          "channelEfficiency",
+          "mediaEfficiency",
+          "scatter",
+          "matrix",
+          "chartSpec",
+          "businessLogic",
           "images",
           "visual"
         ],
@@ -178,7 +233,16 @@ module.exports = {
           "oee",
           "downtime",
           "gallery",
-          "quality"
+          "quality",
+          "渠道",
+          "预算",
+          "投入",
+          "回收",
+          "分层",
+          "roi",
+          "roas",
+          "efficiency",
+          "channel"
         ]
       }
     ]

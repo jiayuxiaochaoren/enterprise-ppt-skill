@@ -29,7 +29,6 @@ function createCultureCoverSoftGeometry(ctx = {}, deps = {}) {
     addText(slide, s.claim || s.subtitle || '用组织场景、行为原则和产出证据说明文化如何发生。', {
       x:0.88, y:2.88, w:5.70, h:0.22, fontSize:10.4, color:C.captionOnImage, fit:'shrink'
     });
-    addHairline(slide, 0.90, 3.42, 0.90, C.accent, 0, 0.72);
     const soft = [
       { x:7.72, y:2.00, w:2.62, h:1.18, color:C.accent, title:'行为', body:'能被观察' },
       { x:8.94, y:3.42, w:2.40, h:1.08, color:C.cyan, title:'场景', body:'能被复盘' },

@@ -29,14 +29,27 @@ function createChapterRenderers(ctx = {}) {
     chapterSaasAdoptionAgenda
   } = createChapterLayoutRenderers(ctx);
 
+  function isNavigationChapter(s = {}) {
+    const text = [s.type, s.title, s.label, s.navigationLabel, s.industryEvidenceChainMode, s.industry_evidence_chain_mode]
+      .filter(Boolean)
+      .join(' ');
+    return /toc|目录|汇报路径|经营判断路径|阅读路径|导览|native-only/i.test(text);
+  }
+
+  function chapterHeroMarker(s = {}, idx) {
+    if (isNavigationChapter(s)) return s.navigationMarker || '导览';
+    return s.chapter || String(idx).padStart(2, '0');
+  }
+
   function chapterHeroDivider(slide, plan, s, idx) {
     drawDarkStageShell(slide, {
       stageOpts:{ field:true },
       kicker:'CHAPTER',
       kickerOpts:{ x:0.86, y:0.94, w:1.38, h:0.14, fontSize:8.2, color:C.darkMuted, charSpace:0.8 }
     });
-    const chapter = s.chapter || String(idx).padStart(2, '0');
-    addText(slide, chapter, { x:0.82, y:1.54, w:2.10, h:0.70, fontSize:50, bold:true, color:C.accent, fit:'shrink' });
+    const chapter = chapterHeroMarker(s, idx);
+    const markerIsText = /[^\d]/.test(String(chapter));
+    addText(slide, chapter, { x:0.82, y:1.54, w:2.10, h:0.70, fontSize:markerIsText ? 30 : 50, bold:true, color:C.accent, fit:'shrink' });
     addText(slide, s.title || '章节标题', { x:3.22, y:1.76, w:6.90, h:0.55, fontSize:29.5, bold:true, color:C.white, fit:'shrink' });
     if (s.subtitle || s.claim) addText(slide, s.subtitle || s.claim, { x:3.26, y:2.62, w:5.90, h:0.25, fontSize:11.2, color:C.captionOnImage, fit:'shrink' });
     addHairline(slide, 3.26, 3.18, 0.92, C.accent, 0, 0.72);

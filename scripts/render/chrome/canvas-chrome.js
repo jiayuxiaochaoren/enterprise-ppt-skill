@@ -177,23 +177,129 @@ function createCanvasChromeHelpers(core = {}, helpers = {}) {
     }
   }
   function addLightThemeMotifs(slide, plan, s, idx) {
-    if (compositionHas(s, 'accent-rail')) {
-      h.addRect(slide, 0.82, 6.76, 2.36, 0.035, C.accent, C.accent, { line:{ color:C.accent, transparency:100 } });
-      h.addRect(slide, 3.34, 6.76, 0.54, 0.035, C.cyan, C.cyan, { fill:{ color:C.cyan, transparency:32 }, line:{ color:C.cyan, transparency:100 } });
-    }
     addBrandFolio(slide, plan, s, idx, false);
   }
   function addDarkThemeMotifs(slide, plan, s, idx) {
     addBrandFolio(slide, plan, s, idx, true);
+  }
+  function activePaletteTokenSet() {
+    const planTokens = activePlan().paletteTokenSet || activePlan().palette_token_set;
+    const slideTokens = activeSlide().paletteTokenSet || activeSlide().palette_token_set;
+    const expressionTokens = activeSlide().compositionPlan &&
+      activeSlide().compositionPlan.industryExpression &&
+      activeSlide().compositionPlan.industryExpression.paletteTokenSet;
+    const tokens = Object.assign({}, planTokens || {}, expressionTokens || {}, slideTokens || {});
+    return Object.keys(tokens).length ? tokens : null;
+  }
+  function industrialTexturePalette() {
+    const tokens = activePaletteTokenSet() || {};
+    const surface = String(tokens.surface || '').toLowerCase();
+    const accent = String(tokens.accent || '').toLowerCase();
+    const proof = String((tokens.proof || tokens.evidence || '')).toLowerCase();
+    const action = String((tokens.action || tokens.risk || '')).toLowerCase();
+    const surfaceGlow = /warm|ivory/.test(surface)
+      ? 'F8F1E7'
+      : (/mist/.test(surface) ? 'F0F8F7' : 'EEF4F8');
+    const lineAccent = /lacquer|red/.test(accent)
+      ? 'B64A3B'
+      : (/signal|cyan|finance/.test(accent) ? '1B6EA8' : '245C9E');
+    const proofAccent = /mint|jade|sage|evidence|trust/.test(proof)
+      ? '4CA99A'
+      : (proof ? '4A7FB3' : C.cyan);
+    const actionAccent = /amber|copper|ops|audit/.test(action)
+      ? 'B87527'
+      : (/rose|alert/.test(action) ? 'C06172' : (action ? '8A6F3E' : (C.secondary || C.warning || C.accent)));
+    return {
+      surfaceGlow,
+      lineAccent,
+      proofAccent,
+      actionAccent
+    };
+  }
+  function addIndustrialLightTexture(slide) {
+    const palette = industrialTexturePalette();
+    const glow = palette.surfaceGlow || C.panelAlt || C.softBlue || 'EEF6FF';
+    const lineAccent = palette.lineAccent || C.accent;
+    const proofAccent = palette.proofAccent || C.cyan;
+    const actionAccent = palette.actionAccent || C.accent;
+    const yShift = 0.38;
+    h.addRect(slide, 8.56, 0.52 + yShift, 3.92, 2.92, glow, lineAccent, {
+      fill:{ color:glow, transparency:80 },
+      line:{ color:lineAccent, transparency:86, width:0.24 }
+    });
+    h.addRect(slide, 9.10, 1.04 + yShift, 2.86, 1.94, 'FFFFFF', proofAccent, {
+      fill:{ color:'FFFFFF', transparency:100 },
+      line:{ color:proofAccent, transparency:88, width:0.20 }
+    });
+    h.addRect(slide, 8.84, 1.08 + yShift, 0.16, 2.04, actionAccent, actionAccent, {
+      fill:{ color:actionAccent, transparency:82 },
+      line:{ color:actionAccent, transparency:100 }
+    });
+    h.addRect(slide, 8.96, 0.90 + yShift, 0.82, 0.18, 'FFFFFF', C.line, {
+      fill:{ color:'FFFFFF', transparency:78 },
+      line:{ color:C.line, transparency:88, width:0.16 }
+    });
+    h.addRect(slide, 9.28, 1.34 + yShift, 1.24, 0.44, 'FFFFFF', C.line, {
+      fill:{ color:'FFFFFF', transparency:74 },
+      line:{ color:C.line, transparency:84, width:0.16 }
+    });
+    h.addRect(slide, 9.46, 1.50 + yShift, 0.72, 0.08, lineAccent, lineAccent, {
+      fill:{ color:lineAccent, transparency:82 },
+      line:{ color:lineAccent, transparency:100 }
+    });
+    h.addRect(slide, 10.88, 1.06 + yShift, 0.22, 1.92, proofAccent, proofAccent, {
+      fill:{ color:proofAccent, transparency:90 },
+      line:{ color:proofAccent, transparency:100 }
+    });
+    h.addRect(slide, 10.42, 1.24 + yShift, 1.12, 0.46, 'FFFFFF', C.line, {
+      fill:{ color:'FFFFFF', transparency:82 },
+      line:{ color:C.line, transparency:86, width:0.16 }
+    });
+    h.addRect(slide, 10.58, 1.42 + yShift, 0.54, 0.08, actionAccent, actionAccent, {
+      fill:{ color:actionAccent, transparency:82 },
+      line:{ color:actionAccent, transparency:100 }
+    });
+    h.addRect(slide, 9.26, 2.26 + yShift, 2.18, 0.54, 'FFFFFF', C.line, {
+      fill:{ color:'FFFFFF', transparency:82 },
+      line:{ color:C.line, transparency:84, width:0.16 }
+    });
+    h.addRect(slide, 9.44, 2.42 + yShift, 0.86, 0.08, proofAccent, proofAccent, {
+      fill:{ color:proofAccent, transparency:84 },
+      line:{ color:proofAccent, transparency:100 }
+    });
+    h.addRect(slide, 10.52, 2.36 + yShift, 0.52, 0.22, 'FFFFFF', actionAccent, {
+      fill:{ color:'FFFFFF', transparency:84 },
+      line:{ color:actionAccent, transparency:88, width:0.16 }
+    });
+    h.addRect(slide, 11.62, 1.12 + yShift, 0.18, 1.48, lineAccent, lineAccent, {
+      fill:{ color:lineAccent, transparency:94 },
+      line:{ color:lineAccent, transparency:100 }
+    });
+    h.addRect(slide, 10.74, 2.72 + yShift, 1.02, 0.22, 'FFFFFF', C.line, {
+      fill:{ color:'FFFFFF', transparency:84 },
+      line:{ color:C.line, transparency:82, width:0.18 }
+    });
+    h.addRect(slide, 10.88, 2.82 + yShift, 0.58, 0.08, lineAccent, lineAccent, {
+      fill:{ color:lineAccent, transparency:84 },
+      line:{ color:lineAccent, transparency:100 }
+    });
   }
   function stageCanvas(slide, opts = {}) {
     TintedBackground(slide, { tone:'dark' });
     addCanvasMotif(slide, activePlan(), activeSlide(), 'dark', opts);
     addDarkThemeMotifs(slide, activePlan(), activeSlide(), activeIndex());
   }
-  function lightCanvas(slide, opts = {}) {
-    TintedBackground(slide, { header:true });
-    addCanvasMotif(slide, activePlan(), activeSlide(), 'light', opts);
+	  function lightCanvas(slide, opts = {}) {
+	    TintedBackground(slide, { header:true });
+	    const texturePolicy = String(
+	      activePlan().textureBackgroundPolicy ||
+	      (activeSlide().compositionPlan && activeSlide().compositionPlan.industryExpression && activeSlide().compositionPlan.industryExpression.textureBackgroundPolicy) ||
+	      ''
+	    ).toLowerCase();
+	    if ((texturePolicy === 'industrial-structure-light' || activePlan().industry === 'manufacturing-operations') && opts.texture !== false) {
+	      addIndustrialLightTexture(slide);
+	    }
+	    addCanvasMotif(slide, activePlan(), activeSlide(), 'light', opts);
     addLightThemeMotifs(slide, activePlan(), activeSlide(), activeIndex());
   }
   function glassPanel(slide, x, y, w, hgt, dark = true) {

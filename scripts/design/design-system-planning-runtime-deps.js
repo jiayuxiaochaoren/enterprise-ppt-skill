@@ -19,7 +19,7 @@ const ASSET_GENERATION_DEP_NAMES = [
 
 const SLIDE_ROUTING_DEP_NAMES = [
   'contentSignals', 'flattenText', 'highValuePageFamilies',
-  'industryChartVariant', 'layoutVariantCompatibleWithType', 'semanticFrame',
+  'industryChartVariant', 'industryPackFor', 'layoutVariantCompatibleWithType', 'semanticFrame',
   'staleIndustryChartRouteShouldYieldToProcess', 'themeIntentFor',
   'visualIndustryId'
 ];
@@ -32,7 +32,7 @@ const NORMALIZATION_DEP_NAMES = [
   'contentSignals', 'copyPolicyFor', 'copyPolicyList', 'copyPolicyText',
   'dataGrammarVariant', 'deckNarrativeSummary', 'flattenText',
   'highValuePageFamilies', 'imageRefsForSlide', 'industryDesignDialect',
-  'industryKnowledgeAudit', 'industryVisualPolicy', 'languagePolicyFor',
+  'industryKnowledgeAudit', 'industryPackFor', 'industryVisualPolicy', 'languagePolicyFor',
   'layoutEnergyFor', 'layoutVariantCompatibleWithType', 'localizeMicrocopy',
   'normalizeTypographyOptions', 'paletteToColors',
   'preferredProofObjectIdForTrace', 'proofObjectIdForSlide',

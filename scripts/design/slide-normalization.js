@@ -9,6 +9,9 @@ const {
 const {
   routeIntentDecisionFor
 } = require('./route-intent-decision');
+const {
+  createRouteProofNormalizer
+} = require('./slide-normalization-route-proof');
 
 function createSlideNormalizationHelpers(deps = {}) {
   const {
@@ -22,6 +25,7 @@ function createSlideNormalizationHelpers(deps = {}) {
     generatedAssetPolicy,
     generatedAssetPrompt,
     highValuePageFamilies,
+    industryPackFor,
     layoutVariantCompatibleWithType,
     palettes,
     pickLayoutVariant,
@@ -47,6 +51,18 @@ function createSlideNormalizationHelpers(deps = {}) {
     deriveMetricsFromSlide,
     nativeVariantOwnsChartZone
   } = createSlideNormalizationUtilityHelpers({ flattenText });
+  const {
+    applyRouteProofNormalization
+  } = createRouteProofNormalizer({
+    contentSignals,
+    flattenText,
+    highValuePageFamilies,
+    industryPackFor,
+    layoutVariantCompatibleWithType,
+    pickLayoutVariant,
+    recipeCompatibleWithSlideType,
+    semanticFrame
+  });
 
   function normalizeSlide(plan = {}, s = {}, index = 0, total = 1) {
     const typePick = recommendSlideType(plan, s, index, total);
@@ -75,33 +91,7 @@ function createSlideNormalizationHelpers(deps = {}) {
         mainVisualMethod: recipe.designSyntax && recipe.designSyntax.mainVisualMethod
       } : undefined)
     });
-    if (!out.layoutVariant) {
-      const pickedVariant = pickLayoutVariant(plan, routedInput, out.type, signals);
-      out.layoutVariant = pickedVariant || (recipe && recipe.score >= 8 && recipeCompatibleWithSlideType(recipe, out.type) ? recipe.layoutVariant : undefined);
-    }
-    if (!out.proofObject && !out.proof_object) {
-      const highValueFamilyHas = value => {
-        if (!value) return false;
-        if (highValuePageFamilies && typeof highValuePageFamilies.has === 'function') return highValuePageFamilies.has(value);
-        return Array.isArray(highValuePageFamilies) && highValuePageFamilies.includes(value);
-      };
-      const variantProofObject = out.layoutVariant &&
-        highValueFamilyHas(out.layoutVariant) &&
-        layoutVariantCompatibleWithType(out.type, out.layoutVariant)
-        ? out.layoutVariant
-        : '';
-      const semantic = typeof semanticFrame === 'function'
-        ? (semanticFrame(plan, out, contentSignals(plan, out, index, total)) || {})
-        : {};
-      if (variantProofObject) {
-        out.proofObject = variantProofObject;
-        out.proofObjectSource = out.proofObjectSource || 'layout-variant';
-      } else if (semantic.proofObject) {
-        out.proofObject = semantic.proofObject;
-        out.proofObjectInferred = true;
-        out.proofObjectSource = out.proofObjectSource || 'semantic-frame';
-      }
-    }
+    applyRouteProofNormalization({ plan, out, routedInput, recipe, signals, routeSanitization, index, total });
     if (out.type === 'industry-chart' && channelEfficiencyVariantNeedsDowngrade(out)) {
       out.previousLayoutVariant = out.previousLayoutVariant || out.layoutVariant;
       out.previousVariant = out.previousVariant || out.variant;

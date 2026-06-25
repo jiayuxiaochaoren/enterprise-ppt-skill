@@ -21,8 +21,6 @@ function createCoverShowcaseRenderer(ctx = {}, deps = {}) {
     ctx.addText(slide, title, { x:0.82, y:1.76, w:4.82, h:1.08, fontSize:ctx.typeSize('coverTitle', 29.0), bold:true, color:C.white, breakLine:true, fit:'shrink' });
     const insight = s.coverInsight || plan.coverInsight || industry.insight || s.subtitle || plan.subtitle;
     ctx.addText(slide, insight, { x:0.86, y:3.28, w:4.24, h:0.26, fontSize:10.7, color:'CBD5E1', fit:'shrink' });
-    ctx.addRect(slide, 0.86, 3.78, 0.82, 0.045, C.accent, C.accent);
-    ctx.addRect(slide, 1.82, 3.78, 0.34, 0.045, C.cyan, C.cyan, { fill:{color:C.cyan, transparency:40}, line:{color:C.cyan, transparency:100} });
 
     const frame = { x:6.24, y:1.04, w:5.20, h:4.92 };
     ctx.addRect(slide, frame.x, frame.y, frame.w, frame.h, C.ink2, '334155', {
