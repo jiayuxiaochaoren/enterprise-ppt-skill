@@ -107,8 +107,9 @@ function createRiskActionLoopRenderer(ctx = {}, helpers = {}) {
       centerLabel:s.centerLabel || copy.centerLabel
     });
     const header = drawRiskLightHeader(slide, effective, idx, { kicker:s.kicker || copy.kicker, fallbackTitle:copy.fallbackTitle, titleW:5.8 });
-    const contentY = Math.max(2.04, header.contentTop || 2.04);
-    const contentH = Math.max(3.60, 6.20 - contentY);
+    const contentY = Math.max(2.08, (header.contentTop || 2.04) + 0.10);
+    const bottomLimit = 6.66;
+    const contentH = Math.max(3.82, Math.min(4.18, bottomLimit - contentY));
     const dy = contentY - 2.04;
 
     const items = riskResponsibilityItems(effective);
@@ -117,10 +118,18 @@ function createRiskActionLoopRenderer(ctx = {}, helpers = {}) {
     addLabel(slide, copy.sideLabel, { x:core.x+0.30, y:core.y+0.38, w:1.36, h:0.10, fontSize:6.2, color:C.accent, charSpace:0 });
     addText(slide, effective.coreTitle, { x:core.x+0.30, y:core.y+0.86, w:1.72, h:0.28, fontSize:15.4, bold:true, color:C.white, fit:'shrink' });
     addText(slide, effective.coreBody, {
-      x:core.x+0.30, y:core.y+1.44, w:1.92, h:0.62, fontSize:8.8, color:C.captionOnImage, fit:'shrink', breakLine:true
+      x:core.x+0.30,
+      y:core.y+1.44,
+      w:1.96,
+      h:Math.max(0.64, Math.min(0.88, core.h - 2.82)),
+      fontSize:8.8,
+      color:C.captionOnImage,
+      fit:'shrink',
+      breakLine:true
     });
-    addHairline(slide, core.x+0.30, core.y+2.32, 0.82, C.accent, 0, 0.62);
-    const metaTop = Math.min(core.y + 2.62, core.y + core.h - 1.48);
+    const metaTop = Math.min(core.y + 2.78, core.y + core.h - 1.34);
+    const ruleY = Math.min(core.y + 2.42, metaTop - 0.28);
+    if (ruleY > core.y + 2.08) addHairline(slide, core.x+0.30, ruleY, 0.82, C.accent, 0, 0.62);
     copy.metaRows.forEach((row,i)=>{
       const y = metaTop + i*0.46;
       addLabel(slide, row[0], { x:core.x+0.32, y, w:0.84, h:0.09, fontSize:5.4, color:i===0?C.accent:(i===1?C.cyan:C.violet), charSpace:0 });
@@ -130,10 +139,12 @@ function createRiskActionLoopRenderer(ctx = {}, helpers = {}) {
     const board = { x:4.24, y:contentY, w:7.28, h:contentH };
     drawRiskResponsibilityBoard(slide, effective, items, board);
 
-    const note = s.note || copy.note;
-    const noteY = Math.min(6.38, board.y + board.h + 0.16);
-    addHairline(slide, board.x, noteY - 0.10, 1.80, C.line, 22, 0.30);
-    addText(slide, note, { x:board.x, y:noteY, w:board.w, h:0.14, fontSize:7.8, color:C.muted, fit:'shrink' });
+    const note = String(s.note || '').trim();
+    const noteY = board.y + board.h + 0.14;
+    if (note && noteY + 0.14 <= 6.82) {
+      addHairline(slide, board.x, noteY - 0.10, 1.80, C.line, 22, 0.30);
+      addText(slide, note, { x:board.x, y:noteY, w:board.w, h:0.14, fontSize:7.8, color:C.muted, fit:'shrink' });
+    }
     drawRiskBoardFooter(slide, plan);
   };
 }

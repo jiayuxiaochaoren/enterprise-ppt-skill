@@ -149,6 +149,13 @@ function assertManufacturingTopologyLongTitleReflow() {
     feedbackOpts.y + feedbackOpts.h <= boardBottom - 0.02,
     'evidence rows should remain inside the manufacturing topology board'
   );
+  const firstEvidence = ops.find(op => op.name === 'addText' && op.args[1] === '图纸参数');
+  assert(firstEvidence, 'expected manufacturing topology first data item');
+  const firstEvidenceOpts = firstEvidence.args[2] || {};
+  assert(
+    Math.abs((firstEvidenceOpts.y + firstEvidenceOpts.h / 2) - (feedbackOpts.y + feedbackOpts.h / 2)) < 0.03,
+    'five manufacturing evidence items should stay on one centered row instead of spilling into a cramped second row'
+  );
 
   const lastDataNumber = ops.find(op => op.name === 'addNumber' && op.args[1] === '05' && (op.args[2] || {}).x >= board.args[1]);
   assert(lastDataNumber, 'expected manufacturing topology final data number');

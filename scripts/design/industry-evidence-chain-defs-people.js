@@ -15,49 +15,19 @@ module.exports = {
       {
         "id": "culture-opening-claim",
         "position": 1,
-        "label": "文化开场主张",
+        "label": "文化开场与使命主张",
         "components": [
           "hero-image",
           "commentary-panel",
-          "caption-bar"
+          "caption-bar",
+          "content-card-grid",
+          "value-chain"
         ],
         "coveragePolicy": {
           "requiredAny": [
             "hero-image",
-            "commentary-panel"
-          ],
-          "optional": [
-            "caption-bar"
-          ],
-          "minHits": 2
-        },
-        "proofObjects": [
-          "culture-cover-with-soft-geometry"
-        ],
-        "routes": [
-          "cover:culture-cover-with-soft-geometry"
-        ],
-        "fields": [
-          "media.cover",
-          "visual.image",
-          "image"
-        ],
-        "keywords": []
-      },
-      {
-        "id": "mission-culture-claim",
-        "position": 1,
-        "label": "使命/文化主张",
-        "components": [
-          "content-card-grid",
-          "commentary-panel",
-          "value-chain",
-          "caption-bar"
-        ],
-        "coveragePolicy": {
-          "requiredAny": [
-            "content-card-grid",
             "commentary-panel",
+            "content-card-grid",
             "value-chain"
           ],
           "optional": [
@@ -66,24 +36,52 @@ module.exports = {
           "minHits": 2
         },
         "proofObjects": [
+          "culture-cover-with-soft-geometry",
           "mission-statement-stage",
           "value-principle-cards"
         ],
+        "variantsByProofObject": {
+          "mission-statement-stage": {
+            "id": "mission-culture-claim",
+            "label": "使命/文化主张",
+            "components": [
+              "content-card-grid",
+              "commentary-panel",
+              "caption-bar"
+            ],
+            "coveragePolicy": {
+              "requiredAny": [
+                "content-card-grid",
+                "commentary-panel"
+              ],
+              "optional": [
+                "caption-bar"
+              ],
+              "minHits": 2
+            }
+          }
+        },
         "routes": [
+          "cover:culture-cover-with-soft-geometry",
           "manifesto:mission",
           "manifesto:value"
         ],
         "fields": [
+          "media.cover",
+          "visual.image",
+          "image",
           "mission",
           "values",
           "culture",
           "items"
         ],
         "keywords": [
+          "开场",
           "使命",
           "文化",
           "价值观",
           "团队主张",
+          "cover",
           "mission",
           "values",
           "culture"

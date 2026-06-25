@@ -1,3 +1,7 @@
+const {
+  createCompositionIndustryArchetypeHelpers
+} = require('./composition-industry-archetypes');
+
 function createCompositionStrategyHelpers(deps = {}) {
   const {
     accentRoleFor,
@@ -18,48 +22,17 @@ function createCompositionStrategyHelpers(deps = {}) {
     themeIntentFor
 	  } = deps;
 
-	  function nativeIndustrialCover(plan = {}, s = {}) {
-	    const pack = typeof industryPackFor === 'function' ? (industryPackFor(plan) || {}) : {};
-	    const archetype = String(
-	      s.coverArchetype ||
-	      s.cover_archetype ||
-	      plan.coverArchetype ||
-	      plan.cover_archetype ||
-	      pack.coverArchetype ||
-	      ''
-	    ).toLowerCase();
-	    return archetype === 'native-industrial-structure-cover';
-	  }
-
-  function coverArchetype(plan = {}, s = {}) {
-    const genericIndustry = new Set(['brand-retail', 'general-operations']);
-    const pack = typeof industryPackFor === 'function' && !genericIndustry.has(String(plan.industry || '').trim())
-      ? (industryPackFor(plan) || {})
-      : {};
-    return String(
-      s.coverArchetype ||
-      s.cover_archetype ||
-      plan.coverArchetype ||
-      plan.cover_archetype ||
-      pack.coverArchetype ||
-      ''
-    ).toLowerCase();
-  }
-
-  function closingArchetype(plan = {}, s = {}) {
-    const genericIndustry = new Set(['brand-retail', 'general-operations']);
-    const pack = typeof industryPackFor === 'function' && !genericIndustry.has(String(plan.industry || '').trim())
-      ? (industryPackFor(plan) || {})
-      : {};
-    return String(
-      s.closingArchetype ||
-      s.closing_archetype ||
-      plan.closingArchetype ||
-      plan.closing_archetype ||
-      pack.closingArchetype ||
-      ''
-    ).toLowerCase();
-  }
+  const {
+    closingArchetype,
+    coverArchetype,
+    fallbackCompositionFromBodyPool,
+    nativeIndustrialCover
+  } = createCompositionIndustryArchetypeHelpers({
+    compactUnique,
+    contentSignals,
+    industryPackFor,
+    inferredThemeIntent
+  });
 
   function isCompanyIntroDeck(plan = {}) {
     return /company-intro|公司介绍|能力介绍|企业介绍|企业简介|宣传册/i.test(String(
@@ -154,6 +127,8 @@ function createCompositionStrategyHelpers(deps = {}) {
     if (type === 'report-board') return 'editorial-report-board';
     if (type === 'module-matrix') return 'capability-matrix-board';
     if (type === 'comparison') return 'two-sided-comparison-board';
+    const pooledFallback = fallbackCompositionFromBodyPool(plan, s, type, variant, signals, intent);
+    if (pooledFallback) return pooledFallback;
     return signals.isDenseText ? 'editorial-report-board' : 'executive-insight-board';
   }
 

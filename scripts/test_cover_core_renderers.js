@@ -222,6 +222,24 @@ function assertLightEditorialNoMetaRule() {
   );
 }
 
+function assertLightEditorialDuplicateFooterRule() {
+  const ops = [];
+  const specRef = { current:{ coverTone:'light', coverMotif:'editorial-rule' } };
+  const ctx = createFakeCtx(ops, specRef);
+  const renderers = createCoverRenderers(ctx);
+  renderers.coverDark(createSlide(ops), { title:'Duplicate Meta Cover', metaText:'Footer' }, { title:'Duplicate Meta Cover', subtitle:'Insight' });
+  assert.equal(
+    hasRect(ops, { x:0.82, y:6.10, w:1.26, h:0.030 }),
+    false,
+    'light editorial cover should not render a lower rule when meta only duplicates the footer'
+  );
+  assert.equal(
+    ops.some(op => op.name === 'addDeckMeta'),
+    false,
+    'light editorial cover should not render duplicate meta text beside the footer'
+  );
+}
+
 function assertTextBox(ops, text, expected) {
   const op = ops.find(candidate => {
     if (candidate.name !== 'addText' || candidate.args[1] !== text) return false;
@@ -345,6 +363,7 @@ function main() {
   assertSpecialtyLightCanvasShells(ops);
   assertLightEditorialShell(ops);
   assertLightEditorialNoMetaRule();
+  assertLightEditorialDuplicateFooterRule();
   assertCoverFooters(ops);
   assert(ops.filter(op => op.name === 'addText').length >= 30, 'expected cover text output');
 

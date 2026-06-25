@@ -27,8 +27,11 @@ function createCoverLightEditorialRenderer(ctx = {}, deps = {}) {
     const motif = ctx.presentationSpec().coverMotif || 'editorial-rule';
     const companyIntro = ctx.isCompanyIntroPlan(plan);
     const coverMetaText = typeof ctx.coverMetaText === 'function' ? ctx.coverMetaText(plan) : '';
+    const footerText = typeof ctx.footerText === 'function' ? ctx.footerText(plan) : '';
+    const distinctMeta = String(coverMetaText || '').trim()
+      && String(coverMetaText || '').trim() !== String(footerText || '').trim();
     drawLightEditorialMotif(slide, motif, bg, {
-      showBottomRule:Boolean(String(coverMetaText || '').trim())
+      showBottomRule:Boolean(distinctMeta)
     });
 
     const x0 = motif === 'ivory-editorial' ? 4.72 : 0.84;
@@ -47,7 +50,9 @@ function createCoverLightEditorialRenderer(ctx = {}, deps = {}) {
       drawLightEditorialProofPanel(slide, plan, s, insight, panel, companyIntro);
     }
 
-    ctx.addDeckMeta(slide, plan, { x:x0+0.02, y:6.38, w:5.70, h:0.14, fontSize:7.2, color:C.muted, fit:'shrink' });
+    if (distinctMeta) {
+      ctx.addDeckMeta(slide, plan, { x:x0+0.02, y:6.38, w:5.70, h:0.14, fontSize:7.2, color:C.muted, fit:'shrink' });
+    }
     drawFooter(slide, plan, { fontSize:ctx.typeSize('caption', 7.4), color:C.muted });
   };
 }

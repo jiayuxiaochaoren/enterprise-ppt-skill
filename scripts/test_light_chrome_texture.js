@@ -103,6 +103,39 @@ assert.equal(
   'industrial light texture should avoid long guide-line rectangles that read as crosshair rules'
 );
 
+const tokenizedManufacturing = buildFixture(
+  {
+    industry:'manufacturing-operations',
+    textureBackgroundPolicy:'industrial-structure-light',
+    paletteTokenSet:{
+      surface:'steel-graphite',
+      accent:'industrial-blue',
+      action:'amber-ops',
+      proof:'mint-evidence'
+    }
+  },
+  { title:'制造业纹理色板页', compositionPlan:{ primaryColorUse:['accent-rail'] } }
+);
+tokenizedManufacturing.helpers.lightCanvas(tokenizedManufacturing.slide);
+assert.ok(
+  tokenizedManufacturing.shapes.some(shape => shape.type === 'rect'
+    && shape.opts.fill
+    && shape.opts.fill.color === 'B87527'),
+  'paletteTokenSet action token should tint industrial texture action bars'
+);
+assert.ok(
+  tokenizedManufacturing.shapes.some(shape => shape.type === 'rect'
+    && shape.opts.fill
+    && shape.opts.fill.color === '4CA99A'),
+  'paletteTokenSet proof token should tint industrial texture proof bars'
+);
+assert.ok(
+  tokenizedManufacturing.shapes.some(shape => shape.type === 'rect'
+    && shape.opts.line
+    && shape.opts.line.color === '245C9E'),
+  'paletteTokenSet accent token should tint industrial texture structural outlines'
+);
+
 const generic = buildFixture(
   { industry:'general-operations' },
   { title:'普通正文页', compositionPlan:{ microComponents:['accent-rail'] } }

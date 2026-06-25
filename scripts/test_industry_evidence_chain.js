@@ -441,11 +441,12 @@ const peopleMissionStatement = normalizeSlide(
     layoutVariant:'mission-statement-stage',
     proofObject:'mission-statement-stage',
     title:'使命和文化主张需要被具体行为承接',
-    values:[
-      { title:'客户现场', body:'团队把真实场景带回产品决策。' },
-      { title:'共同复盘', body:'跨职能把交付问题转成机制。' }
-    ]
-  },
+	    values:[
+	      { title:'客户现场', body:'团队把真实场景带回产品决策。' },
+	      { title:'共同复盘', body:'跨职能把交付问题转成机制。' }
+	    ],
+	    valueChain:[{ title:'使命' }, { title:'行为' }, { title:'成长' }]
+	  },
   2,
   5
 );

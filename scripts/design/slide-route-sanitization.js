@@ -11,6 +11,39 @@ function createRouteSanitizationHelpers(deps = {}) {
     layoutVariantCompatibleWithType = () => true
   } = deps;
 
+  function structuralArchetype(plan = {}, slide = {}, role = 'cover') {
+    const camel = `${role}Archetype`;
+    const snake = `${role}_archetype`;
+    return String(
+      slide[camel] ||
+      slide[snake] ||
+      plan[camel] ||
+      plan[snake] ||
+      ''
+    ).trim().toLowerCase();
+  }
+
+  function industryDisallowsVariant(plan = {}, slide = {}, normalizedType = '', variant = '') {
+    const key = String(variant || '').trim().toLowerCase();
+    if (!key) return false;
+    const industry = String(plan.industry || '').trim().toLowerCase();
+    const coverArchetype = structuralArchetype(plan, slide, 'cover');
+    const closingArchetype = structuralArchetype(plan, slide, 'closing');
+    const manufacturingCover =
+      industry === 'manufacturing-operations' ||
+      coverArchetype === 'native-industrial-structure-cover';
+    const manufacturingClosing =
+      industry === 'manufacturing-operations' ||
+      closingArchetype === 'decision-rollout-close';
+    if (manufacturingCover && ['cover', 'cover-dark'].includes(normalizedType)) {
+      return ['airy-concept-opening', 'editorial-cover'].includes(key);
+    }
+    if (manufacturingClosing && ['closing', 'closing-dark'].includes(normalizedType)) {
+      return ['premium-closing-anchor'].includes(key);
+    }
+    return false;
+  }
+
   function sanitizeRouteInput(plan = {}, s = {}, typePick = {}) {
     const routedInput = Object.assign({}, s);
     const routeSanitization = {
@@ -70,10 +103,20 @@ function createRouteSanitizationHelpers(deps = {}) {
       });
       recordStale(field, value, reason, resolution);
     };
+    if (routedInput.layoutVariant && industryDisallowsVariant(plan, routedInput, normalizedType, routedInput.layoutVariant)) {
+      recordRemoval('layoutVariant', routedInput.layoutVariant, `layoutVariant conflicts with industry-specific structural archetype for ${normalizedType}`);
+      routedInput.previousLayoutVariant = routedInput.previousLayoutVariant || routedInput.layoutVariant;
+      delete routedInput.layoutVariant;
+    }
     if (routedInput.layoutVariant && !layoutVariantCompatibleWithType(normalizedType, routedInput.layoutVariant)) {
       recordRemoval('layoutVariant', routedInput.layoutVariant, `layoutVariant incompatible with normalized type ${normalizedType}`);
       routedInput.previousLayoutVariant = routedInput.previousLayoutVariant || routedInput.layoutVariant;
       delete routedInput.layoutVariant;
+    }
+    if (routedInput.variant && (!routedInput.layoutVariant || routedInput.variant !== routedInput.layoutVariant) && industryDisallowsVariant(plan, routedInput, normalizedType, routedInput.variant)) {
+      recordRemoval('variant', routedInput.variant, `variant conflicts with industry-specific structural archetype for ${normalizedType}`);
+      routedInput.previousVariant = routedInput.previousVariant || routedInput.variant;
+      delete routedInput.variant;
     }
     if (routedInput.variant && (!routedInput.layoutVariant || routedInput.variant !== routedInput.layoutVariant) && !layoutVariantCompatibleWithType(normalizedType, routedInput.variant)) {
       recordRemoval('variant', routedInput.variant, `variant incompatible with normalized type ${normalizedType}`);

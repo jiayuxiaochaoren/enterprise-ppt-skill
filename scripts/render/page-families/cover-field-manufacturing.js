@@ -44,7 +44,9 @@ function createManufacturingCoverField(ctx = {}, opts = {}) {
       slide.addShape('ellipse', { x:panel.x+0.42, y:y+0.04, w:0.08, h:0.08, fill:{ color:dot }, line:{ color:dot, transparency:100 } });
       ctx.addText(slide, row.label || row.title || `事实 ${i + 1}`, { x:panel.x+0.64, y, w:1.26, h:0.12, fontSize:7.2, color:'A8B3C3', fit:'shrink' });
       ctx.addText(slide, row.value || '—', { x:panel.x+3.10, y:y-0.02, w:1.02, h:0.12, fontSize:8.4, bold:true, color:C.white, align:'right', fit:'shrink' });
-      ctx.addHairline(slide, panel.x+2.02, y+0.19, 1.16, '334155', 56, 0.30);
+      if (String(row.value || row.note || '').trim()) {
+        ctx.addHairline(slide, panel.x+2.02, y+0.19, 1.16, '334155', 56, 0.30);
+      }
     });
   }
 

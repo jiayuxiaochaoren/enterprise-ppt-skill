@@ -119,10 +119,10 @@ function createArchitectureManufacturingReadout(ctx = {}, C = ctx.colors()) {
       color:C.accent,
       charSpace:0
     });
-    const columns = Math.max(1, Math.min(4, dataItems.length || 1));
+    const columns = Math.max(1, Math.min(dataItems.length <= 5 ? 5 : 4, dataItems.length || 1));
     const rows = Math.max(1, Math.ceil(dataItems.length / columns));
     const slotW = layout.dataZone.w / columns;
-    const idealRowH = rows > 1 ? 0.20 : 0.22;
+    const idealRowH = rows > 1 ? 0.20 : 0.24;
     let rowGap = rows > 1 ? 0.08 : 0;
     let rowH = idealRowH;
     let totalRowsH = rowH * rows + rowGap * Math.max(0, rows - 1);

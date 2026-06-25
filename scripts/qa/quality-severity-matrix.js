@@ -127,6 +127,7 @@ const QUALITY_SEVERITY_MATRIX = {
   staleRouteMetadataStillActive: entry('stale_metadata', { draft:'fail', formal:'fail', delivery:'fail' }, 'stale route metadata cannot remain active after normalization'),
   staleAssetDecisionForRoute: entry('stale_metadata', { draft:'fail', formal:'fail', delivery:'fail' }, 'asset decisions stale for the active route cannot pass QA'),
   staleComponentConsumptionForRoute: entry('stale_metadata', { draft:'fail', formal:'fail', delivery:'fail' }, 'components cannot be consumed from stale route metadata'),
+  legacyProofTaxonomy: entry('stale_metadata', FORMAL_FAIL, 'legacy proof/layout ids must be normalized before formal delivery'),
 
   smallChineseText: entry(
     'shrink_risk',
@@ -202,6 +203,7 @@ const QUALITY_SEVERITY_MATRIX = {
   monthlySeriesNotLine: entry('routing_error', FAIL_ALL, 'monthly sequence data must route to a line chart'),
   funnelNotFunnel: entry('routing_error', FAIL_ALL, 'funnel stage data must route to a funnel chart'),
   waterfallNotWaterfall: entry('routing_error', FAIL_ALL, 'bridge data must route to a waterfall chart'),
+  genericActionLoopFallback: entry('routing_error', FORMAL_FAIL, 'known industries must use industry-specific action-loop grammar instead of generic fallback'),
 
   chartAxisLabelsMissing: entry('renderer_layout_bug', FAIL_ALL, 'axis-based charts require category or axis labels'),
   chartLabelDensityRisk: entry('renderer_layout_bug', { draft:'review', formal:'review', delivery:'fail' }, 'delivery validation treats dense chart labels as a pre-render collision risk'),

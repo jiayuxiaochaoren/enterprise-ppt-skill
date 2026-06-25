@@ -86,9 +86,9 @@ function assertHeaderTitle(ops, title, expected) {
   assert(op, `expected closing header title ${title}`);
   const box = op.args[2] || {};
   assertNear(box.x, 0.84, `${title} header x`);
-  assertNear(box.y, 1.08, `${title} header y`);
+  assertNear(box.y, expected.y || 1.08, `${title} header y`);
   assertNear(box.w, expected.w, `${title} header width`);
-  assertNear(box.h, 0.66, `${title} header height`);
+  assertNear(box.h, expected.h || 0.66, `${title} header height`);
   assertNear(box.fontSize, expected.fontSize, `${title} header font`);
   assert.strictEqual(box.bold, true, `${title} header bold`);
   assert.strictEqual(box.color, '111827', `${title} header color`);
@@ -103,21 +103,26 @@ function assertHeaderSubtitle(ops, text, expected) {
   assertNear(box.x, 0.86, `${text} subtitle x`);
   assertNear(box.y, expected.y, `${text} subtitle y`);
   assertNear(box.w, expected.w, `${text} subtitle width`);
-  assertNear(box.h, 0.22, `${text} subtitle height`);
-  assertNear(box.fontSize, 10.6, `${text} subtitle font`);
+  assertNear(box.h, expected.h || 0.22, `${text} subtitle height`);
+  assertNear(box.fontSize, expected.fontSize || 10.6, `${text} subtitle font`);
   assert.strictEqual(box.color, '334155', `${text} subtitle color`);
   assert.strictEqual(box.fit, 'shrink', `${text} subtitle fit`);
 }
 
 function assertIndustryHeaders(ops) {
   [
-    ['Manufacturing', { w:6.90, fontSize:29.0, subtitleY:2.06, subtitleW:6.40 }],
+    ['Manufacturing', { y:1.02, w:6.78, h:0.96, fontSize:25.8, subtitleY:2.30, subtitleW:6.16, subtitleH:0.28, subtitleFontSize:10.2 }],
     ['Finance', { w:6.80, fontSize:28.0, subtitleY:2.04, subtitleW:6.40 }],
     ['Healthcare', { w:6.70, fontSize:28.0, subtitleY:2.04, subtitleW:6.55 }],
     ['SaaS', { w:6.90, fontSize:28.5, subtitleY:2.04, subtitleW:6.60 }]
   ].forEach(([title, expected]) => {
     assertHeaderTitle(ops, title, expected);
-    assertHeaderSubtitle(ops, `${title} subtitle`, { y:expected.subtitleY, w:expected.subtitleW });
+    assertHeaderSubtitle(ops, `${title} subtitle`, {
+      y:expected.subtitleY,
+      w:expected.subtitleW,
+      h:expected.subtitleH,
+      fontSize:expected.subtitleFontSize
+    });
   });
 
   const pageNumbers = ops.filter(op => {
@@ -181,10 +186,16 @@ function main() {
   renderers.closingHealthcareQualityHandoff(createSlide(ops), {}, makeSection('Healthcare'), 11);
   renderers.closingSaasAdoptionClose(createSlide(ops), {}, makeSection('SaaS'), 12);
 
-  assertKicker(ops, 'PILOT ROLLOUT');
-  assertKicker(ops, 'INVESTMENT DECISION');
-  assertKicker(ops, 'QUALITY HANDOFF');
-  assertKicker(ops, 'ADOPTION TO REVENUE');
+  assertKicker(ops, '经营动作闭环');
+  assertKicker(ops, '投资决策收口');
+  assertKicker(ops, '质量交接收口');
+  assertKicker(ops, '采用到收入');
+  ['PILOT ROLLOUT', 'INVESTMENT DECISION', 'QUALITY HANDOFF', 'ADOPTION TO REVENUE', 'IC MEMO', 'DECISION', 'CUSTOMER HEALTH PATH', 'REVENUE SIGNAL'].forEach(text => {
+    assert(
+      !ops.some(op => op.args.includes(text)),
+      `industry closing renderers should not emit English template copy ${text}`
+    );
+  });
   assert(ops.some(op => op.name === 'addArrowLine'), 'expected closing flow arrows');
   assert(ops.some(op => op.name === 'addShape'), 'expected native timeline node shapes');
   assertIndustryHeaders(ops);

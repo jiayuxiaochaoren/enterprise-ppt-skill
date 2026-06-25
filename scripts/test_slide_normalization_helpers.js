@@ -40,7 +40,11 @@ const helpers = createSlideNormalizationHelpers({
   }[plan.industry] || null),
   layoutVariantCompatibleWithType: (type, variant) => !['bad-variant', 'bad-proof'].includes(variant),
   palettes: { dark:{ presentation:{ coverTone:'dark' } } },
-  pickLayoutVariant: (plan, slide) => slide.pickedVariant,
+  pickLayoutVariant: (plan, slide, type) => {
+    if (slide.pickedVariant !== undefined) return slide.pickedVariant;
+    if ((type === 'cover' || slide.forceType === 'cover') && plan.industry === 'manufacturing-operations') return '';
+    return undefined;
+  },
   recipeCompatibleWithSlideType: () => true,
   recommendSlideType: (plan, slide) => ({ type:slide.forceType || slide.type || 'executive-blocks', reason:'fixture route' }),
   routeChartSpec: () => ({ version:'chartSpec/v1', kind:'bar' }),
@@ -101,6 +105,38 @@ assert.deepEqual(
 assert.ok(sanitizedRouteInput.routeSanitization.staleForRoute.some(item => item.field === 'componentPlan' && item.resolution === 'recomputed'));
 assert.equal(sanitizedRouteInput.routedInput.previousChartSpec.kind, 'bar');
 assert.equal(sanitizedRouteInput.routedInput.componentPlan, undefined);
+
+const sanitizedManufacturingCover = routeSanitizationHelpers.sanitizeRouteInput({
+  finalized:true,
+  industry:'manufacturing-operations',
+  coverArchetype:'native-industrial-structure-cover'
+}, {
+  type:'cover',
+  layoutVariant:'airy-concept-opening',
+  variant:'airy-concept-opening'
+}, { type:'cover' });
+assert.deepEqual(
+  sanitizedManufacturingCover.routeSanitization.removed.map(item => item.field),
+  ['layoutVariant', 'variant']
+);
+assert.ok(
+  sanitizedManufacturingCover.routeSanitization.removed.every(item => /industry-specific structural archetype/.test(item.reason)),
+  'manufacturing cover should strip stale generic opening variants before recompute'
+);
+
+const sanitizedManufacturingClosing = routeSanitizationHelpers.sanitizeRouteInput({
+  finalized:true,
+  industry:'manufacturing-operations',
+  closingArchetype:'decision-rollout-close'
+}, {
+  type:'closing',
+  layoutVariant:'premium-closing-anchor',
+  variant:'premium-closing-anchor'
+}, { type:'closing' });
+assert.deepEqual(
+  sanitizedManufacturingClosing.routeSanitization.removed.map(item => item.field),
+  ['layoutVariant', 'variant']
+);
 
 const sanitized = helpers.normalizeSlide({ finalized:true }, {
   forceType:'report-board',

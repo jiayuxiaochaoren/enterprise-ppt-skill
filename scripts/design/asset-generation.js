@@ -12,6 +12,7 @@ const {
 const {
   withAssetDecisionState
 } = require('./asset-decision-state');
+const { createGeneratedAssetPrompt } = require('./asset-generation-prompt');
 
 function withDecisionSource(policy = {}) {
   return withAssetDecisionState(Object.assign({
@@ -49,12 +50,17 @@ function createAssetGenerationHelpers({
     const visual = s.visual || {};
     const text = flattenText([
       visual.role,
-      visual.prompt,
-      visual.caption,
-      visual.source,
-      s.assetBrief,
-      s.proofObject,
-      s.proof_object,
+	      visual.prompt,
+	      visual.caption,
+	      visual.source,
+	      s.title,
+	      s.subtitle,
+	      s.claim,
+	      s.support,
+	      s.display_copy && Object.values(s.display_copy).join(' '),
+	      s.assetBrief,
+	      s.proofObject,
+	      s.proof_object,
       s.layoutVariant,
       s.variant,
       s.mainVisualMethod,
@@ -71,47 +77,15 @@ function createAssetGenerationHelpers({
     return factualCue && !syntheticCue;
   }
 
-  function generatedAssetPrompt(plan = {}, s = {}, recipe = null) {
-    const design = slideDesign(plan, s);
-    const role = (s.visual && s.visual.role) || design.imageRole || (recipe && recipe.assetRole) || 'abstract';
-    const normalizedRole = normalizeAssetRole(role);
-    const coverPreset = design.coverStylePreset || null;
-    if ((s.type === 'cover' || design.role === 'cover') && coverPreset && coverPreset.assetPromptIntent) {
-      const target = assetTargetContract(plan, s, role);
-      const cleanBase = stripPromptAspectConflicts(coverPreset.assetPromptIntent, target);
-      const flavor = String(coverPreset.rendererFlavor || '').toLowerCase();
-      const targetGuidance = flavor === 'brand-product-showcase'
-        ? [
-          'Use case: premium enterprise PPT cover right-side hero panel.',
-          'The bitmap occupies only the right visual panel; do not reserve blank copy space inside the image.',
-          'Make the whole image continuous edge-to-edge with no vertical mask, split panel, blank safety strip, vignette wall, or faded half-panel.',
-          'Keep the main visual as a credible object or scene, not decoration.'
-        ]
-        : [
-          'Use case: premium enterprise PPT cover hero image.',
-          'Respect the declared text-safe zone and keep the main visual as a credible object or scene, not decoration.'
-        ];
-      return [
-        cleanBase,
-        ...targetGuidance,
-        target.instruction || ''
-      ].filter(Boolean).join(' ');
-    }
-    const patterns = referenceLayoutLibrary.generatedAssetPromptPatterns || {};
-    const pattern = patterns[normalizedRole] || patterns.abstract;
-    if (!pattern) return '';
-    const profile = industryVisualPolicy(plan);
-    const industryLabel = profile.label || plan.industry || 'business';
-    const visualBrief = (s.visual && s.visual.prompt) || s.assetBrief || s.coverInsight || s.claim || s.subtitle || s.title || plan.title || 'premium commercial visual';
-    const paletteName = selectPaletteName(plan);
-    const target = assetTargetContract(plan, s, role);
-    const base = pattern
-      .replace(/\{industryLabel\}/g, industryLabel)
-      .replace(/\{visualBrief\}/g, String(visualBrief).replace(/\s+/g, ' ').trim())
-      .replace(/\{paletteName\}/g, paletteName);
-    const cleanBase = stripPromptAspectConflicts(base, target);
-    return target.instruction ? `${cleanBase} ${target.instruction}` : cleanBase;
-  }
+  const generatedAssetPrompt = createGeneratedAssetPrompt({
+    assetTargetContract,
+    industryVisualPolicy,
+    normalizeAssetRole,
+    referenceLayoutLibrary,
+    selectPaletteName,
+    slideDesign,
+    stripPromptAspectConflicts
+  });
 
   function generatedAssetPolicy(plan = {}, s = {}, recipe = null, design = null) {
     const originalRole = (s.visual && s.visual.role) || (design && design.imageRole) || (recipe && recipe.assetRole) || 'abstract';
@@ -317,14 +291,4 @@ function createAssetGenerationHelpers({
   };
 }
 
-module.exports = {
-  ASSET_GENERATION_DECISION_SOURCE,
-  ASSET_TARGET_CONTRACT_VERSION,
-  assetTargetContract,
-  assetRoleNeedsImage,
-  generatedPromptAspectConflict,
-  generatedAssetTargetSpec,
-  createAssetGenerationHelpers,
-  normalizeAssetRole,
-  recipeGenerationRule
-};
+module.exports = { ASSET_GENERATION_DECISION_SOURCE, ASSET_TARGET_CONTRACT_VERSION, assetTargetContract, assetRoleNeedsImage, generatedPromptAspectConflict, generatedAssetTargetSpec, createAssetGenerationHelpers, normalizeAssetRole, recipeGenerationRule };

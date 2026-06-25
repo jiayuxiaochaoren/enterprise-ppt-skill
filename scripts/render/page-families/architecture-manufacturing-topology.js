@@ -33,8 +33,9 @@ function createArchitectureManufacturingTopology(ctx = {}, deps = {}) {
     });
 
     const topology = resolveManufacturingTopologyLayers(s);
-    const contentY = Math.max(2.08, Number(header && header.contentTop) || 2.08);
-    const contentH = Math.max(3.34, 6.10 - contentY);
+    const contentY = Math.max(2.10, (Number(header && header.contentTop) || 2.08) + 0.08);
+    const contentBottom = 6.12;
+    const contentH = Math.max(3.42, Math.min(3.92, contentBottom - contentY));
     const side = { x:0.92, y:contentY, w:2.58, h:contentH };
     const board = { x:3.82, y:contentY, w:7.78, h:contentH };
     addRect(slide, side.x, side.y, side.w, side.h, C.ink, C.ink, { fill:{color:C.ink, transparency:0}, line:{color:C.ink, transparency:100} });
@@ -50,9 +51,10 @@ function createArchitectureManufacturingTopology(ctx = {}, deps = {}) {
 
     drawManufacturingReadout(slide, board, topology);
 
-    addRect(slide, 0.92, 6.34, 9.82, 0.28, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:0}, line:{color:C.line, transparency:100} });
+    const bottomBandY = Math.max(6.32, Math.min(6.48, contentY + contentH + 0.18));
+    addRect(slide, 0.92, bottomBandY, 9.82, 0.28, C.panelAlt || C.softBlue, C.line, { fill:{color:C.panelAlt || C.softBlue, transparency:0}, line:{color:C.line, transparency:100} });
     addText(slide, s.bottomLine || '产品对象、制造动作与交付资料保持一一对应，方便客户快速判断适配范围。', {
-      x:1.12, y:6.41, w:9.24, h:0.11, fontSize:7.2, color:C.body, fit:'shrink'
+      x:1.12, y:bottomBandY+0.07, w:9.24, h:0.11, fontSize:7.2, color:C.body, fit:'shrink'
     });
     drawFooter(slide, plan);
   };

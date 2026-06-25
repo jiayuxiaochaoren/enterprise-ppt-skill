@@ -18,14 +18,14 @@ const helpers = createCompositionStrategyHelpers({
   industryDesignDialect: () => ({ avoidComponents:['blocked-component'] }),
   industryPackFor: plan => {
     const map = {
-      'finance-investment': { coverArchetype:'boardroom-proof-cover', closingArchetype:'investment-decision-close' },
-      'manufacturing-operations': { coverArchetype:'native-industrial-structure-cover', closingArchetype:'decision-rollout-close' },
-      'healthcare-operations': { coverArchetype:'clinical-quality-cover', closingArchetype:'quality-handoff-close' },
-      'saas-technology': { coverArchetype:'platform-system-cover', closingArchetype:'adoption-rollout-close' },
-      'beauty-consumer': { coverArchetype:'editorial-brand-cover', closingArchetype:'premium-editorial-close' },
-      'lifestyle-food-tourism-fashion': { coverArchetype:'lifestyle-editorial-cover', closingArchetype:'experience-rollout-close' },
-      'government-public-sector': { coverArchetype:'civic-executive-cover', closingArchetype:'governance-next-step-close' },
-      'people-culture-company': { coverArchetype:'culture-soft-cover', closingArchetype:'contact-closing-close' }
+      'finance-investment': { coverArchetype:'boardroom-proof-cover', closingArchetype:'investment-decision-close', bodyLayoutPool:['metric-comparison', 'finance-bridge', 'risk-table'] },
+      'manufacturing-operations': { coverArchetype:'native-industrial-structure-cover', closingArchetype:'decision-rollout-close', bodyLayoutPool:['architecture', 'industry-chart', 'timeline', 'case-gallery', 'risk-table', 'report-board'] },
+      'healthcare-operations': { coverArchetype:'clinical-quality-cover', closingArchetype:'quality-handoff-close', bodyLayoutPool:['architecture', 'timeline', 'metric-comparison', 'risk-table'] },
+      'saas-technology': { coverArchetype:'platform-system-cover', closingArchetype:'adoption-rollout-close', bodyLayoutPool:['architecture', 'case-gallery', 'industry-chart', 'metric-comparison', 'risk-table', 'timeline'] },
+      'beauty-consumer': { coverArchetype:'editorial-brand-cover', closingArchetype:'premium-editorial-close', bodyLayoutPool:['case-gallery', 'product-showcase', 'metric-comparison', 'strategy-map', 'manifesto'] },
+      'lifestyle-food-tourism-fashion': { coverArchetype:'lifestyle-editorial-cover', closingArchetype:'experience-rollout-close', bodyLayoutPool:['case-gallery', 'timeline', 'metric-comparison'] },
+      'government-public-sector': { coverArchetype:'civic-executive-cover', closingArchetype:'governance-next-step-close', bodyLayoutPool:['report-board', 'risk-table', 'strategy-map'] },
+      'people-culture-company': { coverArchetype:'culture-soft-cover', closingArchetype:'contact-closing-close', bodyLayoutPool:['manifesto', 'case-gallery', 'metric-comparison'] }
     };
     return map[plan.industry] || null;
   },
@@ -107,6 +107,14 @@ assert.equal(
 assert.equal(
   helpers.compositionNameFor({ industry:'people-culture-company' }, {}, 'risk-table', 'governance-table-editorial'),
   'people-governance-banner-board'
+);
+assert.equal(
+  helpers.compositionNameFor({ industry:'manufacturing-operations' }, { signals:{ hasMetrics:true } }, 'memo'),
+  'metric-readout-board'
+);
+assert.equal(
+  helpers.compositionNameFor({ industry:'beauty-consumer' }, { signals:{ imageCount:3 }, themeIntent:'case-evidence' }, 'memo'),
+  'triptych-evidence-gallery'
 );
 
 assert.equal(helpers.rhythmRoleFor({}, { type:'closing' }, 4, 5), 'closer');

@@ -212,6 +212,33 @@ function assertChapterLayoutStageShells(ops) {
   });
 }
 
+function assertPathwayMapSegmentedConnectors() {
+  const ops = [];
+  const renderers = createChapterRenderers(createFakeCtx(ops));
+  renderers.chapterDivider(createSlide(ops), {}, section({
+    variant:'pathway-map',
+    title:'汇报路径',
+    subtitle:'能力证据路径',
+    items:[
+      { title:'经营底座', body:'团队与收入' },
+      { title:'产品组合', body:'产品与交付' },
+      { title:'月度趋势', body:'收入变化' },
+      { title:'渠道效率', body:'高回收样本' }
+    ]
+  }), 2);
+  assert(
+    !ops.some(op => op.name === 'addHairline'
+      && Math.abs(op.args[1] - 1.42) < 0.001
+      && Math.abs(op.args[2] - 3.72) < 0.001
+      && op.args[3] > 8.50),
+    'pathway map should not draw a full baseline underneath arrow connectors'
+  );
+  assert(
+    ops.filter(op => op.name === 'addShape' && op.args[0] === 'triangle').length >= 3,
+    'pathway map should render explicit arrow markers with connector gaps'
+  );
+}
+
 function assertChapterEditorialShell(ops) {
   const assertEditorialText = (text, expected) => {
     const op = ops.find(candidate => {
@@ -370,6 +397,7 @@ function main() {
   assertChapterEditorialShell(ops);
   assertChapterBoardBriefingShell(ops);
   assertManufacturingLineAgendaShell(ops);
+  assertPathwayMapSegmentedConnectors();
   assertAgendaChromePageNumber(ops);
   assert(ops.some(op => op.name === 'addArrowLine'), 'expected pathway arrows');
   assertChapterFooters(ops);

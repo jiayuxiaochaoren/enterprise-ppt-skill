@@ -23,8 +23,10 @@ function createBusinessExecutiveBlocksRenderer(ctx = {}, deps = {}) {
     addText(slide, `0${idx || ''}`, { x:0.62, y:0.62, w:0.48, h:0.18, fontSize:9, color:C.accent, charSpace:1.1 });
     addText(slide, 'OPERATING MODEL', { x:0.62, y:1.08, w:2.1, h:0.15, fontSize:7.8, color:C.cyan, charSpace:1.0 });
     addText(slide, premiumTitle(s.title || ''), { x:0.60, y:1.58, w:3.05, h:0.92, fontSize:23.5, bold:true, color:C.white, breakLine:true, fit:'shrink' });
-    addHairline(slide, 0.62, 2.85, 0.72, C.accent, 0, 0.75);
-    if (s.intro) addText(slide, s.intro, { x:0.62, y:3.28, w:2.95, h:0.55, fontSize:10.8, color:'CBD5E1', breakLine:true, valign:'top' });
+    if (s.intro) {
+      addHairline(slide, 0.62, 2.85, 0.72, C.accent, 0, 0.75);
+      addText(slide, s.intro, { x:0.62, y:3.28, w:2.95, h:0.55, fontSize:10.8, color:'CBD5E1', breakLine:true, valign:'top' });
+    }
     drawFooter(slide, plan, { x:0.62, y:6.86, w:2.6, h:0.14, fontSize:7.5 });
 
     addText(slide, '关键问题拆解', { x:4.92, y:0.76, w:2.8, h:0.25, fontSize:15.5, bold:true, color:C.text });

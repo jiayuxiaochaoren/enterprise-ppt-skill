@@ -189,6 +189,26 @@ function assertGuidanceAndRiskBoardShell(ops) {
   });
 }
 
+function assertRiskActionLoopSafeLayout() {
+  const ops = [];
+  const renderers = createRiskBoardRenderers(createFakeCtx(ops));
+  renderers.riskActionLoop(createSlide(ops), { industry:'manufacturing-operations' }, riskSection({
+    title:'制造交付要把项目、安装、验收和维保放进同一闭环',
+    claim:'把需求、安装、验收和维保放进同一条经营路径，项目经验才能被持续复用。',
+    layoutVariant:'manufacturing-action-loop'
+  }), 6);
+  const core = ops.find(op => op.name === 'addRect'
+    && Math.abs(op.args[1] - 0.92) < 0.001
+    && Math.abs(op.args[3] - 2.86) < 0.001);
+  assert(core, 'expected action-loop core card');
+  assert(core.args[2] > 2.20, 'long-title action-loop core should move below the wrapped header');
+  assert(core.args[4] >= 3.80, 'long-title action-loop core should keep enough height instead of compressing content');
+  assert(
+    !ops.some(op => op.name === 'addText' && String(op.args[1] || '').includes('每项经营动作都需要')),
+    'action-loop should not render default note copy when no explicit note is provided'
+  );
+}
+
 function main() {
   const ops = [];
   const ctx = createFakeCtx(ops);
@@ -230,6 +250,7 @@ function main() {
   assertGuidanceAndRiskBoardShell(ops);
   assertMaterialityMatrixBoardShell(ops);
   assertGovernanceTableEditorialShell(ops);
+  assertRiskActionLoopSafeLayout();
   assert(ops.some(op => op.name === 'addClockwiseLoopConnectors'), 'expected responsibility loop connectors');
   const loopConnectors = ops.find(op => op.name === 'addClockwiseLoopConnectors');
   const loopSlots = (loopConnectors && loopConnectors.args[1]) || [];

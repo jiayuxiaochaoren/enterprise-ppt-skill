@@ -25,21 +25,21 @@ function createClosingFinanceInvestmentDecisionRenderer(ctx = {}, helpers = {}) 
   } = createRightSideCardRenderer(ctx);
 
   return function closingFinanceInvestmentDecision(slide, plan, s, idx) {
-    drawClosingHeader(slide, plan, s, idx, { kicker:'INVESTMENT DECISION', titleW:6.80, titleSize:28.0, subtitleY:2.04, subtitleW:6.40 });
+    drawClosingHeader(slide, plan, s, idx, { kicker:'投资决策收口', titleW:6.80, titleSize:28.0, subtitleY:2.04, subtitleW:6.40 });
 
     const memo = drawRightSideCard(slide, { x:8.34, y:1.34, w:3.06, h:4.86 }, {
       fill:C.ink,
       railColor:C.accent,
       railTransparency:18
     });
-    addLabel(slide, 'IC MEMO', { x:memo.x+0.30, y:memo.y+0.34, w:0.92, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
-    addText(slide, 'DECISION', { x:memo.x+0.30, y:memo.y+0.78, w:1.78, h:0.34, fontFace:profileFont('latin'), fontSize:21.5, bold:true, color:C.white, fit:'shrink' });
+    addLabel(slide, '投资备忘', { x:memo.x+0.30, y:memo.y+0.34, w:0.92, h:0.10, fontSize:5.8, color:C.accent, charSpace:0 });
+    addText(slide, '决策', { x:memo.x+0.30, y:memo.y+0.78, w:1.78, h:0.34, fontFace:profileFont('latin'), fontSize:21.5, bold:true, color:C.white, fit:'shrink' });
     addHairline(slide, memo.x+0.30, memo.y+1.62, 1.10, C.accent, 0, 0.56);
     addText(slide, s.decision || s.note || copyFallback(plan, 'closingNote'), { x:memo.x+0.30, y:memo.y+2.02, w:2.08, h:0.56, fontSize:8.8, bold:true, color:C.captionOnImage, fit:'shrink', breakLine:true });
     [
-      ['CAPITAL', '配置动作'],
-      ['RISK', '风险约束'],
-      ['EXIT', '退出节奏']
+      ['资本', '配置动作'],
+      ['风险', '风险约束'],
+      ['退出', '退出节奏']
     ].forEach((row,i)=>{
       const y = memo.y + 3.46 + i*0.42;
       const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
@@ -49,7 +49,7 @@ function createClosingFinanceInvestmentDecisionRenderer(ctx = {}, helpers = {}) 
 
     const actions = closingActions(s);
     addRect(slide, 0.92, 3.28, 6.72, 2.26, panelFill(), C.line, { fill:{color:panelFill(), transparency:0}, line:{color:C.line, transparency:14, width:0.46} });
-    addLabel(slide, 'NEXT CAPITAL ACTIONS', { x:1.18, y:3.58, w:1.62, h:0.10, fontSize:5.8, color:C.accent, charSpace:0.8 });
+    addLabel(slide, '下一步资本动作', { x:1.18, y:3.58, w:1.62, h:0.10, fontSize:5.8, color:C.accent, charSpace:0 });
     actions.forEach((a,i)=>{
       const y = 4.04 + i*0.44;
       const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
