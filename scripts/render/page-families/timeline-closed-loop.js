@@ -35,12 +35,13 @@ function createTimelineClosedLoop(ctx = {}, deps = {}) {
     });
     const phases = timelineClosedLoopPhases(s);
     const contentY = Math.max(2.04, Number(header && header.contentTop) || 2.04);
-    const boardBottom = manufacturing && !hasExternalNote ? 6.58 : 6.22;
+    const roomyLoop = !hasExternalNote;
+    const boardBottom = manufacturing && roomyLoop ? 6.58 : (roomyLoop ? 6.62 : 6.22);
     const board = { x:0.92, y:contentY, w:10.84, h:Math.max(0.10, boardBottom - contentY) };
     const cardW = 2.46;
-    const cardH = manufacturing && !hasExternalNote ? 1.14 : 1.06;
-    const topPad = manufacturing && !hasExternalNote ? 0.44 : 0.70;
-    const bottomPad = manufacturing && !hasExternalNote ? 0.34 : 0.38;
+    const cardH = manufacturing && roomyLoop ? 1.14 : 1.06;
+    const topPad = manufacturing && roomyLoop ? 0.44 : (roomyLoop ? 0.52 : 0.70);
+    const bottomPad = manufacturing && roomyLoop ? 0.34 : (roomyLoop ? 0.34 : 0.38);
     const topY = board.y + topPad;
     const bottomY = board.y + board.h - cardH - bottomPad;
     const middleGap = Math.max(0.18, bottomY - (topY + cardH));

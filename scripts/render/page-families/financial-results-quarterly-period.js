@@ -27,18 +27,18 @@ function createQuarterlyPeriodPanel(ctx = {}) {
       ['原因', logic.cause || '客户复购、价格纪律和费用边界共同推动结果。', C.cyan],
       ['边界', logic.metric || logic.nextMove || s.note || '按结果、现金和毛利三条边界安排动作。', C.violet]
     ].forEach((item, i) => {
-      const y = periodBox.y + 1.44 + i * 0.58;
-      addRect(slide, periodBox.x+0.24, y, periodBox.w-0.48, 0.42, i === 0 ? C.ink2 || '111827' : C.ink, item[2], {
+      const y = periodBox.y + 1.35 + i * 0.72;
+      addRect(slide, periodBox.x+0.24, y, periodBox.w-0.48, 0.50, i === 0 ? C.ink2 || '111827' : C.ink, item[2], {
         fill:{ color:i === 0 ? (C.ink2 || '111827') : C.ink, transparency:i === 0 ? 0 : 10 },
         line:{ color:item[2], transparency:42, width:0.28 }
       });
       addLabel(slide, item[0], {
-        x:periodBox.x+0.34, y:y+0.15, w:0.34, h:0.08,
+        x:periodBox.x+0.34, y:y+0.19, w:0.34, h:0.08,
         fontSize:5.4, color:item[2], charSpace:0
       });
-      addText(slide, compactEvidenceCaption(item[1], 24), {
-        x:periodBox.x+0.74, y:y+0.10, w:1.34, h:0.16,
-        fontSize:6.8, color:C.captionOnImage, fit:'shrink', breakLine:true
+      addText(slide, compactEvidenceCaption(item[1], 30), {
+        x:periodBox.x+0.72, y:y+0.09, w:1.50, h:0.30,
+        fontSize:6.3, color:C.captionOnImage, fit:'shrink', breakLine:true
       });
     });
   }

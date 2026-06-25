@@ -28,11 +28,35 @@ function createTimelineClosedLoopPhaseCardsRenderer(ctx = {}) {
         fontSize:8.2, color:C.captionOnImage || 'CBD5E1', fit:'shrink', breakLine:true, valign:'mid'
       });
     });
-    addClockwiseLoopConnectors(slide, pos.map(p => ({ x:p.x, y:p.y, w:cardW, h:cardH })), [C.accent, C.cyan, C.violet, C.accent], {
-      gap:0.24,
-      transparency:30,
-      width:0.54
-    });
+
+    const [tl, tr, br, bl] = pos.map(p => ({ x:p.x, y:p.y, w:cardW, h:cardH }));
+    const topY = tl.y + cardH / 2;
+    const bottomY = bl.y + cardH / 2;
+    const leftX = tl.x + cardW / 2;
+    const rightX = tr.x + cardW / 2;
+    const lineOpts = { transparency:30, width:0.54 };
+    const arrowBack = Object.assign({}, lineOpts, { beginArrowType:'triangle', endArrowType:null });
+    if (typeof ctx.addArrowLine === 'function') {
+      const topLeftStart = tl.x + cardW + 0.28;
+      const topRightEnd = tr.x - 0.28;
+      const bottomLeftStart = bl.x + cardW + 0.28;
+      const bottomRightEnd = br.x - 0.28;
+      const rightTopStart = tr.y + cardH + 0.28;
+      const rightBottomEnd = br.y - 0.28;
+      const leftTopStart = tl.y + cardH + 0.28;
+      const leftBottomEnd = bl.y - 0.28;
+
+      if (topRightEnd > topLeftStart) ctx.addArrowLine(slide, topLeftStart, topY, topRightEnd - topLeftStart, 0, C.accent, lineOpts);
+      if (rightBottomEnd > rightTopStart) ctx.addArrowLine(slide, rightX, rightTopStart, 0, rightBottomEnd - rightTopStart, C.cyan, lineOpts);
+      if (bottomRightEnd > bottomLeftStart) ctx.addArrowLine(slide, bottomLeftStart, bottomY, bottomRightEnd - bottomLeftStart, 0, C.violet, arrowBack);
+      if (leftBottomEnd > leftTopStart) ctx.addArrowLine(slide, leftX, leftTopStart, 0, leftBottomEnd - leftTopStart, C.accent, arrowBack);
+    } else {
+      addClockwiseLoopConnectors(slide, pos.map(p => ({ x:p.x, y:p.y, w:cardW, h:cardH })), [C.accent, C.cyan, C.violet, C.accent], {
+        gap:0.24,
+        transparency:30,
+        width:0.54
+      });
+    }
   }
 
   return {

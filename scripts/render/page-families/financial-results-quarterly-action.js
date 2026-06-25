@@ -23,23 +23,15 @@ function createQuarterlyActionRail(ctx = {}) {
     ].forEach((row, i) => {
       const y = action.y + 0.78 + i * 0.92;
       const accent = i === 0 ? C.accent : (i === 1 ? C.cyan : C.violet);
-      addRect(slide, action.x+0.20, y-0.02, action.w-0.40, 0.74, 'FFFFFF', accent, {
+      addRect(slide, action.x+0.20, y-0.02, action.w-0.40, 0.78, 'FFFFFF', accent, {
         fill:{ color:'FFFFFF', transparency:0 },
         line:{ color:accent, transparency:34, width:0.30 }
       });
       addText(slide, row[0], {
         x:action.x+0.34, y:y+0.14, w:0.92, h:0.12, fontSize:8.4, bold:true, color:accent, fit:'shrink'
       });
-      addText(slide, compactEvidenceCaption(row[1], 34), {
-        x:action.x+0.34, y:y+0.34, w:2.16, h:0.18, fontSize:7.0, color:C.body, fit:'shrink', breakLine:true
-      });
-      addRect(slide, action.x+action.w-0.72, y+0.24, 0.30, 0.03, accent, accent, {
-        fill:{ color:accent, transparency:18 },
-        line:{color:accent, transparency:100}
-      });
-      addRect(slide, action.x+action.w-0.58, y+0.48, 0.44, 0.03, accent, accent, {
-        fill:{ color:accent, transparency:0 },
-        line:{color:accent, transparency:100}
+      addText(slide, compactEvidenceCaption(row[1], 46), {
+        x:action.x+0.34, y:y+0.33, w:2.28, h:0.32, fontSize:6.4, color:C.body, fit:'shrink', breakLine:true
       });
     });
   }

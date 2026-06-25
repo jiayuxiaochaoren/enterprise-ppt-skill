@@ -248,9 +248,9 @@ function assertQuarterlyResultsShell(ops) {
   });
 
   [
-    [8.66, 2.82, 2.56, 0.74],
-    [8.66, 3.74, 2.56, 0.74],
-    [8.66, 4.66, 2.56, 0.74]
+    [8.66, 2.82, 2.56, 0.78],
+    [8.66, 3.74, 2.56, 0.78],
+    [8.66, 4.66, 2.56, 0.78]
   ].forEach(([x, y, w, h]) => {
     const actionCard = ops.find(candidate => candidate.name === 'addRect'
       && Math.abs(candidate.args[1] - x) < 0.001
@@ -259,6 +259,27 @@ function assertQuarterlyResultsShell(ops) {
       && Math.abs(candidate.args[4] - h) < 0.001);
     assert(actionCard, `expected quarterly action card ${x}/${y}`);
   });
+
+  [
+    [1.16, 3.41, 1.98, 0.50],
+    [1.16, 4.13, 1.98, 0.50],
+    [1.16, 4.85, 1.98, 0.50]
+  ].forEach(([x, y, w, h]) => {
+    const periodCard = ops.find(candidate => candidate.name === 'addRect'
+      && Math.abs(candidate.args[1] - x) < 0.001
+      && Math.abs(candidate.args[2] - y) < 0.001
+      && Math.abs(candidate.args[3] - w) < 0.001
+      && Math.abs(candidate.args[4] - h) < 0.001);
+    assert(periodCard, `expected quarterly period card with enough body space ${x}/${y}`);
+  });
+
+  assert(
+    !ops.some(candidate => candidate.name === 'addRect'
+      && candidate.args[1] > 9.6
+      && candidate.args[3] <= 0.36
+      && candidate.args[4] <= 0.04),
+    'quarterly action cards should not emit decorative micro-lines that look like broken borders'
+  );
 
   ['REPORTING PERIOD', 'SOURCE', 'Management reporting'].forEach(label => {
     assert(
