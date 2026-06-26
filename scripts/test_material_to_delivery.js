@@ -3,6 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const cp = require('child_process');
+const zlib = require('zlib');
 const {
   resolveAssetStage
 } = require('./material/delivery-stages');
@@ -11,6 +12,50 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'outputs', 'test-material-to-delivery');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+
+function crc32(buf) {
+  let crc = -1;
+  for (const byte of buf) {
+    crc ^= byte;
+    for (let i = 0; i < 8; i++) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+  }
+  return (crc ^ -1) >>> 0;
+}
+
+function pngChunk(type, data = Buffer.alloc(0)) {
+  const typeBuf = Buffer.from(type, 'ascii');
+  const len = Buffer.alloc(4);
+  len.writeUInt32BE(data.length, 0);
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(Buffer.concat([typeBuf, data])), 0);
+  return Buffer.concat([len, typeBuf, data, crc]);
+}
+
+function writeSolidPng(file, w, h, rgb = [94, 32, 38]) {
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0);
+  ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2;
+  const rowLen = 1 + w * 3;
+  const raw = Buffer.alloc(rowLen * h);
+  for (let y = 0; y < h; y++) {
+    const row = y * rowLen;
+    raw[row] = 0;
+    for (let x = 0; x < w; x++) {
+      const p = row + 1 + x * 3;
+      raw[p] = rgb[0];
+      raw[p + 1] = rgb[1];
+      raw[p + 2] = rgb[2];
+    }
+  }
+  fs.writeFileSync(file, Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    pngChunk('IHDR', ihdr),
+    pngChunk('IDAT', zlib.deflateSync(raw)),
+    pngChunk('IEND')
+  ]));
+}
 
 const inputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ppt-material-delivery-'));
 const brief = path.join(inputDir, 'brief.md');
@@ -98,10 +143,7 @@ assert.ok(report.nextActions.some(item => /Auto-draft/.test(item)));
 assert.ok(report.nextActions.some(item => /asset-decision-gate\.json/.test(item)));
 
 const autoBridgeAsset = path.join(OUT, 'auto-bridge-generated.png');
-fs.writeFileSync(autoBridgeAsset, Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
-  'base64'
-));
+writeSolidPng(autoBridgeAsset, 1600, 900);
 const autoBridgeScript = path.join(OUT, 'mock-imagegen-bridge.js');
 fs.writeFileSync(autoBridgeScript, [
   "const fs = require('fs');",

@@ -11,6 +11,9 @@ const {
 } = require('../design/asset-generation');
 const { preferredAuthorizationStatus } = require('../design/source-evidence');
 
+const DEFAULT_ASPECT_MISMATCH_LIMIT = 0.25;
+const FULL_BLEED_ASPECT_MISMATCH_LIMIT = 0.08;
+
 function readJson(file) {
   return JSON.parse(fs.readFileSync(path.resolve(file), 'utf8'));
 }
@@ -146,6 +149,47 @@ function imageAspectRatioFor(asset = {}) {
     : null;
 }
 
+function targetSlotAspect(target = {}) {
+  const slot = target.slot || {};
+  const w = Number(slot.w);
+  const h = Number(slot.h);
+  return Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0
+    ? w / h
+    : 0;
+}
+
+function isFullBleedAspectTarget(slide = {}, spec = {}, asset = {}, target = {}) {
+  const source = String(target.targetSource || '').toLowerCase();
+  if (source === 'renderer-slot:cover' || source === 'renderer-slot:cover-dark') return true;
+  const slot = target.slot || {};
+  const w = Number(slot.w);
+  const h = Number(slot.h);
+  const aspect = targetSlotAspect(target);
+  const fullSlideSlot = Number.isFinite(w) && Number.isFinite(h) && w >= 12 && h >= 6.7 && aspect >= 1.5;
+  const text = [
+    slide.type,
+    slide.layoutVariant,
+    slide.variant,
+    slide.coverStyle,
+    slide.cover_style,
+    slide.imageSlotKind,
+    slide.imageSlot,
+    slide.rendererImageSlot,
+    slide.visual && slide.visual.role,
+    slide.visual && slide.visual.targetUse,
+    slide.visual && (slide.visual.slotKind || slide.visual.rendererSlot),
+    spec.role,
+    spec.targetUse,
+    asset.role,
+    asset.targetUse,
+    target.role,
+    target.originalRole,
+    target.resolvedRole,
+    source
+  ].filter(Boolean).join(' ').toLowerCase();
+  return fullSlideSlot || /full[-\s]?bleed|background|backdrop/.test(text);
+}
+
 function targetForBinding(plan = {}, slide = {}, spec = {}, asset = {}) {
   const explicitTarget = asset.target || spec.target || (asset.assetGeneration && asset.assetGeneration.target) || null;
   const targetAspectRatio = asset.targetAspectRatio || spec.targetAspectRatio || (explicitTarget && explicitTarget.aspectRatio);
@@ -185,18 +229,24 @@ function applyAssetTargetValidation(plan = {}, slide = {}, spec = {}, asset = {}
   const aspectMismatch = imageAspectRatio && targetAspectRatio
     ? Number((Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio).toFixed(3))
     : null;
-  const allowMismatch = spec.allowAspectMismatch === true || asset.allowAspectMismatch === true;
+  const strictFullBleedTarget = isFullBleedAspectTarget(slide, spec, asset, target);
+  const aspectMismatchLimit = strictFullBleedTarget ? FULL_BLEED_ASPECT_MISMATCH_LIMIT : DEFAULT_ASPECT_MISMATCH_LIMIT;
+  const rawAllowMismatch = spec.allowAspectMismatch === true || asset.allowAspectMismatch === true;
+  const allowMismatch = rawAllowMismatch && !strictFullBleedTarget;
   const enriched = Object.assign({}, asset, {
     assetTarget: target,
     imageAspectRatio,
     targetAspectRatio: targetAspectRatio || undefined,
     aspectMismatch: aspectMismatch == null ? undefined : aspectMismatch,
-    aspectMismatchAllowed: allowMismatch || undefined
+    aspectMismatchAllowed: allowMismatch || undefined,
+    aspectMismatchLimit,
+    strictAspectTarget: strictFullBleedTarget || undefined,
+    aspectMismatchAllowanceSuppressed: rawAllowMismatch && strictFullBleedTarget || undefined
   });
   if (
     shouldEnforceAspectTarget(slide, spec, asset, target) &&
     aspectMismatch != null &&
-    aspectMismatch > 0.25 &&
+    aspectMismatch > aspectMismatchLimit &&
     !allowMismatch
   ) {
     errors.push({
@@ -207,7 +257,12 @@ function applyAssetTargetValidation(plan = {}, slide = {}, spec = {}, asset = {}
       imageAspectRatio,
       targetAspectRatio,
       aspectMismatch,
-      message: `asset aspect ratio ${imageAspectRatio} differs from target ${targetAspectRatio} by ${Math.round(aspectMismatch * 100)}%`
+      aspectMismatchLimit,
+      strictAspectTarget: strictFullBleedTarget || undefined,
+      allowAspectMismatchIgnored: rawAllowMismatch && strictFullBleedTarget || undefined,
+      message: strictFullBleedTarget
+        ? `full-bleed asset aspect ratio ${imageAspectRatio} differs from target ${targetAspectRatio} by ${Math.round(aspectMismatch * 100)}%; allowAspectMismatch is ignored for cover/background slots`
+        : `asset aspect ratio ${imageAspectRatio} differs from target ${targetAspectRatio} by ${Math.round(aspectMismatch * 100)}%`
     });
   }
   return enriched;
@@ -222,6 +277,8 @@ function boundAssetAuditFor(item = {}) {
     targetAspectRatio: item.targetAspectRatio,
     aspectMismatch: item.aspectMismatch == null ? undefined : item.aspectMismatch,
     aspectMismatchAllowed: item.aspectMismatchAllowed || undefined,
+    aspectMismatchLimit: item.aspectMismatchLimit,
+    strictAspectTarget: item.strictAspectTarget || undefined,
     targetSlot: target.slot || undefined,
     targetSource: target.targetSource || undefined,
     fitPolicy: target.fitPolicy || undefined,
@@ -248,6 +305,8 @@ function boundAssetGenerationFields(assets = []) {
     aspectMismatch: worst && worst.aspectMismatch,
     worstAspectMismatch: worst && worst.aspectMismatch,
     aspectMismatchAllowed: assets.some(item => item.aspectMismatchAllowed === true) || undefined,
+    aspectMismatchLimit: worst && worst.aspectMismatchLimit,
+    strictAspectTarget: assets.some(item => item.strictAspectTarget === true) || undefined,
     boundAssets,
     assetCandidateRanking: primary.assetCandidateRanking || undefined
   };

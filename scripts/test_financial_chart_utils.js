@@ -66,5 +66,32 @@ assert.equal(firstLabel.label, '私域CRM');
 assert.equal(secondLabel.label, '抖音');
 assert.ok(firstLabel.x >= chart.x + 0.08 && firstLabel.x + firstLabel.w <= chart.x + chart.w - 0.08);
 assert.ok(secondLabel.y >= chart.y + 0.08 && secondLabel.y + secondLabel.h <= chart.y + chart.h - 0.08);
+assert.equal(firstLabel.align, 'left');
+
+const restaurantChart = { x:1.46, y:2.72, w:9.78, h:2.84 };
+const restaurantBubbles = computeChannelMatrixBubbles([
+  { label:'美团外卖', value:'6683万', x:78, y:64, size:88 },
+  { label:'小程序自提', value:'6312万', x:42, y:70, size:78 },
+  { label:'堂食', value:'5975万', x:46, y:52, size:70 },
+  { label:'企业团餐', value:'5806万', x:58, y:46, size:68 },
+  { label:'饿了么', value:'5489万', x:64, y:59, size:62 }
+], restaurantChart, ['A', 'B', 'C', 'D', 'E']);
+const restaurantLabels = [];
+function labelAnchorDistance(point, labelBox) {
+  const anchorX = labelBox.align === 'right'
+    ? labelBox.x + labelBox.w
+    : (labelBox.align === 'center' ? labelBox.x + labelBox.w / 2 : labelBox.x);
+  return Math.max(0, Math.hypot(anchorX - point.x, (labelBox.y + labelBox.h / 2) - point.y) - point.r);
+}
+restaurantBubbles.forEach(point => {
+  const labelBox = chooseChannelLabelBox(point, { chart:restaurantChart, bubbles:restaurantBubbles, occupiedLabels:restaurantLabels });
+  restaurantLabels.push(labelBox);
+  assert.ok(['left', 'right', 'center'].includes(labelBox.align), `${labelBox.label} should carry a text anchor`);
+  assert.ok(labelAnchorDistance(point, labelBox) <= 0.24, `${labelBox.label} should stay visually attached to its bubble`);
+});
+const pickupLabel = restaurantLabels.find(labelBox => labelBox.label === '小程序自提');
+const dineInLabel = restaurantLabels.find(labelBox => labelBox.label === '堂食');
+assert.equal(pickupLabel.align, 'right', 'left-side channel labels should right-align toward their bubble');
+assert.equal(dineInLabel.align, 'center', 'vertical channel labels should center-align over their bubble');
 
 console.log('financial chart utils ok');

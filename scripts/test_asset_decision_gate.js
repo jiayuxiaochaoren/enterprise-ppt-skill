@@ -77,7 +77,15 @@ const rendererCropAssets = boundAssetsForMeta({}, [], ['cover-crop.png'], [{
   imageAspectRatio:1.5,
   aspectMismatch:0.5
 }], { aspectRatio:1.778, fitPolicy:'cover' });
-assert.equal(rendererCropAssets[0].aspectMismatchAllowed, true);
+assert.equal(rendererCropAssets[0].aspectMismatchAllowed, undefined);
+const rendererContainAssets = boundAssetsForMeta({}, [], ['cover-contain.png'], [{
+  fit:'contain',
+  slot:{ w:2, h:2 },
+  slotAspectRatio:1,
+  imageAspectRatio:1.5,
+  aspectMismatch:0.5
+}], { aspectRatio:1.778, fitPolicy:'cover' });
+assert.equal(rendererContainAssets[0].aspectMismatchAllowed, true);
 
 function writePngHeader(file, w, h) {
   const b = Buffer.alloc(33);
@@ -130,8 +138,13 @@ const invalidBindMapPath = path.join(OUT, 'bind-map-invalid.json');
 const tinyPngPath = path.join(OUT, 'tiny.png');
 const horizontalPngPath = path.join(OUT, 'wide-16x9.png');
 const verticalPngPath = path.join(OUT, 'vertical-split.png');
+const squarePngPath = path.join(OUT, 'square-cover.png');
 const galleryPngPath = path.join(OUT, 'gallery-wide.png');
 const galleryPngPath2 = path.join(OUT, 'gallery-wide-2.png');
+const fullBleedCoverPlanPath = path.join(OUT, 'full-bleed-cover-plan.json');
+const fullBleedCoverBadMapPath = path.join(OUT, 'full-bleed-cover-bad-map.json');
+const fullBleedCoverGoodMapPath = path.join(OUT, 'full-bleed-cover-good-map.json');
+const fullBleedCoverGoodOutPath = path.join(OUT, 'full-bleed-cover-good.bound.json');
 const aspectBindPlanPath = path.join(OUT, 'aspect-bind-plan.json');
 const aspectBadMapPath = path.join(OUT, 'aspect-bind-wide-map.json');
 const aspectGoodMapPath = path.join(OUT, 'aspect-bind-vertical-map.json');
@@ -267,10 +280,7 @@ assert.ok(bridgePrompts.prompts.every(p => p.targetAspectRatio), 'prompt planner
 assert.equal(bridgePrompts.prompts.some(p => p.promptAspectConflict), false, 'planned prompts should not contain target aspect conflicts');
 
 const bridgeMockAsset = path.join(OUT, 'bridge-auto-generated.png');
-fs.writeFileSync(bridgeMockAsset, Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
-  'base64'
-));
+writePngHeader(bridgeMockAsset, 1600, 900);
 const bridgeMockScript = path.join(OUT, 'mock-imagegen-bridge.js');
 fs.writeFileSync(bridgeMockScript, [
   "const fs = require('fs');",
@@ -739,6 +749,7 @@ assert.equal(visualQa.render_meta_schema_qa.status, 'pass');
 
 writePngHeader(horizontalPngPath, 1600, 900);
 writePngHeader(verticalPngPath, 581, 1024);
+writePngHeader(squarePngPath, 1000, 1000);
 writePngHeader(galleryPngPath, 1600, 989);
 writePngHeader(galleryPngPath2, 1200, 742);
 fs.writeFileSync(aspectBindPlanPath, JSON.stringify({
@@ -863,6 +874,63 @@ const galleryBoundPlan = JSON.parse(fs.readFileSync(galleryBindOutPath, 'utf8'))
 assert.equal(galleryBoundPlan.slides[0].assetGeneration.boundAssets.length, 2);
 assert.equal(galleryBoundPlan.slides[0].sourceTrace.imageProvenance.length, 2);
 assert.equal(galleryBoundPlan.slides[0].assetGeneration.worstAspectMismatch, galleryBoundPlan.slides[0].assetGeneration.aspectMismatch);
+
+fs.writeFileSync(fullBleedCoverPlanPath, JSON.stringify({
+  title: 'Full bleed cover aspect validation',
+  slides: [{
+    type: 'cover',
+    title: '全页封面比例校验',
+    visual: { mode: 'generated', role: 'cover' },
+    assetGeneration: {
+      decisionSource: 'asset-decision-gate/v1',
+      status: 'required',
+      role: 'cover',
+      originalRole: 'cover',
+      resolvedRole: 'cover',
+      mustBind: true,
+      syntheticOnly: true
+    }
+  }]
+}, null, 2));
+fs.writeFileSync(fullBleedCoverBadMapPath, JSON.stringify({
+  '1': {
+    path: path.relative(ROOT, squarePngPath),
+    type: 'generated-image',
+    generated: true,
+    role: 'cover',
+    allowAspectMismatch: true,
+    source: 'mock square imagegen output'
+  }
+}, null, 2));
+const fullBleedCoverBadBind = cp.spawnSync(process.execPath, ['scripts/bind_generated_assets.js', fullBleedCoverPlanPath, fullBleedCoverBadMapPath, path.join(OUT, 'full-bleed-cover-bad.bound.json')], {
+  cwd: ROOT,
+  encoding: 'utf8'
+});
+assert.notEqual(fullBleedCoverBadBind.status, 0, 'square generated image should not bind into a full-bleed 16:9 cover even with allowAspectMismatch');
+const fullBleedCoverBadPayload = JSON.parse(fullBleedCoverBadBind.stderr || fullBleedCoverBadBind.stdout);
+const fullBleedCoverBadError = fullBleedCoverBadPayload.errors.find(e => e.type === 'assetAspectMismatch');
+assert.ok(fullBleedCoverBadError, 'full-bleed cover mismatch should be reported as assetAspectMismatch');
+assert.equal(fullBleedCoverBadError.strictAspectTarget, true);
+assert.equal(fullBleedCoverBadError.allowAspectMismatchIgnored, true);
+
+fs.writeFileSync(fullBleedCoverGoodMapPath, JSON.stringify({
+  '1': {
+    path: path.relative(ROOT, horizontalPngPath),
+    type: 'generated-image',
+    generated: true,
+    role: 'cover',
+    source: 'mock 16:9 imagegen output'
+  }
+}, null, 2));
+const fullBleedCoverGoodBind = JSON.parse(cp.execFileSync(process.execPath, ['scripts/bind_generated_assets.js', fullBleedCoverPlanPath, fullBleedCoverGoodMapPath, fullBleedCoverGoodOutPath], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}));
+assert.equal(fullBleedCoverGoodBind.success, true);
+const fullBleedCoverGoodPlan = JSON.parse(fs.readFileSync(fullBleedCoverGoodOutPath, 'utf8'));
+assert.equal(fullBleedCoverGoodPlan.slides[0].assetGeneration.strictAspectTarget, true);
+assert.equal(fullBleedCoverGoodPlan.slides[0].assetGeneration.aspectMismatch <= 0.08, true);
+
 fs.writeFileSync(aspectBadMapPath, JSON.stringify({
   '1': {
     path: path.relative(ROOT, horizontalPngPath),

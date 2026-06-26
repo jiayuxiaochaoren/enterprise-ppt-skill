@@ -156,7 +156,7 @@ function createChannelEfficiencyMatrixDrawer(ctx = {}) {
         const w = p.x - p.r - (labelBox.x + labelBox.w + 0.05);
         if (w > 0.08) addHairline(slide, labelBox.x+labelBox.w+0.03, p.y, w, C.line, 44, 0.22);
       }
-      addText(slide, labelBox.label, { x:labelBox.x, y:labelBox.y+0.02, w:labelBox.w, h:labelBox.h, fontSize:7.0, bold:true, color:C.text, fit:'shrink' });
+      addText(slide, labelBox.label, { x:labelBox.x, y:labelBox.y+0.02, w:labelBox.w, h:labelBox.h, fontSize:7.0, bold:true, color:C.text, fit:'shrink', align:labelBox.align || 'left' });
     });
     const legendY = board.y + 3.56;
     ['低花费/高效率', '高花费/高效率', '需优化'].forEach((label, i) => {
