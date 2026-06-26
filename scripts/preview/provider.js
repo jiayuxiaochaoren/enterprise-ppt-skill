@@ -90,12 +90,18 @@ function detectPreviewProviders(env = process.env) {
   const keynote = keynoteAutomationStatus(env);
   const libreoffice = firstCommand([env.LIBREOFFICE_BIN, env.SOFFICE_BIN, 'soffice', 'libreoffice']);
   const pdftoppm = firstCommand([env.PDFTOPPM_BIN, 'pdftoppm']);
+  const quicklook = env.PPTX_DISABLE_QUICKLOOK_PREVIEW === '1' || process.platform !== 'darwin'
+    ? ''
+    : firstCommand([env.QLMANAGE_BIN, 'qlmanage']);
   return {
     keynote: keynote.available ? keynote.app : '',
     keynoteDetail: keynote.detail || '',
     libreoffice,
     pdftoppm,
-    preferredProvider: keynote.available ? 'keynote' : (libreoffice && pdftoppm ? 'libreoffice' : 'metadata_fallback')
+    quicklook,
+    preferredProvider: keynote.available
+      ? 'keynote'
+      : (libreoffice && pdftoppm ? 'libreoffice' : (quicklook ? 'quicklook' : 'metadata_fallback'))
   };
 }
 
@@ -166,6 +172,37 @@ function exportLibreOfficePreviews({ file, previewDir, run, env = process.env })
   return files.length ? { provider:'libreoffice', files, detail:`LibreOffice via ${path.basename(office)}` } : { provider:'metadata_fallback', files:[], detail:'LibreOffice/pdftoppm produced no PNG previews' };
 }
 
+function exportQuickLookCoverPreview({ file, previewDir, run, env = process.env }) {
+  if (env.PPTX_DISABLE_QUICKLOOK_PREVIEW === '1') return { skipped:true, detail:'PPTX_DISABLE_QUICKLOOK_PREVIEW=1' };
+  if (process.platform !== 'darwin') return { skipped:true, detail:'Quick Look preview is only available on macOS' };
+  const qlmanage = firstCommand([env.QLMANAGE_BIN, 'qlmanage']);
+  if (!qlmanage) return { skipped:true, detail:'qlmanage not found' };
+  const size = Math.max(320, Math.floor(numericEnv(env, 'PPTX_QUICKLOOK_PREVIEW_SIZE', 1800)));
+  let detail = '';
+  try {
+    run(qlmanage, ['-t', '-s', String(size), '-o', previewDir, file], { timeout:90000 });
+  } catch (e) {
+    detail = String(e.message || e);
+  }
+  const generated = previewFilesInDir(previewDir);
+  if (!generated.length) return { failed:true, detail:detail || 'Quick Look produced no PNG thumbnail' };
+  const newest = generated
+    .map(filePath => ({ filePath, mtime:fs.statSync(filePath).mtimeMs, size:fs.statSync(filePath).size }))
+    .sort((a, b) => (b.mtime - a.mtime) || (b.size - a.size))[0].filePath;
+  const target = path.join(previewDir, 'preview.cover.png');
+  if (path.resolve(newest) !== path.resolve(target)) {
+    fs.copyFileSync(newest, target);
+    generated.forEach(filePath => {
+      if (path.resolve(filePath) !== path.resolve(target)) fs.rmSync(filePath, { force:true });
+    });
+  }
+  return {
+    provider:'quicklook',
+    files:[target],
+    detail:'Quick Look cover thumbnail only; full slide previews are unavailable in this environment'
+  };
+}
+
 function exportPreviews(opts = {}) {
   const { file, previewDir, qualityMode = 'draft', previewOptional = false, env = process.env } = opts;
   const run = opts.run || ((cmd, argv, runOpts = {}) => cp.execFileSync(cmd, argv, Object.assign({ encoding:'utf8' }, runOpts)));
@@ -194,7 +231,14 @@ function exportPreviews(opts = {}) {
     state.detail = libre.detail || null;
     return { files:libre.files, state };
   }
-  const details = [keynote.detail, libre.detail].filter(Boolean).join('; ');
+  const quicklook = exportQuickLookCoverPreview({ file, previewDir, run, env });
+  if (quicklook.files && quicklook.files.length) {
+    state.status = 'cover_thumbnail';
+    state.provider = quicklook.provider;
+    state.detail = quicklook.detail || null;
+    return { files:quicklook.files, state };
+  }
+  const details = [keynote.detail, libre.detail, quicklook.detail].filter(Boolean).join('; ');
   state.status = libre.provider === 'metadata_fallback' ? 'metadata_fallback' : 'unavailable';
   state.provider = libre.provider === 'metadata_fallback' ? 'metadata_fallback' : 'unavailable';
   state.error = 'visual_preview_unavailable';
@@ -205,6 +249,7 @@ function exportPreviews(opts = {}) {
 module.exports = {
   commandExists,
   detectPreviewProviders,
+  exportQuickLookCoverPreview,
   exportPreviews,
   firstCommand,
   keynoteAutomationStatus,

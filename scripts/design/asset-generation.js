@@ -96,6 +96,7 @@ function createAssetGenerationHelpers({
     const text = flattenText(s);
     const slideHasImages = (Array.isArray(s.images) && s.images.length > 0) ||
       (s.visual && Array.isArray(s.visual.images) && s.visual.images.length > 0) ||
+      Boolean(s.coverImage || s.coverImagePath || s.cover_image || s.cover_image_path || plan.coverImage || plan.coverImagePath || plan.cover_image || plan.cover_image_path) ||
       Boolean(s.image || (s.visual && s.visual.image));
     const existingAsset = mediaForRole(plan, s, slideRole(s), { includeDefault:false });
     const requested = (s.visual && s.visual.mode === 'generated') || s.assetMode === 'generated';

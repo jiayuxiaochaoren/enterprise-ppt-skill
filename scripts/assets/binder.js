@@ -9,7 +9,10 @@ const {
 const {
   assetTargetContract
 } = require('../design/asset-generation');
-const { preferredAuthorizationStatus } = require('../design/source-evidence');
+const {
+  normalizeAuthorizationStatus,
+  preferredAuthorizationStatus
+} = require('../design/source-evidence');
 
 const DEFAULT_ASPECT_MISMATCH_LIMIT = 0.25;
 const FULL_BLEED_ASPECT_MISMATCH_LIMIT = 0.08;
@@ -46,9 +49,16 @@ function proofEligibilityFor(spec = {}, provenanceClass = provenanceClassFor(spe
   return 'synthetic-only';
 }
 
+function canonicalAuthorizationStatus(raw = '', proofEligibility = '') {
+  const fallback = proofEligibility === 'factual-proof' ? 'cleared' : 'internal-only';
+  const normalized = normalizeAuthorizationStatus(raw || fallback);
+  return ['cleared', 'internal-only', 'blocked', 'unknown'].includes(normalized) ? normalized : normalized || fallback;
+}
+
 function attributionFor(item = {}, parent = {}) {
   const provenanceClass = provenanceClassFor(Object.assign({}, parent, item));
   const proofEligibility = proofEligibilityFor(Object.assign({}, parent, item), provenanceClass);
+  const authorizationStatus = canonicalAuthorizationStatus(item.authorizationStatus || parent.authorizationStatus, proofEligibility);
   return {
     type: item.type || parent.type || provenanceClass,
     path: item.assetPath,
@@ -63,11 +73,31 @@ function attributionFor(item = {}, parent = {}) {
     assetTarget: item.assetTarget || parent.assetTarget || undefined,
     provenanceClass,
     proofEligibility,
-    authorizationStatus: item.authorizationStatus || parent.authorizationStatus || (proofEligibility === 'factual-proof' ? 'cleared' : 'synthetic-only'),
+    authorizationStatus,
     note: item.note || parent.note || (proofEligibility === 'factual-proof'
       ? 'Asset may be used as factual proof according to the supplied provenance.'
       : 'Asset must not be used as factual proof for named customers, real sites, real employees, real screenshots, or real data.')
   };
+}
+
+function shouldBindAsCoverImage(plan = {}, slide = {}, spec = {}, asset = {}, idx = 0) {
+  const text = [
+    slide.type,
+    slide.layoutVariant,
+    slide.variant,
+    slide.imageSlotKind,
+    slide.imageSlot,
+    slide.rendererImageSlot,
+    slide.visual && slide.visual.role,
+    slide.visual && slide.visual.targetUse,
+    spec.role,
+    spec.targetUse,
+    asset.role,
+    asset.targetUse,
+    asset.assetTarget && asset.assetTarget.targetSource
+  ].filter(Boolean).join(' ').toLowerCase();
+  return /cover/.test(String(slide.type || '')) ||
+    (idx === 0 && /cover|hero|background|backdrop|full[-\s]?bleed|renderer-slot:cover/.test(text));
 }
 
 function ensureSourceTrace(slide = {}) {
@@ -416,6 +446,11 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
       return;
     }
     const single = assets[0];
+    const bindAsCoverImage = shouldBindAsCoverImage(plan, slide, spec, single, idx);
+    if (bindAsCoverImage) {
+      slide.coverImage = single.assetPath;
+      if (idx === 0) plan.coverImage = single.assetPath;
+    }
     slide.visual = Object.assign({}, slide.visual || {}, {
       image: single.assetPath,
       mode: single.mode || (slide.visual && slide.visual.mode === 'photo' ? 'photo' : 'hybrid'),

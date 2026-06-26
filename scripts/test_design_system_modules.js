@@ -292,6 +292,9 @@ assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('denied'), 'bl
 assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('unresolved'), 'unknown');
 assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('pending'), 'unknown');
 assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('needs-review'), 'unknown');
+assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('user-selected generated cover'), 'internal-only');
+assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('conversation attachment generated image'), 'internal-only');
+assert.equal(sourceTraceAuditHelpers.normalizeAuthorizationStatus('user-provided'), 'cleared');
 const renderMetaHelpers = createRenderMetaHelpers();
 assert.equal(
   effectiveImageAuthorizationStatus({ authorizationStatus:'cleared' }, { assetAuthorizationStatus:'blocked' }),
@@ -307,6 +310,30 @@ assert.equal(
   effectiveImageAuthorizationStatus({ authorizationStatus:'cleared' }, {}),
   'cleared',
   'effective image authorization should preserve cleared when no stricter status exists'
+);
+const coverImageRenderDecision = renderMetaHelpers.assetDecisionForMeta({
+  coverImage:'assets/locked-cover.png'
+}, {
+  type:'cover',
+  coverImage:'assets/locked-cover.png',
+  sourceTrace:{
+    imageProvenance:[{
+      sourceId:'assets/locked-cover.png',
+      proofEligibility:'synthetic-only',
+      provenanceClass:'model-generated-preview',
+      authorizationStatus:'user-selected generated cover'
+    }]
+  }
+});
+assert.deepEqual(
+  coverImageRenderDecision.boundAssetRefs,
+  ['assets/locked-cover.png'],
+  'render meta asset refs should include locked coverImage exactly once'
+);
+assert.equal(
+  coverImageRenderDecision.authorizationStatusNormalized,
+  'internal-only',
+  'user-selected generated cover assets should pass the internal-only formal gate'
 );
 const unauthorizedRenderDecision = renderMetaHelpers.assetDecisionForMeta({}, {
   type:'content',

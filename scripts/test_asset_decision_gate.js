@@ -51,6 +51,26 @@ assert.equal(normalizedSaasStructureDeck.slides[1].generatedAssetPrompt, undefin
 assert.deepEqual(assetDecisionStateFor({ status:'blocked', factual:true }).allowedActions, ['provide_assets', 'skip_image']);
 assert.equal(assetDecisionStateFor({ status:'required', mustBind:true }).canAutoGenerate, true);
 
+const normalizedLockedCoverDeck = normalizeDeckPlan({
+  industry:'healthcare-operations',
+  title:'Locked cover asset regression',
+  slides:[{
+    type:'cover',
+    title:'已选择封面图',
+    coverImage:'assets/locked-cover.png',
+    assetGeneration:{
+      status:'required',
+      mustBind:true,
+      role:'cover'
+    }
+  }]
+});
+assert.equal(
+  normalizedLockedCoverDeck.slides[0].generatedAssetPrompt,
+  undefined,
+  'locked coverImage should prevent normalization from requesting a replacement generated asset'
+);
+
 const normalizedLifestyleStructureDeck = normalizeDeckPlan({
   industry:'lifestyle-food-tourism-fashion',
   visualIntent:'image-rich',
@@ -930,6 +950,9 @@ assert.equal(fullBleedCoverGoodBind.success, true);
 const fullBleedCoverGoodPlan = JSON.parse(fs.readFileSync(fullBleedCoverGoodOutPath, 'utf8'));
 assert.equal(fullBleedCoverGoodPlan.slides[0].assetGeneration.strictAspectTarget, true);
 assert.equal(fullBleedCoverGoodPlan.slides[0].assetGeneration.aspectMismatch <= 0.08, true);
+assert.equal(fullBleedCoverGoodPlan.coverImage, path.relative(ROOT, horizontalPngPath));
+assert.equal(fullBleedCoverGoodPlan.slides[0].coverImage, path.relative(ROOT, horizontalPngPath));
+assert.equal(fullBleedCoverGoodPlan.slides[0].sourceTrace.imageProvenance[0].authorizationStatus, 'internal-only');
 
 fs.writeFileSync(aspectBadMapPath, JSON.stringify({
   '1': {

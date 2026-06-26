@@ -39,6 +39,14 @@ function createRenderMetaHelpers(deps = {}) {
       if (Array.isArray(value)) value.forEach(push);
       else if (value) refs.push(String(value));
     };
+    push(plan.coverImage);
+    push(plan.coverImagePath);
+    push(plan.cover_image);
+    push(plan.cover_image_path);
+    push(s.coverImage);
+    push(s.coverImagePath);
+    push(s.cover_image);
+    push(s.cover_image_path);
     push(s.image);
     push(s.images);
     if (s.visual) {

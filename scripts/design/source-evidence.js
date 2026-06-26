@@ -27,8 +27,11 @@ function normalizeAuthorizationStatus(value = '') {
   if (!text) return 'unknown';
   if (/blocked|forbidden|denied|not authorized|unauthorized|未授权|禁止|不可外发/.test(text)) return 'blocked';
   if (/needs[\s_-]*review|needs[\s_-]*authorization|need[\s_-]*authorization|pending|unresolved|unknown|待确认|不明确|未确认/.test(text)) return 'unknown';
+  if (
+    /user[\s_-]*(selected|chosen|picked).*(generated|imagegen|synthetic|cover)|(?:generated|imagegen|synthetic).*user[\s_-]*(selected|chosen|picked)|conversation[\s_-]*(attachment|asset)|session[\s_-]*(generated|selected)/.test(text)
+  ) return 'internal-only';
   if (/internal[\s_-]*only|synthetic[\s_-]*only|internal|draft|内审|内部/.test(text)) return 'internal-only';
-  if (/cleared|approved|licensed|authorized|user[\s_-]*owned|public|公开|授权|可外发/.test(text)) return 'cleared';
+  if (/cleared|approved|licensed|authorized|user[\s_-]*(owned|provided|supplied)|client[\s_-]*(provided|supplied)|public|公开|授权|可外发/.test(text)) return 'cleared';
   return text;
 }
 

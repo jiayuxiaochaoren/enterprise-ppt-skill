@@ -18,6 +18,7 @@ const {
 
 function createSlide(ops) {
   return {
+    addImage: (...args) => ops.push({ name:'addImage', args }),
     addShape: (...args) => ops.push({ name:'addShape', args })
   };
 }
@@ -87,7 +88,7 @@ function createFakeCtx(ops, specRef) {
     industryProfile: plan => ({
       coverField: plan.coverField || (plan.industry === 'energy-utility' ? 'energy' : (plan.industry === 'manufacturing-operations' ? 'manufacturing' : 'generic')),
       insight: plan.coverInsight || 'Industry insight',
-      label: plan.industryLabel || 'DIGITAL'
+      label: plan.industryLabel || (plan.industry === 'healthcare-operations' ? '服务质量路径' : 'DIGITAL')
     }),
     isCompanyIntroPlan: plan => Boolean(plan && plan.isCompanyIntro),
     itemBody: value => (value && (value.body || value.note || value.text)) || '',
@@ -530,6 +531,34 @@ function main() {
   assert(
     !healthcareFallbackOps.some(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/clinical-proof.png'),
     'clinical stage cover should suppress synthetic proof-card imagery'
+  );
+
+  const healthcareLockedImageOps = [];
+  const healthcareLockedImageCtx = createFakeCtx(healthcareLockedImageOps, styleSpecRef);
+  const healthcareLockedImageRenderers = createCoverCoreRenderers(healthcareLockedImageCtx);
+  healthcareLockedImageRenderers.coverDark(createSlide(healthcareLockedImageOps), {
+    title:'知安堂健康中医馆连锁经营复盘',
+    industry:'healthcare-operations',
+    coverImage:'/exists/tcm-clinic-cover.png',
+    coverStylePreset:{ rendererFlavor:'brand-product-showcase' }
+  }, {
+    type:'cover',
+    title:'知安堂健康中医馆连锁经营复盘',
+    coverImage:'/exists/tcm-clinic-cover.png'
+  });
+  const clinicalCoverPhoto = healthcareLockedImageOps.find(op => op.name === 'addPhotoPanel' && op.args[1] === '/exists/tcm-clinic-cover.png');
+  assert(clinicalCoverPhoto, 'healthcare clinical cover should consume the locked coverImage');
+  assert.equal((clinicalCoverPhoto.args[6] || {}).role, 'cover-background');
+  assert.equal((clinicalCoverPhoto.args[6] || {}).transparency, 100);
+  assert.equal(clinicalCoverPhoto.args[2], 0);
+  assert.equal(clinicalCoverPhoto.args[4], 13.333);
+  assert(
+    healthcareLockedImageOps.some(op => op.name === 'addLabel' && op.args[1] === '服务质量路径'),
+    'healthcare cover route should use the clinical renderer before generic coverStyleRenderer'
+  );
+  assert(
+    !healthcareLockedImageOps.some(op => op.name === 'addLabel' && op.args[1] === '经营信号板'),
+    'generic brand-product-showcase renderer must not preempt healthcare clinical cover'
   );
 
   const financeFallbackOps = [];

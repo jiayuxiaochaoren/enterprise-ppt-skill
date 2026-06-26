@@ -63,6 +63,7 @@ const QUALITY_SEVERITY_MATRIX = {
   generatedEvidenceMisclassified: entry('asset_provenance', FAIL_ALL, 'generated illustrations cannot be classified as factual evidence'),
   generatedTargetMissing: entry('asset_provenance', FORMAL_FAIL, 'required generated imagery must carry an auditable target slot/aspect contract'),
   generatedPromptAspectConflict: entry('asset_provenance', FAIL_ALL, 'image generation prompts cannot contain aspect instructions that conflict with the target contract'),
+  coverImageNotConsumed: entry('asset_provenance', FAIL_ALL, 'declared cover images must be consumed by slide 1 and recorded in render-meta'),
   assetAspectMismatch: entry('asset_provenance', FAIL_ALL, 'bound generated assets must match the target slot aspect ratio unless explicitly allowed for review'),
   imageProvenanceMissing: entry('asset_provenance', FAIL_ALL, 'image evidence must include screenshot or image provenance'),
   unboundGeneratedAsset: entry('asset_provenance', FAIL_ALL, 'generated prompts must be bound to real or generated assets before delivery'),

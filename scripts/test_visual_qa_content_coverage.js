@@ -10,6 +10,21 @@ fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 let visualQaRunId = 0;
 
+function writePngHeader(file, w, h) {
+  const b = Buffer.alloc(33);
+  b[0] = 0x89;
+  b.write('PNG', 1, 'ascii');
+  b[4] = 0x0d;
+  b[5] = 0x0a;
+  b[6] = 0x1a;
+  b[7] = 0x0a;
+  b.writeUInt32BE(13, 8);
+  b.write('IHDR', 12, 'ascii');
+  b.writeUInt32BE(w, 16);
+  b.writeUInt32BE(h, 20);
+  fs.writeFileSync(file, b);
+}
+
 function runVisualQa(args) {
   const stdoutPath = path.join(OUT, `visual-qa-${++visualQaRunId}.json`);
   const stdoutFd = fs.openSync(stdoutPath, 'w');
@@ -61,7 +76,7 @@ evidenceSlide.addText('左侧正文已经覆盖主内容区，但右侧证据图
   color: '111827'
 });
 
-pptx.writeFile({ fileName: pptxPath }).then(() => {
+pptx.writeFile({ fileName: pptxPath }).then(async () => {
   const shrinkTextBox = {
     role: 'body',
     fontSize: 8.2,
@@ -208,6 +223,98 @@ pptx.writeFile({ fileName: pptxPath }).then(() => {
   assert.equal(shrinkFinding.readabilityRiskLevel, 'review');
   assert.ok(shrinkFinding.charsPerInch > 18);
   assert.ok(shrinkFinding.areaDensity > 95);
+
+  const coverPptxPath = path.join(OUT, 'cover-image-not-consumed.pptx');
+  const coverPlanPath = path.join(OUT, 'cover-image-not-consumed-plan.json');
+  const coverImagePath = path.join(OUT, 'locked-cover.png');
+  writePngHeader(coverImagePath, 1600, 900);
+  const coverPptx = new pptxgen();
+  coverPptx.layout = 'LAYOUT_WIDE';
+  const coverSlide = coverPptx.addSlide();
+  coverSlide.background = { color: 'FFFFFF' };
+  coverSlide.addText('知安堂健康中医馆连锁经营复盘', {
+    x: 0.8,
+    y: 1.2,
+    w: 8.2,
+    h: 0.72,
+    fontFace: 'PingFang SC',
+    fontSize: 28,
+    bold: true,
+    color: '111827'
+  });
+  await coverPptx.writeFile({ fileName: coverPptxPath });
+  fs.writeFileSync(`${coverPptxPath}.render-meta.json`, JSON.stringify({
+    version: 'render-meta/v1',
+    slideCount: 1,
+    slides: [{
+      slide: 1,
+      type: 'cover',
+      rendererMatch: {
+        requestedType: 'cover',
+        matchedType: 'cover',
+        matchKind: 'exact',
+        rendererId: 'cover',
+        rendererName: 'testCover',
+        source: 'test'
+      },
+      renderRoute: {
+        version: 'render-route/v1',
+        family: 'cover',
+        requestedType: 'cover',
+        renderer: { id:'cover', name:'testCover', matchKind:'exact', source:'test' },
+        layoutVariant: '',
+        componentPlan: { version:'component-plan/v1', componentIds:[], unknownComponents:[], rulesApplied:[] },
+        assetPolicy: { status:'none', role:'none', mustBind:false, syntheticOnly:false, staleForRoute:false, hasPrompt:false, hasBoundAsset:false }
+      },
+      assetDecision: {
+        version: 'asset-decision/v1',
+        status: 'none',
+        mode: 'structure-only',
+        action: 'structure_only',
+        reason: 'fixture intentionally omits declared cover image',
+        riskLevel: 'low',
+        originalRole: 'none',
+        resolvedRole: 'none',
+        authorizationStatus: 'none',
+        authorizationStatusNormalized: 'none',
+        provenanceClass: 'none',
+        proofEligibility: ['none'],
+        boundAssetCount: 0,
+        boundAssetRefs: []
+      },
+      plannedComponents: [],
+      unknownComponents: [],
+      drawnComponents: [],
+      consumedComponents: [],
+      missingRequiredComponents: [],
+      textBoxes: []
+    }]
+  }, null, 2));
+  fs.writeFileSync(coverPlanPath, JSON.stringify({
+    industry: 'healthcare-operations',
+    title: '知安堂健康中医馆连锁经营复盘',
+    coverImage: coverImagePath,
+    slides: [{
+      type: 'cover',
+      title: '知安堂健康中医馆连锁经营复盘',
+      coverImage: coverImagePath,
+      sourceTrace:{
+        imageProvenance:[{
+          sourceId: coverImagePath,
+          proofEligibility:'synthetic-only',
+          provenanceClass:'model-generated-preview',
+          authorizationStatus:'user-selected generated cover'
+        }]
+      }
+    }]
+  }, null, 2));
+  const coverQa = runVisualQa(['scripts/visual_qa.js', coverPptxPath, '--plan', coverPlanPath, '--quality-mode', 'formal', '--json']);
+  assert.notEqual(coverQa.status, 0, 'formal QA should fail when declared coverImage is not consumed by slide 1');
+  const coverResult = JSON.parse(coverQa.stdout);
+  const coverFinding = coverResult.findings.find(f => f.type === 'coverImageNotConsumed');
+  assert.ok(coverFinding, 'expected coverImageNotConsumed finding');
+  assert.equal(coverFinding.level, 'fail');
+  assert.equal(coverResult.cover_image_consumption_qa.status, 'fail');
   console.log('visual QA content coverage ok');
 }).catch(err => {
   console.error(err);

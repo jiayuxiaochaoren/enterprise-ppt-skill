@@ -26,7 +26,6 @@ function createClosingHealthcareQualityHandoffRenderer(ctx = {}, helpers = {}) {
     const railX = handoff.x + 0.72;
     const railY = handoff.y + 1.04;
     const step = 8.88 / Math.max(1, points.length - 1);
-    addHairline(slide, railX, railY, step*(points.length-1), C.line, 8, 0.62);
     points.slice(0,3).forEach((a,i)=>{
       const x = railX + i*step;
       const accent = i===0 ? C.accent : (i===1 ? C.cyan : C.violet);
