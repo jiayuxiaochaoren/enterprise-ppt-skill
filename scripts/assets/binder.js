@@ -2,11 +2,20 @@ const fs = require('fs');
 const path = require('path');
 
 const ASSET_BINDER_DECISION_SOURCE = 'asset-binder/v1';
-const { imageDimensions } = require('../design-system');
+const {
+  imageDimensions,
+  rankImageAssetCandidates
+} = require('../design-system');
 const {
   assetTargetContract
 } = require('../design/asset-generation');
-const { preferredAuthorizationStatus } = require('../design/source-evidence');
+const {
+  normalizeAuthorizationStatus,
+  preferredAuthorizationStatus
+} = require('../design/source-evidence');
+
+const DEFAULT_ASPECT_MISMATCH_LIMIT = 0.25;
+const FULL_BLEED_ASPECT_MISMATCH_LIMIT = 0.08;
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(path.resolve(file), 'utf8'));
@@ -40,9 +49,16 @@ function proofEligibilityFor(spec = {}, provenanceClass = provenanceClassFor(spe
   return 'synthetic-only';
 }
 
+function canonicalAuthorizationStatus(raw = '', proofEligibility = '') {
+  const fallback = proofEligibility === 'factual-proof' ? 'cleared' : 'internal-only';
+  const normalized = normalizeAuthorizationStatus(raw || fallback);
+  return ['cleared', 'internal-only', 'blocked', 'unknown'].includes(normalized) ? normalized : normalized || fallback;
+}
+
 function attributionFor(item = {}, parent = {}) {
   const provenanceClass = provenanceClassFor(Object.assign({}, parent, item));
   const proofEligibility = proofEligibilityFor(Object.assign({}, parent, item), provenanceClass);
+  const authorizationStatus = canonicalAuthorizationStatus(item.authorizationStatus || parent.authorizationStatus, proofEligibility);
   return {
     type: item.type || parent.type || provenanceClass,
     path: item.assetPath,
@@ -57,11 +73,31 @@ function attributionFor(item = {}, parent = {}) {
     assetTarget: item.assetTarget || parent.assetTarget || undefined,
     provenanceClass,
     proofEligibility,
-    authorizationStatus: item.authorizationStatus || parent.authorizationStatus || (proofEligibility === 'factual-proof' ? 'cleared' : 'synthetic-only'),
+    authorizationStatus,
     note: item.note || parent.note || (proofEligibility === 'factual-proof'
       ? 'Asset may be used as factual proof according to the supplied provenance.'
       : 'Asset must not be used as factual proof for named customers, real sites, real employees, real screenshots, or real data.')
   };
+}
+
+function shouldBindAsCoverImage(plan = {}, slide = {}, spec = {}, asset = {}, idx = 0) {
+  const text = [
+    slide.type,
+    slide.layoutVariant,
+    slide.variant,
+    slide.imageSlotKind,
+    slide.imageSlot,
+    slide.rendererImageSlot,
+    slide.visual && slide.visual.role,
+    slide.visual && slide.visual.targetUse,
+    spec.role,
+    spec.targetUse,
+    asset.role,
+    asset.targetUse,
+    asset.assetTarget && asset.assetTarget.targetSource
+  ].filter(Boolean).join(' ').toLowerCase();
+  return /cover/.test(String(slide.type || '')) ||
+    (idx === 0 && /cover|hero|background|backdrop|full[-\s]?bleed|renderer-slot:cover/.test(text));
 }
 
 function ensureSourceTrace(slide = {}) {
@@ -143,6 +179,47 @@ function imageAspectRatioFor(asset = {}) {
     : null;
 }
 
+function targetSlotAspect(target = {}) {
+  const slot = target.slot || {};
+  const w = Number(slot.w);
+  const h = Number(slot.h);
+  return Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0
+    ? w / h
+    : 0;
+}
+
+function isFullBleedAspectTarget(slide = {}, spec = {}, asset = {}, target = {}) {
+  const source = String(target.targetSource || '').toLowerCase();
+  if (source === 'renderer-slot:cover' || source === 'renderer-slot:cover-dark') return true;
+  const slot = target.slot || {};
+  const w = Number(slot.w);
+  const h = Number(slot.h);
+  const aspect = targetSlotAspect(target);
+  const fullSlideSlot = Number.isFinite(w) && Number.isFinite(h) && w >= 12 && h >= 6.7 && aspect >= 1.5;
+  const text = [
+    slide.type,
+    slide.layoutVariant,
+    slide.variant,
+    slide.coverStyle,
+    slide.cover_style,
+    slide.imageSlotKind,
+    slide.imageSlot,
+    slide.rendererImageSlot,
+    slide.visual && slide.visual.role,
+    slide.visual && slide.visual.targetUse,
+    slide.visual && (slide.visual.slotKind || slide.visual.rendererSlot),
+    spec.role,
+    spec.targetUse,
+    asset.role,
+    asset.targetUse,
+    target.role,
+    target.originalRole,
+    target.resolvedRole,
+    source
+  ].filter(Boolean).join(' ').toLowerCase();
+  return fullSlideSlot || /full[-\s]?bleed|background|backdrop/.test(text);
+}
+
 function targetForBinding(plan = {}, slide = {}, spec = {}, asset = {}) {
   const explicitTarget = asset.target || spec.target || (asset.assetGeneration && asset.assetGeneration.target) || null;
   const targetAspectRatio = asset.targetAspectRatio || spec.targetAspectRatio || (explicitTarget && explicitTarget.aspectRatio);
@@ -182,18 +259,24 @@ function applyAssetTargetValidation(plan = {}, slide = {}, spec = {}, asset = {}
   const aspectMismatch = imageAspectRatio && targetAspectRatio
     ? Number((Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio).toFixed(3))
     : null;
-  const allowMismatch = spec.allowAspectMismatch === true || asset.allowAspectMismatch === true;
+  const strictFullBleedTarget = isFullBleedAspectTarget(slide, spec, asset, target);
+  const aspectMismatchLimit = strictFullBleedTarget ? FULL_BLEED_ASPECT_MISMATCH_LIMIT : DEFAULT_ASPECT_MISMATCH_LIMIT;
+  const rawAllowMismatch = spec.allowAspectMismatch === true || asset.allowAspectMismatch === true;
+  const allowMismatch = rawAllowMismatch && !strictFullBleedTarget;
   const enriched = Object.assign({}, asset, {
     assetTarget: target,
     imageAspectRatio,
     targetAspectRatio: targetAspectRatio || undefined,
     aspectMismatch: aspectMismatch == null ? undefined : aspectMismatch,
-    aspectMismatchAllowed: allowMismatch || undefined
+    aspectMismatchAllowed: allowMismatch || undefined,
+    aspectMismatchLimit,
+    strictAspectTarget: strictFullBleedTarget || undefined,
+    aspectMismatchAllowanceSuppressed: rawAllowMismatch && strictFullBleedTarget || undefined
   });
   if (
     shouldEnforceAspectTarget(slide, spec, asset, target) &&
     aspectMismatch != null &&
-    aspectMismatch > 0.25 &&
+    aspectMismatch > aspectMismatchLimit &&
     !allowMismatch
   ) {
     errors.push({
@@ -204,7 +287,12 @@ function applyAssetTargetValidation(plan = {}, slide = {}, spec = {}, asset = {}
       imageAspectRatio,
       targetAspectRatio,
       aspectMismatch,
-      message: `asset aspect ratio ${imageAspectRatio} differs from target ${targetAspectRatio} by ${Math.round(aspectMismatch * 100)}%`
+      aspectMismatchLimit,
+      strictAspectTarget: strictFullBleedTarget || undefined,
+      allowAspectMismatchIgnored: rawAllowMismatch && strictFullBleedTarget || undefined,
+      message: strictFullBleedTarget
+        ? `full-bleed asset aspect ratio ${imageAspectRatio} differs from target ${targetAspectRatio} by ${Math.round(aspectMismatch * 100)}%; allowAspectMismatch is ignored for cover/background slots`
+        : `asset aspect ratio ${imageAspectRatio} differs from target ${targetAspectRatio} by ${Math.round(aspectMismatch * 100)}%`
     });
   }
   return enriched;
@@ -219,6 +307,8 @@ function boundAssetAuditFor(item = {}) {
     targetAspectRatio: item.targetAspectRatio,
     aspectMismatch: item.aspectMismatch == null ? undefined : item.aspectMismatch,
     aspectMismatchAllowed: item.aspectMismatchAllowed || undefined,
+    aspectMismatchLimit: item.aspectMismatchLimit,
+    strictAspectTarget: item.strictAspectTarget || undefined,
     targetSlot: target.slot || undefined,
     targetSource: target.targetSource || undefined,
     fitPolicy: target.fitPolicy || undefined,
@@ -245,7 +335,10 @@ function boundAssetGenerationFields(assets = []) {
     aspectMismatch: worst && worst.aspectMismatch,
     worstAspectMismatch: worst && worst.aspectMismatch,
     aspectMismatchAllowed: assets.some(item => item.aspectMismatchAllowed === true) || undefined,
-    boundAssets
+    aspectMismatchLimit: worst && worst.aspectMismatchLimit,
+    strictAspectTarget: assets.some(item => item.strictAspectTarget === true) || undefined,
+    boundAssets,
+    assetCandidateRanking: primary.assetCandidateRanking || undefined
   };
 }
 
@@ -292,6 +385,32 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
       }).filter(Boolean);
       return { slideNo: Number(slideNo), idx, spec, assets };
     }
+    if (Array.isArray(spec.candidates) && spec.candidates.length) {
+      const candidateErrors = [];
+      const candidates = spec.candidates.map((item, i) => {
+        const candidateSpec = Object.assign({}, spec, item || {});
+        delete candidateSpec.candidates;
+        const validated = validateAssetSpec(candidateSpec, Number(slideNo), `candidates[${i}]`, candidateErrors, cwd);
+        return validated ? applyAssetTargetValidation(plan, slides[idx], spec, validated, candidateErrors, Number(slideNo), `candidates[${i}]`) : null;
+      }).filter(Boolean);
+      if (!candidates.length) {
+        errors.push(...candidateErrors);
+        if (!candidateErrors.length) errors.push({ slide: Number(slideNo), type:'assetCandidateMissing', message:'asset candidates did not include a usable image' });
+        return null;
+      }
+      const ranked = rankImageAssetCandidates(candidates, { role: spec.role || (slides[idx].visual && slides[idx].visual.role) || 'evidence' });
+      const selected = Object.assign({}, ranked[0].candidate, {
+        assetCandidateRanking: ranked.map(row => ({
+          path: row.candidate && row.candidate.assetPath,
+          score: row.score,
+          qualityScore: row.quality && row.quality.score,
+          realismScore: row.realism && row.realism.score,
+          realismVerdict: row.realism && row.realism.verdict,
+          realismRisks: row.realism && row.realism.risks
+        }))
+      });
+      return { slideNo: Number(slideNo), idx, spec, assets: [selected] };
+    }
     const single = validateAssetSpec(spec, Number(slideNo), 'single', errors, cwd);
     return single ? { slideNo: Number(slideNo), idx, spec, assets: [applyAssetTargetValidation(plan, slides[idx], spec, single, errors, Number(slideNo), 'single')] } : null;
   }).filter(Boolean);
@@ -327,6 +446,11 @@ function bindGeneratedAssets(plan = {}, mapping = {}, opts = {}) {
       return;
     }
     const single = assets[0];
+    const bindAsCoverImage = shouldBindAsCoverImage(plan, slide, spec, single, idx);
+    if (bindAsCoverImage) {
+      slide.coverImage = single.assetPath;
+      if (idx === 0) plan.coverImage = single.assetPath;
+    }
     slide.visual = Object.assign({}, slide.visual || {}, {
       image: single.assetPath,
       mode: single.mode || (slide.visual && slide.visual.mode === 'photo' ? 'photo' : 'hybrid'),

@@ -43,10 +43,10 @@ function createCoverDarkRenderer(ctx = {}, deps = {}) {
       !explicitCoverImage &&
       !coverDesign.coverStyle &&
       (generation.structureOnly === true || (generation.assetDecisionState && generation.assetDecisionState.structureOnly === true));
-    if (coverStyleRenderer && coverStyleRenderer(slide, plan, s, industry, title)) return;
     if (plan.industry === 'healthcare-operations' && coverVariant !== 'culture-cover-with-soft-geometry') {
       return clinicalQualityCover(slide, plan, s, 1);
     }
+    if (coverStyleRenderer && coverStyleRenderer(slide, plan, s, industry, title)) return;
     if (coverVariant === 'airy-concept-opening') return airyConceptOpening(slide, plan, s);
     if (plan.industry === 'finance-investment' && plan.visualIntent === 'case-led' && hasCoverImage) {
       if (coverShowcase(slide, plan, s, industry, title)) return;

@@ -18,15 +18,17 @@ function numericAspect(value) {
   return Number.isFinite(n) && n >= 0 ? Number(n.toFixed(3)) : null;
 }
 
+function fitModeAllowsAspectMismatch(fitMode = '', fit = {}) {
+  return fit.fallbackContain === true || String(fitMode || '').toLowerCase() === 'contain';
+}
+
 function boundAssetsForMeta(generation = {}, provenance = [], refs = [], fitDecisions = [], target = null) {
   if (Array.isArray(generation.boundAssets) && generation.boundAssets.length) {
     return generation.boundAssets.map(item => {
       const fitPolicy = item.fitPolicy || (item.assetTarget && item.assetTarget.fitPolicy) || '';
       const fitMode = String(fitPolicy || '').toLowerCase();
       const aspectMismatchAllowed = item.aspectMismatchAllowed === true ||
-        fitMode === 'contain' ||
-        fitMode === 'cover' ||
-        fitMode === 'crop';
+        fitModeAllowsAspectMismatch(fitMode);
       return Object.assign({}, item, {
       imageAspectRatio: numericAspect(item.imageAspectRatio),
       targetAspectRatio: numericAspect(item.targetAspectRatio || (item.assetTarget && item.assetTarget.aspectRatio)),
@@ -45,10 +47,7 @@ function boundAssetsForMeta(generation = {}, provenance = [], refs = [], fitDeci
       numericAspect(fit.slotAspectRatio) ??
       numericAspect(target && target.aspectRatio);
     const fitMode = String(fit.fit || '').toLowerCase();
-    const fitAllowsMismatch = fit.fallbackContain === true ||
-      fitMode === 'contain' ||
-      fitMode === 'cover' ||
-      fitMode === 'crop';
+    const fitAllowsMismatch = fitModeAllowsAspectMismatch(fitMode, fit);
     return {
       path: ref,
       dimensions: provenanceItem.dimensions || fit.imageDimensions || null,
@@ -78,6 +77,7 @@ function maxAspectMismatch(items = []) {
 module.exports = {
   boundAssetsForMeta,
   firstProvenanceDimensions,
+  fitModeAllowsAspectMismatch,
   maxAspectMismatch,
   numericAspect
 };

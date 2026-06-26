@@ -64,6 +64,79 @@ function createImageAssetHelpers(visualSystem = {}) {
     };
   }
 
+  function assetRealismProfile(asset = {}, opts = {}) {
+    const spec = typeof asset === 'string' ? { path: asset } : Object.assign({}, asset || {});
+    const role = String(opts.role || spec.role || 'evidence').toLowerCase();
+    const text = [
+      spec.path,
+      spec.assetPath,
+      spec.source,
+      spec.type,
+      spec.provenanceClass,
+      spec.proofEligibility,
+      spec.note,
+      ...(Array.isArray(spec.tags) ? spec.tags : [])
+    ].filter(Boolean).join(' ').toLowerCase();
+    const realismSignals = [];
+    const risks = [];
+    let score = 50;
+    if (/user-owned|owned|client-supplied|first-party|用户|自有|客户提供/.test(text)) {
+      score += 28;
+      realismSignals.push('first-party');
+    }
+    if (/public-licensed|licensed|wikimedia|unsplash|pexels|stock|官方|授权/.test(text)) {
+      score += 16;
+      realismSignals.push('licensed');
+    }
+    if (/photo|photograph|real|actual|screenshot|screen|site|store|restaurant|kitchen|counter|product|scene|门店|餐厅|后厨|柜台|实拍|截图|现场|产品图|菜品|外卖|堂食/.test(text)) {
+      score += 18;
+      realismSignals.push('real-world-subject');
+    }
+    if (/generated|imagegen|model-generated|synthetic|illustration|vector|abstract|concept|mockup|placeholder|fallback|插画|抽象|概念|占位/.test(text) || spec.generated === true) {
+      score -= 24;
+      risks.push('synthetic-or-abstract');
+    }
+    if (/illustration|vector|flat|svg|cartoon|插画|扁平/.test(text)) {
+      score -= 16;
+      risks.push('illustration-style');
+    }
+    if (['cover', 'showcase', 'evidence', 'gallery'].includes(role) && risks.includes('synthetic-or-abstract')) {
+      score -= 10;
+      risks.push('weak-for-image-led-role');
+    }
+    if (/factual-proof/.test(text)) score += 10;
+    if (/synthetic-only/.test(text)) score -= 16;
+    const normalizedScore = Math.max(0, Math.min(100, score));
+    return {
+      role,
+      score: normalizedScore,
+      verdict: normalizedScore >= 76 ? 'strong' : (normalizedScore >= 58 ? 'usable' : 'weak'),
+      signals: realismSignals,
+      risks
+    };
+  }
+
+  function rankImageAssetCandidates(candidates = [], opts = {}) {
+    return (candidates || []).map((candidate, index) => {
+      const pathRef = typeof candidate === 'string'
+        ? candidate
+        : (candidate && (candidate.absoluteAsset || candidate.path || candidate.assetPath));
+      const quality = scoreImageAsset(pathRef, opts.role || (candidate && candidate.role) || 'evidence');
+      const realism = assetRealismProfile(candidate, opts);
+      const score = Math.round((Number(quality.score || 0) * 0.52) + (Number(realism.score || 0) * 0.48));
+      return {
+        index,
+        candidate,
+        score,
+        quality,
+        realism
+      };
+    }).sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.index - b.index;
+    });
+  }
+
   function imageAspectRatio(assetPath, fallback = 1.5) {
     const dims = imageDimensions(assetPath);
     return dims ? dims.w / Math.max(1, dims.h) : fallback;
@@ -131,11 +204,13 @@ function createImageAssetHelpers(visualSystem = {}) {
   }
 
   return {
+    assetRealismProfile,
     chooseEvidenceImageLayout,
     chooseFourImageLayout,
     imageAspectRatio,
     imageDimensions,
     imageQualityProfile,
+    rankImageAssetCandidates,
     scoreImageAsset
   };
 }

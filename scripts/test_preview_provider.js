@@ -29,7 +29,8 @@ const unavailable = exportPreviews({
   previewOptional: true,
   env: {
     PPTX_DISABLE_KEYNOTE_PREVIEW: '1',
-    PPTX_DISABLE_LIBREOFFICE_PREVIEW: '1'
+    PPTX_DISABLE_LIBREOFFICE_PREVIEW: '1',
+    PPTX_DISABLE_QUICKLOOK_PREVIEW: '1'
   }
 });
 assert.equal(unavailable.state.status, 'unavailable');
@@ -69,6 +70,35 @@ const libre = exportPreviews({
 assert.equal(libre.state.status, 'available');
 assert.equal(libre.state.provider, 'libreoffice');
 assert.equal(libre.files.length, 1);
+
+const fakeQl = path.join(dir, 'fake-qlmanage');
+fs.writeFileSync(fakeQl, '#!/bin/sh\nexit 0\n', 'utf8');
+fs.chmodSync(fakeQl, 0o755);
+const quicklook = exportPreviews({
+  file: pptx,
+  previewDir: path.join(dir, 'quicklook'),
+  qualityMode: 'formal',
+  previewOptional: true,
+  env: {
+    PPTX_DISABLE_KEYNOTE_PREVIEW: '1',
+    PPTX_DISABLE_LIBREOFFICE_PREVIEW: '1',
+    QLMANAGE_BIN: fakeQl
+  },
+  run: (cmd, argv) => {
+    assert.equal(cmd, fakeQl);
+    const outDir = argv[argv.indexOf('-o') + 1];
+    fs.writeFileSync(path.join(outDir, 'sample.pptx.png'), Buffer.from([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52
+    ]));
+  }
+});
+assert.equal(quicklook.state.status, process.platform === 'darwin' ? 'cover_thumbnail' : 'unavailable');
+if (process.platform === 'darwin') {
+  assert.equal(quicklook.state.provider, 'quicklook');
+  assert.equal(path.basename(quicklook.files[0]), 'preview.cover.png');
+  assert.match(quicklook.state.detail, /cover thumbnail only/);
+}
 
 const doctor = detectPreviewProviders({
   PPTX_DISABLE_KEYNOTE_PREVIEW: '1',

@@ -29,6 +29,7 @@ const {
 const {
   aspectMismatch,
   auditForAssetRef,
+  coverImageConsumptionAudit,
   factualSyntheticRisk,
   generatedOrSynthetic
 } = require('./visual-plan-asset-audit');
@@ -57,6 +58,7 @@ function defaultPlanAuditResult() {
     planChartScores: null,
     planLayoutPreflight: null,
     planChartAcceptanceGate: null,
+    planCoverImageConsumption: null,
     secondaryAestheticReview: null
   };
 }
@@ -75,7 +77,8 @@ function runPlanAudits(options = {}) {
     planPath = '',
     previewReports = [],
     renderMetaResult = {},
-    requireContactSheet = false
+    requireContactSheet = false,
+    slideReports = []
   } = options;
   const result = defaultPlanAuditResult();
   const findings = result.findings;
@@ -106,6 +109,10 @@ function runPlanAudits(options = {}) {
     result.planChartEvidence = chartEvidenceQA(rawPlan, normalized);
     result.planChartScores = pageLevelChartScores(rawPlan, normalized, renderMetaResult.meta);
     result.planLayoutPreflight = layoutPreflightAudit(rawPlan, normalized);
+    result.planCoverImageConsumption = coverImageConsumptionAudit(rawPlan, normalized, {
+      renderMeta: renderMetaResult.meta || null,
+      slideReports
+    });
     result.planChartAcceptanceGate = chartAcceptanceGate(rawPlan, normalized, renderMetaResult.meta, {
       previewReports,
       requireContactSheet
@@ -140,6 +147,7 @@ function runPlanAudits(options = {}) {
       result.planChartVisual,
       result.planChartEvidence,
       result.planLayoutPreflight,
+      result.planCoverImageConsumption,
       result.planChartAcceptanceGate
     ].forEach(audit => (audit.findings || []).forEach(f => findings.push(f)));
     if (result.secondaryAestheticReview) result.secondaryAestheticReview.findings.forEach(f => findings.push(f));
@@ -164,16 +172,18 @@ function runPlanAudits(options = {}) {
       const rendererHandledAspect = renderedAssetDecision.fitFallbackContain === true ||
         renderedAssetDecision.aspectMismatchAllowed === true ||
         (Array.isArray(renderedAssetDecision.boundAssets) && renderedAssetDecision.boundAssets.some(item => item && item.aspectMismatchAllowed === true));
-      const imageValue = (slide.visual && slide.visual.image) || slide.image || '';
+      const coverImageValue = slide.coverImage || slide.coverImagePath || slide.cover_image || slide.cover_image_path ||
+        (i === 0 ? (rawPlan.coverImage || rawPlan.coverImagePath || rawPlan.cover_image || rawPlan.cover_image_path || '') : '');
+      const imageValue = coverImageValue || (slide.visual && slide.visual.image) || slide.image || '';
       const resolvedImage = resolvePlanAssetPath(imageValue, baseDir);
       const gallery = [
         ...(Array.isArray(slide.images) ? slide.images : []),
         ...((slide.visual && Array.isArray(slide.visual.images)) ? slide.visual.images : [])
       ].map(x => resolvePlanAssetPath(x, baseDir));
       const hasBoundAsset = (resolvedImage && fs.existsSync(resolvedImage)) || gallery.some(x => fs.existsSync(x));
-      const assetRefs = [imageValue, ...(Array.isArray(slide.images) ? slide.images : []), ...((slide.visual && Array.isArray(slide.visual.images)) ? slide.visual.images : [])]
+      const assetRefs = [...new Set([coverImageValue, imageValue, ...(Array.isArray(slide.images) ? slide.images : []), ...((slide.visual && Array.isArray(slide.visual.images)) ? slide.visual.images : [])]
         .map(String)
-        .filter(Boolean);
+        .filter(Boolean))];
       const generation = slide.assetGeneration || {};
       const trace = slide.sourceTrace || {};
       const target = generation.target || assetTargetContract(normalized, slide, generation.originalRole || generation.role || (slide.visual && slide.visual.role) || '');

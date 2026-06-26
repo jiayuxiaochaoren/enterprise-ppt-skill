@@ -238,7 +238,9 @@ function createSlideNormalizationHelpers(deps = {}) {
     if (assetExplicitlySkipped || effectiveAssetStatus === 'none') {
       delete out.generatedAssetPrompt;
     }
-    if (effectiveAssetStatus === 'required' && !assetExplicitlySkipped && !(out.image || (out.visual && out.visual.image))) {
+    const hasBoundImage = Boolean(out.coverImage || out.coverImagePath || out.cover_image || out.cover_image_path ||
+      out.image || (out.visual && out.visual.image));
+    if (effectiveAssetStatus === 'required' && !assetExplicitlySkipped && !hasBoundImage) {
       out.generatedAssetPrompt = out.generatedAssetPrompt || generatedAssetPrompt(plan, out, recipe);
     }
     routeSanitization.after = {

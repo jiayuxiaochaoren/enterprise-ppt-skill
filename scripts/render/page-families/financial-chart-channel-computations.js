@@ -25,6 +25,21 @@ function computeChannelMatrixBubbles(items = [], chart = {}, colors = []) {
   });
 }
 
+function channelLabelAlign(side = '') {
+  const value = String(side).toLowerCase();
+  if (value.includes('left')) return 'right';
+  if (value.includes('above') || value.includes('below')) return 'center';
+  return 'left';
+}
+
+function channelLabelAnchor(box = {}, point = {}) {
+  const align = channelLabelAlign(box.side);
+  const x = align === 'right'
+    ? box.x + box.w
+    : (align === 'center' ? box.x + box.w / 2 : box.x);
+  return { x, y:box.y + box.h / 2 };
+}
+
 function chooseChannelLabelBox(point, opts = {}) {
   const chart = opts.chart || {};
   const bubbles = opts.bubbles || [];
@@ -54,8 +69,13 @@ function chooseChannelLabelBox(point, opts = {}) {
     const labelHits = occupiedLabels.filter(other => chartBoxesOverlap(box, other, 0.05)).length;
     const bubbleHits = bubbles.filter(other => chartBoxesOverlap(box, other.bubbleBox, other === point ? 0.09 : 0.05)).length;
     const shift = Math.abs(box.x - candidate.x) + Math.abs(box.y - candidate.y);
+    const anchor = channelLabelAnchor(box, point);
+    const anchorGap = Math.max(0, Math.hypot(anchor.x - point.x, anchor.y - point.y) - point.r);
     const sidePreference = (point.x > chart.x + chart.w * 0.74 && /right/i.test(candidate.side)) ? 1.6 : 0;
-    return { box, score:candidate.rank + sidePreference + shift * 7 + labelHits * 70 + bubbleHits * 48 };
+    return {
+      box:Object.assign({ align:channelLabelAlign(candidate.side) }, box),
+      score:candidate.rank + sidePreference + shift * 7 + Math.max(0, anchorGap - 0.18) * 42 + labelHits * 70 + bubbleHits * 48
+    };
   }).sort((a, b) => a.score - b.score);
   return Object.assign({ label }, candidates[0].box);
 }

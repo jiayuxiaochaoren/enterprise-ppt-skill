@@ -98,7 +98,9 @@ function auditSlideXml(xml = '', slideNo = 1, qa = {}) {
     });
   }
 
-  const lineTextOverlaps = lineShapes.flatMap(line => textShapes.filter(shape => lineIntersectsText(line, shape)).map(shape => ({ line, shape })));
+  const lineTextOverlaps = lineShapes
+    .filter(line => !line.arrow)
+    .flatMap(line => textShapes.filter(shape => lineIntersectsText(line, shape)).map(shape => ({ line, shape })));
   if (lineTextOverlaps.length) {
     const sample = lineTextOverlaps.slice(0, 3).map(item => `"${item.shape.text.slice(0, 18)}"`).join('; ');
     findings.push({ slide:slideNo, level:'review', type:'textLineCollision', message:`${lineTextOverlaps.length} rule/underline shapes intersect visible text: ${sample}` });
@@ -117,6 +119,30 @@ function auditSlideXml(xml = '', slideNo = 1, qa = {}) {
   });
   if (arrowBlocked.length) {
     findings.push({ slide:slideNo, level:'fail', type:'arrowCoveredByRectangle', message:`${arrowBlocked.length} arrow connector(s) appear covered by later rectangle shapes` });
+  }
+
+  const closedLoopText = /动作\s*·\s*数据\s*·\s*复盘|对象\s*·\s*交付\s*·\s*验收|闭环复盘|复盘中枢|交付复盘/.test(allText);
+  if (closedLoopText && /(?:动作|闭环)顺序\s*0?1[\s\S]{0,30}0?1/.test(allText)) {
+    findings.push({
+      slide:slideNo,
+      level:'review',
+      type:'redundantSequenceLabel',
+      message:'closed-loop page uses a redundant sequence label even though arrow direction should carry sequence'
+    });
+  }
+  if (closedLoopText) {
+    const loopArrows = lineShapes.filter(line => line.arrow && line.y >= 1.80 && line.y <= 6.60 && (line.w > 0.16 || line.h > 0.16));
+    const horizontalLoopArrows = loopArrows.filter(line => line.w > 0.16 && line.h < 0.08);
+    const longHorizontalRails = horizontalLoopArrows.filter(line => line.w >= 2.40);
+    const fragmentedHorizontalRails = horizontalLoopArrows.filter(line => line.w > 0.16 && line.w < 1.40);
+    if (horizontalLoopArrows.length >= 4 && longHorizontalRails.length < 2 && fragmentedHorizontalRails.length >= 4) {
+      findings.push({
+        slide:slideNo,
+        level:'fail',
+        type:'loopSemantics',
+        message:'closed-loop arrows are fragmented into short horizontal stubs instead of continuous perimeter rails'
+      });
+    }
   }
 
   const bottomFlowConflicts = lineShapes.filter(line => line.w > 0.72 && line.h < 0.06 && line.y >= 6.0)

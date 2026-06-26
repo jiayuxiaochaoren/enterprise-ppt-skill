@@ -100,6 +100,45 @@ assert.equal(lineMidpoint(line).x, 2.8);
 assert.equal(lineIntersectsText(line, textShape), true);
 assert.equal(xmlImageShapes(xml)[0].w, 2);
 
+const lineXml = (x, y, w, h) => [
+  '<p:sp><p:spPr><a:xfrm>',
+  `<a:off x="${emu(x)}" y="${emu(y)}"/>`,
+  `<a:ext cx="${emu(w)}" cy="${emu(h)}"/>`,
+  '</a:xfrm><a:prstGeom prst="line"/><a:ln><a:tailEnd type="triangle"/></a:ln></p:spPr></p:sp>'
+].join('');
+const textXml = (text, x, y, w, h) => [
+  '<p:sp><p:spPr><a:xfrm>',
+  `<a:off x="${emu(x)}" y="${emu(y)}"/>`,
+  `<a:ext cx="${emu(w)}" cy="${emu(h)}"/>`,
+  '</a:xfrm></p:spPr><p:txBody><a:p><a:r><a:rPr sz="900"/><a:t>',
+  text,
+  '</a:t></a:r></a:p></p:txBody></p:sp>'
+].join('');
+const brokenLoopXml = [
+  textXml('动作 · 数据 · 复盘', 1.2, 2.3, 2.4, 0.2),
+  textXml('动作顺序 01 → 02 → 03 → 04 → 01', 8.4, 2.3, 3.0, 0.2),
+  textXml('复盘中枢', 5.2, 3.8, 1.6, 0.3),
+  lineXml(3.9, 3.4, 0.64, 0),
+  lineXml(7.9, 3.4, 0.64, 0),
+  lineXml(3.9, 5.1, 0.64, 0),
+  lineXml(7.9, 5.1, 0.64, 0)
+].join('');
+const brokenLoopAudit = slideAuditFacade.auditSlideXml(brokenLoopXml, 10);
+assert.equal(brokenLoopAudit.findings.some(f => f.type === 'loopSemantics'), true);
+assert.equal(brokenLoopAudit.findings.some(f => f.type === 'redundantSequenceLabel'), true);
+
+const continuousLoopXml = [
+  textXml('动作 · 数据 · 复盘', 1.2, 2.3, 2.4, 0.2),
+  textXml('复盘中枢', 5.2, 3.8, 1.6, 0.3),
+  lineXml(3.9, 3.4, 4.2, 0),
+  lineXml(8.9, 4.2, 0, 0.5),
+  lineXml(3.9, 5.1, 4.2, 0),
+  lineXml(2.3, 4.2, 0, 0.5)
+].join('');
+const continuousLoopAudit = slideAuditFacade.auditSlideXml(continuousLoopXml, 10);
+assert.equal(continuousLoopAudit.findings.some(f => f.type === 'loopSemantics'), false);
+assert.equal(continuousLoopAudit.findings.some(f => f.type === 'redundantSequenceLabel'), false);
+
 assert.equal(rectContainsPoint({ x:0, y:0, w:2, h:2 }, 1, 1), true);
 assert.equal(rectContainsPoint({ x:0, y:0, w:2, h:2 }, 0.01, 1), false);
 assert.equal(intersectionArea({ x:0, y:0, w:2, h:2 }, { x:1, y:1, w:2, h:2 }), 1);

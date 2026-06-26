@@ -100,11 +100,13 @@ function createFoundationHelperSet({
     layoutVariantCompatibleWithType
   });
   const {
+    assetRealismProfile,
     chooseEvidenceImageLayout,
     chooseFourImageLayout,
     imageAspectRatio,
     imageDimensions,
     imageQualityProfile,
+    rankImageAssetCandidates,
     scoreImageAsset
   } = createImageAssetHelpers(VISUAL_SYSTEM);
   const {
@@ -148,6 +150,7 @@ function createFoundationHelperSet({
     STYLE_PROFILES,
     applyPlanAuthoredSourceTrace,
     assetAuthorizationGate,
+    assetRealismProfile,
     chooseEvidenceImageLayout,
     chooseFourImageLayout,
     contentOverlapAudit,
@@ -169,6 +172,7 @@ function createFoundationHelperSet({
     normalizeTypographyOptions,
     paletteToColors,
     preferredProofObjectIdForTrace,
+    rankImageAssetCandidates,
     proofObjectIdForSlide,
     resolveStyleProfile,
     resolveTypeToken,

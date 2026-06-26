@@ -732,6 +732,53 @@ function main() {
     'fact-metrics should not let generic scorecard consume the board first'
   );
 
+  const restaurantChannelOps = [];
+  const restaurantChannelRenderers = createFinancialIndustryRenderers(createFakeCtx(restaurantChannelOps));
+  restaurantChannelRenderers.industryChartSlide(createSlide(restaurantChannelOps), { slides:[{}] }, {
+    variant:'channel-efficiency-matrix',
+    title:'渠道预算要按堂食、外卖和自提分责任口径',
+    subtitle:'美团外卖收入6683万最高，小程序自提6312万接近第二梯队。',
+    channelEfficiency:[
+      { label:'美团外卖', value:'6683万', x:78, y:64, size:88 },
+      { label:'小程序自提', value:'6312万', x:42, y:70, size:78 },
+      { label:'堂食', value:'5975万', x:46, y:52, size:70 },
+      { label:'企业团餐', value:'5806万', x:58, y:46, size:68 },
+      { label:'饿了么', value:'5489万', x:64, y:59, size:62 }
+    ]
+  }, 5);
+  const channelLabelOptions = new Map(
+    restaurantChannelOps
+      .filter(op => op.name === 'addText' && ['美团外卖', '小程序自提', '堂食', '企业团餐', '饿了么'].includes(op.args[1]))
+      .map(op => [op.args[1], op.args[2] || {}])
+  );
+  const channelValueOptions = new Map(
+    restaurantChannelOps
+      .filter(op => op.name === 'addText' && ['6683万', '6312万', '5975万', '5806万', '5489万'].includes(op.args[1]))
+      .map(op => [op.args[1], op.args[2] || {}])
+  );
+  const channelPairs = [
+    ['美团外卖', '6683万'],
+    ['小程序自提', '6312万'],
+    ['堂食', '5975万'],
+    ['企业团餐', '5806万'],
+    ['饿了么', '5489万']
+  ];
+  channelPairs.forEach(([label, value]) => {
+    const labelBox = channelLabelOptions.get(label);
+    const valueBox = channelValueOptions.get(value);
+    assert(labelBox && valueBox, `expected channel label/value pair ${label}`);
+    assert(['left', 'right', 'center'].includes(labelBox.align), `${label} should carry an explicit visual text anchor`);
+    const anchorX = labelBox.align === 'right'
+      ? labelBox.x + labelBox.w
+      : (labelBox.align === 'center' ? labelBox.x + labelBox.w / 2 : labelBox.x);
+    const bubbleX = valueBox.x + valueBox.w / 2;
+    const bubbleY = valueBox.y + 0.06;
+    const bubbleR = valueBox.w / 2;
+    const anchorGap = Math.max(0, Math.hypot(anchorX - bubbleX, (labelBox.y + labelBox.h / 2) - bubbleY) - bubbleR);
+    assert(anchorGap <= 0.40, `${label} text anchor should stay visually attached to its bubble`);
+  });
+  assert.equal(channelLabelOptions.get('小程序自提').align, 'right', 'left-side channel label text should anchor toward its bubble');
+
   const longTitleOps = [];
   const longTitleRenderers = createFinancialIndustryRenderers(createFakeCtx(longTitleOps));
   longTitleRenderers.industryChartSlide(createSlide(longTitleOps), { slides:[{}] }, {

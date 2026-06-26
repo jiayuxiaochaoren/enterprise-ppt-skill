@@ -118,13 +118,6 @@ function createAdoptionOrPatientFunnelBoard(ctx = {}) {
       fill:{ color:C.panelAlt || 'F8FAFC', transparency:0 },
       line:{ color:C.line, transparency:42, width:0.28 }
     });
-    items.slice(1).forEach((_, i) => {
-      const tickX = board.x + 0.70 + i * ((board.w - 1.44) / Math.max(1, items.length - 1));
-      addRect(slide, tickX, railY + 0.35, 0.10, 0.03, accents[Math.min(i, accents.length - 1)], accents[Math.min(i, accents.length - 1)], {
-        fill:{ color:accents[Math.min(i, accents.length - 1)], transparency:8 },
-        line:{ color:accents[Math.min(i, accents.length - 1)], transparency:100 }
-      });
-    });
     const rateText = items.slice(1).map((it, i) => {
       const rate = formatRate(values[i + 1], values[i]);
       return `${itemTitle(items[i], `阶段${i+1}`)}→${itemTitle(it, `阶段${i+2}`)} ${rate || '-'}`;

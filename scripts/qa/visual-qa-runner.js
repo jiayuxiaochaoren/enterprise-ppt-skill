@@ -91,7 +91,8 @@ function runVisualQa(options = {}) {
     planPath,
     previewReports,
     renderMetaResult,
-    requireContactSheet: Boolean(previewDir)
+    requireContactSheet: Boolean(previewDir),
+    slideReports
   });
   appendFindings(findings, planQA);
 
@@ -139,6 +140,7 @@ function runVisualQa(options = {}) {
     chart_visual_qa: planQA.planChartVisual,
     chart_evidence_qa: planQA.planChartEvidence,
     layout_preflight_qa: planQA.planLayoutPreflight,
+    cover_image_consumption_qa: planQA.planCoverImageConsumption,
     page_chart_scores: planQA.planChartScores,
     chart_acceptance_gate: planQA.planChartAcceptanceGate,
     secondary_visual_review: planQA.secondaryAestheticReview,

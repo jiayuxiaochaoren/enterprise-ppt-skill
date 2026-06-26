@@ -192,6 +192,9 @@ if (previewState.status === 'unavailable') {
 if (previewState.status === 'metadata_fallback') {
   validationSummary.next_actions.push('Install pdftoppm or run on macOS with Keynote for screenshot-level QA; metadata/render-meta QA has continued.');
 }
+if (previewState.status === 'cover_thumbnail') {
+  validationSummary.next_actions.push('Quick Look produced a cover thumbnail only; full slide visual QA still requires Keynote or LibreOffice + pdftoppm.');
+}
 if (!visualQa) validationSummary.next_actions.push('Run with --run-visual-qa for contract and visual metadata checks.');
 validationSummary.report = validationReport(validationSummary);
 const result = {

@@ -85,7 +85,7 @@ fs.mkdirSync(OUT, { recursive: true });
   ], {
     cwd: ROOT,
     encoding: 'utf8',
-    env: { ...process.env, PPTX_DISABLE_KEYNOTE_PREVIEW: '1' }
+    env: { ...process.env, PPTX_DISABLE_KEYNOTE_PREVIEW: '1', PPTX_DISABLE_QUICKLOOK_PREVIEW: '1' }
   });
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const summary = JSON.parse(result.stdout);
